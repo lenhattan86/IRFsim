@@ -11,6 +11,7 @@ import cluster.datastructures.BaseDag;
 import cluster.datastructures.Resources;
 import cluster.datastructures.StageDag;
 import cluster.simulator.Simulator;
+import cluster.utils.Output;
 
 // keep a pool of resources available
 // allocate to jobs based on various policies
@@ -19,6 +20,7 @@ import cluster.simulator.Simulator;
 // by tasks
 public class LeftOverResAllocator {
 
+	private static final boolean DEBUG = true;
   public Resources leftOverRes;
 
   public LeftOverResAllocator() {
@@ -67,9 +69,9 @@ public class LeftOverResAllocator {
     // allocate most to the jobs which improves the remaining time the most
 
     for (int dagId : runningDagsIds) {
-      // System.out.println("\tdag:" + dagId + " leftOverRes:" + leftOverRes);
+      // Output.debugln(DEBUG,"\tdag:" + dagId + " leftOverRes:" + leftOverRes);
       if (!leftOverRes.greater(new Resources(0.0))) {
-        System.out.println("\tno more leftover res -> stop reallocating");
+        Output.debugln(DEBUG,"\tno more leftover res -> stop reallocating");
         break;
       }
       StageDag origDag = Simulator.getDag(dagId);
@@ -84,6 +86,6 @@ public class LeftOverResAllocator {
         takeStockOfLeftOverRsrcs();
       }
     }
-    System.out.println("LeftOverRes remaining:" + leftOverRes);
+    Output.debugln(DEBUG,"LeftOverRes remaining:" + leftOverRes);
   }
 }

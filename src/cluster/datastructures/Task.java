@@ -2,6 +2,7 @@ package cluster.datastructures;
 
 public class Task implements Comparable<Task> {
 
+	private static final boolean DEBUG = true;
   public int taskId;
   public int dagId;
   public double taskDuration;

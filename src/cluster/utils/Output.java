@@ -38,31 +38,35 @@ public class Output {
 		}
 	}
 	
-	public static void debugln(String toWrite){
-		if(Globals.DEBUG){
-			System.out.println(toWrite);
-			writeln(toWrite);
-		}
-	}
-	
-	public static void debugln(boolean debug, String toWrite){
-		if(debug){
-			System.out.println(toWrite);
-			writeln(toWrite);
-		}
-	}
-	
 	public static void debug(String toWrite){
-		if(Globals.DEBUG){
+		if(Globals.DEBUG_ALL){
 			System.out.print(toWrite);
-			write(toWrite);
 		}
 	}
 	
-	public static void debug(boolean debug, String toWrite){
-		if(debug){
-			System.out.print(toWrite);
-			write(toWrite);
+	public static void debugln(String toWrite){
+		if(Globals.DEBUG_ALL){
+			System.out.println(toWrite);
 		}
+	}
+	
+	public static void debugln(boolean DEBUG, String toWrite){
+		if(Globals.DEBUG_ALL || (DEBUG && Globals.DEBUG_LOCAL)){
+			System.out.println(toWrite);
+		}
+	}
+	
+	public static void debugln(boolean DEBUG){
+		debugln(DEBUG, "");
+	}
+	
+	public static void debug(boolean DEBUG, String toWrite){
+		if(Globals.DEBUG_ALL || (DEBUG && Globals.DEBUG_LOCAL)){
+			System.out.print(toWrite);
+		}
+	}
+	
+	public static void debug(boolean DEBUG){
+		debug(DEBUG, "");
 	}
 }

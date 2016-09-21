@@ -13,6 +13,8 @@ import cluster.datastructures.StageDag;
  * CP scheduling class
  * */
 public class CPSchedPolicy extends SchedPolicy {
+	
+	private static final boolean DEBUG = true;
 
   public CPSchedPolicy(Cluster cluster) {
     super(cluster);
@@ -57,7 +59,7 @@ public class CPSchedPolicy extends SchedPolicy {
           dag.duration(taskId), dag.rsrcDemands(taskId));
 
       if (assigned) {
-        // System.out.println("Assigned task:" + taskId);
+        // Output.debugln(DEBUG,"Assigned task:" + taskId);
         // remove the task from runnable and put it in running
         dag.runningTasks.add(taskId);
         dag.launchedTasksNow.add(taskId);

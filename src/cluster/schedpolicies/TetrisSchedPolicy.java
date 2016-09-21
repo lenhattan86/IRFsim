@@ -7,6 +7,8 @@ import cluster.datastructures.StageDag;
 import cluster.utils.Pair;
 
 public class TetrisSchedPolicy extends SchedPolicy {
+	
+	private static final boolean DEBUG = true;
 
   // flag which specifies if duration is considered
   // during the cosine similarity computation

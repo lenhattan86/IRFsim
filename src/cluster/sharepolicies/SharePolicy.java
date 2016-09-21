@@ -1,6 +1,8 @@
 package cluster.sharepolicies;
 
 public abstract class SharePolicy {
+	
+	private static final boolean DEBUG = true;
 
   public String sharingPolicyName;
 

@@ -9,9 +9,11 @@ import cluster.speedfair.ServiceCurve;
 import cluster.utils.Interval;
 
 public abstract class BaseDag {
+	
+	private static final boolean DEBUG = true;
 
   public int dagId;
-  public int timeArrival;
+  public int timeArrival; // arrival time from the input
 
   public Map<Integer, Double> CPlength, BFSOrder;
 
@@ -24,12 +26,12 @@ public abstract class BaseDag {
 
   public abstract void setBFSOrder();
 
-  public abstract Resources rsrcDemands(int task_id);
+  public abstract Resources rsrcDemands(int task_id); // demand of from a task at a certain time step
   
   public ServiceCurve serviceCurve = new ServiceCurve();;
   public Resources receivedService = new Resources();
 
-  public abstract double duration(int task_id);
+  public abstract double duration(int task_id); // duration of a task
 
   public abstract List<Interval> getChildren(int task_id);
 
@@ -37,8 +39,8 @@ public abstract class BaseDag {
 
   public abstract Set<Integer> allTasks();
 
-  public Resources rsrcQuota;
-  public Resources rsrcInUse;
+  public Resources rsrcQuota; // resource should be allocated
+  public Resources rsrcInUse; // real used resources
 
   public LinkedHashSet<Integer> runnableTasks;
   public LinkedHashSet<Integer> runningTasks;
@@ -46,8 +48,8 @@ public abstract class BaseDag {
 
   public LinkedHashSet<Integer> launchedTasksNow;
 
-  public double jobStartTime, jobEndTime;
-  public double jobExpDur;
+  public double jobStartTime, jobEndTime; // real start-time & end-time of serving a job
+  public double jobExpDur; // real completion time of the job.
 
   // keep track remaining time from current time given some share
   public double timeToComplete;

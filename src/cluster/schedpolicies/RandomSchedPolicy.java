@@ -9,6 +9,8 @@ import cluster.datastructures.Resources;
 import cluster.datastructures.StageDag;
 
 public class RandomSchedPolicy extends SchedPolicy {
+	
+	private static final boolean DEBUG = true;
 
   public RandomSchedPolicy(Cluster cluster) {
     super(cluster);

@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Interval {
+	
+	private static final boolean DEBUG = true;
 
   public int begin, end;
 

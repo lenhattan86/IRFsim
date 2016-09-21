@@ -10,6 +10,8 @@ import cluster.datastructures.Resources;
 import cluster.datastructures.StageDag;
 
 public class BFSSchedPolicy extends SchedPolicy {
+	
+	private static final boolean DEBUG = true;
 
   public BFSSchedPolicy(Cluster cluster) {
     super(cluster);
@@ -18,6 +20,7 @@ public class BFSSchedPolicy extends SchedPolicy {
   @Override
   public void schedule(final StageDag dag) {
 
+  	
     if (dag.runnableTasks.isEmpty())
       return;
 

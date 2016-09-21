@@ -3,6 +3,8 @@ package cluster.datastructures;
 import cluster.utils.Interval;
 
 public class Dependency {
+	
+	private static final boolean DEBUG = true;
 
   public String parent, child;
   public String type;

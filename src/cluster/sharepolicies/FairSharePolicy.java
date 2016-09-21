@@ -5,6 +5,8 @@ import cluster.datastructures.Resources;
 import cluster.simulator.Simulator;
 
 public class FairSharePolicy extends SharePolicy {
+	
+	private static final boolean DEBUG = true;
 
   Resources clusterTotCapacity = null;
 
@@ -28,7 +30,7 @@ public class FairSharePolicy extends SharePolicy {
     // update the resourceShareAllocated for every running job
     for (BaseDag job : Simulator.runningJobs) {
       job.rsrcQuota = quotaRsrcShare;
-      // System.out.println("Allocated to job:" + job.dagId + " share:"
+      // Output.debugln(DEBUG,"Allocated to job:" + job.dagId + " share:"
       // + job.rsrcQuota);
     }
   }

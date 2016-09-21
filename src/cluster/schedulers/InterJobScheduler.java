@@ -101,15 +101,7 @@ public class InterJobScheduler {
 				availRes.subtract(toGive);
 			}
 		}
-
-//		// compute the real resources having been used.
-//		for (BaseDag dag : Simulator.runningJobs) {
-//			dag.receivedService.addUsage(Resources.minRes(dag.rsrcInUse, dag.currResDemand()));
-//			Output.debugln(DEBUG, "Dag Id " + dag.dagId + " -- dag.rsrcInUse: " + dag.rsrcInUse + " -- dag.currResDemand(): "
-//					+ dag.currResDemand());
-//			Output.debugln(DEBUG, "Dag Id " + dag.dagId + " -- Received Resource: " + dag.receivedService);
-//		}
-//		Output.debugln(DEBUG, "availRes " + availRes );
+		
 	}
 
 	// return the jobs IDs based on different policies

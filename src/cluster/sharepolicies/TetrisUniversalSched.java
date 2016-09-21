@@ -11,6 +11,7 @@ import cluster.utils.Pair;
 
 public class TetrisUniversalSched extends SharePolicy {
 
+	private static final boolean DEBUG = true;
   Resources clusterTotCapacity = null;
   ArrayList<Task> runnableTasks = null;
 
@@ -39,7 +40,7 @@ public class TetrisUniversalSched extends SharePolicy {
     }
 
     Pair<Task, Integer> bestTaskToPack;
-    //System.out.println("RUNNABLE TASKS SIZE:"+runnableTasks.size());
+    //Output.debugln(DEBUG,"RUNNABLE TASKS SIZE:"+runnableTasks.size());
 
     // RG: this can be very expensive - TODO
     // among the runnable tasks, compute the best packing score

@@ -9,6 +9,7 @@ import cluster.utils.Interval;
 
 public class Stage {
 
+	private static final boolean DEBUG = true;
   public int id;
   public String name;
 

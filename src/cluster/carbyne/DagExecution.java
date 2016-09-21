@@ -18,6 +18,8 @@ import cluster.utils.Utils;
 // keeps information for runs at different shares
 public class DagExecution {
 
+	private static final boolean DEBUG = true;
+	
   public StageDag dag;
 
   // Schedule policy to schedule inside a dag
@@ -100,7 +102,7 @@ public class DagExecution {
       complTime = currentTime;
     }
 
-    // System.out.println("[DagExecution]: " + "dag:" + dag.dagId +
+    // Output.debugln"[DagExecution]: " + "dag:" + dag.dagId +
     // " complTime:" + complTime + " timelineExec:" + timelineExec);
 
     if (!reverse)

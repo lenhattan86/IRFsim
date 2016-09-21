@@ -21,10 +21,11 @@ public class Main {
 //    public static RunMode runmode = RunMode.CommandLine;
     public static RunMode runmode = RunMode.Tan;
     
-    public static boolean DEBUG = false;
+    public static boolean DEBUG_ALL = false;
+    public static boolean DEBUG_LOCAL = true;
 
     public static enum SchedulingPolicy {
-      Random, BFS, CP, Tetris, Carbyne
+      Random, BFS, CP, Tetris, Carbyne, SpeedFair
     };
 
     public static SchedulingPolicy INTRA_JOB_POLICY = SchedulingPolicy.CP;
@@ -107,7 +108,7 @@ public class Main {
       case Mosharaf:
         String root1 = "/Users/mosharaf/Dropbox/Carbyne/";
         DataFolder = root1 + "workload/traces";
-        LOG.info("Path: " + DataFolder);
+        System.out.println("Path: " + DataFolder);
         FileInput = "50Jobs.txt";
         FileOutput = "dags-output.txt";
         PathToInputFile = DataFolder + "/" + FileInput;
@@ -135,27 +136,28 @@ public class Main {
       FileOutput = "dags-output.txt";
       PathToInputFile = DataFolder + "/" + FileInput;
 
-      SIM_END_TIME = 500000;
+      SIM_END_TIME = 10;
       STEP_TIME = 1;
 
-      NUM_MACHINES = 1;
-      NUM_DIMENSIONS = 6;
-      MACHINE_MAX_RESOURCE = 1;
+      NUM_MACHINES = 4;
+      NUM_DIMENSIONS = 2;
+      MACHINE_MAX_RESOURCE = 4;
 
       ADJUST_FUNGIBLE = false;
-      JOBS_ARRIVAL_POLICY = JobsArrivalPolicy.All;
+//      JOBS_ARRIVAL_POLICY = JobsArrivalPolicy.All;
+      JOBS_ARRIVAL_POLICY = JobsArrivalPolicy.Trace;
 
       DagIdStart = 0;
       DagIdEnd = 1;
 
-//      INTER_JOB_POLICY = SharingPolicy.SpeedFair;
       INTER_JOB_POLICY = SharingPolicy.SpeedFair;
-      INTRA_JOB_POLICY = SchedulingPolicy.BFS;
+//      INTER_JOB_POLICY = SharingPolicy.Fair;
+      INTRA_JOB_POLICY = SchedulingPolicy.SpeedFair;
 
       // sensitivity
       LEVEL_OF_OPTIMISM = 1.0;
       TETRIS_UNIVERSAL = false;
-      COMPUTE_STATISTICS = true;
+      COMPUTE_STATISTICS = false;
       ERROR = 0.0;
       break;
       case CommandLine:
@@ -172,7 +174,7 @@ public class Main {
 
     String UsageStr = "Usage: java carbyne.simulator.Main pathToInput "
         + "num_machines adjust_fungible dag_id_end "
-        + "inter_job_policy=[FAIR | DRF | SJF] "
+        + "inter_job_policy=[FAIR | DRF | SJF | SpeedFair] "
         + "intra_job_policy=[CARBYNE | TETRIS | CP | BFS | RANDOM]"
         + " level_optimism([0.0 - 1.0])"
         + " compute_stats";
@@ -182,7 +184,7 @@ public class Main {
       int curArg = 0;
 
       if (args.length == curArg) {
-        LOG.info(UsageStr);
+        System.out.println(UsageStr);
         System.exit(0);
       }
       Globals.PathToInputFile = args[curArg];
@@ -194,14 +196,14 @@ public class Main {
       Globals.NUM_MACHINES = 1;
       Globals.NUM_DIMENSIONS = 6;
       if (args.length == curArg) {
-        LOG.info(UsageStr);
+        System.out.println(UsageStr);
         System.exit(0);
       }
       Globals.MACHINE_MAX_RESOURCE = Double.parseDouble(args[curArg]);
       curArg++;
 
       if (args.length == curArg) {
-        LOG.info(UsageStr);
+        System.out.println(UsageStr);
         System.exit(0);
       }
       Globals.ADJUST_FUNGIBLE = Boolean.parseBoolean(args[curArg]);
@@ -211,14 +213,14 @@ public class Main {
 
       Globals.DagIdStart = 0;
       if (args.length == curArg) {
-        LOG.info(UsageStr);
+        System.out.println(UsageStr);
         System.exit(0);
       }
       Globals.DagIdEnd = Integer.parseInt(args[curArg]);
       curArg++;
 
       if (args.length == curArg) {
-        LOG.info(UsageStr);
+        System.out.println(UsageStr);
         System.exit(0);
       }
       String UPPER_ARG = args[curArg].toUpperCase();
@@ -229,14 +231,16 @@ public class Main {
         Globals.INTER_JOB_POLICY = SharingPolicy.DRF;
       } else if (UPPER_ARG.contains("SJF")) {
         Globals.INTER_JOB_POLICY = SharingPolicy.SJF;
+      } else if (UPPER_ARG.contains("SpeedFair")) {
+        Globals.INTER_JOB_POLICY = SharingPolicy.SpeedFair;
       } else {
         LOG.warning("UNKNOWN INTER_JOB_POLICY");
-        LOG.info(UsageStr);
+        System.out.println(UsageStr);
         System.exit(0);
       }
 
       if (args.length == curArg) {
-        LOG.info(UsageStr);
+        System.out.println(UsageStr);
         System.exit(0);
       }
       UPPER_ARG = args[curArg].toUpperCase();
@@ -253,30 +257,30 @@ public class Main {
         Globals.INTRA_JOB_POLICY = SchedulingPolicy.Random;
       } else {
         LOG.warning("UNKNOWN INTRA_JOB_POLICY");
-        LOG.info(UsageStr);
+        System.out.println(UsageStr);
         System.exit(0);
       }
 
       // sensitivity
       if (args.length == curArg) {
-        LOG.info(UsageStr);
+        System.out.println(UsageStr);
         System.exit(0);
       }
       double opt_arg = Double.parseDouble(args[curArg]);
       if (opt_arg < 0 || opt_arg > 1.0) {
-        LOG.info(UsageStr);
+        System.out.println(UsageStr);
         System.exit(0);
       }
       Globals.LEVEL_OF_OPTIMISM = opt_arg;
       curArg++;
       if (args.length == curArg) {
-        LOG.info(UsageStr);
+        System.out.println(UsageStr);
         System.exit(0);
       }
       
       boolean compute_stats = Boolean.parseBoolean(args[curArg]);
       if (opt_arg < 0 || opt_arg > 1.0) {
-        LOG.info(UsageStr);
+        System.out.println(UsageStr);
         System.exit(0);
       }
       Globals.COMPUTE_STATISTICS = compute_stats;
@@ -319,9 +323,10 @@ public class Main {
     System.out.println("INTRODUCED RES.ERROR= " + Globals.ERROR);
     System.out.println("=====================\n");
 
-    LOG.info("Start simulation ...");
+    System.out.println("Start simulation ...");
+    System.out.println("Please wait ...");
     Simulator simulator = new Simulator();
     simulator.simulate();
-    LOG.info("End simulation ...");
+    System.out.println("\nEnd simulation ...");
   }
 }

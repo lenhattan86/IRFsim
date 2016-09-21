@@ -12,6 +12,8 @@ import cluster.datastructures.Task;
 import cluster.simulator.Simulator;
 
 public class Machine {
+	
+	private static final boolean DEBUG = true;
 
   int machineId;
 

@@ -5,6 +5,8 @@ import java.util.TreeMap;
 
 /// Invariant: the intervals are disjoint; key is the begin
 public class IntervalSet {
+	
+	private static final boolean DEBUG = true;
 
   public Map<Integer, Interval> intervals;
 

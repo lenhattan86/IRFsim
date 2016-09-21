@@ -17,6 +17,8 @@ import cluster.datastructures.StageDag;
 import cluster.simulator.Main.Globals;
 
 public class Utils {
+	
+	private static final boolean DEBUG = true;
 
   // generate a trace
   // read a bunch of dags

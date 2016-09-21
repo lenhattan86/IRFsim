@@ -16,6 +16,8 @@ import cluster.simulator.Main.Globals;
  * properties
  */
 public class Cluster {
+	
+	private static final boolean DEBUG = true;
 
   boolean execMode;
   public Map<Integer, Machine> machines;
@@ -107,6 +109,14 @@ public class Cluster {
   }
 
   public Resources getClusterResAvail() {
+    Resources clusterResAvail = new Resources();
+    for (Machine machine : machines.values()) {
+      clusterResAvail.sum(machine.getTotalResAvail());
+    }
+    return clusterResAvail;
+  }
+  
+  public Resources getClusterResQuotaAvail() {
     Resources clusterResAvail = new Resources();
     for (Machine machine : machines.values()) {
       clusterResAvail.sum(machine.getTotalResAvail());

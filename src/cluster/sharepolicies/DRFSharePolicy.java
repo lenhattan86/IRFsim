@@ -10,6 +10,8 @@ import cluster.simulator.Simulator;
 import cluster.simulator.Main.Globals;
 
 public class DRFSharePolicy extends SharePolicy {
+	
+	private static final boolean DEBUG = true;
 
   Map<Integer, Resources> resDemandsDags = null;
   Resources clusterTotCapacity = null;
@@ -66,7 +68,7 @@ public class DRFSharePolicy extends SharePolicy {
       Resources jobDRFQuota = Resources.clone(resDemandsDags.get(job.dagId));
       jobDRFQuota.multiply(drfShare);
       job.rsrcQuota = jobDRFQuota;
-      // System.out.println("Allocated to job:" + job.dagId + " share:"
+      // Output.debugln(DEBUG,"Allocated to job:" + job.dagId + " share:"
       // + job.rsrcQuota);
     }
   }

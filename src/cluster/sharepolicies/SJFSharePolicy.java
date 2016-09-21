@@ -6,6 +6,8 @@ import cluster.datastructures.StageDag;
 import cluster.simulator.Simulator;
 
 public class SJFSharePolicy extends SharePolicy {
+	
+	private static final boolean DEBUG = true;
 
   public SJFSharePolicy(String policyName) {
     super(policyName);
@@ -38,7 +40,7 @@ public class SJFSharePolicy extends SharePolicy {
       } else {
         job.rsrcQuota = new Resources(0.0);
       }
-      // System.out.println("Allocated to job:" + job.dagId + " share:"
+      // Output.debugln(DEBUG,"Allocated to job:" + job.dagId + " share:"
       // + job.rsrcQuota);
     }
   }

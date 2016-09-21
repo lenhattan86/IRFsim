@@ -13,12 +13,15 @@ import cluster.datastructures.Task;
 import cluster.simulator.Simulator;
 import cluster.simulator.Main.Globals;
 import cluster.utils.Interval;
+import cluster.utils.Output;
 import cluster.utils.Utils;
 
 /**
  * Carbyne scheduling class
  * */
 public class CarbyneSchedPolicy extends SchedPolicy {
+	
+	private static final boolean DEBUG = true;
 
   public CarbyneSchedPolicy(Cluster cluster) {
     super(cluster);
@@ -36,14 +39,14 @@ public class CarbyneSchedPolicy extends SchedPolicy {
       boolean assigned = cluster.assignTask(dag.dagId, task,
           dag.duration(task), dag.rsrcDemands(task));
       if (assigned) {
-        // System.out.println("assigned task: " + task + "; at time:"
+        // Output.debugln(DEBUG,"assigned task: " + task + "; at time:"
         // + Simulator.CURRENT_TIME + " for dag:" + dag.dagId);
 
         // remove the task from the runnable and put it in running
         dag.runningTasks.add(task);
         dag.runnableTasks.remove((Integer) task);
       } else {
-        System.out.println("Task:" + task + " from dag: " + dag.dagId
+        Output.debugln(DEBUG,"Task:" + task + " from dag: " + dag.dagId
             + " cannot be assigned; it should!!!");
         break;
       }
@@ -105,15 +108,15 @@ public class CarbyneSchedPolicy extends SchedPolicy {
 
   void adjustTasksFungibleRsrcs2(StageDag dag, double expComplTime,
       Set<Integer> tasksToStartNow) {
-    //System.out.println("start: adjustTasksFungibleRsrcs2 at time:"+Simulator.CURRENT_TIME +" expComplTime:"+expComplTime);
+    //Output.debugln(DEBUG,"start: adjustTasksFungibleRsrcs2 at time:"+Simulator.CURRENT_TIME +" expComplTime:"+expComplTime);
 
     StageDag adag = StageDag.clone(dag);
     for (int taskId : tasksToStartNow) {
       Resources taskRsrcDem = Resources.clone(dag.rsrcDemands(taskId));
       double taskDuration = dag.duration(taskId);
-      //System.out.println("\ntaskId:"+taskId+" taskDuration:"+taskDuration+" taskRsrcDem:"+taskRsrcDem);
+      //Output.debugln(DEBUG,"\ntaskId:"+taskId+" taskDuration:"+taskDuration+" taskRsrcDem:"+taskRsrcDem);
       for (int i = 2; i < Globals.NUM_DIMENSIONS; i++) {
-        //System.out.println("\nResource current:"+i);
+        //Output.debugln(DEBUG,"\nResource current:"+i);
         int numTries = 0;
         double up = taskRsrcDem.resource(i);
         if (up == 0.0)
@@ -126,19 +129,19 @@ public class CarbyneSchedPolicy extends SchedPolicy {
         double newTaskDuration = 0.0;
         double decr = 0.0;
         while (true) {
-          //System.out.println("UP:"+up+" BOTTOM:"+bottom+" numTries:"+numTries);
+          //Output.debugln(DEBUG,"UP:"+up+" BOTTOM:"+bottom+" numTries:"+numTries);
           if ((up == bottom) || (numTries == 20) || (up == 0)) {
-            //System.out.println("up and bottom are 0 || numTries == 5;");
+            //Output.debugln(DEBUG,"up and bottom are 0 || numTries == 5;");
             break;
           }
 
           decr = Utils.round(((up-bottom) / 2)+bottom, 2);
           if (decr == up) {
-            //System.out.println("decr:"+decr+" up:"+up);
+            //Output.debugln(DEBUG,"decr:"+decr+" up:"+up);
             break;
           }
           numTries++;
-          //System.out.println("DECR:"+decr);
+          //Output.debugln(DEBUG,"DECR:"+decr);
           //decr += 0.01;
           double newTaskResDemI = Utils.round(Math.max(decr, 0.001), 2);
           newTaskDuration = Utils.round(
@@ -152,14 +155,14 @@ public class CarbyneSchedPolicy extends SchedPolicy {
           if (adag.adjustedTaskDemands == null) {
             adag.adjustedTaskDemands = new HashMap<Integer, Task>();
           }
-          //System.out.println("added task adjusted; taskId:"+taskId+" taskDur:"+newTaskDuration+" taskDemands:"+adjustedTaskDemand);
+          //Output.debugln(DEBUG,"added task adjusted; taskId:"+taskId+" taskDur:"+newTaskDuration+" taskDemands:"+adjustedTaskDemand);
           adag.adjustedTaskDemands.put(taskId, new Task(newTaskDuration,
               adjustedTaskDemand));
 
           // schedule the new dag
           DagExecution dagExec = new DagExecution(adag, null);
           dagExec.schedule(true);
-          //System.out.println("dagExec.complTime:"+dagExec.complTime+" expComplTime:"+expComplTime);
+          //Output.debugln(DEBUG,"dagExec.complTime:"+dagExec.complTime+" expComplTime:"+expComplTime);
           if (dagExec.complTime < 0 || dagExec.complTime > ( /*(1+0.15) * */expComplTime )) {
             // go up
             bottom = decr;
@@ -167,14 +170,14 @@ public class CarbyneSchedPolicy extends SchedPolicy {
           } else {
             up = decr;
             if (bestResVal > decr) {
-              //System.out.println("-- dagExec.complTime:"+dagExec.complTime+" expComplTime:"+expComplTime);
+              //Output.debugln(DEBUG,"-- dagExec.complTime:"+dagExec.complTime+" expComplTime:"+expComplTime);
               bestResVal = decr;
               bestDurVal = newTaskDuration;
-              //System.out.println("-- dim:"+i+" bestResVal:"+bestResVal+" bestDurVal:"+bestDurVal);
+              //Output.debugln(DEBUG,"-- dim:"+i+" bestResVal:"+bestResVal+" bestDurVal:"+bestDurVal);
             }
           }
         }
-        //System.out.println("Dim:"+i+" best vals are; resBest:"+bestResVal+" newTaskDur:"+bestDurVal);
+        //Output.debugln(DEBUG,"Dim:"+i+" best vals are; resBest:"+bestResVal+" newTaskDur:"+bestDurVal);
         if (bestResVal < Double.MAX_VALUE) {
           taskRsrcDem.resources[i] = bestResVal;
           taskDuration = bestDurVal;
@@ -187,19 +190,19 @@ public class CarbyneSchedPolicy extends SchedPolicy {
             taskRsrcDem));
       }
     }
-    //System.out.println("end: adjustTasksFungibleRsrcs2; took:"+(System.currentTimeMillis()-start)/1000);
+    //Output.debugln(DEBUG,"end: adjustTasksFungibleRsrcs2; took:"+(System.currentTimeMillis()-start)/1000);
   }
 
   void adjustTasksFungibleRsrcsNew(StageDag dag, double expComplTime,
       Set<Integer> tasksToStartNow) {
-    System.out.println("== adjustTasksFungibleRsrcsNew ==");
+    Output.debugln(DEBUG,"== adjustTasksFungibleRsrcsNew ==");
     StageDag adag = StageDag.clone(dag);
     for (int taskId : tasksToStartNow) {
       Resources taskRsrcDem = dag.rsrcDemands(taskId);
       double taskDuration = dag.duration(taskId);
-      System.out.println("Compute for task:"+taskId+" with taskRsrcDem:"+taskRsrcDem+" and dur:"+taskDuration);
+      Output.debugln(DEBUG,"Compute for task:"+taskId+" with taskRsrcDem:"+taskRsrcDem+" and dur:"+taskDuration);
       for (int i = 2; i < Globals.NUM_DIMENSIONS; i++) {
-        System.out.println("For dimension:"+i);
+        Output.debugln(DEBUG,"For dimension:"+i);
         double smallestBadVal = Double.MIN_VALUE;
         double bestResVal = Double.MIN_VALUE;
         double bestDurVal = Double.MIN_VALUE;
@@ -208,16 +211,16 @@ public class CarbyneSchedPolicy extends SchedPolicy {
         double currDecr = 0.0;
         double factor = 100;
         while (true) {
-          System.out.println("smallestBadVal:"+smallestBadVal+" bestResVal:"+bestResVal+" bestDurVal:"+bestDurVal+" decr:"+decr+" exp:"+exp+" currDec:"+currDecr);
+          Output.debugln(DEBUG,"smallestBadVal:"+smallestBadVal+" bestResVal:"+bestResVal+" bestDurVal:"+bestDurVal+" decr:"+decr+" exp:"+exp+" currDec:"+currDecr);
           currDecr = Math.pow(2, exp) / factor;
           decr += currDecr;
           double newTaskResDem = Utils.round(Math.max(taskRsrcDem.resource(i) - decr, .001), 2);
           if (newTaskResDem == 0) {
-            System.out.println("newTaskResDem is 0");
+            Output.debugln(DEBUG,"newTaskResDem is 0");
             break;
           }
           double newTaskDuration = Utils.round((taskRsrcDem.resource(i) * taskDuration) / newTaskResDem, 2);
-          System.out.println("new decr:"+currDecr+" decr:"+decr+" task new resDemand in dim."+i+" is:"+newTaskResDem+" taskDur old:"+taskDuration+" taskDur new:"+newTaskDuration);
+          Output.debugln(DEBUG,"new decr:"+currDecr+" decr:"+decr+" task new resDemand in dim."+i+" is:"+newTaskResDem+" taskDur old:"+taskDuration+" taskDur new:"+newTaskDuration);
           if (newTaskDuration == 0) {
             break;
           }
@@ -232,19 +235,19 @@ public class CarbyneSchedPolicy extends SchedPolicy {
           DagExecution dagExec = new DagExecution(adag, null);
           dagExec.schedule(true);
           if (dagExec.complTime < 0 || dagExec.complTime > expComplTime) {
-            System.out.println("A. dagExec.complTime:"+dagExec.complTime+" expComplTime:"+expComplTime);
-            System.out.println("decr bef:"+decr+" currDecr:"+currDecr);
+            Output.debugln(DEBUG,"A. dagExec.complTime:"+dagExec.complTime+" expComplTime:"+expComplTime);
+            Output.debugln(DEBUG,"decr bef:"+decr+" currDecr:"+currDecr);
             decr -= currDecr;
-            System.out.println("decr after:"+decr+" currDecr:"+currDecr+" exp:"+exp);
+            Output.debugln(DEBUG,"decr after:"+decr+" currDecr:"+currDecr+" exp:"+exp);
             exp = 0;
-            System.out.println("smallestBadVal:"+smallestBadVal+" decr:"+decr);
+            Output.debugln(DEBUG,"smallestBadVal:"+smallestBadVal+" decr:"+decr);
             if (smallestBadVal == Double.MIN_VALUE) {
               smallestBadVal = decr; 
             }
             else {
               if (smallestBadVal == decr) {
                 // went back to top-> nothing better found
-                System.out.println("FOUND OPTIMAL -> nothing else to do");
+                Output.debugln(DEBUG,"FOUND OPTIMAL -> nothing else to do");
                 break;
               }
             }
@@ -252,22 +255,22 @@ public class CarbyneSchedPolicy extends SchedPolicy {
             //break;
           }
           else {
-            System.out.println("B. dagExec.complTime:"+dagExec.complTime+" expComplTime:"+expComplTime);
-            System.out.println("bestResVal bef:"+bestResVal+" bestDurVal bef:"+bestDurVal);
+            Output.debugln(DEBUG,"B. dagExec.complTime:"+dagExec.complTime+" expComplTime:"+expComplTime);
+            Output.debugln(DEBUG,"bestResVal bef:"+bestResVal+" bestDurVal bef:"+bestDurVal);
             bestResVal = newTaskResDem;
             bestDurVal = newTaskDuration;
-            System.out.println("bestResVal after:"+bestResVal+" bestDurVal after:"+bestDurVal);
+            Output.debugln(DEBUG,"bestResVal after:"+bestResVal+" bestDurVal after:"+bestDurVal);
             //taskRsrcDem.resources[i] = newTaskResDem;
             //taskDuration = newTaskDuration;
             exp++;
-            System.out.println("exp val:"+exp);
+            Output.debugln(DEBUG,"exp val:"+exp);
           }
           
         }
         if (bestResVal != Double.MIN_VALUE) {
           taskRsrcDem.resources[i] = bestResVal;
           taskDuration = bestDurVal;
-          System.out.println("Best val rsrc dem:"+bestResVal+" best val dur:"+taskDuration);
+          Output.debugln(DEBUG,"Best val rsrc dem:"+bestResVal+" best val dur:"+taskDuration);
         }
       }
     }

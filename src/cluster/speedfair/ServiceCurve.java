@@ -3,6 +3,8 @@ package cluster.speedfair;
 import java.util.ArrayList;
 
 import cluster.datastructures.Resources;
+import cluster.simulator.Simulator;
+import cluster.simulator.Main.Globals;
 
 public class ServiceCurve {
 	private ArrayList<Double> slopes= new ArrayList<Double>();
@@ -27,6 +29,7 @@ public class ServiceCurve {
 	}
 	
 	public Resources getMinReqService(double runTime){
+		runTime = runTime + Globals.STEP_TIME;
 		double xDuration = 0;
 		double minVal = 0;
 		for (int iSlope=0; iSlope < this.getNumOfSlopes(); iSlope++) {
@@ -38,7 +41,8 @@ public class ServiceCurve {
 				xDuration += this.curveDurations.get(iSlope);
 			}
 		}
-		Resources minService = new Resources(minVal);
+		// scale up the requirement.
+		Resources minService = Resources.initResources(true, minVal);
 		return minService;
 	}
 	

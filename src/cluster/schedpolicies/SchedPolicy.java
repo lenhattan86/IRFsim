@@ -5,6 +5,8 @@ import cluster.datastructures.Resources;
 import cluster.datastructures.StageDag;
 
 public abstract class SchedPolicy {
+	
+	private static final boolean DEBUG = true;
 
   public Cluster cluster;
 

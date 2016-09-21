@@ -18,10 +18,12 @@ import java.util.TreeMap;
 import cluster.simulator.Simulator;
 import cluster.simulator.Main.Globals;
 import cluster.utils.Interval;
+import cluster.utils.Output;
 import cluster.utils.Randomness;
 
 public class StageDag extends BaseDag {
 
+	private static final boolean DEBUG = true;
   public String dagName;
 
   public Map<String, Stage> stages;
@@ -197,28 +199,27 @@ public class StageDag extends BaseDag {
 
   // view dag methods //
   public void viewDag() {
-    System.out.println("\n == DAG: " + this.dagId + " ==");
+    Output.debugln(DEBUG,"\n == DAG: " + this.dagId + " == arrives at " + this.timeArrival);
 
     for (Stage stage : stages.values()) {
-      System.out.print("Stage: " + stage.id + " "+stage.name+ " [");
-      System.out.print(stage.vDuration + " ");
+      Output.debug(DEBUG,"Stage: " + stage.id + " "+stage.name+ " lasts " +stage.vDuration + " " + " [");
       for (int i = 0; i < Globals.NUM_DIMENSIONS; i++)
-        System.out.print(stage.vDemands.resource(i) + " ");
-      System.out.print("]\n");
+        Output.debug(DEBUG,stage.vDemands.resource(i) + " ");
+      Output.debug(DEBUG,"]\n");
 
-      System.out.print("  Tasks:");
+      Output.debug(DEBUG,"  Tasks:");
       for (int i = stage.vids.begin; i <= stage.vids.end; i++)
-        System.out.print(i + " ");
-      System.out.println();
+        Output.debug(DEBUG,i + " ");
+      Output.debugln(DEBUG);
 
-      System.out.print("  Parents: ");
+      Output.debug(DEBUG,"  Parents: ");
       for (String parent : stage.parents.keySet())
-        System.out.print(parent + ", ");
-      System.out.println();
+        Output.debug(DEBUG, parent + ", ");
+      Output.debugln(DEBUG);
     }
 
-    System.out.println("== CP ==");
-    System.out.println(CPlength);
+    Output.debugln(DEBUG,"== CP ==");
+    Output.debugln(DEBUG,CPlength.toString());
   }
 
   // end print dag //
@@ -229,7 +230,7 @@ public class StageDag extends BaseDag {
 
     Randomness r = new Randomness();
 
-    System.out.println("readDags; num.dags:" + numDags);
+    Output.debugln(DEBUG,"readDags; num.dags:" + numDags);
     Queue<BaseDag> dags = new LinkedList<BaseDag>();
     File file = new File(filePathString);
     assert (file.exists() && !file.isDirectory());
@@ -246,7 +247,7 @@ public class StageDag extends BaseDag {
         if (line.startsWith("#")) {
           dag_name = line.split("#")[1];
           dag_name = dag_name.trim();
-          // System.out.println("DAG name: " + dag_name);
+          // Output.debugln(DEBUG,"DAG name: " + dag_name);
           continue;
         }
 
@@ -383,12 +384,12 @@ public class StageDag extends BaseDag {
       String stage_dst, String comm_pattern) {
 
     if (!stages.containsKey(stage_src) || !stages.containsKey(stage_dst)) {
-      System.out.println("A stage entry for " + stage_src + " or " + stage_dst
+    	Output.debugln(DEBUG, "A stage entry for " + stage_src + " or " + stage_dst
           + " should be already inserted !!!");
       return;
     }
     if (stages.get(stage_src).children.containsKey(stage_dst)) {
-      System.out.println("An edge b/w " + stage_src + " and " + stage_dst
+      Output.debugln(DEBUG,"An edge b/w " + stage_src + " and " + stage_dst
           + " is already present.");
       return;
     }
@@ -435,7 +436,7 @@ public class StageDag extends BaseDag {
     String stageName = this.vertexToStage.get(taskId);
 
     List<Interval> children = this.getChildren(taskId);
-    // System.out.println("Children: "+children);
+    // Output.debugln(DEBUG,"Children: "+children);
     if (children.size() == 0) {
       maxChildCP = 0;
     } else {
