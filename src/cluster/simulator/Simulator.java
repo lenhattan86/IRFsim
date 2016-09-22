@@ -24,9 +24,7 @@ import cluster.schedulers.IntraJobScheduler;
 import cluster.simulator.Main.Globals;
 import cluster.simulator.Main.Globals.JobsArrivalPolicy;
 import cluster.utils.Output;
-import cluster.utils.Pair;
 import cluster.utils.Randomness;
-import cluster.utils.Triple;
 import cluster.utils.Utils;
 
 // implement the timeline server
@@ -57,11 +55,38 @@ public class Simulator {
 
 	// dag_id -> list of tasks
 	public static Map<Integer, Set<Integer>> tasksToStartNow;
+	
+	public static void duplicateJob(Queue<BaseDag> dags, int dagId){
+		StageDag dag = null;
+		for (BaseDag d :dags){
+			if (d.dagId==dagId) {
+				dag = (StageDag) d;
+				break;
+			}
+		}
+		
+		if (dag==null) return;
+		
+		int newDagId = dags.size();
+		try {
+			StageDag newDag = (StageDag) dag.clone();
+			newDag.dagId = newDagId;
+			newDag.dagName = ""+newDagId;
+			dags.add(newDag);
+			Simulator.QUEUE_LIST.addRunnableJob2Queue(newDag, newDag.getQueueName());
+		} catch (CloneNotSupportedException e) {
+			e.printStackTrace();
+		}
+	}
 
 	public Simulator() {
 		
 		runnableJobs = StageDag.readDags(Globals.PathToInputFile, Globals.DagIdStart,
 				Globals.DagIdEnd - Globals.DagIdStart + 1);
+		
+//		for (int i=0; i<1; i++)
+//			Simulator.duplicateJob(runnableJobs, 1);
+		
 		Output.debugln(DEBUG, "Print DAGs");
 		for (BaseDag dag : runnableJobs) {
 			((StageDag) dag).viewDag();
@@ -119,7 +144,7 @@ public class Simulator {
 	}
 
 	public void simulate() {
-
+		Output.writeln("name, resource", false, Globals.PathToResourceLog);
 		for (Simulator.CURRENT_TIME = 0; Simulator.CURRENT_TIME < Globals.SIM_END_TIME; Simulator.CURRENT_TIME += Globals.STEP_TIME) {
 			if (!Globals.DEBUG_ALL && !Globals.DEBUG_LOCAL)
 				System.out.print(".");
@@ -166,7 +191,25 @@ public class Simulator {
 					interJobSched.adjustShares();
 
 					// do intra-job scheduling for every running job
-					if (Globals.INTRA_JOB_POLICY == Globals.SchedulingPolicy.SpeedFair) {
+					if (Globals.INTRA_JOB_POLICY == Globals.SchedulingPolicy.Yarn) {
+						// if still available resources, go one job at a time and fill if
+						// something. can be scheduled more
+						Output.debugln(DEBUG,
+								"[Simulator]: START work conserving; clusterAvail:" + Simulator.cluster.getClusterResAvail());
+
+						List<Integer> orderedJobs = interJobSched.orderedListOfJobsBasedOnPolicy();
+						for (int jobId : orderedJobs) {
+							for (BaseDag dag : runningJobs) {
+								if (dag.dagId == jobId) {
+									Resources totalResShare = Resources.clone(dag.rsrcQuota);
+//									dag.rsrcQuota = Resources.clone(cluster.getClusterResAvail());
+									intraJobSched.schedule((StageDag) dag);
+									dag.rsrcQuota = totalResShare;
+									break;
+								}
+							}
+						}
+					} else if (Globals.INTRA_JOB_POLICY == Globals.SchedulingPolicy.SpeedFair) { //TODO: this one does not work well.
 
 						// if still available resources, go one job at a time and fill if
 						// something. can be scheduled more
@@ -178,7 +221,7 @@ public class Simulator {
 							for (BaseDag dag : runningJobs) {
 								if (dag.dagId == jobId) {
 									Resources totalResShare = Resources.clone(dag.rsrcQuota);
-									dag.rsrcQuota = Resources.clone(cluster.getClusterResAvail());
+									dag.rsrcQuota = Resources.clone(cluster.getClusterResAvail()); //TODO:
 									intraJobSched.schedule((StageDag) dag);
 									dag.rsrcQuota = totalResShare;
 									break;
@@ -202,7 +245,7 @@ public class Simulator {
 							for (BaseDag dag : runningJobs) {
 								if (dag.dagId == jobId) {
 									Resources totalResShare = Resources.clone(dag.rsrcQuota);
-									dag.rsrcQuota = Resources.clone(cluster.getClusterResAvail());
+									dag.rsrcQuota = Resources.clone(cluster.getClusterResAvail()); //TODO: why?
 									intraJobSched.schedule((StageDag) dag);
 									dag.rsrcQuota = totalResShare;
 									break;
@@ -286,20 +329,15 @@ public class Simulator {
 			Output.writeln(dag.dagId + "," + dag.jobStartTime + "," + dag.jobEndTime + "," + dagDuration+ "," + dag.getQueueName());
 		}
 		average /= completedJobs.size();
-		System.out.println("---------------------");
-		System.out.println("Avg. job compl. time:" + average);
-		System.out.println("Makespan:" + makespan);
-		for (Integer dagId : results.keySet()) {
-			System.out.println(dagId + " " + results.get(dagId));
-		}
-		System.out.println("NUM_OPT:" + Globals.NUM_OPT + " NUM_PES:" + Globals.NUM_PES);
 	}
 
 	public static void printUsedResources() {
+		Output.writeln("available resource, " + cluster.getClusterResAvail().resource(0), true, Globals.PathToResourceLog);
 		for (BaseDag dag : runningJobs) {
 			Output.debugln(DEBUG, "Dag Id " + dag.dagId + " -- dag.rsrcInUse: " + dag.rsrcInUse);
+//			Output.writeln(dag.dagId + ", " + dag.rsrcInUse, true, Globals.PathToResourceLog);
 			Output.debugln(DEBUG, "Dag Id " + dag.dagId + " -- Resource Share: " + dag.rsrcQuota);
-			Resources minReq = dag.serviceCurve.getMinReqService(Simulator.CURRENT_TIME);
+			Resources minReq = dag.serviceCurve.getMinReqService(Simulator.CURRENT_TIME-dag.jobStartTime);
 			boolean isSatisfied = dag.serviceCurve.isSatisfied(dag.receivedService, Simulator.CURRENT_TIME);
 			if (!isSatisfied)
 				Output.debugln(DEBUG,
@@ -381,6 +419,8 @@ public class Simulator {
 			while (!runnableJobs.isEmpty()) {
 				BaseDag newJob = runnableJobs.poll();
 				newJob.jobStartTime = Simulator.CURRENT_TIME;
+				newJob.jobStartRunningTime = newJob.jobStartTime;
+				
 				runningJobs.add(newJob);
 				Output.debugln(DEBUG, "Started job:" + newJob.dagId + " at time:" + Simulator.CURRENT_TIME);
 			}
@@ -389,6 +429,8 @@ public class Simulator {
 			if (Simulator.runningJobs.isEmpty()) {
 				BaseDag newJob = runnableJobs.poll();
 				newJob.jobStartTime = Simulator.CURRENT_TIME;
+				newJob.jobStartRunningTime = newJob.jobStartTime;
+				
 				runningJobs.add(newJob);
 				runnableJobs.remove(newJob);
 				Output.debugln(DEBUG, "Started job:" + newJob.dagId + " at time:" + Simulator.CURRENT_TIME);
@@ -402,6 +444,7 @@ public class Simulator {
 				BaseDag newJob = runnableJobs.poll();
 				assert newJob != null;
 				newJob.jobStartTime = Simulator.CURRENT_TIME;
+				newJob.jobStartRunningTime = newJob.jobStartTime;
 
 				runningJobs.add(newJob);
 				nextTimeToLaunchJob = Utils.round(Math.max(Math.ceil(r.GetNormalSample(20, 5)), 2), 0);
@@ -414,6 +457,7 @@ public class Simulator {
 			for (BaseDag dag : runnableJobs) {
 				if (dag.timeArrival == Simulator.CURRENT_TIME) {
 					dag.jobStartTime = Simulator.CURRENT_TIME;
+					dag.jobStartRunningTime = dag.jobStartTime;
 					newlyStartedJobs.add(dag);
 					Output.debugln(DEBUG, "Started job:" + dag.dagId + " at time:" + Simulator.CURRENT_TIME);
 				}

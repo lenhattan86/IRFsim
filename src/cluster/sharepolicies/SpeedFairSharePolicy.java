@@ -36,7 +36,8 @@ public class SpeedFairSharePolicy extends SharePolicy {
 		// assign the resources based on service curves.
 		Queue<BaseDag> unhappyRunningJobs = new LinkedList<BaseDag>();
 		for (BaseDag job : Simulator.runningJobs) {
-			Resources guaranteedResource = job.serviceCurve.getMinReqService(Simulator.CURRENT_TIME);
+			//TODO: change job.jobStartTime to job.jobStartRunningTime (dynamic for each job).
+			Resources guaranteedResource = job.serviceCurve.getMinReqService(Simulator.CURRENT_TIME-job.jobStartTime); 
 			Resources resToBeShared = Resources.subtractNonZero(guaranteedResource, job.receivedService);
 			boolean fit = clusterResQuotaAvail.greater(resToBeShared);
 			if (fit) {

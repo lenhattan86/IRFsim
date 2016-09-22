@@ -9,6 +9,7 @@ import cluster.schedpolicies.RandomSchedPolicy;
 import cluster.schedpolicies.SchedPolicy;
 import cluster.schedpolicies.SpeedFairSchedPolicy;
 import cluster.schedpolicies.TetrisSchedPolicy;
+import cluster.schedpolicies.YarnSchedPolicy;
 import cluster.simulator.Simulator;
 import cluster.simulator.Main.Globals;
 
@@ -42,6 +43,9 @@ public class IntraJobScheduler {
       resSchedPolicy = new CarbyneSchedPolicy(Simulator.cluster);
     case SpeedFair:
       resSchedPolicy = new SpeedFairSchedPolicy(Simulator.cluster);  
+      break;
+    case Yarn:
+      resSchedPolicy = new YarnSchedPolicy(Simulator.cluster);  
       break;
     default:
       System.err.println("Unknown sharing policy");

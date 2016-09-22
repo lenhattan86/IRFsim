@@ -22,10 +22,10 @@ public class Main {
     public static RunMode runmode = RunMode.Tan;
     
     public static boolean DEBUG_ALL = false;
-    public static boolean DEBUG_LOCAL = true;
+    public static boolean DEBUG_LOCAL = false;
 
     public static enum SchedulingPolicy {
-      Random, BFS, CP, Tetris, Carbyne, SpeedFair
+      Random, BFS, CP, Tetris, Carbyne, SpeedFair, Yarn
     };
 
     public static SchedulingPolicy INTRA_JOB_POLICY = SchedulingPolicy.CP;
@@ -72,9 +72,56 @@ public class Main {
     public static String FileInput = "dags-input.txt";
     public static String FileOutput = "dags-output.txt";
     public static String PathToInputFile = DataFolder + "/" + FileInput;
+    public static String PathToOutputFile = "";
+    public static String PathToResourceLog = "";
 
     static {
       switch (runmode) {
+      case Tan:
+      DagIdStart = 0;
+      DagIdEnd = 1;
+        
+//    	String TEST_CASE = "DRF";
+    	String TEST_CASE = "SpeedFair";
+      DataFolder = "input";
+      String outputFolder = "output";
+      FileInput = "dags-input-multiple-interactives.txt";
+      
+      PathToInputFile = DataFolder + "/" + FileInput;
+      
+      int numOfInteractiveJobs = DagIdEnd-DagIdStart;
+      int numOfbatchjobs = 1;
+      int numOfQueues = numOfInteractiveJobs+numOfbatchjobs;
+      
+      if (TEST_CASE.equals("DRF")) {
+		    INTER_JOB_POLICY = SharingPolicy.DRF;
+		    INTRA_JOB_POLICY = SchedulingPolicy.Yarn;
+		    FileOutput = "DRF-output"+numOfInteractiveJobs+"_"+numOfbatchjobs+"_"+numOfQueues+".csv";
+      } else if(TEST_CASE.equals("SpeedFair")) {
+		    INTER_JOB_POLICY = SharingPolicy.SpeedFair;
+		    INTRA_JOB_POLICY = SchedulingPolicy.Yarn;
+		    FileOutput = "SpeedFair-output"+numOfInteractiveJobs+"_"+numOfbatchjobs+"_"+numOfQueues+".csv";
+      }
+      PathToOutputFile = outputFolder + "/" + FileOutput;
+      PathToResourceLog = "log" +"/" + FileOutput;
+
+      SIM_END_TIME = 50;
+      STEP_TIME = 1;
+      
+      NUM_MACHINES = 1;
+      NUM_DIMENSIONS = 2;
+      MACHINE_MAX_RESOURCE = 100;
+
+      ADJUST_FUNGIBLE = false;
+//      JOBS_ARRIVAL_POLICY = JobsArrivalPolicy.All;
+      JOBS_ARRIVAL_POLICY = JobsArrivalPolicy.Trace;
+
+      // sensitivity
+      LEVEL_OF_OPTIMISM = 1.0;
+      TETRIS_UNIVERSAL = false;
+      COMPUTE_STATISTICS = false;
+      ERROR = 0.0;
+      break;
       case Robert:
         String root = "/u/r/g/rgrandl/School/research/"
             + "bottleneck-agnostic-scheduling/workload";
@@ -129,39 +176,7 @@ public class Main {
         INTER_JOB_POLICY = SharingPolicy.Fair;
         INTRA_JOB_POLICY = SchedulingPolicy.Carbyne;
         break;
-    case Tan:
-      DataFolder = "input";
-      FileInput = "dags-input-ser-curve.txt";
-//      FileInput = "dags-input.txt";
-      FileOutput = "dags-output.csv";
-      PathToInputFile = DataFolder + "/" + FileInput;
 
-      SIM_END_TIME = 10;
-      STEP_TIME = 1;
-
-      NUM_MACHINES = 1;
-      NUM_DIMENSIONS = 2;
-      MACHINE_MAX_RESOURCE = 32;
-
-      ADJUST_FUNGIBLE = false;
-//      JOBS_ARRIVAL_POLICY = JobsArrivalPolicy.All;
-      JOBS_ARRIVAL_POLICY = JobsArrivalPolicy.Trace;
-
-      DagIdStart = 0;
-      DagIdEnd = 1;
-      
-//      INTER_JOB_POLICY = SharingPolicy.Fair;
-//      INTRA_JOB_POLICY = SchedulingPolicy.BFS;
-      
-      INTER_JOB_POLICY = SharingPolicy.SpeedFair;
-      INTRA_JOB_POLICY = SchedulingPolicy.SpeedFair;
-
-      // sensitivity
-      LEVEL_OF_OPTIMISM = 1.0;
-      TETRIS_UNIVERSAL = false;
-      COMPUTE_STATISTICS = false;
-      ERROR = 0.0;
-      break;
       case CommandLine:
         break;
       case GenerateTrace:

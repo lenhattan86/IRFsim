@@ -8,7 +8,7 @@ import java.util.Set;
 import cluster.speedfair.ServiceCurve;
 import cluster.utils.Interval;
 
-public abstract class BaseDag {
+public abstract class BaseDag implements Cloneable{
 	
 	private static final boolean DEBUG = true;
 	
@@ -58,7 +58,8 @@ public abstract class BaseDag {
 
   public LinkedHashSet<Integer> launchedTasksNow;
 
-  public double jobStartTime, jobEndTime; // real start-time & end-time of serving a job
+  public double jobStartTime, jobEndTime; // start-time & end-time of serving a job
+  public double jobStartRunningTime; // when the job is allocated resources.
   public double jobExpDur; // real completion time of the job.
 
   // keep track remaining time from current time given some share
@@ -90,4 +91,6 @@ public abstract class BaseDag {
   public double getCompletionTime(){
   	return this.jobEndTime - this.jobStartTime;
   }
+  
+//  public Object BaseDag clone();
 }

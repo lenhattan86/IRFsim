@@ -6,10 +6,22 @@ import java.io.IOException;
 import cluster.simulator.Main.Globals;
 
 public class Output {
+	
+	public static void writeln(String toWrite, boolean append, String filePath){
+		toWrite=toWrite + "\n";
+		try {
+			FileWriter file = new FileWriter(filePath, append);
+			file.write(toWrite.toCharArray(), 0, toWrite.length());
+			file.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
 	public static void writeln(String toWrite, boolean append){
 		toWrite=toWrite + "\n";
 		try {
-			FileWriter file = new FileWriter(Globals.FileOutput, append);
+			FileWriter file = new FileWriter(Globals.PathToOutputFile, append);
 			file.write(toWrite.toCharArray(), 0, toWrite.length());
 			file.close();
 		} catch (IOException e) {
@@ -20,7 +32,7 @@ public class Output {
 	public static void writeln(String toWrite){
 		toWrite=toWrite + "\n";
 		try {
-			FileWriter file = new FileWriter(Globals.FileOutput, true);
+			FileWriter file = new FileWriter(Globals.PathToOutputFile, true);
 			file.write(toWrite.toCharArray(), 0, toWrite.length());
 			file.close();
 		} catch (IOException e) {
@@ -30,7 +42,7 @@ public class Output {
 	
 	public static void write(String toWrite){
 		try {
-			FileWriter file = new FileWriter(Globals.FileOutput, true);
+			FileWriter file = new FileWriter(Globals.PathToOutputFile, true);
 			file.write(toWrite.toCharArray(), 0, toWrite.length());
 			file.close();
 		} catch (IOException e) {

@@ -1,0 +1,8 @@
+JobId, startTime, endTime, duration, queueName
+4,0.0,2.0,2.0,interactive
+6,0.0,7.0,7.0,interactive
+3,0.0,7.0,7.0,interactive
+1,0.0,7.0,7.0,interactive
+2,0.0,7.0,7.0,interactive
+5,0.0,7.0,7.0,interactive
+0,0.0,15.0,15.0,batch

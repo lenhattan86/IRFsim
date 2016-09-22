@@ -27,9 +27,10 @@ public class JobQueueList {
 	
 	public JobQueue addJobQueue(String queueName){
 		JobQueue queue = getJobQueue(queueName);
-		if (queue==null)
+		if (queue==null){
 			queue = new JobQueue(queueName);
-		jobQueues.add(queue);
+			jobQueues.add(queue);
+		}
 		return queue;
 	}
 

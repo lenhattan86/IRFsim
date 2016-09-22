@@ -21,7 +21,7 @@ import cluster.utils.Interval;
 import cluster.utils.Output;
 import cluster.utils.Randomness;
 
-public class StageDag extends BaseDag {
+public class StageDag extends BaseDag implements Cloneable{
 
 	private static final boolean DEBUG = true;
   public String dagName;
@@ -229,7 +229,6 @@ public class StageDag extends BaseDag {
       int numDags) {
 
     Randomness r = new Randomness();
-
     Output.debugln(DEBUG,"readDags; num.dags:" + numDags);
     Queue<BaseDag> dags = new LinkedList<BaseDag>();
     File file = new File(filePathString);
@@ -872,5 +871,9 @@ public class StageDag extends BaseDag {
       }
       descendants.put(i, d);
     }
+  }
+  
+  public Object clone() throws CloneNotSupportedException{
+  	return super.clone();
   }
 }

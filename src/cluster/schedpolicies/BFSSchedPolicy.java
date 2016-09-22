@@ -56,6 +56,8 @@ public class BFSSchedPolicy extends SchedPolicy {
         iter.remove();
         dag.runnableTasks.remove(taskId);
       }
+      
+      //TODO: double check ==> need to add launchedTasksNow
     }
   }
 
