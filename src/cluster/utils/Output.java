@@ -6,7 +6,7 @@ import java.io.IOException;
 import cluster.simulator.Main.Globals;
 
 public class Output {
-	public static void write(String toWrite, boolean append){
+	public static void writeln(String toWrite, boolean append){
 		toWrite=toWrite + "\n";
 		try {
 			FileWriter file = new FileWriter(Globals.FileOutput, append);

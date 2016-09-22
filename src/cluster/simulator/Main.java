@@ -133,15 +133,15 @@ public class Main {
       DataFolder = "input";
       FileInput = "dags-input-ser-curve.txt";
 //      FileInput = "dags-input.txt";
-      FileOutput = "dags-output.txt";
+      FileOutput = "dags-output.csv";
       PathToInputFile = DataFolder + "/" + FileInput;
 
       SIM_END_TIME = 10;
       STEP_TIME = 1;
 
-      NUM_MACHINES = 4;
+      NUM_MACHINES = 1;
       NUM_DIMENSIONS = 2;
-      MACHINE_MAX_RESOURCE = 4;
+      MACHINE_MAX_RESOURCE = 32;
 
       ADJUST_FUNGIBLE = false;
 //      JOBS_ARRIVAL_POLICY = JobsArrivalPolicy.All;
@@ -149,9 +149,11 @@ public class Main {
 
       DagIdStart = 0;
       DagIdEnd = 1;
-
-      INTER_JOB_POLICY = SharingPolicy.SpeedFair;
+      
 //      INTER_JOB_POLICY = SharingPolicy.Fair;
+//      INTRA_JOB_POLICY = SchedulingPolicy.BFS;
+      
+      INTER_JOB_POLICY = SharingPolicy.SpeedFair;
       INTRA_JOB_POLICY = SchedulingPolicy.SpeedFair;
 
       // sensitivity

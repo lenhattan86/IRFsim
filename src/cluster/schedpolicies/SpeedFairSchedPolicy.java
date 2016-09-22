@@ -52,7 +52,7 @@ public class SpeedFairSchedPolicy extends SchedPolicy {
 			if (assigned) {
 				// remove the task from runnable and put it in running
 				dag.runningTasks.add(taskId);
-				dag.launchedTasksNow.add(taskId);
+//				dag.launchedTasksNow.add(taskId);
 				iter.remove();
 				dag.runnableTasks.remove(taskId);
 			}

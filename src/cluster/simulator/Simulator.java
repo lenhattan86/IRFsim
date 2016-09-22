@@ -1,5 +1,6 @@
 package cluster.simulator;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -12,6 +13,8 @@ import java.util.TreeMap;
 
 import cluster.cluster.Cluster;
 import cluster.datastructures.BaseDag;
+import cluster.datastructures.JobQueue;
+import cluster.datastructures.JobQueueList;
 import cluster.datastructures.Resources;
 import cluster.datastructures.Stage;
 import cluster.datastructures.StageDag;
@@ -36,6 +39,8 @@ public class Simulator {
 	public static Queue<BaseDag> runnableJobs;
 	public static Queue<BaseDag> runningJobs;
 	public static Queue<BaseDag> completedJobs;
+	
+	public static JobQueueList QUEUE_LIST = new JobQueueList();
 
 	public static Cluster cluster;
 
@@ -54,6 +59,7 @@ public class Simulator {
 	public static Map<Integer, Set<Integer>> tasksToStartNow;
 
 	public Simulator() {
+		
 		runnableJobs = StageDag.readDags(Globals.PathToInputFile, Globals.DagIdStart,
 				Globals.DagIdEnd - Globals.DagIdStart + 1);
 		Output.debugln(DEBUG, "Print DAGs");
@@ -130,45 +136,28 @@ public class Simulator {
 			// update jobs status with newly finished tasks
 			boolean jobCompleted = updateJobsStatus(finishedTasks);
 
-			// stop condition
+			// STOP condition
 			if (stop()) {
-				Output.debugln(DEBUG, "==== Final Report: Completed Jobs ====");
-				TreeMap<Integer, Double> results = new TreeMap<Integer, Double>();
-				double makespan = Double.MIN_VALUE;
-				double average = 0.0;
-				for (BaseDag dag : completedJobs) {
-					double jobDur = (dag.jobEndTime - dag.jobStartTime);
-					// Output.debugln(DEBUG,"Dag:" + dag.dagId + " compl. time:"
-					// + (dag.jobEndTime - dag.jobStartTime));
-					double dagDuration = (dag.jobEndTime - dag.jobStartTime);
-					makespan = Math.max(makespan, dagDuration);
-					average += dagDuration;
-					results.put(dag.dagId, (dag.jobEndTime - dag.jobStartTime));
-				}
-				average /= completedJobs.size();
-				Output.debugln(DEBUG, "---------------------");
-				Output.debugln(DEBUG, "Avg. job compl. time:" + average);
-				Output.debugln(DEBUG, "Makespan:" + makespan);
-				for (Integer dagId : results.keySet()) {
-					Output.debugln(DEBUG, dagId + " " + results.get(dagId));
-				}
-				Output.debugln(DEBUG, "NUM_OPT:" + Globals.NUM_OPT + " NUM_PES:" + Globals.NUM_PES);
+				printReport();
+				writeReport();
+				// EXIT the loop
 				break;
 			}
 
 			// handle jobs completion and arrivals
 			boolean newJobArrivals = handleNewJobArrival();
 
-			if (!jobCompleted && !newJobArrivals && finishedTasks.isEmpty()) {
-				// if (finishedTasks.isEmpty()) {
+			if (!jobCompleted && !newJobArrivals && finishedTasks.isEmpty()
+					&& Globals.INTER_JOB_POLICY != Globals.SharingPolicy.SpeedFair)
 				Output.debugln(DEBUG, "----- Do nothing ----");
-			} else {
+			else {
+				
 				if (Globals.TETRIS_UNIVERSAL) {
 					interJobSched.resSharePolicy.packTasks();
 				} else {
 					Output.debugln(DEBUG, "[Simulator]: jobCompleted:" + jobCompleted + " newJobArrivals:" + newJobArrivals);
 					if (jobCompleted || newJobArrivals) {
-						interJobSched.schedule();
+						interJobSched.schedule(); // TODO: add preemption
 					}
 
 					Output.debugln(DEBUG, "Running jobs size:" + runningJobs.size());
@@ -184,26 +173,18 @@ public class Simulator {
 						Output.debugln(DEBUG,
 								"[Simulator]: START work conserving; clusterAvail:" + Simulator.cluster.getClusterResAvail());
 
-						// while things can happen, give total resources to a job at a time,
-						// the order is dictated by the inter job scheduler:
-						// Shortest JobFirst - for SJF
-						// RR - for Fair and DRF
 						List<Integer> orderedJobs = interJobSched.orderedListOfJobsBasedOnPolicy();
 						for (int jobId : orderedJobs) {
 							for (BaseDag dag : runningJobs) {
 								if (dag.dagId == jobId) {
 									Resources totalResShare = Resources.clone(dag.rsrcQuota);
-									// dag.rsrcQuota =
-									// Resources.clone(cluster.getClusterResAvail());
+									dag.rsrcQuota = Resources.clone(cluster.getClusterResAvail());
 									intraJobSched.schedule((StageDag) dag);
 									dag.rsrcQuota = totalResShare;
 									break;
 								}
 							}
 						}
-
-						Output.debugln(DEBUG,
-								"[Simulator]: END work conserving; clusterAvail:" + Simulator.cluster.getClusterResAvail());
 
 					} else if (Globals.INTRA_JOB_POLICY != Globals.SchedulingPolicy.Carbyne) {
 
@@ -228,9 +209,6 @@ public class Simulator {
 								}
 							}
 						}
-
-						Output.debugln(DEBUG,
-								"[Simulator]: END work conserving; clusterAvail:" + Simulator.cluster.getClusterResAvail());
 
 					} else {
 						// compute if any tasks should be scheduled based on reverse
@@ -259,23 +237,74 @@ public class Simulator {
 
 			Simulator.printUsedResources();
 
+			Output.debugln(DEBUG, "[Simulator]: END work conserving; clusterAvail:" + Simulator.cluster.getClusterResAvail());
+
 			Output.debugln(DEBUG, "\n==== END STEP_TIME:" + Simulator.CURRENT_TIME + " ====\n");
 		}
 	}
 
+	private void printReport() {
+		System.out.println("==== Final Report: Completed Jobs ====");
+		TreeMap<Integer, Double> results = new TreeMap<Integer, Double>();
+		double makespan = Double.MIN_VALUE;
+		double average = 0.0;
+		ArrayList<Double> avgCompletionTimePerQueue = new ArrayList<Double>(); 
+		for (BaseDag dag : completedJobs) {
+			double jobDur = (dag.jobEndTime - dag.jobStartTime);
+			// System.out.println("Dag:" + dag.dagId + " compl. time:"
+			// + (dag.jobEndTime - dag.jobStartTime));
+			double dagDuration = (dag.jobEndTime - dag.jobStartTime);
+			makespan = Math.max(makespan, dagDuration);
+			average += dagDuration;
+			results.put(dag.dagId, (dag.jobEndTime - dag.jobStartTime));
+		}
+		average /= completedJobs.size();
+		System.out.println("---------------------");
+		System.out.println("Avg. job compl. time:" + average);
+		System.out.println("Makespan:" + makespan);
+		for (Integer dagId : results.keySet()) {
+			System.out.println(dagId + " " + results.get(dagId));
+		}
+		System.out.println("---------------------");
+		for (JobQueue queue: QUEUE_LIST.getJobQueues()) {
+			System.out.println("Queue " + queue.getQueueName() + "'s job compl. time: " + queue.avgCompletionTime());
+		}
+		System.out.println("NUM_OPT:" + Globals.NUM_OPT + " NUM_PES:" + Globals.NUM_PES);
+	}
+
+	private void writeReport() {
+		Output.writeln("JobId, startTime, endTime, duration, queueName", false);
+		System.out.println("==== Final Report: Completed Jobs ====");
+		TreeMap<Integer, Double> results = new TreeMap<Integer, Double>();
+		double makespan = Double.MIN_VALUE;
+		double average = 0.0;
+		for (BaseDag dag : completedJobs) {
+			double dagDuration = (dag.jobEndTime - dag.jobStartTime);
+			makespan = Math.max(makespan, dagDuration);
+			average += dagDuration;
+			results.put(dag.dagId, dagDuration);
+			Output.writeln(dag.dagId + "," + dag.jobStartTime + "," + dag.jobEndTime + "," + dagDuration+ "," + dag.getQueueName());
+		}
+		average /= completedJobs.size();
+		System.out.println("---------------------");
+		System.out.println("Avg. job compl. time:" + average);
+		System.out.println("Makespan:" + makespan);
+		for (Integer dagId : results.keySet()) {
+			System.out.println(dagId + " " + results.get(dagId));
+		}
+		System.out.println("NUM_OPT:" + Globals.NUM_OPT + " NUM_PES:" + Globals.NUM_PES);
+	}
+
 	public static void printUsedResources() {
 		for (BaseDag dag : runningJobs) {
-			// Output.debugln(DEBUG, "Dag Id " + dag.dagId + " -- dag.rsrcInUse: " +
-			// dag.rsrcInUse + " -- dag.currResDemand(): "
-			// + dag.currResDemand());
-			// Output.debugln(DEBUG, "Dag Id " + dag.dagId + " -- Resource Share: " +
-			// dag.rsrcQuota);
+			Output.debugln(DEBUG, "Dag Id " + dag.dagId + " -- dag.rsrcInUse: " + dag.rsrcInUse);
+			Output.debugln(DEBUG, "Dag Id " + dag.dagId + " -- Resource Share: " + dag.rsrcQuota);
 			Resources minReq = dag.serviceCurve.getMinReqService(Simulator.CURRENT_TIME);
-			boolean isSatisfied = dag.receivedService.greaterOrEqual(minReq);
-			Output.debugln(DEBUG, "Dag Id " + dag.dagId + " " + (isSatisfied ? "is SATISFIED " : " is NOT satified")
-					+ " -- Received Resource: " + dag.receivedService);
-			Output.debugln(DEBUG, "Dag Id " + dag.dagId + " -- Received Resource: " + dag.receivedService);
-			Output.debugln(DEBUG, "Dag Id " + dag.dagId + " -- Service Curve: " + minReq);
+			boolean isSatisfied = dag.serviceCurve.isSatisfied(dag.receivedService, Simulator.CURRENT_TIME);
+			if (!isSatisfied)
+				Output.debugln(DEBUG,
+						"Dag Id " + dag.dagId + " " + " is NOT satified" + " -- Received : " + dag.receivedService);
+			Output.debugln(DEBUG, "Dag Id " + dag.dagId + " -- Received: " + dag.receivedService + " -- S.Curve: " + minReq);
 		}
 	}
 
@@ -295,6 +324,34 @@ public class Simulator {
 
 				Output.debugln(DEBUG, "DAG:" + crdag.dagId + ": " + finishedTasks.get(crdag.dagId).size()
 						+ " tasks finished at time:" + Simulator.CURRENT_TIME);
+				boolean thisDagFinished = ((StageDag) crdag).finishTasks(finishedTasks.get(crdag.dagId), false);
+
+				if (thisDagFinished) {
+					Output.debugln(DEBUG, "DAG:" + crdag.dagId + " finished at time:" + Simulator.CURRENT_TIME);
+					nextTimeToLaunchJob = Simulator.CURRENT_TIME;
+					completedJobs.add(crdag);
+
+					iter.remove();
+					someDagFinished = true;
+				}
+			}
+		}
+		return someDagFinished; // return true if one of the runnind jobs are
+														// finished.
+	}
+
+	boolean updateJobsStatus_prev(Map<Integer, List<Integer>> finishedTasks) {
+		boolean someDagFinished = false;
+		if (!finishedTasks.isEmpty()) {
+			Iterator<BaseDag> iter = runningJobs.iterator();
+			while (iter.hasNext()) {
+				BaseDag crdag = iter.next();
+				if (finishedTasks.get(crdag.dagId) == null) {
+					continue;
+				}
+
+				Output.debugln(DEBUG, "DAG:" + crdag.dagId + ": " + finishedTasks.get(crdag.dagId).size()
+						+ " tasks finished at time:" + Simulator.CURRENT_TIME);
 				someDagFinished = ((StageDag) crdag).finishTasks(finishedTasks.get(crdag.dagId), false);
 
 				if (someDagFinished) {
@@ -303,10 +360,11 @@ public class Simulator {
 					completedJobs.add(crdag);
 
 					iter.remove();
+					someDagFinished = true;
 				}
 			}
 		}
-		return someDagFinished;
+		return someDagFinished; // return true if all running jobs are finished.
 	}
 
 	boolean handleNewJobArrival() {

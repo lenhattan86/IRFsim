@@ -4,9 +4,11 @@ import java.util.ArrayList;
 
 import cluster.datastructures.Resources;
 import cluster.simulator.Simulator;
+import cluster.utils.Output;
 import cluster.simulator.Main.Globals;
 
 public class ServiceCurve {
+	private final boolean DEBUG = true;
 	private ArrayList<Double> slopes= new ArrayList<Double>();
 	private ArrayList<Double> curveDurations= new ArrayList<Double>();
 	
@@ -32,17 +34,26 @@ public class ServiceCurve {
 		runTime = runTime + Globals.STEP_TIME;
 		double xDuration = 0;
 		double minVal = 0;
+		int slopeIdx = 0;
 		for (int iSlope=0; iSlope < this.getNumOfSlopes(); iSlope++) {
-			if(runTime >= xDuration){
-				minVal +=  (runTime-xDuration)*this.slopes.get(iSlope);
+			double prevDuration = xDuration;
+			xDuration += this.curveDurations.get(iSlope);
+			if(runTime <= xDuration && runTime >prevDuration){
+				slopeIdx = iSlope; 
 				break;
-			} else {
-				minVal +=  xDuration*this.slopes.get(iSlope);
-				xDuration += this.curveDurations.get(iSlope);
 			}
 		}
+		
+		xDuration = 0;
+		for (int iSlope=0; iSlope < slopeIdx; iSlope++) {
+			xDuration += this.curveDurations.get(iSlope);
+			minVal += this.slopes.get(iSlope)*xDuration;
+		}
+		minVal += (runTime-xDuration)*this.slopes.get(slopeIdx);
+		
+//		Output.debugln(DEBUG, " Service Curve at " +runTime+ " is " + minVal);
 		// scale up the requirement.
-		Resources minService = Resources.initResources(true, minVal);
+		Resources minService = Resources.initResources(false, minVal);
 		return minService;
 	}
 	
@@ -52,5 +63,12 @@ public class ServiceCurve {
 	
 	public ArrayList<Double>getCurveDurations(){
 		return this.curveDurations;
+	}
+	
+	// only need to satisfy the max resource.
+	public boolean isSatisfied(Resources receivedResources, double runTime){
+		int maxIdx = receivedResources.idOfMaxResource();
+		Resources minReq = getMinReqService(runTime);
+		return minReq.resource(maxIdx)>=minReq.resource(maxIdx);
 	}
 }

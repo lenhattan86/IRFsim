@@ -199,7 +199,7 @@ public class StageDag extends BaseDag {
 
   // view dag methods //
   public void viewDag() {
-    Output.debugln(DEBUG,"\n == DAG: " + this.dagId + " == arrives at " + this.timeArrival);
+    Output.debugln(DEBUG,"\n == DAG: " + this.dagId + " == arrives at " + this.timeArrival + " in Queue: " + this.queueName);
 
     for (Stage stage : stages.values()) {
       Output.debug(DEBUG,"Stage: " + stage.id + " "+stage.name+ " lasts " +stage.vDuration + " " + " [");
@@ -259,11 +259,15 @@ public class StageDag extends BaseDag {
         assert (args.length <= 2) : "Incorrect node entry";
 
         dagsReadSoFar += 1;
+        String queueName = "default";
         if (args.length >= 2) {
           numStages = Integer.parseInt(args[0]);
           ddagId = Integer.parseInt(args[1]);
           if (args.length >= 3) {
             arrival = Integer.parseInt(args[2]);
+          }
+          if (args.length >= 4) {
+            queueName = args[3].trim();
           }
           assert (numStages > 0);
           assert (ddagId >= 0);
@@ -273,9 +277,11 @@ public class StageDag extends BaseDag {
           assert (numStages > 0);
           assert (ddagId >= 0);
         }
-
+        
         StageDag dag = new StageDag(ddagId, arrival);
         dag.dagName = dag_name;
+        dag.setQueueName(queueName);
+        Simulator.QUEUE_LIST.addJobQueue(queueName);
 
         for (int i = 0; i < numStages; ++i) {
           String lline = br.readLine();
@@ -369,6 +375,7 @@ public class StageDag extends BaseDag {
           }
           dag.seedUnorderedNeighbors();
           dags.add(dag);
+          Simulator.QUEUE_LIST.addRunnableJob2Queue(dag, dag.getQueueName());
         }
         if (ddagId > bDagId + numDags)
           break;

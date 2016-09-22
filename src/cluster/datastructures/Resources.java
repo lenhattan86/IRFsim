@@ -61,6 +61,13 @@ public class Resources implements Comparable {
 		}
 		return aggr;
 	}
+	
+	public void addRes(Resources res) {
+		for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
+			resources[i] += res.resource(i);
+		}
+	}
+
 
 	public static double l2Norm(Resources res) {
 		double l2Norm = 0;
@@ -90,7 +97,7 @@ public class Resources implements Comparable {
 		}
 		return addedRes;
 	}
-
+	
 	// same as add operation, except we don't cap to 1.0
 	public void sum(Resources res) {
 		for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
@@ -144,6 +151,18 @@ public class Resources implements Comparable {
 			}
 		}
 		return res_idx_b;
+	}
+	
+	public int idOfMaxResource() {
+		int maIdx = 0;
+		double max = Double.MIN_VALUE;
+		for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
+			if (max < resources[i]) {
+				max = resources[i];
+				maIdx = i;
+			}
+		}
+		return maIdx;
 	}
 
 	public double max() {

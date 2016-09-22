@@ -11,6 +11,16 @@ import cluster.utils.Interval;
 public abstract class BaseDag {
 	
 	private static final boolean DEBUG = true;
+	
+	protected String queueName = ""; 
+	
+	public void setQueueName(String queueName){
+		this.queueName = queueName;
+	}
+	
+	public String getQueueName(){
+		return this.queueName;
+	}
 
   public int dagId;
   public int timeArrival; // arrival time from the input
@@ -75,5 +85,9 @@ public abstract class BaseDag {
       usedRes.sum(rsrcDemands(taskId));
     }
     return usedRes;
+  }
+  
+  public double getCompletionTime(){
+  	return this.jobEndTime - this.jobStartTime;
   }
 }
