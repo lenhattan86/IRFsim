@@ -38,7 +38,7 @@ public abstract class BaseDag implements Cloneable{
 
   public abstract Resources rsrcDemands(int task_id); // demand of from a task at a certain time step
   
-  public ServiceCurve serviceCurve = new ServiceCurve();;
+  public ServiceCurve serviceCurve = new ServiceCurve();
   public Resources receivedService = new Resources();
 
   public abstract double duration(int task_id); // duration of a task
@@ -83,13 +83,24 @@ public abstract class BaseDag implements Cloneable{
   public Resources currResDemand() {
     Resources usedRes = new Resources(0.0);
     for (int taskId : runningTasks) {
-      usedRes.sum(rsrcDemands(taskId));
+      usedRes.addWith(rsrcDemands(taskId));
     }
     return usedRes;
   }
   
   public double getCompletionTime(){
   	return this.jobEndTime - this.jobStartTime;
+  }
+  
+  public Resources getMaxDemand(){ 
+  	Resources demand = new Resources(0.0);
+    for (int taskId : runnableTasks) {
+    	demand.addWith(rsrcDemands(taskId));
+    }
+    for (int taskId : runningTasks) {
+    	demand.addWith(rsrcDemands(taskId));
+    }
+    return demand;
   }
   
 //  public Object BaseDag clone();

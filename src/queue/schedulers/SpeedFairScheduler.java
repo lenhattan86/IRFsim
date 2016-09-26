@@ -1,28 +1,79 @@
-package cluster.sharepolicies;
+package queue.schedulers;
 
 import java.util.LinkedList;
 import java.util.Queue;
 
 import cluster.datastructures.BaseDag;
+import cluster.datastructures.JobQueue;
 import cluster.datastructures.Resources;
 import cluster.simulator.Simulator;
 import cluster.utils.Output;
 
-public class SpeedFairSharePolicy extends SharePolicy {
-
+public class SpeedFairScheduler implements Scheduler {
 	private static final boolean DEBUG = true;
+
+	private String schedulePolicy;
 
 	Resources clusterTotCapacity = null;
 
-	public SpeedFairSharePolicy() {
-		super("SpeedFair");
+	public SpeedFairScheduler() {
 		clusterTotCapacity = Simulator.cluster.getClusterMaxResAlloc();
+		this.schedulePolicy = "SpeedFair";
 	}
 
 	// FairShare = 1 / N across all dimensions
 	// N - total number of running jobs
 	@Override
 	public void computeResShare() {
+		int numQueuesRuning = Simulator.QUEUE_LIST.getRunningQueues().size();
+		if (numQueuesRuning == 0) {
+			return;
+		}
+		Resources availRes= Simulator.cluster.getClusterMaxResAlloc();
+		
+		for (JobQueue q : Simulator.QUEUE_LIST.getRunningQueues()) {
+			q.updateGuartRate(); // update long-term fairness
+			// compute the rsrcQuota based on the guarateed rated.
+			Resources rsrcQuota = Resources.piecewiseMax(q.computeShortTermShare(), q.computeLongTermShare());
+			q.setRsrcQuota(rsrcQuota);
+			availRes =  Resources.subtractPositivie(availRes, q.getRsrcQuota());
+		}
+		
+		// equally share the available resources
+		
+		if (availRes.greaterOrEqual(new Resources())){
+			Resources equalShare = Resources.divide(availRes, Simulator.QUEUE_LIST.getRunningQueues().size());
+			for (JobQueue q : Simulator.QUEUE_LIST.getRunningQueues()) {
+				Resources res = q.getRsrcQuota();
+				res.addWith(equalShare);
+				q.setRsrcQuota(res);
+			}
+		}
+		//TODO: sort queues for interactive jobs.
+		// recompute rsrcQuota to match the cluster capacity.
+		availRes = Simulator.cluster.getClusterMaxResAlloc();
+		for (JobQueue q : Simulator.QUEUE_LIST.getRunningQueues()) {
+			boolean fit = availRes.greaterOrEqual(q.getRsrcQuota());
+			if (!fit) {
+				Resources newQuota = Resources.piecewiseMin(availRes, q.getRsrcQuota());
+				q.setRsrcQuota(newQuota);
+			} 
+			Output.debugln(DEBUG, "Allocated to queue:" + q.getQueueName() + " " + q.getRsrcQuota());
+			q.receivedResourcesList.add(q.getRsrcQuota());
+		 //TODO: share the resources among the jobs in the same queue. (using Fair)
+			Resources rsShare = Resources.divide(q.getRsrcQuota(), q.runningJobs.size());
+			Queue<BaseDag> runningJobs = q.runningJobs;
+			for (BaseDag job : runningJobs) {
+				job.rsrcQuota = rsShare;
+				 Output.debugln(DEBUG, "Allocated to job:" + job.dagId + " " + job.rsrcQuota);
+			}
+			
+			availRes = Resources.subtract(availRes ,q.getRsrcQuota());
+		}
+		
+	}
+	
+	public void computeResShare_prev() {
 		int numJobsRunning = Simulator.runningJobs.size();
 		if (numJobsRunning == 0) {
 			return;
@@ -69,5 +120,10 @@ public class SpeedFairSharePolicy extends SharePolicy {
 		}
 		
 		//TODO: share the remaining resources on demand
+	}
+
+	@Override
+	public String getSchedulePolicy() {
+		return this.schedulePolicy;
 	}
 }

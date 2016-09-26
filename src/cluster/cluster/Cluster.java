@@ -103,7 +103,7 @@ public class Cluster {
   public Resources getClusterMaxResAlloc() {
     Resources maxClusterResAvail = new Resources();
     for (Machine machine : machines.values()) {
-      maxClusterResAvail.sum(machine.maxResAlloc);
+      maxClusterResAvail.addWith(machine.maxResAlloc);
     }
     return maxClusterResAvail;
   }
@@ -111,7 +111,7 @@ public class Cluster {
   public Resources getClusterResAvail() {
     Resources clusterResAvail = new Resources();
     for (Machine machine : machines.values()) {
-      clusterResAvail.sum(machine.getTotalResAvail());
+      clusterResAvail.addWith(machine.getTotalResAvail());
     }
     return clusterResAvail;
   }
@@ -119,7 +119,7 @@ public class Cluster {
   public Resources getClusterResQuotaAvail() {
     Resources clusterResAvail = new Resources();
     for (Machine machine : machines.values()) {
-      clusterResAvail.sum(machine.getTotalResAvail());
+      clusterResAvail.addWith(machine.getTotalResAvail());
     }
     return clusterResAvail;
   }

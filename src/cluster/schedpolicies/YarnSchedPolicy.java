@@ -13,12 +13,12 @@ public class YarnSchedPolicy extends SchedPolicy {
 
 	private static final boolean DEBUG = true;
 
-	public YarnSchedPolicy(Cluster cluster) { // TODO:
+	public YarnSchedPolicy(Cluster cluster) { 
 		super(cluster);
 	}
 
 	@Override
-	public void schedule(final StageDag dag) {
+	public void schedule(final StageDag dag) { // TODO: add preemption
 
 		if (dag.runnableTasks.isEmpty())
 			return;

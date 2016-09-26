@@ -229,7 +229,6 @@ public class StageDag extends BaseDag implements Cloneable{
       int numDags) {
 
     Randomness r = new Randomness();
-    Output.debugln(DEBUG,"readDags; num.dags:" + numDags);
     Queue<BaseDag> dags = new LinkedList<BaseDag>();
     File file = new File(filePathString);
     assert (file.exists() && !file.isDirectory());
@@ -281,6 +280,7 @@ public class StageDag extends BaseDag implements Cloneable{
         dag.dagName = dag_name;
         dag.setQueueName(queueName);
         Simulator.QUEUE_LIST.addJobQueue(queueName);
+        dag.serviceCurve = Simulator.QUEUE_LIST.getJobQueue(queueName).serviceCurve;
 
         for (int i = 0; i < numStages; ++i) {
           String lline = br.readLine();
@@ -347,20 +347,20 @@ public class StageDag extends BaseDag implements Cloneable{
               comm_pattern);
         }
         
-        //TODO: read service curve
-        int numOfSlopes;
-        line = br.readLine();
-        numOfSlopes = Integer.parseInt(line.trim());
-        assert (numOfSlopes >= 0);
-        for (int i = 0; i < numOfSlopes; ++i) {
-          args = br.readLine().split(" ");
-          assert (args.length < 2) : 
-            "Incorrect entry for service curves";
-
-          double duration = Double.parseDouble(args[0]), slope = Double.parseDouble(args[1]);
-          if(i==numOfSlopes-1) duration = Double.MAX_VALUE;
-          dag.serviceCurve.addSlope(slope, duration);
-        }
+//        //TODO: read service curve
+//        int numOfSlopes;
+//        line = br.readLine();
+//        numOfSlopes = Integer.parseInt(line.trim());
+//        assert (numOfSlopes >= 0);
+//        for (int i = 0; i < numOfSlopes; ++i) {
+//          args = br.readLine().split(" ");
+//          assert (args.length < 2) : 
+//            "Incorrect entry for service curves";
+//
+//          double duration = Double.parseDouble(args[0]), slope = Double.parseDouble(args[1]);
+//          if(i==numOfSlopes-1) duration = Double.MAX_VALUE;
+//          dag.serviceCurve.addSlope(slope, duration);
+//        }
         
         if (ddagId >= bDagId && ddagId - bDagId < numDags) {
           dag.scaleDag();
@@ -374,7 +374,7 @@ public class StageDag extends BaseDag implements Cloneable{
           }
           dag.seedUnorderedNeighbors();
           dags.add(dag);
-          Simulator.QUEUE_LIST.addRunnableJob2Queue(dag, dag.getQueueName());
+//          Simulator.QUEUE_LIST.addRunnableJob2Queue(dag, dag.getQueueName());
         }
         if (ddagId > bDagId + numDags)
           break;
@@ -600,7 +600,7 @@ public class StageDag extends BaseDag implements Cloneable{
   public Resources totalResourceDemand() {
     Resources totalResDemand = new Resources(0.0);
     for (Stage stage : stages.values()) {
-      totalResDemand.sum(stage.totalWork());
+      totalResDemand.addWith(stage.totalWork());
     }
     return totalResDemand;
   }
@@ -608,7 +608,7 @@ public class StageDag extends BaseDag implements Cloneable{
   public Resources totalWorkInclDur() {
     Resources totalResDemand = new Resources(0.0);
     for (Stage stage : stages.values()) {
-      totalResDemand.sum(stage.totalWork());
+      totalResDemand.addWith(stage.totalWork());
     }
     return totalResDemand;
   }

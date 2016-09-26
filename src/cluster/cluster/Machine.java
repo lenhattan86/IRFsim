@@ -67,7 +67,7 @@ public class Machine {
       return;
 
     // 1. update the amount of resources allocated
-    totalResAlloc.sum(taskResources);
+    totalResAlloc.addWith(taskResources);
 
     // 2. compute the expected time for this task
     double expTaskComplTime = currentTime + taskDuration;
@@ -76,7 +76,7 @@ public class Machine {
 
     // update resource allocated to the corresponding job
     BaseDag dag = Simulator.getDag(dagId);
-    dag.rsrcInUse.sum(dag.rsrcDemands(taskId));
+    dag.rsrcInUse.addWith(dag.rsrcDemands(taskId));
   }
 
   // [dagId -> List<TaskId>]

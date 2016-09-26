@@ -9,6 +9,10 @@ public class Output {
 	
 	public static void writeln(String toWrite, boolean append, String filePath){
 		toWrite=toWrite + "\n";
+		write(toWrite, append, filePath);
+	}
+	
+	public static void write(String toWrite, boolean append, String filePath){
 		try {
 			FileWriter file = new FileWriter(filePath, append);
 			file.write(toWrite.toCharArray(), 0, toWrite.length());
@@ -20,6 +24,10 @@ public class Output {
 	
 	public static void writeln(String toWrite, boolean append){
 		toWrite=toWrite + "\n";
+		write(toWrite, append);
+	}
+	
+	public static void write(String toWrite, boolean append){
 		try {
 			FileWriter file = new FileWriter(Globals.PathToOutputFile, append);
 			file.write(toWrite.toCharArray(), 0, toWrite.length());

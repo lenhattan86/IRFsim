@@ -57,7 +57,7 @@ public class DRFSharePolicy extends SharePolicy {
     // 4. sum it up across every dimension
     Resources sumDemandsRunDags = new Resources(0.0);
     for (BaseDag job : Simulator.runningJobs) {
-      sumDemandsRunDags.sum(resDemandsDags.get(job.dagId));
+      sumDemandsRunDags.addWith(resDemandsDags.get(job.dagId));
     }
 
     // 5. find the max sum

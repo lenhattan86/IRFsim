@@ -99,7 +99,7 @@ public class Resources implements Comparable {
 	}
 	
 	// same as add operation, except we don't cap to 1.0
-	public void sum(Resources res) {
+	public void addWith(Resources res) {
 		for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
 			resources[i] += res.resources[i];
 			resources[i] = Utils.round(resources[i], 2);
@@ -178,7 +178,7 @@ public class Resources implements Comparable {
 			return Resources.clone(b);
 		return Resources.clone(a);
 	}
-
+	
 	public static Resources piecewiseMin(Resources a, Resources b) {
 		Resources ret = new Resources();
 		for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
@@ -186,6 +186,15 @@ public class Resources implements Comparable {
 		}
 		return ret;
 	}
+	
+	public static Resources piecewiseMax(Resources a, Resources b) {
+		Resources ret = new Resources();
+		for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
+			ret.resources[i] = Math.max(a.resources[i], b.resources[i]);
+		}
+		return ret;
+	}
+
 
 	public static Resources subtract(Resources total, Resources decr) {
 		Resources subtractedRes = new Resources(0.0);
@@ -195,7 +204,7 @@ public class Resources implements Comparable {
 		return subtractedRes;
 	}
 
-	public static Resources subtractNonZero(Resources total, Resources decr) {
+	public static Resources subtractPositivie(Resources total, Resources decr) {
 		Resources subtractedRes = new Resources(0.0);
 		for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
 			subtractedRes.resources[i] = Math.max(Utils.round(total.resources[i] - decr.resources[i], 2), 0);
@@ -221,6 +230,33 @@ public class Resources implements Comparable {
 		Resources normalizedRes = new Resources();
 		for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
 			normalizedRes.resources[i] = Utils.round(res.resources[i] / factor, 2);
+		}
+		return normalizedRes;
+	}
+	
+	public static Resources divide(Resources res, double factor) {
+		assert (factor > 0);
+		Resources normalizedRes = new Resources();
+		for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
+			normalizedRes.resources[i] = Utils.round(res.resources[i] / factor, 2);
+		}
+		return normalizedRes;
+	}
+	
+	public static Resources multiply(Resources res, int factor) {
+		assert (factor > 0);
+		Resources normalizedRes = new Resources();
+		for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
+			normalizedRes.resources[i] = Utils.round(res.resources[i] * factor, 2);
+		}
+		return normalizedRes;
+	}
+	
+	public static Resources multiply(Resources res, double factor) {
+		assert (factor > 0);
+		Resources normalizedRes = new Resources();
+		for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
+			normalizedRes.resources[i] = Utils.round(res.resources[i] * factor, 2);
 		}
 		return normalizedRes;
 	}
