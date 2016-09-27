@@ -3,8 +3,6 @@ package cluster.speedfair;
 import java.util.ArrayList;
 
 import cluster.datastructures.Resources;
-import cluster.simulator.Simulator;
-import cluster.utils.Output;
 import cluster.simulator.Main.Globals;
 
 public class ServiceCurve {

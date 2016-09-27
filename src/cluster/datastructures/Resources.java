@@ -243,6 +243,15 @@ public class Resources implements Comparable {
 		return normalizedRes;
 	}
 	
+	public static Resources divideNoRound(Resources res, double factor) {
+		assert (factor > 0);
+		Resources normalizedRes = new Resources();
+		for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
+			normalizedRes.resources[i] = res.resources[i] / factor;
+		}
+		return normalizedRes;
+	}
+	
 	public static Resources multiply(Resources res, int factor) {
 		assert (factor > 0);
 		Resources normalizedRes = new Resources();

@@ -8,32 +8,31 @@ import java.util.Queue;
 import cluster.simulator.Main.Globals;
 import cluster.simulator.Simulator;
 import cluster.speedfair.ServiceCurve;
+import cluster.speedfair.ServiceRate;
 import cluster.utils.Output;
 
 public class JobQueue {
-	public Queue<BaseDag> runnableJobs; // Jobs are in the queue
-	public Queue<BaseDag> runningJobs;
-	public Queue<BaseDag> completedJobs;
 	
-	private final static boolean DEBUG=true;
+	private final static boolean DEBUG=false;
+	
+	private Queue<BaseDag> runnableJobs; // Jobs are in the queue
+	private Queue<BaseDag> runningJobs;
+	public Queue<BaseDag> completedJobs;
 	
 	public boolean isInteractive = true;
 	
-	public double weight = 1;
+	private double weight = 1.0;
 	
-	public double startTime = -1.0;
+	private double speedFairWeight = 1.0;
 
-	public ServiceCurve serviceCurve = new ServiceCurve();
+	private double startTimeOfNewJob = -1.0;
+	
+	private ServiceRate serviceRate = new ServiceRate();
 
-	public double shortTerm = Globals.SHORT_TERM;
-	public double longTerm = Globals.LONG_TERM;
-
-	public Resources resShortTermGuartRate = new Resources(70);
-	public Resources resLongTermGuartRate = new Resources(50);
+	private double shortTerm = Globals.SHORT_TERM;
+	private double longTerm = Globals.LONG_TERM;
 
 	public List<Resources> receivedResourcesList = new LinkedList<Resources>();
-
-	private Resources resDemand = new Resources();
 
 	private Resources rsrcQuota = new Resources();
 
@@ -41,19 +40,6 @@ public class JobQueue {
 
 	public JobQueue(String queueName) {
 		this.queueName = queueName;
-		// TODO: change it later~ this is hard coded.
-		if (queueName.startsWith("batch")) {
-			isInteractive = false;
-			resShortTermGuartRate = new Resources(20);
-			resLongTermGuartRate = new Resources(50);
-			weight = 1.0;
-		} else if (queueName.startsWith("interactive")) {
-			resShortTermGuartRate = new Resources(100);
-			resLongTermGuartRate = new Resources(50);
-			weight = Globals.INTERACTIVE_WEIGHT;
-		} else {
-			System.err.println("unknown queue name!!");
-		}
 		runnableJobs = new LinkedList<BaseDag>();
 		runningJobs = new LinkedList<BaseDag>();
 		completedJobs = new LinkedList<BaseDag>();
@@ -66,7 +52,7 @@ public class JobQueue {
 	public void updateGuartRate() {
 //		resLongTermGuartRate = Resources.divide(Simulator.cluster.getClusterMaxResAlloc(),
 //				Simulator.QUEUE_LIST.getRunningQueues().size());
-//		Output.debugln(DEBUG,"resLongTermGuartRate:"+resLongTermGuartRate);
+//		Output.debugln(DEBUG, "resLongTermGuartRate:" + resLongTermGuartRate);
 	}
 
 	public double avgCompletionTime() {
@@ -142,15 +128,6 @@ public class JobQueue {
 		this.receivedResourcesList.add(0, res);
 	}
 
-	public Resources computeShortTermShare() {
-		double mShort = Math.min(this.shortTerm, Simulator.CURRENT_TIME + Globals.STEP_TIME - startTime);
-		return computeShare(mShort, this.resShortTermGuartRate);
-	}
-
-	public Resources computeLongTermShare() {
-		double mLong = Math.min(this.longTerm, Simulator.CURRENT_TIME + Globals.STEP_TIME - startTime);
-		return computeShare(mLong,this.resLongTermGuartRate);
-	}
 
 	public Resources computeShare(double term, Resources guartRate) {
 		Resources resQuota = new Resources();
@@ -162,6 +139,14 @@ public class JobQueue {
 			resDemand = Resources.add(resDemand, job.getMaxDemand());
 		}
 		return Resources.piecewiseMin(resQuota, resDemand);
+	}
+	
+	public Resources getMaxDemand(){
+		Resources resDemand = new Resources();
+		for (BaseDag job : runningJobs) {
+			resDemand = Resources.add(resDemand, job.getMaxDemand());
+		}
+		return resDemand;
 	}
 	
 	public Resources getResourceUsage(){
@@ -177,5 +162,92 @@ public class JobQueue {
 		for (int i=0; i<Globals.NUM_DIMENSIONS; i++)
 			str += "," + this.getResourceUsage().resource(i);
 		return str;
+	}
+	
+	// getters & setters
+	public double getWeight() {
+		return weight;
+	}
+	
+	public double getStrictPriorityWeight() {
+		double weight = 1.0;
+		if (serviceRate.getNumOfSlopes() > 0)
+			weight = Double.MAX_VALUE/20.0;
+		return weight;
+	}
+
+	public void setWeight(double weight) {
+		this.weight = weight;
+	}
+	
+	public void setSpeedFairWeight(double weight) {
+		this.speedFairWeight = weight;
+	}
+	
+	public double getSpeedFairWeight() {
+		if (this.serviceRate.isBeyongGuaranteedDuration(Simulator.CURRENT_TIME, this.startTimeOfNewJob))
+			return this.speedFairWeight;
+		else
+			return this.weight;
+	}
+	
+//	public Resources computeShortTermShare() {
+//		double mShort = Math.min(this.shortTerm, Simulator.CURRENT_TIME + Globals.STEP_TIME - startTime);
+//		return computeShare(mShort, this.resShortTermGuartRate);
+//	}
+//
+//	public Resources computeLongTermShare() {
+//		double mLong = Math.min(this.longTerm, Simulator.CURRENT_TIME + Globals.STEP_TIME - startTime);
+//		return computeShare(mLong,this.resLongTermGuartRate);
+//	}
+	
+	public Resources getMinService(double currTime){
+		double size = this.serviceRate.getGuaranteedRate(currTime, startTimeOfNewJob);
+		return new Resources(size);
+	}
+
+	public void addRate(double slope, double duration) {
+		this.serviceRate.addSlope(slope, duration);
+	}
+
+	public void addRunnableJob(BaseDag newJob) {
+		this.runnableJobs.add(newJob);
+	}
+
+	public void removeRunningJob(BaseDag newJob) {
+		this.runningJobs.remove(newJob);
+	}
+
+	public void addCompletedJob(BaseDag newJob) {
+		this.completedJobs.add(newJob);
+	}
+	
+	public boolean isActive(){
+		return this.runningJobs.size()>0;
+	}
+
+	public Queue<BaseDag> getRunningJobs() {
+		return this.runningJobs;
+	}
+
+	public int runningJobsSize() {
+		return this.runningJobs.size();
+	}
+
+	public void addRunningJob(BaseDag newJob) {
+		this.startTimeOfNewJob = Simulator.CURRENT_TIME;
+		Output.debugln(DEBUG, this.queueName+ " at " +this.startTimeOfNewJob);
+		this.runningJobs.add(newJob);		
+	}
+
+	public void removeRunnableJob(BaseDag oldJob) {
+		this.runnableJobs.remove(oldJob);
+	}
+	public double getStartTimeOfNewJob() {
+		return startTimeOfNewJob;
+	}
+
+	public void setStartTimeOfNewJob(double startTimeOfNewJob) {
+		this.startTimeOfNewJob = startTimeOfNewJob;
 	}
 }

@@ -280,7 +280,7 @@ public class StageDag extends BaseDag implements Cloneable{
         dag.dagName = dag_name;
         dag.setQueueName(queueName);
         Simulator.QUEUE_LIST.addJobQueue(queueName);
-        dag.serviceCurve = Simulator.QUEUE_LIST.getJobQueue(queueName).serviceCurve;
+//        dag.serviceCurve = Simulator.QUEUE_LIST.getJobQueue(queueName).serviceCurve;
 
         for (int i = 0; i < numStages; ++i) {
           String lline = br.readLine();

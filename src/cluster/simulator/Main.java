@@ -24,10 +24,10 @@ public class Main {
 		public static RunMode runmode = RunMode.Tan;
 
 		public static boolean DEBUG_ALL = false;
-		public static boolean DEBUG_LOCAL = false;
+		public static boolean DEBUG_LOCAL = true;
 
 		public static enum QueueSchedulerPolicy {
-			DRF, SpeedFair
+			DRF, SpeedFair, Strict
 		};
 
 		public static QueueSchedulerPolicy QUEUE_SCHEDULER = QueueSchedulerPolicy.DRF;
@@ -56,7 +56,6 @@ public class Main {
 		
 		public static double SHORT_TERM = 2.0;
 		public static double LONG_TERM = 10.0;
-		public static double INTERACTIVE_WEIGHT = 4;
 
 		public static boolean ADJUST_FUNGIBLE = false;
 
@@ -94,17 +93,19 @@ public class Main {
       switch (runmode) {
       case Tan:
       DagIdStart = 0;
-      DagIdEnd = 29;
-      SIM_END_TIME = 500;
+      DagIdEnd = 49;
+      SIM_END_TIME = 50000;
       STEP_TIME = 1;
-      INTERACTIVE_WEIGHT = 4.0;
+      DEBUG_LOCAL = true;
       
-      
-      String TEST_CASE = "DRF"; 
+//      String TEST_CASE = "DRF"; 
+//      String TEST_CASE = "DRF-W"; // TODO: remember to change the weights in the queue-input files.
 //    	String TEST_CASE = "SpeedFair";
+      String TEST_CASE = "Strict"; 
       DataFolder = "input";
       String outputFolder = "output";
       FileInput = "dags-input-multiple-batches.txt"; QueueInput = "queue_input_multi_batches.txt"; 
+//      FileInput = "dags-input-multiple-batches-long-interactive.txt"; QueueInput = "queue_input_multi_batches.txt";
 //      FileInput = "dags-input-multiple-interactives.txt"; QueueInput = "queue_input_multi_interactives.txt"; 
   		SHORT_TERM = 1.0;
   		LONG_TERM = 10.0;
@@ -119,12 +120,22 @@ public class Main {
       if (TEST_CASE.equals("DRF")) {
         	QUEUE_SCHEDULER = QueueSchedulerPolicy.DRF;
         	INTRA_JOB_POLICY = SchedulingPolicy.Yarn;
-  		    FileOutput = "DRF-w-output"+numOfInteractiveJobs+"_"+numOfbatchjobs+"_"+numOfQueues+".csv";
+  		    FileOutput = "DRF-output"+numOfInteractiveJobs+"_"+numOfbatchjobs+"_"+numOfQueues+".csv";
       }else if(TEST_CASE.equals("SpeedFair")) {
       	QUEUE_SCHEDULER = QueueSchedulerPolicy.SpeedFair;
-		    INTER_JOB_POLICY = SharingPolicy.SpeedFair;
 		    INTRA_JOB_POLICY = SchedulingPolicy.Yarn;
 		    FileOutput = "SpeedFair-output"+numOfInteractiveJobs+"_"+numOfbatchjobs+"_"+numOfQueues+".csv";
+      } else if(TEST_CASE.equals("DRF-W")) {
+      	QUEUE_SCHEDULER = QueueSchedulerPolicy.DRF;
+		    INTRA_JOB_POLICY = SchedulingPolicy.Yarn;
+		    FileOutput = "DRF-W-output"+numOfInteractiveJobs+"_"+numOfbatchjobs+"_"+numOfQueues+".csv";
+      } else if(TEST_CASE.equals("Strict")) {
+      	QUEUE_SCHEDULER = QueueSchedulerPolicy.Strict;
+		    INTRA_JOB_POLICY = SchedulingPolicy.Yarn;
+		    FileOutput = "Strict-output"+numOfInteractiveJobs+"_"+numOfbatchjobs+"_"+numOfQueues+".csv";
+      } else {
+      	System.err.println("Error! test case");
+      	break;
       }
       PathToOutputFile = outputFolder + "/" + FileOutput;
       PathToResourceLog = "log" +"/" + FileOutput;

@@ -1,0 +1,24 @@
+clear; close all; clc;
+is_printed = false;
+fig_path = 'C:\Users\lenha\Documents\GitHub\NSDI17\fig\';
+
+output_folder = 'output/';
+drf_compl_files = {'DRF-output19_1_20.csv';
+                  'DRF-output29_1_30.csv';
+                  'DRF-output39_1_40.csv';
+                  'DRF-output49_1_50.csv'};
+               
+speedfair_compl_files = {'SpeedFair-output19_1_20.csv';
+                  'SpeedFair-output29_1_30.csv';
+                  'SpeedFair-output49_1_50.csv';
+                  'SpeedFair-output49_1_50.csv'};  
+               
+drfw_compl_files = {'DRF-output19_1_20.csv';
+                  'DRF-output29_1_30.csv';
+                  'DRF-output39_1_40.csv';
+                  'DRF-output49_1_50.csv'};  
+               
+strict_priority_compl_files = {'DRF-output19_1_20.csv';
+                  'DRF-output29_1_30.csv';
+                  'DRF-output39_1_40.csv';
+                  'DRF-output49_1_50.csv'};  

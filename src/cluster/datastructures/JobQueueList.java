@@ -3,16 +3,11 @@ package cluster.datastructures;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
 import cluster.simulator.Simulator;
-import cluster.simulator.Main.Globals;
-import cluster.utils.Interval;
-import cluster.utils.Output;
-import cluster.utils.Randomness;
 
 public class JobQueueList {
 	private Queue<JobQueue> jobQueues = null;
@@ -57,34 +52,19 @@ public class JobQueueList {
 
 	public void addRunnableJob2Queue(BaseDag newJob, String queueName) {
 		JobQueue queue = getJobQueue(queueName);
-		queue.runnableJobs.add(newJob);
+		queue.addRunnableJob(newJob);
 	}
 	
 	public void addRunningJob2Queue(BaseDag newJob, String queueName) {
 		JobQueue queue = getJobQueue(queueName);
-		queue.runningJobs.add(newJob);
-		queue.runnableJobs.remove(newJob);
+		queue.addRunningJob(newJob);
+		queue.removeRunnableJob(newJob);
 	}
 	
 	public void addCompletionJob2Queue(BaseDag newJob, String queueName) {
 		JobQueue queue = getJobQueue(queueName);
-		queue.runningJobs.remove(newJob);
-		queue.completedJobs.add(newJob);
-	}
-	
-	public double avgCompletionTime(JobQueue queue){
-		
-		if (queue==null || queue.runnableJobs.size() <= 0) {
-			System.err.println("this queue is empty or does not exist.");
-				return -1.0;
-		}
-		
-		double avgTime = 0.0;
-		for (BaseDag job: queue.runnableJobs)
-			avgTime += job.getCompletionTime();
-		avgTime = avgTime/queue.runnableJobs.size();
-		
-		return avgTime;
+		queue.removeRunningJob(newJob);
+		queue.addCompletedJob(newJob);
 	}
 	
 	public void addRunningQueue(JobQueue runningQueue){
@@ -118,7 +98,7 @@ public class JobQueueList {
 	public List<JobQueue> updateRunningQueues(){
 		this.runningQueues = new LinkedList<JobQueue>();
 		for (JobQueue q:jobQueues){
-			if (q.runningJobs.size() > 0){
+			if (q.isActive()){
 				this.addRunningQueue(q);
 			}
 		}
@@ -144,10 +124,14 @@ public class JobQueueList {
         }
         
         args = line.split(" ");
-        queueName = args[0];
+        assert (args.length < 3) : 
+          "queueName weightForSpeedShare DRFweight";
+        queueName = args[0];        
       	queueName = queueName.trim();
-      	
       	JobQueue queue = new JobQueue(queueName);
+      	queue.setSpeedFairWeight(Double.parseDouble(args[1]));
+      	queue.setWeight(Double.parseDouble(args[2])); 
+      	
         Simulator.QUEUE_LIST.addJobQueue(queue);
 
         int numOfSlopes;
@@ -157,11 +141,13 @@ public class JobQueueList {
         for (int i = 0; i < numOfSlopes; ++i) {
         	args = br.readLine().split(" ");
           assert (args.length < numOfSlopes) : 
-            "Incorrect entry for service curves";
+            "Incorrect entry for guaranteed service rates";
 
-          double duration = Double.parseDouble(args[0]), slope = Double.parseDouble(args[1]);
-          if(i==numOfSlopes-1) duration = Double.MAX_VALUE;
-          queue.serviceCurve.addSlope(slope, duration);
+          double duration = Double.parseDouble(args[0]);
+          double slope = Double.parseDouble(args[1]);
+//          if(i==numOfSlopes-1) duration = Double.MAX_VALUE;
+//          queue.serviceCurve.addSlope(slope, duration);
+          queue.addRate(slope, duration);
         }
       }
       br.close();

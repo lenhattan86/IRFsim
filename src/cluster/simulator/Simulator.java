@@ -31,7 +31,7 @@ import cluster.utils.Utils;
 // implement the timeline server
 public class Simulator {
 
-	public final static boolean DEBUG = true;
+	public final static boolean DEBUG = false;
 
 	public static double CURRENT_TIME = 0;
 
@@ -91,9 +91,9 @@ public class Simulator {
 				Globals.DagIdEnd - Globals.DagIdStart + 1);
 
 		Output.debugln(DEBUG, "Print DAGs");
-		for (BaseDag dag : runnableJobs) {
-			((StageDag) dag).viewDag();
-		}
+//		for (BaseDag dag : runnableJobs) {
+//			((StageDag) dag).viewDag();
+//		}
 
 		cluster = new Cluster(true, new Resources(Globals.MACHINE_MAX_RESOURCE));
 
@@ -296,8 +296,6 @@ public class Simulator {
 
 	public void simulateMultiQueues() {
 		for (Simulator.CURRENT_TIME = 0; Simulator.CURRENT_TIME < Globals.SIM_END_TIME; Simulator.CURRENT_TIME += Globals.STEP_TIME) {
-			if (!Globals.DEBUG_ALL && !Globals.DEBUG_LOCAL)
-				System.out.print(".");
 
 			Output.debugln(DEBUG, "\n==== STEP_TIME:" + Simulator.CURRENT_TIME + " ====\n");
 
@@ -327,10 +325,10 @@ public class Simulator {
 				Output.debugln(DEBUG, "----- Do nothing ----");
 			else {
 				Output.debugln(DEBUG, "[Simulator]: jobCompleted:" + jobCompleted + " newJobArrivals:" + newJobArrivals);
-				if (jobCompleted || newJobArrivals) {
-					queueSched.schedule(); 
-					// TODO: add preemption for queues
-				}
+
+//				if (jobCompleted || newJobArrivals) { // TODO: deal with preemption and long tasks 
+				queueSched.schedule(); 
+//				}
 				Output.debugln(DEBUG, "Running jobs size:" + runningJobs.size());
 				
 //				Simulator.printUsedResources();
@@ -370,8 +368,7 @@ public class Simulator {
 //			Simulator.printUsedResources();
 			Simulator.writeResourceUsage();
 		}
-
-		Output.debugln(DEBUG, "\n==== END STEP_TIME:" + Simulator.CURRENT_TIME + " ====\n");
+		System.out.println("\n==== END STEP_TIME:" + Simulator.CURRENT_TIME + " ====\n");
 	}
 
 	private void printReport() {
@@ -632,9 +629,6 @@ public class Simulator {
 					dag.jobStartRunningTime = dag.jobStartTime;
 					newlyStartedJobs.add(dag);
 					Simulator.QUEUE_LIST.addRunningJob2Queue(dag, dag.getQueueName());
-					JobQueue parentQueue = QUEUE_LIST.getJobQueue(dag.getQueueName());
-					if(parentQueue.startTime<0)
-						parentQueue.startTime = Simulator.CURRENT_TIME;
 					Output.debugln(DEBUG, "Started job:" + dag.dagId + " at time:" + Simulator.CURRENT_TIME);
 				}
 			}

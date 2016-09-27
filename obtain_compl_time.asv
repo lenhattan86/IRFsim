@@ -1,0 +1,20 @@
+function [ avg_compl_time ] = obtain_compl_time( folder, files, QUEUE_NAME)
+   num_files = length(files);
+   avg_compl_time = zeros(1,num_files);
+   for i=1:num_files
+      [JobId,startTime,endTime,duration,queueName] = import_compl_time([folder files{i}]);
+%       queueName = queueName(1:length(QUEUE_NAME));
+      for j=1:length(queueName)
+         strTemp =  queueName{j};
+         if length(QUEUE_NAME) <= length(strTemp)
+            names(j,1:length(QUEUE_NAME)) = strTemp(1:length(QUEUE_NAME));
+         else
+            
+         end
+      end
+      idxs = strcmp(queueName, names);
+      avg_compl_time(i) = mean(duration(idxs));
+   end
+
+end
+

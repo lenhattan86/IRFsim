@@ -14,6 +14,7 @@ import cluster.simulator.Simulator;
 import queue.schedulers.DRFScheduler;
 import queue.schedulers.Scheduler;
 import queue.schedulers.SpeedFairScheduler;
+import queue.schedulers.StrictScheduler;
 import cluster.simulator.Main.Globals;
 
 public class QueueScheduler {
@@ -29,6 +30,9 @@ public class QueueScheduler {
 			break;
 		case SpeedFair:
 			scheduler = new SpeedFairScheduler();
+			break;
+		case Strict:
+			scheduler = new StrictScheduler();
 			break;
 		default:
 			System.err.println("Unknown sharing policy");

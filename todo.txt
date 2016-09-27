@@ -1,0 +1,5 @@
+1. Theoretical arrivals
+2. Implement Strict Priority.
+3. Compare with DRF, DRF-W, Strict-Priority.
+- small interactive jobs. Expected results:
+- large interactive jobs. Expected results:
