@@ -127,10 +127,11 @@ public class Utils {
   }
 
   public static double round(double value, int places) {
+  	double factor = Math.pow(10.0, places);
     double roundedVal = value;
-    roundedVal = roundedVal * 100;
+    roundedVal = roundedVal * factor;
     roundedVal = Math.round(roundedVal);
-    roundedVal /= 100;
+    roundedVal /= factor;
     return roundedVal;
   }
 }

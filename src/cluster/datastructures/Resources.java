@@ -411,4 +411,24 @@ public class Resources implements Comparable {
 			resources[i] += res.resources[i];
 		}
 	}
+	
+	public void round(){
+		for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
+			this.resources[i] = Utils.round(this.resources[i],0);
+		}
+	}
+	
+	public boolean isEmpty(){
+		for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
+			if (this.resources[i] >= 1.0)
+				return false;
+		}
+		return true;
+	}
+
+	public void floor() {
+		for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
+			this.resources[i] = Math.floor(this.resources[i]);
+		}
+	}
 }

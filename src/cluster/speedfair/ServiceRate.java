@@ -46,7 +46,7 @@ public class ServiceRate {
 	}
 
 	public boolean isBeyongGuaranteedDuration(double curTime, double startTime) {
-		double mCurrTime = curTime + Globals.STEP_TIME;
+		double mCurrTime = curTime + Globals.STEP_TIME - startTime;
 		double xDuration = 0;
 		for (int iSlope = 0; iSlope < this.getNumOfSlopes(); iSlope++) {
 			xDuration += this.curveDurations.get(iSlope);

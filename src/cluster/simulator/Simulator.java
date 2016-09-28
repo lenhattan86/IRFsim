@@ -422,7 +422,7 @@ public class Simulator {
 			Output.debugln(DEBUG, "Dag Id " + dag.dagId + " -- dag.rsrcInUse: " + dag.rsrcInUse);
 			// Output.writeln(dag.dagId + ", " + dag.rsrcInUse, true,
 			// Globals.PathToResourceLog);
-			Output.debugln(DEBUG, "Dag Id " + dag.dagId + " -- Resource Share: " + dag.rsrcQuota);
+//			Output.debugln(DEBUG, "Dag Id " + dag.dagId + " -- Resource Share: " + dag.rsrcQuota);
 //			Resources minReq = dag.serviceCurve.getMinReqService(Simulator.CURRENT_TIME - dag.jobStartTime);
 //			boolean isSatisfied = dag.serviceCurve.isSatisfied(dag.receivedService, Simulator.CURRENT_TIME);
 //			if (!isSatisfied)

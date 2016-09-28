@@ -29,8 +29,7 @@ public class JobQueue {
 	
 	private ServiceRate serviceRate = new ServiceRate();
 
-	private double shortTerm = Globals.SHORT_TERM;
-	private double longTerm = Globals.LONG_TERM;
+
 
 	public List<Resources> receivedResourcesList = new LinkedList<Resources>();
 
@@ -73,11 +72,19 @@ public class JobQueue {
 	}
 
 	public void setRsrcQuota(Resources rsrcQuota) {
-		this.rsrcQuota = rsrcQuota;
+		this.rsrcQuota = new Resources(rsrcQuota);
 	}
 
 	public Resources getRsrcQuota() {
-		return this.rsrcQuota;
+		return new Resources(rsrcQuota);
+	}
+	
+	public Resources getJobsQuota() {
+		Resources res = new Resources();
+		for (BaseDag job: runningJobs){
+			res.addWith(job.rsrcQuota);
+		}
+		return res;
 	}
 
 	public Resources getResRate(List<Resources> resList, double term) {
@@ -110,19 +117,6 @@ public class JobQueue {
 		return this.getResRate(this.receivedResourcesList, term);
 	}
 
-	public Resources getShortTermRate() {
-		return getResRate(this.shortTerm);
-	}
-
-	public Resources getShortTermRes() {
-		double mShort = Math.min(this.shortTerm, Simulator.CURRENT_TIME);
-		return getResRate(mShort);
-	}
-
-	public Resources getLongTermRate() {
-		double mLong = Math.min(this.longTerm, Simulator.CURRENT_TIME);
-		return getResRate(mLong);
-	}
 
 	public void addResourcesList(Resources res) {
 		this.receivedResourcesList.add(0, res);
@@ -188,18 +182,8 @@ public class JobQueue {
 		if (this.serviceRate.isBeyongGuaranteedDuration(Simulator.CURRENT_TIME, this.startTimeOfNewJob))
 			return this.speedFairWeight;
 		else
-			return this.weight;
+			return 1.0; // make equal share to others.
 	}
-	
-//	public Resources computeShortTermShare() {
-//		double mShort = Math.min(this.shortTerm, Simulator.CURRENT_TIME + Globals.STEP_TIME - startTime);
-//		return computeShare(mShort, this.resShortTermGuartRate);
-//	}
-//
-//	public Resources computeLongTermShare() {
-//		double mLong = Math.min(this.longTerm, Simulator.CURRENT_TIME + Globals.STEP_TIME - startTime);
-//		return computeShare(mLong,this.resLongTermGuartRate);
-//	}
 	
 	public Resources getMinService(double currTime){
 		double size = this.serviceRate.getGuaranteedRate(currTime, startTimeOfNewJob);
@@ -249,5 +233,12 @@ public class JobQueue {
 
 	public void setStartTimeOfNewJob(double startTimeOfNewJob) {
 		this.startTimeOfNewJob = startTimeOfNewJob;
+	}
+	
+	public Queue<BaseDag> cloneRunningJobs(){
+		Queue<BaseDag> jobs = new LinkedList<BaseDag>();
+		for (BaseDag job: this.runningJobs)
+			jobs.add(job);
+		return jobs;
 	}
 }

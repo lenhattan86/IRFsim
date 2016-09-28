@@ -54,9 +54,6 @@ public class Main {
 		public static double MACHINE_MAX_RESOURCE;
 		public static int DagIdStart, DagIdEnd;
 		
-		public static double SHORT_TERM = 2.0;
-		public static double LONG_TERM = 10.0;
-
 		public static boolean ADJUST_FUNGIBLE = false;
 
 		public static double SIM_END_TIME = 20;
@@ -94,21 +91,23 @@ public class Main {
       case Tan:
       DagIdStart = 0;
       DagIdEnd = 49;
-      SIM_END_TIME = 50000;
+      SIM_END_TIME = 500;
       STEP_TIME = 1;
       DEBUG_LOCAL = true;
+      NUM_MACHINES = 1;
+      NUM_DIMENSIONS = 2;
+      MACHINE_MAX_RESOURCE = 200;
       
 //      String TEST_CASE = "DRF"; 
 //      String TEST_CASE = "DRF-W"; // TODO: remember to change the weights in the queue-input files.
-//    	String TEST_CASE = "SpeedFair";
-      String TEST_CASE = "Strict"; 
+    	String TEST_CASE = "SpeedFair";
+//      String TEST_CASE = "Strict"; 
       DataFolder = "input";
       String outputFolder = "output";
-      FileInput = "dags-input-multiple-batches.txt"; QueueInput = "queue_input_multi_batches.txt"; 
-//      FileInput = "dags-input-multiple-batches-long-interactive.txt"; QueueInput = "queue_input_multi_batches.txt";
+//      FileInput = "dags-input-simple.txt"; QueueInput = "queue_input.txt"; MACHINE_MAX_RESOURCE = 10;
+//      FileInput = "dags-input-multiple-batches.txt"; QueueInput = "queue_input_multi_batches.txt"; 
+      FileInput = "dags-input-multiple-batches-long-interactive.txt"; QueueInput = "queue_input_multi_batches.txt";
 //      FileInput = "dags-input-multiple-interactives.txt"; QueueInput = "queue_input_multi_interactives.txt"; 
-  		SHORT_TERM = 1.0;
-  		LONG_TERM = 10.0;
       
       PathToInputFile = DataFolder + "/" + FileInput;
       PathToQueueInputFile = DataFolder + "/" + QueueInput;
@@ -142,9 +141,7 @@ public class Main {
       
 
       
-      NUM_MACHINES = 1;
-      NUM_DIMENSIONS = 2;
-      MACHINE_MAX_RESOURCE = 200;
+      
 
       ADJUST_FUNGIBLE = false;
 //      JOBS_ARRIVAL_POLICY = JobsArrivalPolicy.All;

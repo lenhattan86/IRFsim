@@ -1,12 +1,15 @@
+addpath('matlab_func');
 common_settings;
+%%
 % result_folder = 'result_20160927_long/';
-result_folder = 'result_20160927_short/';
+% result_folder = 'result_20160927_short/';
+result_folder = '';
 output_folder = [result_folder 'output/'];
-is_printed = true;
+is_printed = false;
 % fig_path = 'C:\Users\lenha\Documents\GitHub\NSDI17\fig\';
 fig_path = 'figs\';
 %%
-plot = true;
+plot = false;
 if plot 
    INTERACTIVE_QUEUE = 'interactive';
    [ drf_avg_compl_time ] = obtain_compl_time( output_folder, drf_compl_files, INTERACTIVE_QUEUE);
@@ -69,7 +72,7 @@ if plot
    if is_printed
       print ('-depsc', [fig_path 'res_usage_speedfair.eps']);
    end
-   
+   return;
    logFile = [ logfolder 'DRF-output49_1_50.csv'];
    figure;
    [queueNames, res1, res2] = import_res_usage(logFile);

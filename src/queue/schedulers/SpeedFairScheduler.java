@@ -10,7 +10,7 @@ import cluster.simulator.Simulator;
 import cluster.utils.Output;
 
 public class SpeedFairScheduler implements Scheduler {
-	private static final boolean DEBUG = false;
+	private boolean DEBUG = false;
 
 	private String schedulePolicy;
 
@@ -25,9 +25,10 @@ public class SpeedFairScheduler implements Scheduler {
 	// N - total number of running jobs
 	@Override
 	public void computeResShare() {
-//		if(Simulator.CURRENT_TIME>=90.0)
-//			System.out.println("Stop to debug");
-		Output.debugln(DEBUG, "STEP_TIME:" + Simulator.CURRENT_TIME);
+		if(Simulator.CURRENT_TIME>=90.0){
+//			DEBUG = true;
+		}
+		Output.debugln(DEBUG, "[SpeedFairScheduler] STEP_TIME:" + Simulator.CURRENT_TIME);
 		int numQueuesRuning = Simulator.QUEUE_LIST.getRunningQueues().size();
 		if (numQueuesRuning == 0) {
 			return;
@@ -39,7 +40,7 @@ public class SpeedFairScheduler implements Scheduler {
 			Resources rsrcQuota = Resources.piecewiseMin(q.getMinService(Simulator.CURRENT_TIME), q.getMaxDemand());
 			q.setRsrcQuota(rsrcQuota);
 			availRes = Resources.subtractPositivie(availRes, q.getRsrcQuota());
-			Output.debugln(DEBUG, "Allocated to queue:" + q.getQueueName() + " " + q.getRsrcQuota());
+//			Output.debugln(DEBUG, "[SpeedFairScheduler] Allocated to queue:" + q.getQueueName() + " " + q.getRsrcQuota());
 		}
 
 		// Share the remaining resources
@@ -54,7 +55,8 @@ public class SpeedFairScheduler implements Scheduler {
 //			while (allocatedQueues.size()>0){ //TODO utilize more resources.
 			for (JobQueue q : Simulator.QUEUE_LIST.getRunningQueues()) {
 				Resources res = q.getRsrcQuota();
-				res.addWith(Resources.multiply(share, q.getSpeedFairWeight()));
+				res.addWith(Resources.multiply(share, q.getSpeedFairWeight())); 
+				res.floor();
 				// compare the real demand and the fair share
 				res = Resources.piecewiseMin(res, q.getMaxDemand());
 				q.setRsrcQuota(res);
@@ -84,20 +86,47 @@ public class SpeedFairScheduler implements Scheduler {
 				Resources newQuota = Resources.piecewiseMin(availRes, q.getRsrcQuota());
 				q.setRsrcQuota(newQuota);
 			}
-			Output.debugln(DEBUG, "Allocated to queue:" + q.getQueueName() + " " + q.getRsrcQuota());
+			Output.debugln(DEBUG, "[SpeedFairScheduler] Allocated to queue:" + q.getQueueName() + " " + q.getRsrcQuota());
 			q.receivedResourcesList.add(q.getRsrcQuota());
 
-			// TODO: share the resources among the jobs in the same queue. (using
-			// Fair)
-			Resources rsShare = Resources.divide(q.getRsrcQuota(), q.runningJobsSize());
+			// TODO: Fair share the resources among the jobs. 
+			
+			Resources remain = q.getRsrcQuota();
 			Queue<BaseDag> runningJobs = q.getRunningJobs();
 			for (BaseDag job : runningJobs) {
+				Resources rsShare = Resources.divide(q.getRsrcQuota(), q.runningJobsSize());
+				rsShare.floor();
 				job.rsrcQuota = rsShare;
-//				Output.debugln(DEBUG, "Allocated to job:" + job.dagId + " " + job.rsrcQuota);
+				remain.subtract(rsShare);
 			}
+			shareRemainRes(q, remain);
+//			Output.debugln(DEBUG, "[SpeedFairScheduler] Allocated to queue:" + q.getQueueName() + " " + q.getJobsQuota());
 			availRes = Resources.subtract(availRes, q.getRsrcQuota());
 		}
 
+	}
+	
+	private void shareRemainRes(JobQueue q, Resources remain){
+		Queue<BaseDag> runningJobs = q.cloneRunningJobs();
+		while (true) {
+			if (runningJobs.isEmpty() || remain.isEmpty()){
+				break;
+			}
+			Queue<BaseDag> jobs = new LinkedList<BaseDag>(runningJobs);
+			for (BaseDag job: jobs){
+				if (remain.isEmpty())
+					break;
+				
+				if (job.getMaxDemand().greater(job.rsrcQuota)){
+					Resources tmp = Resources.piecewiseMin(new Resources(1.0), remain);
+					job.rsrcQuota.addWith(tmp);
+					remain.subtract(tmp);
+				}
+				else {
+					runningJobs.remove(job);
+				}
+			}
+		}
 	}
 
 	public void computeResShare_prev() {
