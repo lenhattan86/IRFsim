@@ -7,6 +7,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
+import cluster.simulator.Main.Globals;
 import cluster.simulator.Simulator;
 
 public class JobQueueList {
@@ -109,6 +110,11 @@ public class JobQueueList {
 		return runningQueues;
 	}
 	
+	public void printQueueInfo(){
+		for (JobQueue q: this.jobQueues)
+			System.out.println(q.getQueueName() + " weight: " + q.getWeight());
+	}
+	
 	public void readQueue(String filePathString){
 		File file = new File(filePathString);
     assert (file.exists() && !file.isDirectory());
@@ -130,7 +136,11 @@ public class JobQueueList {
       	queueName = queueName.trim();
       	JobQueue queue = new JobQueue(queueName);
       	queue.setSpeedFairWeight(Double.parseDouble(args[1]));
-      	queue.setWeight(Double.parseDouble(args[2])); 
+      	queue.setWeight(Double.parseDouble(args[2]));
+      	//TODO: hard-code the high weight for interactive queues for DRF-W
+      	if (Globals.METHOD.equals("DRF-W") && queueName.startsWith("interactive")) {
+      		queue.setWeight(Globals.DRFW_weight);
+      	}
       	
         Simulator.QUEUE_LIST.addJobQueue(queue);
 

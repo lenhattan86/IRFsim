@@ -1,22 +1,22 @@
 clear; close all; clc;
 
 
-drf_compl_files = {'DRF-output19_1_50.csv';
-                  'DRF-output29_1_50.csv';
-                  'DRF-output39_1_50.csv';
-                  'DRF-output49_1_50.csv'};
+drf_compl_files = {'DRF-output_1.csv';
+                  'DRF-output_2.csv';
+                  'DRF-output_3.csv';
+                  'DRF-output_4.csv'};
                
-speedfair_compl_files = {'SpeedFair-output19_1_50.csv';
-                  'SpeedFair-output29_1_50.csv';
-                  'SpeedFair-output39_1_50.csv';
-                  'SpeedFair-output49_1_50.csv'};  
+drfw_compl_files = {'DRF-w-output_1.csv';
+                  'DRF-w-output_2.csv';
+                  'DRF-w-output_3.csv';
+                  'DRF-w-output_4.csv'};  
                
-drfw_compl_files = {'DRF-w-output19_1_50.csv';
-                  'DRF-w-output29_1_50.csv';
-                  'DRF-w-output39_1_50.csv';
-                  'DRF-w-output49_1_50.csv'};  
+speedfair_compl_files = {'SpeedFair-output_1.csv';
+                  'SpeedFair-output_2.csv';
+                  'SpeedFair-output_3.csv';
+                  'SpeedFair-output_4.csv'};  
                
-strict_priority_compl_files = {'Strict-output19_1_50.csv';
-                  'Strict-output29_1_50.csv';
-                  'Strict-output39_1_50.csv';
-                  'Strict-output49_1_50.csv'};  
+strict_priority_compl_files = {'Strict-output_1.csv';
+                  'Strict-output_2.csv';
+                  'Strict-output_3.csv';
+                  'Strict-output_4.csv'};  

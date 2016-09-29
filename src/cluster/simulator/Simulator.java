@@ -31,33 +31,33 @@ import cluster.utils.Utils;
 // implement the timeline server
 public class Simulator {
 
-	public final static boolean DEBUG = false;
+	public final static boolean DEBUG = true;
 
 	public static double CURRENT_TIME = 0;
 
-	public static Queue<BaseDag> runnableJobs;
-	public static Queue<BaseDag> runningJobs;
-	public static Queue<BaseDag> completedJobs;
+	public static Queue<BaseDag> runnableJobs = null;
+	public static Queue<BaseDag> runningJobs= null;
+	public static Queue<BaseDag> completedJobs= null;
 
-	public static JobQueueList QUEUE_LIST = new JobQueueList();
+	public static JobQueueList QUEUE_LIST = null;
 
-	public static Cluster cluster;
+	public static Cluster cluster = null;
 
 	public static Randomness r;
 	double nextTimeToLaunchJob = 0;
 
-	int totalReplayedJobs;
-	int lastCompletedJobs;
+	int totalReplayedJobs = 0;
+	int lastCompletedJobs = 0;
 
-	public static QueueScheduler queueSched;
+	public static QueueScheduler queueSched = null;
 
-	public static InterJobScheduler interJobSched;
-	public static IntraJobScheduler intraJobSched;
+	public static InterJobScheduler interJobSched= null;
+	public static IntraJobScheduler intraJobSched= null;
 
-	public static LeftOverResAllocator leftOverResAllocator;
+	public static LeftOverResAllocator leftOverResAllocator = null;
 
 	// dag_id -> list of tasks
-	public static Map<Integer, Set<Integer>> tasksToStartNow;
+	public static Map<Integer, Set<Integer>> tasksToStartNow = null;
 
 	public static void duplicateJob(Queue<BaseDag> dags, int dagId) {
 		StageDag dag = null;
@@ -84,9 +84,12 @@ public class Simulator {
 	}
 
 	public Simulator() {
+		QUEUE_LIST = new JobQueueList();
 		
 		QUEUE_LIST.readQueue(Globals.PathToQueueInputFile);
-
+		
+		QUEUE_LIST.printQueueInfo();
+		
 		runnableJobs = StageDag.readDags(Globals.PathToInputFile, Globals.DagIdStart,
 				Globals.DagIdEnd - Globals.DagIdStart + 1);
 
@@ -286,7 +289,7 @@ public class Simulator {
 				dag.receivedService.addUsage(dag.rsrcInUse);
 			}
 
-			Simulator.printUsedResources();
+//			Simulator.printUsedResources();
 
 			Output.debugln(DEBUG, "[Simulator]: END work conserving; clusterAvail:" + Simulator.cluster.getClusterResAvail());
 
@@ -331,12 +334,8 @@ public class Simulator {
 //				}
 				Output.debugln(DEBUG, "Running jobs size:" + runningJobs.size());
 				
-//				Simulator.printUsedResources();
-				
 				// Allocate the share to the jobs
 				queueSched.adjustShares();
-				
-//				Simulator.printUsedResources();
 				
 			// do intra-job scheduling for every running job
 				if (Globals.INTRA_JOB_POLICY == Globals.SchedulingPolicy.Yarn) {
@@ -365,7 +364,7 @@ public class Simulator {
 				dag.receivedService.addUsage(dag.rsrcInUse);
 			}
 
-//			Simulator.printUsedResources();
+			Simulator.printUsedResources();
 			Simulator.writeResourceUsage();
 		}
 		System.out.println("\n==== END STEP_TIME:" + Simulator.CURRENT_TIME + " ====\n");
@@ -394,9 +393,9 @@ public class Simulator {
 			System.out.println(dagId + " " + results.get(dagId));
 		}
 		System.out.println("---------------------");
-		for (JobQueue queue : QUEUE_LIST.getJobQueues()) {
-			System.out.println("Queue " + queue.getQueueName() + "'s job compl. time: " + queue.avgCompletionTime());
-		}
+//		for (JobQueue queue : QUEUE_LIST.getJobQueues()) {
+//			System.out.println("Queue " + queue.getQueueName() + "'s job compl. time: " + queue.avgCompletionTime()); //TODO:
+//		}
 		System.out.println("NUM_OPT:" + Globals.NUM_OPT + " NUM_PES:" + Globals.NUM_PES);
 	}
 
@@ -419,7 +418,7 @@ public class Simulator {
 
 	public static void printUsedResources() {
 		for (BaseDag dag : runningJobs) {
-			Output.debugln(DEBUG, "Dag Id " + dag.dagId + " -- dag.rsrcInUse: " + dag.rsrcInUse);
+			Output.debugln(DEBUG, "Dag Id " + dag.dagId + "in " + dag.getQueueName()+ " -- dag.rsrcInUse: " + dag.rsrcInUse);
 			// Output.writeln(dag.dagId + ", " + dag.rsrcInUse, true,
 			// Globals.PathToResourceLog);
 //			Output.debugln(DEBUG, "Dag Id " + dag.dagId + " -- Resource Share: " + dag.rsrcQuota);

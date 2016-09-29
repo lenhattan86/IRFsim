@@ -4,9 +4,11 @@ import java.util.logging.Logger;
 
 import cluster.simulator.Main.Globals;
 import cluster.simulator.Main.Globals.JobsArrivalPolicy;
-import cluster.simulator.Main.Globals.RunMode;
+import cluster.simulator.Main.Globals.Runmode;
+import cluster.simulator.Main.Globals.SetupMode;
 import cluster.simulator.Main.Globals.SchedulingPolicy;
 import cluster.simulator.Main.Globals.SharingPolicy;
+import cluster.utils.GenInput;
 import cluster.utils.Output;
 import cluster.utils.Utils;
 
@@ -16,15 +18,20 @@ public class Main {
 
 	public static class Globals {
 
-		public enum RunMode {
-			Robert, Mosharaf, CommandLine, GenerateTrace, Tan
+		public enum SetupMode {
+			Mosharaf, Tan, CommandLine, GenerateTrace
+		};
+		
+		public enum Runmode {
+			SingleRun, MultipleRun
 		};
 
 		// public static RunMode runmode = RunMode.CommandLine;
-		public static RunMode runmode = RunMode.Tan;
+		public static SetupMode setup = SetupMode.Tan;
+		public static Runmode runmode = Runmode.MultipleRun;
 
 		public static boolean DEBUG_ALL = false;
-		public static boolean DEBUG_LOCAL = true;
+		public static boolean DEBUG_LOCAL = false;
 
 		public static enum QueueSchedulerPolicy {
 			DRF, SpeedFair, Strict
@@ -53,11 +60,14 @@ public class Main {
 		public static int NUM_MACHINES, NUM_DIMENSIONS;
 		public static double MACHINE_MAX_RESOURCE;
 		public static int DagIdStart, DagIdEnd;
-		
+
+		public static String METHOD = "SpeedFair";
+		public static double DRFW_weight = 4.0;
+
 		public static boolean ADJUST_FUNGIBLE = false;
 
 		public static double SIM_END_TIME = 20;
-		public static double STEP_TIME = 1;
+		public static double STEP_TIME = 1.0;
 
 		public static int NUM_OPT = 0, NUM_PES = 0;
 
@@ -73,11 +83,14 @@ public class Main {
 
 		public static boolean COMPUTE_STATISTICS = false;
 		public static double ERROR = 0.0;
+		
+		public static boolean IS_GEN = true;
 
 		/**
 		 * these variables will be set by the static constructor based on runmode
 		 */
 		public static String DataFolder;
+		public static String outputFolder =  "output";
 		public static String FileInput = "dags-input.txt";
 		public static String QueueInput = "queue_input.txt";
 		public static String FileOutput = "dags-output.txt";
@@ -85,268 +98,139 @@ public class Main {
 		public static String PathToQueueInputFile;
 		public static String PathToOutputFile = "";
 		public static String PathToResourceLog = "";
+		
 
-		static {
-      switch (runmode) {
-      case Tan:
-      DagIdStart = 0;
-      DagIdEnd = 49;
-      SIM_END_TIME = 500;
-      STEP_TIME = 1;
-      DEBUG_LOCAL = true;
-      NUM_MACHINES = 1;
-      NUM_DIMENSIONS = 2;
-      MACHINE_MAX_RESOURCE = 200;
-      
-//      String TEST_CASE = "DRF"; 
-//      String TEST_CASE = "DRF-W"; // TODO: remember to change the weights in the queue-input files.
-    	String TEST_CASE = "SpeedFair";
-//      String TEST_CASE = "Strict"; 
-      DataFolder = "input";
-      String outputFolder = "output";
-//      FileInput = "dags-input-simple.txt"; QueueInput = "queue_input.txt"; MACHINE_MAX_RESOURCE = 10;
-//      FileInput = "dags-input-multiple-batches.txt"; QueueInput = "queue_input_multi_batches.txt"; 
-      FileInput = "dags-input-multiple-batches-long-interactive.txt"; QueueInput = "queue_input_multi_batches.txt";
-//      FileInput = "dags-input-multiple-interactives.txt"; QueueInput = "queue_input_multi_interactives.txt"; 
-      
-      PathToInputFile = DataFolder + "/" + FileInput;
-      PathToQueueInputFile = DataFolder + "/" + QueueInput;
-      
-      int numOfInteractiveJobs = DagIdEnd-DagIdStart;
-      int numOfbatchjobs = 1;
-      int numOfQueues = numOfInteractiveJobs+numOfbatchjobs;
-      
-      if (TEST_CASE.equals("DRF")) {
-        	QUEUE_SCHEDULER = QueueSchedulerPolicy.DRF;
-        	INTRA_JOB_POLICY = SchedulingPolicy.Yarn;
-  		    FileOutput = "DRF-output"+numOfInteractiveJobs+"_"+numOfbatchjobs+"_"+numOfQueues+".csv";
-      }else if(TEST_CASE.equals("SpeedFair")) {
-      	QUEUE_SCHEDULER = QueueSchedulerPolicy.SpeedFair;
-		    INTRA_JOB_POLICY = SchedulingPolicy.Yarn;
-		    FileOutput = "SpeedFair-output"+numOfInteractiveJobs+"_"+numOfbatchjobs+"_"+numOfQueues+".csv";
-      } else if(TEST_CASE.equals("DRF-W")) {
-      	QUEUE_SCHEDULER = QueueSchedulerPolicy.DRF;
-		    INTRA_JOB_POLICY = SchedulingPolicy.Yarn;
-		    FileOutput = "DRF-W-output"+numOfInteractiveJobs+"_"+numOfbatchjobs+"_"+numOfQueues+".csv";
-      } else if(TEST_CASE.equals("Strict")) {
-      	QUEUE_SCHEDULER = QueueSchedulerPolicy.Strict;
-		    INTRA_JOB_POLICY = SchedulingPolicy.Yarn;
-		    FileOutput = "Strict-output"+numOfInteractiveJobs+"_"+numOfbatchjobs+"_"+numOfQueues+".csv";
-      } else {
-      	System.err.println("Error! test case");
-      	break;
-      }
-      PathToOutputFile = outputFolder + "/" + FileOutput;
-      PathToResourceLog = "log" +"/" + FileOutput;
-      
+		public static double[] RATES = { 200.0 };
+		public static double[] RATE_DURATIONS = { 2.0 };
+		
+		public static int numInteractiveQueues = 1, numInteractiveJobPerQueue = 10, numInteractiveTask = 200;
+		public static int numBatchQueues = 3, numBatchJobPerQueue = 10;
 
-      
-      
+		public static void setupParameters() {
+			switch (setup) {
+			case Tan:
+				DagIdStart = 0;
+				DagIdEnd = 500;
+				SIM_END_TIME = 5000;
+				NUM_MACHINES = 1;
+				NUM_DIMENSIONS = 2;
+				MACHINE_MAX_RESOURCE = 200;
+				DRFW_weight = 4.0;
+				// METHOD = "DRF";
+//				 METHOD = "DRF-W"; // TODO: remember to change the weights in the
+				// queue-input files.
+//				 METHOD = "SpeedFair";
+//				METHOD = "Strict";
+				
+				// DataFolder = "input"; FileInput = "dags-input-simple.txt"; QueueInput
+				// = "queue_input.txt"; MACHINE_MAX_RESOURCE = 10;
+				// DataFolder = "input"; FileInput = "dags-input-multiple-batches.txt";
+				// QueueInput = "queue_input_multi_batches.txt";
+				// DataFolder = "input"; FileInput =
+				// "dags-input-multiple-batches-long-interactive.txt"; QueueInput =
+				// "queue_input_multi_batches.txt";
+				// DataFolder = "input"; FileInput =
+				// "dags-input-multiple-interactives.txt"; QueueInput =
+				// "queue_input_multi_interactives.txt";
 
-      ADJUST_FUNGIBLE = false;
-//      JOBS_ARRIVAL_POLICY = JobsArrivalPolicy.All;
-      JOBS_ARRIVAL_POLICY = JobsArrivalPolicy.Trace;
 
-      // sensitivity
-      LEVEL_OF_OPTIMISM = 1.0;
-      TETRIS_UNIVERSAL = false;
-      COMPUTE_STATISTICS = false;
-      ERROR = 0.0;
-      break;
-      case Robert:
-        String root = "/u/r/g/rgrandl/School/research/"
-            + "bottleneck-agnostic-scheduling/workload";
-        DataFolder = root + "/traces";
-        FileInput = "50Jobs.txt";
-        FileOutput = "dags-output.txt";
-        PathToInputFile = DataFolder + "/" + FileInput;
+				ADJUST_FUNGIBLE = false;
+				// JOBS_ARRIVAL_POLICY = JobsArrivalPolicy.All;
+				JOBS_ARRIVAL_POLICY = JobsArrivalPolicy.Trace;
 
-        SIM_END_TIME = 500000;
-        STEP_TIME = 1;
-
-        NUM_MACHINES = 1;
-        NUM_DIMENSIONS = 6;
-        MACHINE_MAX_RESOURCE = 100;
-
-        ADJUST_FUNGIBLE = false;
-        JOBS_ARRIVAL_POLICY = JobsArrivalPolicy.All;
-
-        DagIdStart = 0;
-        DagIdEnd = 50;
-
-        INTER_JOB_POLICY = SharingPolicy.Fair;
-        INTRA_JOB_POLICY = SchedulingPolicy.CP;
-
-        // sensitivity
-        LEVEL_OF_OPTIMISM = 1.0;
-        TETRIS_UNIVERSAL = false;
-        COMPUTE_STATISTICS = true;
-        ERROR = 0.0;
-        break;
-      case Mosharaf:
-        String root1 = "/Users/mosharaf/Dropbox/Carbyne/";
-        DataFolder = root1 + "workload/traces";
-        System.out.println("Path: " + DataFolder);
-        FileInput = "50Jobs.txt";
-        FileOutput = "dags-output.txt";
-        PathToInputFile = DataFolder + "/" + FileInput;
-
-        SIM_END_TIME = 50000;
-        STEP_TIME = 1;
-
-        NUM_MACHINES = 1;
-        NUM_DIMENSIONS = 6;
-        MACHINE_MAX_RESOURCE = 100.0;
-
-        ADJUST_FUNGIBLE = false;
-        JOBS_ARRIVAL_POLICY = JobsArrivalPolicy.Trace;
-
-        DagIdStart = 0;
-        DagIdEnd = 1;
-
-        INTER_JOB_POLICY = SharingPolicy.Fair;
-        INTRA_JOB_POLICY = SchedulingPolicy.Carbyne;
-        break;
-
-      case CommandLine:
-        break;
-      case GenerateTrace:
-        break;
-      default:
-        System.err.println("Unknown runmode");
-      }
-	}
-
+				// sensitivity
+				LEVEL_OF_OPTIMISM = 1.0;
+				TETRIS_UNIVERSAL = false;
+				COMPUTE_STATISTICS = false;
+				ERROR = 0.0;
+				break;
+			case CommandLine:
+				break;
+			case GenerateTrace:
+				break;
+			default:
+				System.err.println("Unknown runmode");
+			}
+		}
 	}
 
 	public static void main(String[] args) {
-
-		String UsageStr = "Usage: java carbyne.simulator.Main pathToInput " + "num_machines adjust_fungible dag_id_end "
-				+ "inter_job_policy=[FAIR | DRF | SJF | SpeedFair] " + "intra_job_policy=[CARBYNE | TETRIS | CP | BFS | RANDOM]"
-				+ " level_optimism([0.0 - 1.0])" + " compute_stats";
-
-		// read parameters from command line, if specified
-		if (Globals.runmode == RunMode.CommandLine) {
-			int curArg = 0;
-
-			if (args.length == curArg) {
-				System.out.println(UsageStr);
-				System.exit(0);
-			}
-			Globals.PathToInputFile = args[curArg];
-			curArg++;
-
-			Globals.SIM_END_TIME = 200000;
-			Globals.STEP_TIME = 1;
-
-			Globals.NUM_MACHINES = 1;
-			Globals.NUM_DIMENSIONS = 6;
-			if (args.length == curArg) {
-				System.out.println(UsageStr);
-				System.exit(0);
-			}
-			Globals.MACHINE_MAX_RESOURCE = Double.parseDouble(args[curArg]);
-			curArg++;
-
-			if (args.length == curArg) {
-				System.out.println(UsageStr);
-				System.exit(0);
-			}
-			Globals.ADJUST_FUNGIBLE = Boolean.parseBoolean(args[curArg]);
-			curArg++;
-
-			Globals.JOBS_ARRIVAL_POLICY = JobsArrivalPolicy.Trace;
-
-			Globals.DagIdStart = 0;
-			if (args.length == curArg) {
-				System.out.println(UsageStr);
-				System.exit(0);
-			}
-			Globals.DagIdEnd = Integer.parseInt(args[curArg]);
-			curArg++;
-
-			if (args.length == curArg) {
-				System.out.println(UsageStr);
-				System.exit(0);
-			}
-			String UPPER_ARG = args[curArg].toUpperCase();
-			curArg++;
-			if (UPPER_ARG.contains("FAIR")) {
-				Globals.INTER_JOB_POLICY = SharingPolicy.Fair;
-			} else if (UPPER_ARG.contains("DRF")) {
-				Globals.INTER_JOB_POLICY = SharingPolicy.DRF;
-			} else if (UPPER_ARG.contains("SJF")) {
-				Globals.INTER_JOB_POLICY = SharingPolicy.SJF;
-			} else if (UPPER_ARG.contains("SpeedFair")) {
-				Globals.INTER_JOB_POLICY = SharingPolicy.SpeedFair;
-			} else {
-				LOG.warning("UNKNOWN INTER_JOB_POLICY");
-				System.out.println(UsageStr);
-				System.exit(0);
-			}
-
-			if (args.length == curArg) {
-				System.out.println(UsageStr);
-				System.exit(0);
-			}
-			UPPER_ARG = args[curArg].toUpperCase();
-			curArg++;
-			if (UPPER_ARG.contains("CARBYNE")) {
-				Globals.INTRA_JOB_POLICY = SchedulingPolicy.Carbyne;
-			} else if (UPPER_ARG.contains("TETRIS")) {
-				Globals.INTRA_JOB_POLICY = SchedulingPolicy.Tetris;
-			} else if (UPPER_ARG.contains("CP")) {
-				Globals.INTRA_JOB_POLICY = SchedulingPolicy.CP;
-			} else if (UPPER_ARG.contains("BFS")) {
-				Globals.INTRA_JOB_POLICY = SchedulingPolicy.BFS;
-			} else if (UPPER_ARG.contains("RANDOM")) {
-				Globals.INTRA_JOB_POLICY = SchedulingPolicy.Random;
-			} else {
-				LOG.warning("UNKNOWN INTRA_JOB_POLICY");
-				System.out.println(UsageStr);
-				System.exit(0);
-			}
-
-			// sensitivity
-			if (args.length == curArg) {
-				System.out.println(UsageStr);
-				System.exit(0);
-			}
-			double opt_arg = Double.parseDouble(args[curArg]);
-			if (opt_arg < 0 || opt_arg > 1.0) {
-				System.out.println(UsageStr);
-				System.exit(0);
-			}
-			Globals.LEVEL_OF_OPTIMISM = opt_arg;
-			curArg++;
-			if (args.length == curArg) {
-				System.out.println(UsageStr);
-				System.exit(0);
-			}
-
-			boolean compute_stats = Boolean.parseBoolean(args[curArg]);
-			if (opt_arg < 0 || opt_arg > 1.0) {
-				System.out.println(UsageStr);
-				System.exit(0);
-			}
-			Globals.COMPUTE_STATISTICS = compute_stats;
-
-		} else if (Globals.runmode == RunMode.GenerateTrace) {
-			String root = "/u/r/g/rgrandl/School/research/" + "bottleneck-agnostic-scheduling/workload";
-			Globals.DataFolder = root + "/traces";
-			Globals.FileInput = "queries_tpch.txt";
-			Globals.FileOutput = "queries_tpch_no_distr.txt";
-			Globals.PathToInputFile = Globals.DataFolder + "/" + Globals.FileInput;
-
-			Globals.NUM_DIMENSIONS = 6;
-
-			Globals.DagIdStart = 0;
-			Globals.DagIdEnd = 40;
-
-			Utils.generateTrace();
-			System.exit(-1);
+		
+		Globals.setupParameters();
+		Globals.runmode = Runmode.MultipleRun;
+		
+		if (Globals.runmode.equals(Runmode.MultipleRun)) {
+			String[] methods = {"DRF", "DRF-W", "SpeedFair", "Strict"};
+			int[] batchQueueNums = {1,2,3,4}; 
+//			String[] methods = {"DRF", "DRF-W"};
+//			int[] batchQueueNums = {1};
+//			Globals.numInteractiveTask = 400; Globals.numInteractiveJobPerQueue = 10;
+//			Globals.numInteractiveTask = 2000; Globals.numInteractiveJobPerQueue = 20; Globals.numBatchJobPerQueue = 10;
+			Globals.numInteractiveTask = 16000; Globals.numInteractiveJobPerQueue = 40; Globals.numBatchJobPerQueue = 15;
+			
+			for (int j=0; j<batchQueueNums.length; j++)
+				for (int i=0; i<methods.length; i++){
+					Globals.METHOD = methods[i];
+					Globals.numBatchQueues = batchQueueNums[j];
+					System.out.println("========================================================================");
+					System.out.println("Run METHOD: " +Globals.METHOD+ " with "+Globals.numBatchQueues +" batch queues.");
+					runSimulationScenario();
+					System.out.println("========================================================================");
+					
+				}
+		} else if (Globals.runmode.equals(Runmode.SingleRun)){
+			Globals.METHOD="DRF-W";
+//			Globals.numInteractiveTask = 400; Globals.numInteractiveJobPerQueue = 10;
+			Globals.numInteractiveTask = 4000; Globals.numInteractiveJobPerQueue = 20; Globals.numBatchJobPerQueue = 10;
+			Globals.numBatchQueues = 4;
+			System.out.println("========================================================================");
+			System.out.println("Run METHOD: " + Globals.METHOD + " with " + Globals.numBatchQueues + " batch queues.");
+			runSimulationScenario();
+			System.out.println("========================================================================");
 		}
+		
+		
+		System.out.println("\n");
+		System.out.println("........FINISHED ./.");
+	}
+	
+	public static void runSimulationScenario(){
+		
+		if (Globals.METHOD.equals("DRF") && Globals.IS_GEN) {
+			GenInput.genInput(Globals.numInteractiveQueues, Globals.numInteractiveJobPerQueue, Globals.numInteractiveTask, Globals.numBatchQueues,
+					Globals.numBatchJobPerQueue);
+		}
+		
+		if (Globals.METHOD.equals("DRF")) {
+			Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.DRF;
+			Globals.INTRA_JOB_POLICY = SchedulingPolicy.Yarn;
+			Globals.FileOutput = "DRF-output" + "_" + Globals.numBatchQueues + ".csv";
+		} else if (Globals.METHOD.equals("SpeedFair")) {
+			Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.SpeedFair;
+			Globals.INTRA_JOB_POLICY = SchedulingPolicy.Yarn;
+			Globals.FileOutput = "SpeedFair-output" + "_" + Globals.numBatchQueues + ".csv";
+		} else if (Globals.METHOD.equals("DRF-W")) {
+			Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.DRF;
+			Globals.INTRA_JOB_POLICY = SchedulingPolicy.Yarn;
+			Globals.FileOutput = "DRF-W-output" + "_" + Globals.numBatchQueues + ".csv";
+		} else if (Globals.METHOD.equals("Strict")) {
+			Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.Strict;
+			Globals.INTRA_JOB_POLICY = SchedulingPolicy.Yarn;
+			Globals.FileOutput = "Strict-output" + "_" + Globals.numBatchQueues + ".csv";
+		} else {
+			System.err.println("Error! test case");
+			return;
+		}
+		Globals.PathToOutputFile = Globals.outputFolder + "/" + Globals.FileOutput;
+		Globals.PathToResourceLog = "log" + "/" + Globals.FileOutput;
+		
+		Globals.DataFolder = "input_gen";
+		Globals.FileInput = "jobs_input_1_" + Globals.numBatchQueues + ".txt";
+		Globals.QueueInput = "queue_input_1_" + Globals.numBatchQueues + ".txt";
 
+		Globals.PathToInputFile = Globals.DataFolder + "/" + Globals.FileInput;
+		Globals.PathToQueueInputFile = Globals.DataFolder + "/" + Globals.QueueInput;
+		
 		// print ALL parameters for the record
 		System.out.println("=====================");
 		System.out.println("Simulation Parameters");
@@ -354,18 +238,7 @@ public class Main {
 		System.out.println("PathToInputFile     = " + Globals.PathToInputFile);
 		System.out.println("SIMULATION_END_TIME = " + Globals.SIM_END_TIME);
 		System.out.println("STEP_TIME           = " + Globals.STEP_TIME);
-		System.out.println("NUM_MACHINES        = " + Globals.NUM_MACHINES);
-		System.out.println("NUM_DIMENSIONS      = " + Globals.NUM_DIMENSIONS);
-		System.out.println("MACHINE_MAX_RESOURCE= " + Globals.MACHINE_MAX_RESOURCE);
-		System.out.println("ADJUST_FUNGIBLE     = " + Globals.ADJUST_FUNGIBLE);
-		System.out.println("JOBS_ARRIVAL_POLICY = " + Globals.JOBS_ARRIVAL_POLICY);
-		System.out.println("DagIdStart          = " + Globals.DagIdStart);
-		System.out.println("DagIdEnd            = " + Globals.DagIdEnd);
-//		System.out.println("INTER_JOB_POLICY    = " + Globals.INTER_JOB_POLICY);
-//		System.out.println("INTRA_JOB_POLICY    = " + Globals.INTRA_JOB_POLICY);
 		System.out.println("QUEUE_SCHEDULER    = " + Globals.QUEUE_SCHEDULER);
-		System.out.println("LEVEL_OF_OPTIMISM   = " + Globals.LEVEL_OF_OPTIMISM);
-		System.out.println("INTRODUCED RES.ERROR= " + Globals.ERROR);
 		System.out.println("=====================\n");
 
 		System.out.println("Start simulation ...");
@@ -373,6 +246,5 @@ public class Main {
 		Simulator simulator = new Simulator();
 		simulator.simulateMultiQueues();
 		System.out.println("\nEnd simulation ...");
-		
 	}
 }

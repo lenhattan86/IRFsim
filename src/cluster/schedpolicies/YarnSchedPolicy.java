@@ -35,6 +35,7 @@ public class YarnSchedPolicy extends SchedPolicy {
 				return (int) (val1 - val0);
 			}
 		});
+		
 		Iterator<Integer> iter = rtCopy.iterator();
 		while (iter.hasNext()) {
 			int taskId = iter.next();

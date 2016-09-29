@@ -34,10 +34,14 @@ public class SpeedFairScheduler implements Scheduler {
 			return;
 		}
 		Resources availRes = Simulator.cluster.getClusterMaxResAlloc();
-
+		
+		Queue<JobQueue> allocatedQueues = new LinkedList<JobQueue>();
+		
 		for (JobQueue q : Simulator.QUEUE_LIST.getRunningQueues()) {
 			// compute the rsrcQuota based on the guarateed rate.
 			Resources rsrcQuota = Resources.piecewiseMin(q.getMinService(Simulator.CURRENT_TIME), q.getMaxDemand());
+			if (q.getMaxDemand().greater(rsrcQuota))
+				allocatedQueues.add(q);
 			q.setRsrcQuota(rsrcQuota);
 			availRes = Resources.subtractPositivie(availRes, q.getRsrcQuota());
 //			Output.debugln(DEBUG, "[SpeedFairScheduler] Allocated to queue:" + q.getQueueName() + " " + q.getRsrcQuota());
@@ -46,14 +50,11 @@ public class SpeedFairScheduler implements Scheduler {
 		// Share the remaining resources
 		if (availRes.greaterOrEqual(new Resources())) {
 			double factor = 0.0;
-			Queue<JobQueue> allocatedQueues = new LinkedList<JobQueue>();
-			for (JobQueue q : Simulator.QUEUE_LIST.getRunningQueues()) {
+			for (JobQueue q : allocatedQueues) {
 				factor += q.getSpeedFairWeight();
-				allocatedQueues.add(q);
 			}
 			Resources share = Resources.divide(availRes, factor);
-//			while (allocatedQueues.size()>0){ //TODO utilize more resources.
-			for (JobQueue q : Simulator.QUEUE_LIST.getRunningQueues()) {
+			for (JobQueue q : allocatedQueues) {
 				Resources res = q.getRsrcQuota();
 				res.addWith(Resources.multiply(share, q.getSpeedFairWeight())); 
 				res.floor();
@@ -61,23 +62,12 @@ public class SpeedFairScheduler implements Scheduler {
 				res = Resources.piecewiseMin(res, q.getMaxDemand());
 				q.setRsrcQuota(res);
 				availRes = Resources.subtractPositivie(availRes, res);
-				allocatedQueues.remove(q);
-				
-				// recalculate the share.
-//				if(allocatedQueues.size()>0){
-//					factor = 0.0;
-//					for (JobQueue qTemp : allocatedQueues) {
-//						factor += qTemp.getSpeedFairWeight();
-//					}
-//					share = Resources.divide(availRes, factor);
-//				}
 			}
 		}
 		
 		// TODO: deal with the max demand is less than the allocated share. 
 
 		// TODO: sort queues for interactive jobs.
-
 		// Resource admission control for the queues.
 		availRes = Simulator.cluster.getClusterMaxResAlloc();
 		for (JobQueue q : Simulator.QUEUE_LIST.getRunningQueues()) {

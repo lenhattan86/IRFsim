@@ -313,7 +313,7 @@ public class StageDag extends BaseDag implements Cloneable{
             }
           }
 
-          numVertices = Integer.parseInt(args[8]);
+          numVertices = Integer.parseInt(args[args.length-1]);
           assert (numVertices >= 0);
 
           vIdxEnd += numVertices;
@@ -372,7 +372,7 @@ public class StageDag extends BaseDag implements Cloneable{
               dag.runnableTasks.add(taskId);
             }
           }
-          dag.seedUnorderedNeighbors();
+//          dag.seedUnorderedNeighbors();
           dags.add(dag);
 //          Simulator.QUEUE_LIST.addRunnableJob2Queue(dag, dag.getQueueName());
         }
@@ -382,6 +382,7 @@ public class StageDag extends BaseDag implements Cloneable{
       br.close();
     } catch (Exception e) {
       System.err.println("Catch exception: " + e);
+      e.printStackTrace();
     }
     return dags;
   }

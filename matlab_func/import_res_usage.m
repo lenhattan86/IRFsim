@@ -1,4 +1,4 @@
-function [queueNames,res1,res2] = import_res_usage(filename, startRow, endRow)
+function [queueNames,res1,res2, flag] = import_res_usage(filename, startRow, endRow)
 %IMPORTFILE Import numeric data from a text file as column vectors.
 %   [INTERACTIVE,VARNAME2,VARNAME3] = IMPORTFILE(FILENAME) Reads data from
 %   text file FILENAME for the default selection.
@@ -26,6 +26,13 @@ end
 formatSpec = '%s%s%s%[^\n\r]';
 
 %% Open the text file.
+if ~exist(filename, 'file')
+   queueNames = 0;
+   res1 = 0;
+   res2 = 0;
+   flag = false;
+   return;
+end
 fileID = fopen(filename,'r');
 
 %% Read columns of data according to format string.
@@ -93,5 +100,5 @@ raw(R) = {NaN}; % Replace non-numeric cells
 queueNames = cell2mat(raw(:, 1));
 res1 = cell2mat(raw(:, 2));
 res2 = cell2mat(raw(:, 3));
-
+flag = true;
 

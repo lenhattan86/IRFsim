@@ -1,5 +1,6 @@
 package queue.schedulers;
 
+import java.util.LinkedList;
 import java.util.Queue;
 
 import cluster.datastructures.BaseDag;
@@ -45,6 +46,29 @@ public class StrictScheduler implements Scheduler {
 			for (BaseDag job : runningJobs) {
 					job.rsrcQuota = rsShare;
 					 Output.debugln(DEBUG,"Allocated to job:" + job.dagId + " share:" + job.rsrcQuota);
+			}
+		}
+	}
+	
+	private void shareRemainRes(JobQueue q, Resources remain){
+		Queue<BaseDag> runningJobs = q.cloneRunningJobs();
+		while (true) {
+			if (runningJobs.isEmpty() || remain.isEmpty()){
+				break;
+			}
+			Queue<BaseDag> jobs = new LinkedList<BaseDag>(runningJobs);
+			for (BaseDag job: jobs){
+				if (remain.isEmpty())
+					break;
+				
+				if (job.getMaxDemand().greater(job.rsrcQuota)){
+					Resources tmp = Resources.piecewiseMin(new Resources(1.0), remain);
+					job.rsrcQuota.addWith(tmp);
+					remain.subtract(tmp);
+				}
+				else {
+					runningJobs.remove(job);
+				}
 			}
 		}
 	}
