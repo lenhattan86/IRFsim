@@ -164,9 +164,9 @@ public class Main {
 			int[] batchQueueNums = {1,2,3,4}; 
 //			String[] methods = {"DRF", "DRF-W"};
 //			int[] batchQueueNums = {1};
-//			Globals.numInteractiveTask = 400; Globals.numInteractiveJobPerQueue = 10;
+			Globals.numInteractiveTask = 400; Globals.numInteractiveJobPerQueue = 10;
 //			Globals.numInteractiveTask = 2000; Globals.numInteractiveJobPerQueue = 20; Globals.numBatchJobPerQueue = 10;
-			Globals.numInteractiveTask = 16000; Globals.numInteractiveJobPerQueue = 40; Globals.numBatchJobPerQueue = 15;
+//			Globals.numInteractiveTask = 16000; Globals.numInteractiveJobPerQueue = 40; Globals.numBatchJobPerQueue = 15;
 			
 			for (int j=0; j<batchQueueNums.length; j++)
 				for (int i=0; i<methods.length; i++){

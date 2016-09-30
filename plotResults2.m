@@ -57,12 +57,12 @@ if plot
 
 end
 %%
-plot = true;
+plot = false;
 logfolder = [result_folder 'log/'];
 num_batch_queues = 4;
 num_interactive_queue = 1;
 num_queues = num_batch_queues+num_interactive_queue;
-max_time_step = 500;
+max_time_step = 100;
 linewidth=2;
 barwidth = 1.0;
    
