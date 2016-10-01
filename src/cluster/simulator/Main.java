@@ -39,7 +39,7 @@ public class Main {
 		}
 
 		public static enum QueueSchedulerPolicy {
-			Fair, DRF, SpeedFair, Strict
+			Fair, DRF, SpeedFair
 		};
 
 		public static QueueSchedulerPolicy QUEUE_SCHEDULER = QueueSchedulerPolicy.DRF;
@@ -70,6 +70,7 @@ public class Main {
 
 		public static Method METHOD = Method.SpeedFair;
 		public static double DRFW_weight = 4.0;
+		public static double STRICT_WEIGHT = Double.MAX_VALUE/20.0;
 
 		public static boolean ADJUST_FUNGIBLE = false;
 
@@ -178,7 +179,8 @@ public class Main {
 					System.out.println("========================================================================");
 				}
 		} else if (Globals.runmode.equals(Runmode.SingleRun)) {
-			Globals.METHOD = Method.SpeedFair;
+//			Globals.METHOD = Method.DRFW;
+			Globals.METHOD = Method.DRF;
 			// Globals.numInteractiveTask = 400; Globals.numInteractiveJobPerQueue =
 			// 10;
 			Globals.NUM_MACHINES = 1;
@@ -219,7 +221,7 @@ public class Main {
 			Globals.INTRA_JOB_POLICY = SchedulingPolicy.Yarn;
 			Globals.FileOutput = "DRF-W-output" + "_" + Globals.numBatchQueues + ".csv";
 		} else if (Globals.METHOD.equals(Method.Strict)) {
-			Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.Strict;
+			Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.DRF;
 			Globals.INTRA_JOB_POLICY = SchedulingPolicy.Yarn;
 			Globals.FileOutput = "Strict-output" + "_" + Globals.numBatchQueues + ".csv";
 		} else {

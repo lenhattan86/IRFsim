@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Queue;
 
 import cluster.simulator.Main.Globals;
+import cluster.simulator.Main.Globals.Method;
 import cluster.simulator.Simulator;
 import cluster.speedfair.ServiceCurve;
 import cluster.speedfair.ServiceRate;
@@ -19,7 +20,7 @@ public class JobQueue {
 	private Queue<BaseDag> runningJobs;
 	public Queue<BaseDag> completedJobs;
 	
-	public boolean isInteractive = true;
+	public boolean isInteractive = false;
 	
 	private double weight = 1.0;
 	
@@ -158,16 +159,14 @@ public class JobQueue {
 	
 	// getters & setters
 	public double getWeight() {
-		return weight;
+		double res = weight;
+		if (isInteractive && Globals.METHOD==Method.Strict)
+			res = Globals.STRICT_WEIGHT;
+		if (isInteractive && Globals.METHOD==Method.DRFW)
+			res = Globals.DRFW_weight;
+		return res;
 	}
 	
-	public double getStrictPriorityWeight() {
-		double weight = 1.0;
-		if (serviceRate.getNumOfSlopes() > 0)
-			weight = Double.MAX_VALUE/20.0;
-		return weight;
-	}
-
 	public void setWeight(double weight) {
 		this.weight = weight;
 	}

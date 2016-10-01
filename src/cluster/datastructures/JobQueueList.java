@@ -149,6 +149,12 @@ public class JobQueueList {
         line = br.readLine();
         numOfSlopes = Integer.parseInt(line.trim());
         assert (numOfSlopes >= 0);
+        
+        if (numOfSlopes>0){
+        	queue.isInteractive = true;
+        }else
+        	queue.isInteractive = false;
+        
         for (int i = 0; i < numOfSlopes; ++i) {
         	args = br.readLine().split(" ");
           assert (args.length < numOfSlopes) : 
