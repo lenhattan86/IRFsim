@@ -2,6 +2,7 @@ package cluster.speedfair;
 
 import java.util.ArrayList;
 
+import cluster.datastructures.Resources;
 import cluster.simulator.Main.Globals;
 import cluster.simulator.Simulator;
 
@@ -10,7 +11,14 @@ public class ServiceRate {
 	private ArrayList<Double> slopes = new ArrayList<Double>();
 	private ArrayList<Double> curveDurations = new ArrayList<Double>();
 
+	public enum Type {
+		max, sum
+	};
+
+	private Type type = Type.max;
+
 	public ServiceRate() {
+		type = Type.max;
 	}
 
 	public ServiceRate(ArrayList<Double> slopes, ArrayList<Double> curveDurations) {
@@ -53,4 +61,25 @@ public class ServiceRate {
 		}
 		return mCurrTime > xDuration;
 	}
+
+	public Resources guaranteedResources(Resources demand, double curTime, double startTime) {
+		Resources res = new Resources();
+		if (this.type == Type.max) {
+			int idxOfMax = demand.idxOfMax();
+			double maxVal = demand.resource(idxOfMax);
+			Resources normalizedDemand = Resources.divide(demand, maxVal);
+			double rate = getGuaranteedRate(curTime, startTime);
+			res = Resources.multiply(normalizedDemand, rate);
+		} else if(this.type == Type.sum) {
+			double sumVal = demand.sum();
+			Resources normalizedDemand = Resources.divide(demand, sumVal);
+			double rate = getGuaranteedRate(curTime, startTime);
+			res = Resources.multiply(normalizedDemand, rate);
+		} else{
+			System.err.println("[ServiceRate] type (max or sum) is not legal.");
+		}
+
+		return res;
+	}
+
 }

@@ -9,9 +9,7 @@ public class GenInput {
 	public static double weight = 1.0;
 	public static String queueFile = "input_gen/queue_input";
 	public static String jobFile = "input_gen/jobs_input";
-
-	public static int numbatchTask = 2000;
-
+	
 	public static void genQueueInput(int numInteractiveQueues, int numBatchQueues) {
 		String file = GenInput.queueFile + "_" + numInteractiveQueues + "_" + numBatchQueues + ".txt";
 		Output.write("", false, file);
@@ -31,6 +29,9 @@ public class GenInput {
 
 	public static void genJobInput(int numInteractiveQueus, int numOfInteractiveJobsPerQueue, int numInteractiveTask,
 			int numBatchQueues, int numOfBatchJobsPerQueue) {
+		
+		double[] resources1 = { 0.6, 0.4, 0.0, 0.0, 0.0, 0.0 };
+		
 		String file = GenInput.jobFile + "_" + numInteractiveQueus + "_" + numBatchQueues + ".txt";
 		Output.write("", false, file);
 		// TODO: generate random time arrivals, number of tasks
@@ -40,10 +41,12 @@ public class GenInput {
 			for (int j = 0; j < numOfInteractiveJobsPerQueue; j++) {
 				arrivalTime = j * 10 + i;
 				int jobId = i * numOfInteractiveJobsPerQueue + j;
-				String toWrite = genSingleJobInfo(jobId, "interactive" + i, jobId + "", arrivalTime, numInteractiveTask, 1);
+				String toWrite = genSingleJobInfo(jobId, "interactive" + i, jobId + "", arrivalTime, numInteractiveTask, 1, resources1);
 				Output.writeln(toWrite, true, file);
 			}
 		}
+		
+		double[] resources2 = { 0.2, 0.4, 0.0, 0.0, 0.0, 0.0 };
 
 		int batchStartId = numInteractiveQueus * numOfInteractiveJobsPerQueue;
 		for (int i = 0; i < numBatchQueues; i++) {
@@ -51,16 +54,15 @@ public class GenInput {
 			for (int j = 0; j < numOfBatchJobsPerQueue; j++) {
 				arrivalTime = j * 1 + i;
 				int jobId = i * numOfBatchJobsPerQueue + j + batchStartId;
-				String toWrite = genSingleJobInfo(jobId, "batch" + (i), jobId + "", arrivalTime, numbatchTask, 1);
+				String toWrite = genSingleJobInfo(jobId, "batch" + (i), jobId + "", arrivalTime, Globals.numbatchTask, 1, resources2);
 				Output.writeln(toWrite, true, file);
 			}
 		}
 	}
 
 	public static String genSingleJobInfo(int jobId, String queueName, String jobName, int arrivalTime, int numOfTasks,
-			double taskDur) {
+			double taskDur, double[] resources) {
 		int numOfStage = 1;
-		double[] resources = { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
 		String str = "";
 		str += "# " + jobId + "\n";
 		str += "" + numOfStage + " " + jobId + " " + arrivalTime + " " + queueName + "\n";

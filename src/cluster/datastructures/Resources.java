@@ -172,6 +172,16 @@ public class Resources implements Comparable {
 		}
 		return max;
 	}
+	
+	public int idxOfMax() {
+		int idx = 0;
+		double max = Double.MIN_VALUE;
+		for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
+			max = Math.max(max, resources[i]);
+			idx = i;
+		}
+		return idx;
+	}
 
 	public static Resources min(Resources a, Resources b) {
 		if (a.greaterOrEqual(b))
@@ -230,6 +240,14 @@ public class Resources implements Comparable {
 		Resources normalizedRes = new Resources();
 		for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
 			normalizedRes.resources[i] = Utils.round(res.resources[i] / factor, 2);
+		}
+		return normalizedRes;
+	}
+	
+	public static Resources divideVector(Resources res, Resources denom) {
+		Resources normalizedRes = new Resources();
+		for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
+			normalizedRes.resources[i] = Utils.round(res.resources[i] / denom.resource(i), 2);
 		}
 		return normalizedRes;
 	}
@@ -430,5 +448,13 @@ public class Resources implements Comparable {
 		for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
 			this.resources[i] = Math.floor(this.resources[i]);
 		}
+	}
+
+	public double sum() {
+		double sum=0.0;
+		for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
+			sum += this.resources[i]; //TODO need to normalize resources
+		}
+		return sum;
 	}
 }

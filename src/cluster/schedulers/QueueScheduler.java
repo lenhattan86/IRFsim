@@ -15,6 +15,7 @@ import cluster.datastructures.Resources;
 import cluster.datastructures.StageDag;
 import cluster.simulator.Simulator;
 import queue.schedulers.DRFScheduler;
+import queue.schedulers.FairScheduler;
 import queue.schedulers.Scheduler;
 import queue.schedulers.SpeedFairScheduler;
 import queue.schedulers.StrictScheduler;
@@ -28,6 +29,9 @@ public class QueueScheduler {
 	public QueueScheduler() {
 
 		switch (Globals.QUEUE_SCHEDULER) {
+		case Fair:
+			scheduler = new FairScheduler();
+			break;
 		case DRF:
 			scheduler = new DRFScheduler();
 			break;

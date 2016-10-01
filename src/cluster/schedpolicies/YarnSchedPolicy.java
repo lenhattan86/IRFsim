@@ -8,12 +8,14 @@ import java.util.Iterator;
 import cluster.cluster.Cluster;
 import cluster.datastructures.Resources;
 import cluster.datastructures.StageDag;
+import cluster.simulator.Simulator;
+import cluster.utils.Output;
 
 public class YarnSchedPolicy extends SchedPolicy {
 
 	private static final boolean DEBUG = true;
 
-	public YarnSchedPolicy(Cluster cluster) { 
+	public YarnSchedPolicy(Cluster cluster) {
 		super(cluster);
 	}
 
@@ -35,18 +37,23 @@ public class YarnSchedPolicy extends SchedPolicy {
 				return (int) (val1 - val0);
 			}
 		});
-		
+
 		Iterator<Integer> iter = rtCopy.iterator();
 		while (iter.hasNext()) {
 			int taskId = iter.next();
 
 			// discard tasks whose resource requirements are larger than total share
 			Resources currResShareAvail = dag.currResShareAvailable();
-			boolean fit = currResShareAvail.greaterOrEqual(dag.rsrcDemands(taskId));
-			if (!fit)
+			Resources taskDemand = dag.rsrcDemands(taskId);
+			boolean fit = currResShareAvail.greaterOrEqual(taskDemand);
+			if (!fit) {
 				continue;
+			}
 
-			// try to assign the next task on a machine
+			// try to assign the next task on a machine. This function needs to be
+			// modified for multiple machines. It results in
+			// low utilization as it cannot optimally allocate the resources on each
+			// machine.
 			boolean assigned = cluster.assignTask(dag.dagId, taskId, dag.duration(taskId), dag.rsrcDemands(taskId));
 
 			if (assigned) {
@@ -57,7 +64,7 @@ public class YarnSchedPolicy extends SchedPolicy {
 				dag.runnableTasks.remove(taskId);
 			}
 		}
-		
+
 		dag.launchedTasksNow.clear();
 	}
 

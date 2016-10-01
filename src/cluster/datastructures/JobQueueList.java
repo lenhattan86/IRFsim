@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Queue;
 
 import cluster.simulator.Main.Globals;
+import cluster.simulator.Main.Globals.Method;
 import cluster.simulator.Simulator;
 
 public class JobQueueList {
@@ -138,7 +139,7 @@ public class JobQueueList {
       	queue.setSpeedFairWeight(Double.parseDouble(args[1]));
       	queue.setWeight(Double.parseDouble(args[2]));
       	//TODO: hard-code the high weight for interactive queues for DRF-W
-      	if (Globals.METHOD.equals("DRF-W") && queueName.startsWith("interactive")) {
+      	if (Globals.METHOD.equals(Method.DRFW) && queueName.startsWith("interactive")) {
       		queue.setWeight(Globals.DRFW_weight);
       	}
       	

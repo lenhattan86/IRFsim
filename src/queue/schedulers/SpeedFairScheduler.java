@@ -10,7 +10,7 @@ import cluster.simulator.Simulator;
 import cluster.utils.Output;
 
 public class SpeedFairScheduler implements Scheduler {
-	private boolean DEBUG = false;
+	private boolean DEBUG = true;
 
 	private String schedulePolicy;
 
@@ -44,7 +44,7 @@ public class SpeedFairScheduler implements Scheduler {
 				allocatedQueues.add(q);
 			q.setRsrcQuota(rsrcQuota);
 			availRes = Resources.subtractPositivie(availRes, q.getRsrcQuota());
-//			Output.debugln(DEBUG, "[SpeedFairScheduler] Allocated to queue:" + q.getQueueName() + " " + q.getRsrcQuota());
+			Output.debugln(DEBUG, "[SpeedFairScheduler] Allocated to queue:" + q.getQueueName() + " " + q.getRsrcQuota());
 		}
 
 		// Share the remaining resources
@@ -90,7 +90,7 @@ public class SpeedFairScheduler implements Scheduler {
 				remain.subtract(rsShare);
 			}
 			shareRemainRes(q, remain);
-//			Output.debugln(DEBUG, "[SpeedFairScheduler] Allocated to queue:" + q.getQueueName() + " " + q.getJobsQuota());
+			Output.debugln(DEBUG, "[SpeedFairScheduler] Allocated to queue:" + q.getQueueName() + " " + q.getJobsQuota());
 			availRes = Resources.subtract(availRes, q.getRsrcQuota());
 		}
 

@@ -26,7 +26,7 @@ if plot
    bar(interactive_time', 'group');
    ylabel('time (seconds)');
    xlabel('number of batch queues');
-   legend({'DRF','DRF weight', 'strict priority', 'SpeedFair'},'Location','northwest');
+   legend({'DRF', 'DRF weight', 'strict priority', 'SpeedFair'}, 'Location', 'northwest');
    % ylim([0 6]);
    title('Average completion time of interactive jobs');
    set (gcf, 'PaperUnits', 'inches', 'PaperPosition', [0.0 0 4.0 3.0]);
@@ -57,7 +57,7 @@ if plot
 
 end
 %%
-plot = false;
+plot = true;
 logfolder = [result_folder 'log/'];
 num_batch_queues = 4;
 num_interactive_queue = 1;
@@ -67,17 +67,26 @@ linewidth=2;
 barwidth = 1.0;
    
 if plot   
-   
    logFile = [ logfolder 'DRF-output_' int2str(num_batch_queues) '.csv'];
    [queueNames, res1, res2, flag] = import_res_usage(logFile);
    if (flag)
       figure;
+      subplot(2,2,1);
+      
       resCutOff = res1(1:max_time_step*num_queues);
       shapeRes1 = reshape(resCutOff,num_queues,max_time_step);
       bar(shapeRes1',barwidth,'stacked','EdgeColor','none');
       ylim([0 200]);
       legend('interactive','batch01','batch02','batch03','batch04');
       title('DRF');
+      
+      resCutOff = res2(1:max_time_step*num_queues);
+      shapeRes1 = reshape(resCutOff,num_queues,max_time_step);
+      bar(shapeRes1',barwidth,'stacked','EdgeColor','none');
+      ylim([0 200]);
+      legend('interactive','batch01','batch02','batch03','batch04');
+      title('DRF');
+      
       set (gcf, 'PaperUnits', 'inches', 'PaperPosition', [0.0 0 4.0 3.0]);
       if is_printed
          print ('-depsc', [fig_path 'res_usage_drf.eps']);

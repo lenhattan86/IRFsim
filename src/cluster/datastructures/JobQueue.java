@@ -29,8 +29,6 @@ public class JobQueue {
 	
 	private ServiceRate serviceRate = new ServiceRate();
 
-
-
 	public List<Resources> receivedResourcesList = new LinkedList<Resources>();
 
 	private Resources rsrcQuota = new Resources();
@@ -186,8 +184,7 @@ public class JobQueue {
 	}
 	
 	public Resources getMinService(double currTime){
-		double size = this.serviceRate.getGuaranteedRate(currTime, startTimeOfNewJob);
-		return new Resources(size);
+		return this.serviceRate.guaranteedResources(this.getMaxDemand(), Simulator.CURRENT_TIME, this.startTimeOfNewJob);
 	}
 
 	public void addRate(double slope, double duration) {
