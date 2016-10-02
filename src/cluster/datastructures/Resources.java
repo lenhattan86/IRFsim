@@ -4,6 +4,8 @@ import cluster.simulator.Main.Globals;
 
 import java.util.logging.Logger;
 
+import com.sun.corba.se.impl.javax.rmi.CORBA.Util;
+
 import cluster.simulator.Main;
 import cluster.simulator.Simulator;
 import cluster.utils.Utils;
@@ -91,11 +93,11 @@ public class Resources implements Comparable {
 		return addedRes;
 	}
 	
-	public static Resources add(Resources res, Resources addedRes) {
+	public static Resources sum(Resources res, Resources addedRes) {
 		for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
-			addedRes.resources[i] = Utils.round(addedRes.resources[i], 2);
+			res.resources[i] += Utils.round(addedRes.resources[i], 2);
 		}
-		return addedRes;
+		return res;
 	}
 	
 	// same as add operation, except we don't cap to 1.0
@@ -177,8 +179,10 @@ public class Resources implements Comparable {
 		int idx = 0;
 		double max = Double.MIN_VALUE;
 		for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
-			max = Math.max(max, resources[i]);
-			idx = i;
+			if (max < resource(i)){
+				idx = i;
+				max = resource(i);
+			}
 		}
 		return idx;
 	}
@@ -430,9 +434,9 @@ public class Resources implements Comparable {
 		}
 	}
 	
-	public void round(){
+	public void round(int places){
 		for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
-			this.resources[i] = Utils.round(this.resources[i],0);
+			this.resources[i] = Utils.round(this.resources[i],places);
 		}
 	}
 	

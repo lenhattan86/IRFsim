@@ -2,17 +2,17 @@ addpath('matlab_func');
 common_settings;
 %%
 result_folder = '';
-% result_folder = 'result_20160929_long/';
-% result_folder = 'result_20160929_vlong/';
-% result_folder = 'result_20160929_short/';
+% result_folder = 'result_20161003_long/';
+% result_folder = 'result_20161003_vlong/';
+% result_folder = 'result_20161003_short/';
 
 output_folder = [result_folder 'output/'];
 is_printed = true;
 % fig_path = 'C:\Users\lenha\Documents\GitHub\NSDI17\fig\';
 fig_path = 'figs\';
 %%
-plot = true;
-if plot 
+plots = [true, true];
+if plots(1) 
    INTERACTIVE_QUEUE = 'interactive';
    
    [ drf_avg_compl_time ] = obtain_compl_time( output_folder, drf_compl_files, INTERACTIVE_QUEUE);
@@ -33,7 +33,8 @@ if plot
    if is_printed
       print ('-depsc', [fig_path 'interactive_compl_time.eps']);
    end
-
+end
+if plots(2) 
    %%
    BATCH_QUEUE = 'batch';
    [ drf_avg_compl_time ] = obtain_compl_time( output_folder, drf_compl_files, BATCH_QUEUE);
@@ -57,87 +58,139 @@ if plot
 
 end
 %%
-plot = true;
+plots = [true, true, true , true]; %DRF, DRF-W, Strict, SpeedFair
 logfolder = [result_folder 'log/'];
 num_batch_queues = 4;
 num_interactive_queue = 1;
+STEP_TIME = 0.2;
 num_queues = num_batch_queues+num_interactive_queue;
-max_time_step = 100;
+START_TIME = 0; END_TIME = 95;
+start_time_step = START_TIME/STEP_TIME;
+max_time_step = END_TIME/STEP_TIME;
+startIdx = start_time_step*num_queues+1;
+endIdx = max_time_step*num_queues;
+num_time_steps = max_time_step-start_time_step;
 linewidth=2;
 barwidth = 1.0;
+timeInSeconds = START_TIME+STEP_TIME:STEP_TIME:END_TIME;
    
-if plot   
+if plots(1)   
    logFile = [ logfolder 'DRF-output_' int2str(num_batch_queues) '.csv'];
    [queueNames, res1, res2, flag] = import_res_usage(logFile);
+   
    if (flag)
       figure;
-      subplot(2,2,1);
-      
-      resCutOff = res1(1:max_time_step*num_queues);
-      shapeRes1 = reshape(resCutOff,num_queues,max_time_step);
-      bar(shapeRes1',barwidth,'stacked','EdgeColor','none');
+      subplot(2,1,1);      
+      resCutOff = res1(startIdx:endIdx);
+      shapeRes1 = reshape(resCutOff,num_queues,num_time_steps);
+      bar(timeInSeconds,shapeRes1',barwidth,'stacked','EdgeColor','none');
+      ylabel('CPUs');xlabel('seconds');
       ylim([0 200]);
       legend('interactive','batch01','batch02','batch03','batch04');
-      title('DRF');
+      title('DRF - CPUs');
       
-      resCutOff = res2(1:max_time_step*num_queues);
-      shapeRes1 = reshape(resCutOff,num_queues,max_time_step);
-      bar(shapeRes1',barwidth,'stacked','EdgeColor','none');
+      subplot(2,1,2);
+      resCutOff = res2(startIdx:endIdx);
+      shapeRes1 = reshape(resCutOff,num_queues,num_time_steps);
+      bar(timeInSeconds,shapeRes1',barwidth,'stacked','EdgeColor','none');
+      ylabel('GB');xlabel('seconds');
       ylim([0 200]);
       legend('interactive','batch01','batch02','batch03','batch04');
-      title('DRF');
+      title('DRF - Memory');
       
       set (gcf, 'PaperUnits', 'inches', 'PaperPosition', [0.0 0 4.0 3.0]);
       if is_printed
          print ('-depsc', [fig_path 'res_usage_drf.eps']);
       end
    end
-
+end
+if plots(2)
    logFile = [ logfolder 'DRF-W-output_' int2str(num_batch_queues) '.csv'];
    [queueNames, res1, res2, flag] = import_res_usage(logFile);
    if (flag)
       figure;
-      resCutOff = res1(1:max_time_step*num_queues);
-      shapeRes1 = reshape(resCutOff,num_queues,max_time_step);
-      bar(shapeRes1',barwidth,'stacked','EdgeColor','none');
+      
+      subplot(2,1,1);
+      resCutOff = res1(startIdx:endIdx);
+      shapeRes1 = reshape(resCutOff,num_queues,num_time_steps);
+      bar(timeInSeconds,shapeRes1',barwidth,'stacked','EdgeColor','none');
+      ylabel('CPUs');xlabel('seconds');
       ylim([0 200]);
       legend('interactive','batch01','batch02','batch03','batch04');
-      title('DRF-W');
+      title('DRF-W - CPUs');
+      
+      subplot(2,1,2);
+      resCutOff = res2(startIdx:endIdx);
+      shapeRes1 = reshape(resCutOff,num_queues,num_time_steps);
+      bar(timeInSeconds,shapeRes1',barwidth,'stacked','EdgeColor','none');
+      ylabel('GB');xlabel('seconds');
+      ylim([0 200]);
+      legend('interactive','batch01','batch02','batch03','batch04');
+      title('DRF-W - Memory');
+      
       set (gcf, 'PaperUnits', 'inches', 'PaperPosition', [0.0 0 4.0 3.0]);
       if is_printed
          print ('-depsc', [fig_path 'res_usage_drf-w.eps']);
       end
    end
-   
-   logFile = [ logfolder 'SpeedFair-output_' int2str(num_batch_queues) '.csv'];
-   [queueNames, res1, res2, flag] = import_res_usage(logFile);
-   if (flag)
-      figure;
-      resCutOff = res1(1:max_time_step*num_queues);
-      shapeRes1 = reshape(resCutOff,num_queues,max_time_step);
-      bar(shapeRes1',barwidth,'stacked','EdgeColor','none');
-      ylim([0 200]);
-      legend('interactive','batch01','batch02','batch03','batch04');
-      title('SpeedFair');
-      set (gcf, 'PaperUnits', 'inches', 'PaperPosition', [0.0 0 4.0 3.0]);
-      if is_printed
-         print ('-depsc', [fig_path 'res_usage_speedfair.eps']);
-      end
-   end
-   
+end
+
+if plots(3)  
    logFile = [ logfolder 'Strict-output_' int2str(num_batch_queues) '.csv'];
    [queueNames, res1, res2, flag] = import_res_usage(logFile);
    if (flag)
       figure;
-      resCutOff = res1(1:max_time_step*num_queues);
-      shapeRes1 = reshape(resCutOff,num_queues,max_time_step);
-      bar(shapeRes1',barwidth,'stacked','EdgeColor','none');
+      
+      subplot(2,1,1);
+      resCutOff = res1(startIdx:endIdx);
+      shapeRes1 = reshape(resCutOff,num_queues,num_time_steps);
+      bar(timeInSeconds,shapeRes1',barwidth,'stacked','EdgeColor','none');
+      ylabel('CPUs');xlabel('seconds');
       ylim([0 200]);
       legend('interactive','batch01','batch02','batch03','batch04');
-      title('Strict Priority');
+      title('Strict Priority - CPUs');
+      
+      subplot(2,1,2);
+      resCutOff = res2(startIdx:endIdx);
+      shapeRes1 = reshape(resCutOff,num_queues,num_time_steps);
+      bar(timeInSeconds,shapeRes1',barwidth,'stacked','EdgeColor','none');
+      ylabel('GB');xlabel('seconds');
+      ylim([0 200]);
+      legend('interactive','batch01','batch02','batch03','batch04');
+      title('Strict Priority - Memory');
+      
       set (gcf, 'PaperUnits', 'inches', 'PaperPosition', [0.0 0 4.0 3.0]);
       if is_printed
          print ('-depsc', [fig_path 'res_usage_strict.eps']);
+      end
+   end
+end
+if plots(4)   
+   logFile = [ logfolder 'SpeedFair-output_' int2str(num_batch_queues) '.csv'];
+   [queueNames, res1, res2, flag] = import_res_usage(logFile);
+   if (flag)
+      figure;
+      subplot(2,1,1); 
+      resCutOff = res1(startIdx:endIdx);
+      shapeRes1 = reshape(resCutOff,num_queues,num_time_steps);
+      bar(timeInSeconds,shapeRes1',barwidth,'stacked','EdgeColor','none');
+      ylabel('CPUs');xlabel('seconds');
+      ylim([0 200]);
+      legend('interactive','batch01','batch02','batch03','batch04');
+      title('SpeedFair - CPUs');      
+      
+      subplot(2,1,2); 
+      resCutOff = res2(startIdx:endIdx);
+      shapeRes1 = reshape(resCutOff,num_queues,num_time_steps);
+      bar(timeInSeconds,shapeRes1',barwidth,'stacked','EdgeColor','none');
+      ylabel('GB');xlabel('seconds');
+      ylim([0 200]);
+      legend('interactive','batch01','batch02','batch03','batch04');
+      title('SpeedFair - Memory');
+      
+      set (gcf, 'PaperUnits', 'inches', 'PaperPosition', [0.0 0 4.0 3.0]);      
+      if is_printed
+         print ('-depsc', [fig_path 'res_usage_speedfair.eps']);
       end
    end
 end

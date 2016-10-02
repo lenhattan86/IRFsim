@@ -5,7 +5,6 @@ import cluster.simulator.Main.Globals;
 public class GenInput {
 
 	public static double[] NaN = {};
-	public static double speedFairWeight = 0.2;
 	public static double weight = 1.0;
 	public static String queueFile = "input_gen/queue_input";
 	public static String jobFile = "input_gen/jobs_input";
@@ -15,7 +14,7 @@ public class GenInput {
 		Output.write("", false, file);
 		for (int i = 0; i < numInteractiveQueues; i++) {
 			int queueId = i;
-			String toWrite = GenInput.genSingleQueueInfo(queueId, "interactive" + queueId, speedFairWeight, weight, Globals.RATES,
+			String toWrite = GenInput.genSingleQueueInfo(queueId, "interactive" + queueId, Globals.SpeedFair_WEIGHT, weight, Globals.RATES,
 					Globals.RATE_DURATIONS);
 			Output.writeln(toWrite, true, file);
 		}
@@ -30,7 +29,7 @@ public class GenInput {
 	public static void genJobInput(int numInteractiveQueus, int numOfInteractiveJobsPerQueue, int numInteractiveTask,
 			int numBatchQueues, int numOfBatchJobsPerQueue) {
 		
-		double[] resources1 = { 0.6, 0.4, 0.0, 0.0, 0.0, 0.0 };
+		double[] resources1 = { 1, 0.5, 0.0, 0.0, 0.0, 0.0 };
 		
 		String file = GenInput.jobFile + "_" + numInteractiveQueus + "_" + numBatchQueues + ".txt";
 		Output.write("", false, file);
@@ -41,12 +40,12 @@ public class GenInput {
 			for (int j = 0; j < numOfInteractiveJobsPerQueue; j++) {
 				arrivalTime = j * 10 + i;
 				int jobId = i * numOfInteractiveJobsPerQueue + j;
-				String toWrite = genSingleJobInfo(jobId, "interactive" + i, jobId + "", arrivalTime, numInteractiveTask, 1, resources1);
+				String toWrite = genSingleJobInfo(jobId, "interactive" + i, jobId + "", arrivalTime, numInteractiveTask, Globals.STEP_TIME, resources1);
 				Output.writeln(toWrite, true, file);
 			}
 		}
 		
-		double[] resources2 = { 0.2, 0.4, 0.0, 0.0, 0.0, 0.0 };
+		double[] resources2 = { 1, 1.5, 0.0, 0.0, 0.0, 0.0 };
 
 		int batchStartId = numInteractiveQueus * numOfInteractiveJobsPerQueue;
 		for (int i = 0; i < numBatchQueues; i++) {
@@ -54,7 +53,7 @@ public class GenInput {
 			for (int j = 0; j < numOfBatchJobsPerQueue; j++) {
 				arrivalTime = j * 1 + i;
 				int jobId = i * numOfBatchJobsPerQueue + j + batchStartId;
-				String toWrite = genSingleJobInfo(jobId, "batch" + (i), jobId + "", arrivalTime, Globals.numbatchTask, 1, resources2);
+				String toWrite = genSingleJobInfo(jobId, "batch" + (i), jobId + "", arrivalTime, Globals.numbatchTask, Globals.STEP_TIME, resources2);
 				Output.writeln(toWrite, true, file);
 			}
 		}

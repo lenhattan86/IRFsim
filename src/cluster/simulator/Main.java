@@ -20,19 +20,17 @@ public class Main {
 	public static class Globals {
 
 		public enum SetupMode {
-			Mosharaf, Tan, CommandLine, GenerateTrace
+			Mosharaf, ShortInteractive, LongInteractive, VeryLongInteractive, CommandLine, GenerateTrace
 		};
 
 		public enum Runmode {
 			SingleRun, MultipleRun
 		};
 
-		// public static RunMode runmode = RunMode.CommandLine;
-		public static SetupMode setup = SetupMode.Tan;
 		public static Runmode runmode = Runmode.MultipleRun;
 
 		public static boolean DEBUG_ALL = false;
-		public static boolean DEBUG_LOCAL = true;
+		public static boolean DEBUG_LOCAL = false;
 
 		public static enum Method {
 			DRF, DRFW, SpeedFair, Strict
@@ -60,7 +58,7 @@ public class Main {
 			All, One, Distribution, Trace;
 		}
 
-		public static JobsArrivalPolicy JOBS_ARRIVAL_POLICY = JobsArrivalPolicy.All;
+		public static JobsArrivalPolicy JOBS_ARRIVAL_POLICY = JobsArrivalPolicy.Trace;
 
 		public static int NUM_MACHINES = 1; // TODO: NUM_MACHINES > 1 may results in
 																				// low utilization this simulation.
@@ -70,12 +68,16 @@ public class Main {
 
 		public static Method METHOD = Method.SpeedFair;
 		public static double DRFW_weight = 4.0;
-		public static double STRICT_WEIGHT = Double.MAX_VALUE/20.0;
+		public static double STRICT_WEIGHT = (Double.MAX_VALUE / 100.0);
+		// public static double STRICT_WEIGHT = 100000.00;
+		
+		public static int TOLERANT_ERROR = 1; // 10^(-TOLERANT_ERROR)
 
 		public static boolean ADJUST_FUNGIBLE = false;
+		public static double ZERO = 0.001;
 
-		public static double SIM_END_TIME = 10;
-		public static double STEP_TIME = 1.0;
+		public static double SIM_END_TIME = 5;
+		public static double STEP_TIME = 0.2;
 
 		public static int NUM_OPT = 0, NUM_PES = 0;
 
@@ -106,41 +108,52 @@ public class Main {
 		public static String PathToOutputFile = "";
 		public static String PathToResourceLog = "";
 
-		public static double[] RATES = { 200.0 };
-		public static double[] RATE_DURATIONS = { 2.0 };
+		public static double[] RATES = null;
+		public static double[] RATE_DURATIONS = null;
+		public static double SpeedFair_WEIGHT = 0.8;
 
 		public static int numInteractiveQueues = 1, numInteractiveJobPerQueue = 10, numInteractiveTask = 200;
 		public static int numBatchQueues = 3, numBatchJobPerQueue = 10;
-		public static int numbatchTask = 2000;
+		public static int numbatchTask = 10000;
+		
 
-		public static void setupParameters() {
+		public static void setupParameters(SetupMode setup) {
+			DagIdStart = 0;
+			DagIdEnd = 500;
+			SIM_END_TIME = 5000;
+			NUM_DIMENSIONS = 2;
+			MACHINE_MAX_RESOURCE = 200;
+			DRFW_weight = 4.0;
+			SpeedFair_WEIGHT = 0.3;
+			double[] rates = { 200 };
+			double[] durations = { 2.0 };
+			RATES = rates;
+			RATE_DURATIONS = durations;
+
+			DataFolder = "input";
+			FileInput = "dags-input-simple.txt";
+			QueueInput = "queue_input.txt";
+
+			COMPUTE_STATISTICS = false;
+
 			switch (setup) {
-			case Tan:
-				DagIdStart = 0;
-				DagIdEnd = 500;
-				SIM_END_TIME = 5000;
-				NUM_DIMENSIONS = 2;
-				MACHINE_MAX_RESOURCE = 200;
-				DRFW_weight = 4.0;
-
-				DataFolder = "input";
-				FileInput = "dags-input-simple.txt";
-				QueueInput = "queue_input.txt";
-				// FileInput = "dags-input-multiple-batches.txt"; QueueInput =
-				// "queue_input_multi_batches.txt";
-				// FileInput = "dags-input-multiple-batches-long-interactive.txt";
-				// QueueInput = "queue_input_multi_batches.txt";
-				// FileInput = "dags-input-multiple-interactives.txt"; QueueInput =
-				// "queue_input_multi_interactives.txt";
-
-				ADJUST_FUNGIBLE = false;
-				JOBS_ARRIVAL_POLICY = JobsArrivalPolicy.Trace;
-
-				// sensitivity
-				LEVEL_OF_OPTIMISM = 1.0;
-				TETRIS_UNIVERSAL = false;
-				COMPUTE_STATISTICS = false;
-				ERROR = 0.0;
+			case ShortInteractive:
+				Globals.numInteractiveTask = 2000;
+				Globals.numInteractiveJobPerQueue = 10;
+				Globals.numbatchTask = 10000;
+				Globals.numBatchJobPerQueue = 8;
+				break;
+			case LongInteractive:
+				Globals.numInteractiveTask = 10000;
+				Globals.numInteractiveJobPerQueue = 5;
+				Globals.numbatchTask = 10000;
+				Globals.numBatchJobPerQueue = 5;
+				break;
+			case VeryLongInteractive:
+				Globals.numInteractiveTask = 80000;
+				Globals.numInteractiveJobPerQueue = 5;
+				Globals.numbatchTask = 10000;
+				Globals.numBatchJobPerQueue = 5;
 				break;
 			case CommandLine:
 				break;
@@ -153,24 +166,24 @@ public class Main {
 	}
 
 	public static void main(String[] args) {
+		// Globals.JOBS_ARRIVAL_POLICY = JobsArrivalPolicy.All;
+//		Globals.setupParameters(Globals.SetupMode.ShortInteractive);
+		Globals.setupParameters(Globals.SetupMode.LongInteractive);
+		Globals.runmode = Runmode.MultipleRun;
 
-		Globals.setupParameters();
-		Globals.runmode = Runmode.SingleRun;
 		if (Globals.runmode.equals(Runmode.MultipleRun)) {
-			// Method[] methods = { Method.DRF, Method.DRFW, Method.SpeedFair,
-			// Method.Strict };
-			// int[] batchQueueNums = { 1, 2, 3, 4 };
-			Method[] methods = { Method.DRF };
-			int[] batchQueueNums = { 1, 2 };
-			Globals.numInteractiveTask = 400;
-			Globals.numInteractiveJobPerQueue = 10;
-			// Globals.numInteractiveTask = 2000; Globals.numInteractiveJobPerQueue =
-			// 20; Globals.numBatchJobPerQueue = 10;
-			// Globals.numInteractiveTask = 16000; Globals.numInteractiveJobPerQueue =
-			// 40; Globals.numBatchJobPerQueue = 15;
+			Method[] methods = { Method.DRF, Method.DRFW, Method.Strict, Method.SpeedFair };
+			int[] batchQueueNums = { 1, 2, 3, 4 };
+			// Method[] methods = { Method.DRF, Method.SpeedFair };
+//			 int[] batchQueueNums = { 4 };
 
-			for (int j = 0; j < batchQueueNums.length; j++)
+			for (int j = 0; j < batchQueueNums.length; j++) {
 				for (int i = 0; i < methods.length; i++) {
+					if (i == 0)
+						Globals.IS_GEN = true;
+					else
+						Globals.IS_GEN = false;
+					
 					Globals.METHOD = methods[i];
 					Globals.numBatchQueues = batchQueueNums[j];
 					System.out.println("========================================================================");
@@ -178,17 +191,16 @@ public class Main {
 					runSimulationScenario();
 					System.out.println("========================================================================");
 				}
+			}
 		} else if (Globals.runmode.equals(Runmode.SingleRun)) {
-//			Globals.METHOD = Method.DRFW;
-			Globals.METHOD = Method.DRF;
-			// Globals.numInteractiveTask = 400; Globals.numInteractiveJobPerQueue =
-			// 10;
-			Globals.NUM_MACHINES = 1;
-			Globals.SIM_END_TIME = 3;
-			Globals.numInteractiveTask = 100;
-			Globals.numbatchTask = 200;
-			Globals.numInteractiveJobPerQueue = 5;
-			Globals.numBatchJobPerQueue = 3;
+//			 Globals.METHOD = Method.DRFW;
+			Globals.METHOD = Method.Strict;
+//			 Globals.METHOD = Method.DRF;
+//			 Globals.METHOD = Method.SpeedFair;
+//			 Globals.SIM_END_TIME = 10;
+			// Globals.MACHINE_MAX_RESOURCE = 2;
+			 Globals.numInteractiveTask = 10000;
+			// Globals.numbatchTask = 100;
 			Globals.numBatchQueues = 1;
 			System.out.println("========================================================================");
 			System.out.println("Run METHOD: " + Globals.METHOD + " with " + Globals.numBatchQueues + " batch queues.");
@@ -202,8 +214,7 @@ public class Main {
 
 	public static void runSimulationScenario() {
 
-//		if (Globals.METHOD.equals(Method.DRF) && Globals.IS_GEN) {
-		if (Globals.METHOD.equals(Method.SpeedFair) && Globals.IS_GEN) {
+		if (Globals.IS_GEN) {
 			GenInput.genInput(Globals.numInteractiveQueues, Globals.numInteractiveJobPerQueue, Globals.numInteractiveTask,
 					Globals.numBatchQueues, Globals.numBatchJobPerQueue);
 		}
@@ -247,7 +258,8 @@ public class Main {
 		System.out.println("PathToInputFile     = " + Globals.PathToInputFile);
 		System.out.println("SIMULATION_END_TIME = " + Globals.SIM_END_TIME);
 		System.out.println("STEP_TIME           = " + Globals.STEP_TIME);
-		System.out.println("QUEUE_SCHEDULER    = " + Globals.QUEUE_SCHEDULER);
+		System.out.println("METHOD              = " + Globals.METHOD);
+		System.out.println("QUEUE_SCHEDULER     = " + Globals.QUEUE_SCHEDULER);
 		System.out.println("=====================\n");
 
 		System.out.println("Start simulation ...");

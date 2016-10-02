@@ -111,6 +111,14 @@ public class JobQueueList {
 		return runningQueues;
 	}
 	
+	public Queue<JobQueue> getRunningInteractiveQueues(){
+		Queue<JobQueue> intQueues = new LinkedList<JobQueue>();
+		for (JobQueue q: this.runningQueues)
+			if (q.isInteractive)
+				intQueues.add(q);
+		return intQueues;
+	}
+	
 	public void printQueueInfo(){
 		for (JobQueue q: this.jobQueues)
 			System.out.println(q.getQueueName() + " weight: " + q.getWeight());

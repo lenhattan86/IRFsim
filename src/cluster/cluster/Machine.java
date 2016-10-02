@@ -10,6 +10,7 @@ import cluster.datastructures.BaseDag;
 import cluster.datastructures.Resources;
 import cluster.datastructures.Task;
 import cluster.simulator.Simulator;
+import cluster.utils.Utils;
 
 public class Machine {
 	
@@ -70,7 +71,7 @@ public class Machine {
     totalResAlloc.addWith(taskResources);
 
     // 2. compute the expected time for this task
-    double expTaskComplTime = currentTime + taskDuration;
+    double expTaskComplTime = Utils.round(currentTime + taskDuration, 2);
     Task t = new Task(dagId, taskId, taskDuration, taskResources);
     runningTasks.put(t, expTaskComplTime);
 

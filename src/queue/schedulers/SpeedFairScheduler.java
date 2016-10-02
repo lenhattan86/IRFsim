@@ -1,12 +1,17 @@
 package queue.schedulers;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 
 import cluster.datastructures.BaseDag;
 import cluster.datastructures.JobQueue;
 import cluster.datastructures.Resources;
 import cluster.simulator.Simulator;
+import cluster.simulator.Main.Globals;
+import cluster.utils.JobArrivalComparator;
 import cluster.utils.Output;
 
 public class SpeedFairScheduler implements Scheduler {
@@ -25,75 +30,119 @@ public class SpeedFairScheduler implements Scheduler {
 	// N - total number of running jobs
 	@Override
 	public void computeResShare() {
-		if(Simulator.CURRENT_TIME>=90.0){
+//		if(Simulator.CURRENT_TIME>=0 && Simulator.CURRENT_TIME<=2.0){
 //			DEBUG = true;
-		}
+//		}else
+//			DEBUG = false;
+			
 		Output.debugln(DEBUG, "[SpeedFairScheduler] STEP_TIME:" + Simulator.CURRENT_TIME);
 		int numQueuesRuning = Simulator.QUEUE_LIST.getRunningQueues().size();
 		if (numQueuesRuning == 0) {
 			return;
 		}
-		Resources availRes = Simulator.cluster.getClusterMaxResAlloc();
+		Resources flexibleResources = Simulator.cluster.getClusterMaxResAlloc();
 		
-		Queue<JobQueue> allocatedQueues = new LinkedList<JobQueue>();
+		List<JobQueue> queuesNeedAlloc = new LinkedList<JobQueue>();
 		
 		for (JobQueue q : Simulator.QUEUE_LIST.getRunningQueues()) {
 			// compute the rsrcQuota based on the guarateed rate.
 			Resources rsrcQuota = Resources.piecewiseMin(q.getMinService(Simulator.CURRENT_TIME), q.getMaxDemand());
 			if (q.getMaxDemand().greater(rsrcQuota))
-				allocatedQueues.add(q);
+				queuesNeedAlloc.add(q);
 			q.setRsrcQuota(rsrcQuota);
-			availRes = Resources.subtractPositivie(availRes, q.getRsrcQuota());
-			Output.debugln(DEBUG, "[SpeedFairScheduler] Allocated to queue:" + q.getQueueName() + " " + q.getRsrcQuota());
+			flexibleResources = Resources.subtractPositivie(flexibleResources, q.getRsrcQuota());
+			Output.debugln(DEBUG, "[SpeedFairScheduler] Step 1: compute min share: " + q.getQueueName() + " " + q.getRsrcQuota());
 		}
 
-		// Share the remaining resources
-		if (availRes.greaterOrEqual(new Resources())) {
-			double factor = 0.0;
-			for (JobQueue q : allocatedQueues) {
-				factor += q.getSpeedFairWeight();
-			}
-			Resources share = Resources.divide(availRes, factor);
-			for (JobQueue q : allocatedQueues) {
-				Resources res = q.getRsrcQuota();
-				res.addWith(Resources.multiply(share, q.getSpeedFairWeight())); 
-				res.floor();
-				// compare the real demand and the fair share
-				res = Resources.piecewiseMin(res, q.getMaxDemand());
-				q.setRsrcQuota(res);
-				availRes = Resources.subtractPositivie(availRes, res);
-			}
-		}
+		computeDRFShare(flexibleResources, queuesNeedAlloc);
 		
-		// TODO: deal with the max demand is less than the allocated share. 
-
 		// TODO: sort queues for interactive jobs.
 		// Resource admission control for the queues.
-		availRes = Simulator.cluster.getClusterMaxResAlloc();
+		Resources availRes = Simulator.cluster.getClusterMaxResAlloc();
 		for (JobQueue q : Simulator.QUEUE_LIST.getRunningQueues()) {
 			boolean fit = availRes.greaterOrEqual(q.getRsrcQuota());
 			if (!fit) {
 				Resources newQuota = Resources.piecewiseMin(availRes, q.getRsrcQuota());
 				q.setRsrcQuota(newQuota);
 			}
-			Output.debugln(DEBUG, "[SpeedFairScheduler] Allocated to queue:" + q.getQueueName() + " " + q.getRsrcQuota());
+			Output.debugln(DEBUG, "[SpeedFairScheduler] Step 2: allocate share: " + q.getQueueName() + " " + q.getRsrcQuota());
 			q.receivedResourcesList.add(q.getRsrcQuota());
 
 			// TODO: Fair share the resources among the jobs. 
 			
 			Resources remain = q.getRsrcQuota();
-			Queue<BaseDag> runningJobs = q.getRunningJobs();
-			for (BaseDag job : runningJobs) {
-				Resources rsShare = Resources.divide(q.getRsrcQuota(), q.runningJobsSize());
-				rsShare.floor();
-				job.rsrcQuota = rsShare;
-				remain.subtract(rsShare);
-			}
-			shareRemainRes(q, remain);
-			Output.debugln(DEBUG, "[SpeedFairScheduler] Allocated to queue:" + q.getQueueName() + " " + q.getJobsQuota());
+			fifoShareForJobs(q, remain);
+			
+			Output.debugln(DEBUG, "[SpeedFairScheduler] Step 2: FIFO share @ " + q.getQueueName() + " " + q.getJobsQuota());
 			availRes = Resources.subtract(availRes, q.getRsrcQuota());
 		}
 
+	}
+	
+	private void computeDRFShare(Resources flexibleResources, List<JobQueue> runningQueues){
+		HashMap<String, Resources> resDemandsQueues = new HashMap<String, Resources>();
+		double factor = 0.0;
+		for (JobQueue q : runningQueues) {
+			factor += q.getSpeedFairWeight();
+		}
+		
+		for (JobQueue q : runningQueues) {
+        // 1. compute it's avg. resource demand vector it not already computed
+				Resources remainDemand =  Resources.subtract(q.getMaxDemand(), q.getRsrcQuota());
+        Resources avgResDemandDag = Resources.clone(remainDemand);
+        avgResDemandDag.divide(factor);
+
+        // 2. normalize every dimension to the total capacity of the cluster
+        avgResDemandDag.divide(flexibleResources);
+
+        // 3. scale the resource demand vector to the max resource
+        avgResDemandDag.divide(avgResDemandDag.max());
+        avgResDemandDag.multiply(q.getSpeedFairWeight());
+        
+        Resources resDemand = Resources.piecewiseMin(remainDemand, avgResDemandDag); // increase utilization.
+        
+        resDemandsQueues.put(q.getQueueName(), resDemand);
+    }
+
+    // 4. sum it up across every dimension
+    Resources sumDemandsRunQueues = new Resources(0.0);
+    for (JobQueue q : runningQueues) {
+      sumDemandsRunQueues.addWith(resDemandsQueues.get(q.getQueueName()));
+    }
+
+    // 5. find the max sum
+    if (sumDemandsRunQueues.max() > Globals.ZERO){
+    	int maxIdx = sumDemandsRunQueues.idOfMaxResource();
+	    double drfShare = flexibleResources.resource(maxIdx) / sumDemandsRunQueues.max(); //idx of max for flexibleResources.
+	    
+	    for (JobQueue q : runningQueues) {
+	    	Resources drfQuota = Resources.clone(resDemandsQueues.get(q.getQueueName()));
+	      drfQuota.multiply(drfShare);
+	    	q.setRsrcQuota(Resources.sum(drfQuota, q.getRsrcQuota())); // Note: Different with DRFScheduler.computeDRFShare()
+	  		Output.debugln(DEBUG, "[SpeedFairScheduler] DRF for remaining resources allocated to queue:" + q.getQueueName() + " " + q.getRsrcQuota());
+	    }
+    } else
+    	Output.debugln(DEBUG, "[SpeedFairScheduler] DRF is not necessary for EMPTY resources");
+	}
+	
+	public void fifoShareForJobs(JobQueue q, Resources availRes){
+		boolean fit = availRes.greaterOrEqual(q.getRsrcQuota());
+		if (!fit) {
+			Resources newQuota = Resources.piecewiseMin(availRes, q.getRsrcQuota());
+			q.setRsrcQuota(newQuota);
+		}
+		q.receivedResourcesList.add(q.getRsrcQuota());
+
+		Resources remain = q.getRsrcQuota();
+		List<BaseDag> runningJobs = new LinkedList<BaseDag>(q.getRunningJobs());
+		Collections.sort(runningJobs, new JobArrivalComparator());
+		for (BaseDag job : runningJobs) {
+			Resources rsShare = Resources.piecewiseMin(remain, job.getMaxDemand());
+			job.rsrcQuota = rsShare;
+			remain.subtract(rsShare);
+			Output.debugln(DEBUG, "[SpeedFairScheduler] Allocated to job:" + job.dagId + " @ " + job.getQueueName() +" " + job.rsrcQuota);
+		}
+		availRes = Resources.subtract(availRes, q.getRsrcQuota());
 	}
 	
 	private void shareRemainRes(JobQueue q, Resources remain){

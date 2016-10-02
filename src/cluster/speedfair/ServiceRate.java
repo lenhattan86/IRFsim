@@ -53,7 +53,7 @@ public class ServiceRate {
 		return rate;
 	}
 
-	public boolean isBeyongGuaranteedDuration(double curTime, double startTime) {
+	public boolean isBeyondGuaranteedDuration(double curTime, double startTime) {
 		double mCurrTime = curTime + Globals.STEP_TIME - startTime;
 		double xDuration = 0;
 		for (int iSlope = 0; iSlope < this.getNumOfSlopes(); iSlope++) {
@@ -78,7 +78,7 @@ public class ServiceRate {
 		} else{
 			System.err.println("[ServiceRate] type (max or sum) is not legal.");
 		}
-
+//		res = new Resources(200.0);
 		return res;
 	}
 

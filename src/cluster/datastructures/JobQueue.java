@@ -94,7 +94,7 @@ public class JobQueue {
 		while (iRes.hasNext()) {
 			if (i++ > timeSteps)
 				break;
-			res = Resources.add(res, iRes.next());
+			res = Resources.sum(res, iRes.next());
 		}
 		return Resources.divide(res, timeSteps);
 	}
@@ -129,7 +129,7 @@ public class JobQueue {
 		resQuota = Resources.subtractPositivie(total, received);
 		Resources resDemand = new Resources();
 		for (BaseDag job : runningJobs) {
-			resDemand = Resources.add(resDemand, job.getMaxDemand());
+			resDemand = Resources.sum(resDemand, job.getMaxDemand());
 		}
 		return Resources.piecewiseMin(resQuota, resDemand);
 	}
@@ -137,7 +137,7 @@ public class JobQueue {
 	public Resources getMaxDemand(){
 		Resources resDemand = new Resources();
 		for (BaseDag job : runningJobs) {
-			resDemand = Resources.add(resDemand, job.getMaxDemand());
+			resDemand = Resources.sum(resDemand, job.getMaxDemand());
 		}
 		return resDemand;
 	}
@@ -162,7 +162,7 @@ public class JobQueue {
 		double res = weight;
 		if (isInteractive && Globals.METHOD==Method.Strict)
 			res = Globals.STRICT_WEIGHT;
-		if (isInteractive && Globals.METHOD==Method.DRFW)
+		else if (isInteractive && Globals.METHOD==Method.DRFW)
 			res = Globals.DRFW_weight;
 		return res;
 	}
@@ -176,7 +176,7 @@ public class JobQueue {
 	}
 	
 	public double getSpeedFairWeight() {
-		if (this.serviceRate.isBeyongGuaranteedDuration(Simulator.CURRENT_TIME, this.startTimeOfNewJob))
+		if (this.serviceRate.isBeyondGuaranteedDuration(Simulator.CURRENT_TIME, this.startTimeOfNewJob)) //add 1 condition for batch queues
 			return this.speedFairWeight;
 		else
 			return 1.0; // make equal share to others.

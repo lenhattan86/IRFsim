@@ -363,7 +363,7 @@ public class StageDag extends BaseDag implements Cloneable{
 //        }
         
         if (ddagId >= bDagId && ddagId - bDagId < numDags) {
-          dag.scaleDag();
+//          dag.scaleDag();
           dag.setCriticalPaths();
           dag.setBFSOrder();
           // add initial runnable tasks => all tasks with no parents

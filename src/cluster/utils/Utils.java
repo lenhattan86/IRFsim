@@ -134,4 +134,8 @@ public class Utils {
     roundedVal /= factor;
     return roundedVal;
   }
+  
+  public static double roundDefault(double value) {
+  	return round(value, 2);
+  }
 }

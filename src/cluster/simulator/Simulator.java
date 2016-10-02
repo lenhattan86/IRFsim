@@ -31,7 +31,7 @@ import cluster.utils.Utils;
 // implement the timeline server
 public class Simulator {
 
-	public final static boolean DEBUG = true;
+	public final static boolean DEBUG = false;
 
 	public static double CURRENT_TIME = 0;
 
@@ -292,8 +292,6 @@ public class Simulator {
 //			Simulator.printUsedResources();
 
 			Output.debugln(DEBUG, "[Simulator]: END work conserving; clusterAvail:" + Simulator.cluster.getClusterResAvail());
-
-			Output.debugln(DEBUG, "\n==== END STEP_TIME:" + Simulator.CURRENT_TIME + " ====\n");
 		}
 	}
 
@@ -436,6 +434,7 @@ public class Simulator {
 			Output.writeln(q.getResourceUsageStr(), true, Globals.PathToResourceLog);
 		}
 	}
+	
 
 	boolean stop() {
 		return (runnableJobs.isEmpty() && runningJobs.isEmpty() && (completedJobs.size() == totalReplayedJobs));

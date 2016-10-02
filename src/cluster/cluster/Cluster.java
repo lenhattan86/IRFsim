@@ -90,6 +90,31 @@ public class Cluster {
     // update the currentTime with the earliestFinishTime on every machine
     return finishedTasks;
   }
+  
+  public Map<Integer, List<Integer>> finishTasksPrev(double... earliestFinishTime) {
+
+    // finish any task on this machine at the current time
+    Map<Integer, List<Integer>> finishedTasks = new HashMap<Integer, List<Integer>>();
+
+    for (Machine machine : machines.values()) {
+      Map<Integer, List<Integer>> finishedTasksMachine = execMode ? machine
+          .finishTasks() : machine.finishTasks((double) earliestFinishTime[0]);
+
+      for (Map.Entry<Integer, List<Integer>> entry : finishedTasksMachine
+          .entrySet()) {
+        int dagId = entry.getKey();
+        List<Integer> tasksFinishedDagId = entry.getValue();
+        if (finishedTasks.get(dagId) == null) {
+          finishedTasks.put(dagId, new ArrayList<Integer>());
+        }
+        finishedTasks.get(dagId).addAll(tasksFinishedDagId);
+      }
+      machine.currentTime = execMode ? 0.0 : (double) earliestFinishTime[0];
+    }
+
+    // update the currentTime with the earliestFinishTime on every machine
+    return finishedTasks;
+  }
 
   // util classes //
   public Machine getMachine(int machine_id) {
