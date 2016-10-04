@@ -31,13 +31,13 @@ import cluster.utils.Utils;
 // implement the timeline server
 public class Simulator {
 
-	public final static boolean DEBUG = false;
+	public static boolean DEBUG = false;
 
 	public static double CURRENT_TIME = 0;
 
 	public static Queue<BaseDag> runnableJobs = null;
-	public static Queue<BaseDag> runningJobs= null;
-	public static Queue<BaseDag> completedJobs= null;
+	public static Queue<BaseDag> runningJobs = null;
+	public static Queue<BaseDag> completedJobs = null;
 
 	public static JobQueueList QUEUE_LIST = null;
 
@@ -51,8 +51,8 @@ public class Simulator {
 
 	public static QueueScheduler queueSched = null;
 
-	public static InterJobScheduler interJobSched= null;
-	public static IntraJobScheduler intraJobSched= null;
+	public static InterJobScheduler interJobSched = null;
+	public static IntraJobScheduler intraJobSched = null;
 
 	public static LeftOverResAllocator leftOverResAllocator = null;
 
@@ -85,18 +85,18 @@ public class Simulator {
 
 	public Simulator() {
 		QUEUE_LIST = new JobQueueList();
-		
+
 		QUEUE_LIST.readQueue(Globals.PathToQueueInputFile);
-		
+
 		QUEUE_LIST.printQueueInfo();
-		
+
 		runnableJobs = StageDag.readDags(Globals.PathToInputFile, Globals.DagIdStart,
 				Globals.DagIdEnd - Globals.DagIdStart + 1);
 
 		Output.debugln(DEBUG, "Print DAGs");
-//		for (BaseDag dag : runnableJobs) {
-//			((StageDag) dag).viewDag();
-//		}
+		// for (BaseDag dag : runnableJobs) {
+		// ((StageDag) dag).viewDag();
+		// }
 
 		cluster = new Cluster(true, new Resources(Globals.MACHINE_MAX_RESOURCE));
 
@@ -140,7 +140,7 @@ public class Simulator {
 
 		interJobSched = new InterJobScheduler();
 		intraJobSched = new IntraJobScheduler();
-		
+
 		queueSched = new QueueScheduler();
 
 		leftOverResAllocator = new LeftOverResAllocator();
@@ -148,155 +148,19 @@ public class Simulator {
 		tasksToStartNow = new TreeMap<Integer, Set<Integer>>();
 
 		r = new Randomness();
-		
+
 		// Initialize output & log files
 		Output.write("", false, Globals.PathToResourceLog);
 	}
 
-	public void simulate() {
+		public void simulateMultiQueues() {
 		for (Simulator.CURRENT_TIME = 0; Simulator.CURRENT_TIME < Globals.SIM_END_TIME; Simulator.CURRENT_TIME += Globals.STEP_TIME) {
-			if (!Globals.DEBUG_ALL && !Globals.DEBUG_LOCAL)
-				System.out.print(".");
 
-			Output.debugln(DEBUG, "\n==== STEP_TIME:" + Simulator.CURRENT_TIME + " ====\n");
-
-			Simulator.CURRENT_TIME = Utils.round(Simulator.CURRENT_TIME, 2);
-			tasksToStartNow.clear();
-
-			// terminate any task if it can finish and update cluster available
-			// resources
-			Map<Integer, List<Integer>> finishedTasks = cluster.finishTasks();
-
-			// update jobs status with newly finished tasks
-			boolean jobCompleted = updateJobsStatus(finishedTasks);
-
-			// STOP condition
-			if (stop()) {
-				printReport();
-				writeReport();
-				// EXIT the loop
-				break;
-			}
-
-			// handle jobs completion and arrivals
-			boolean newJobArrivals = handleNewJobArrival();
-
-			if (!jobCompleted && !newJobArrivals && finishedTasks.isEmpty()
-					&& Globals.INTER_JOB_POLICY != Globals.SharingPolicy.SpeedFair)
-				Output.debugln(DEBUG, "----- Do nothing ----");
-			else {
-
-				if (Globals.TETRIS_UNIVERSAL) {
-					interJobSched.resSharePolicy.packTasks();
-				} else {
-					Output.debugln(DEBUG, "[Simulator]: jobCompleted:" + jobCompleted + " newJobArrivals:" + newJobArrivals);
-					if (jobCompleted || newJobArrivals) {
-						interJobSched.schedule(); // TODO: add preemption
-					}
-
-					Output.debugln(DEBUG, "Running jobs size:" + runningJobs.size());
-
-					// reallocate the share
-					interJobSched.adjustShares();
-
-					// do intra-job scheduling for every running job
-					if (Globals.INTRA_JOB_POLICY == Globals.SchedulingPolicy.Yarn) {
-						// if still available resources, go one job at a time and fill if
-						// something. can be scheduled more
-						Output.debugln(DEBUG,
-								"[Simulator]: START work conserving; clusterAvail:" + Simulator.cluster.getClusterResAvail());
-
-						List<Integer> orderedJobs = interJobSched.orderedListOfJobsBasedOnPolicy();
-						for (int jobId : orderedJobs) {
-							for (BaseDag dag : runningJobs) {
-								if (dag.dagId == jobId) {
-									Resources totalResShare = Resources.clone(dag.rsrcQuota);
-									// dag.rsrcQuota =
-									// Resources.clone(cluster.getClusterResAvail());
-									intraJobSched.schedule((StageDag) dag);
-									dag.rsrcQuota = totalResShare;
-									break;
-								}
-							}
-						}
-					} else if (Globals.INTRA_JOB_POLICY == Globals.SchedulingPolicy.SpeedFair) { // TODO:
-
-						// if still available resources, go one job at a time and fill if
-						// something. can be scheduled more
-						Output.debugln(DEBUG,
-								"[Simulator]: START work conserving; clusterAvail:" + Simulator.cluster.getClusterResAvail());
-
-						List<Integer> orderedJobs = interJobSched.orderedListOfJobsBasedOnPolicy();
-						for (int jobId : orderedJobs) {
-							for (BaseDag dag : runningJobs) {
-								if (dag.dagId == jobId) {
-									Resources totalResShare = Resources.clone(dag.rsrcQuota);
-									dag.rsrcQuota = Resources.clone(cluster.getClusterResAvail()); // TODO:
-									intraJobSched.schedule((StageDag) dag);
-									dag.rsrcQuota = totalResShare;
-									break;
-								}
-							}
-						}
-
-					} else if (Globals.INTRA_JOB_POLICY != Globals.SchedulingPolicy.Carbyne) {
-
-						// if still available resources, go one job at a time and fill if
-						// something. can be scheduled more
-						Output.debugln(DEBUG,
-								"[Simulator]: START work conserving; clusterAvail:" + Simulator.cluster.getClusterResAvail());
-
-						// while things can happen, give total resources to a job at a time,
-						// the order is dictated by the inter job scheduler:
-						// Shortest JobFirst - for SJF
-						// RR - for Fair and DRF
-						List<Integer> orderedJobs = interJobSched.orderedListOfJobsBasedOnPolicy();
-						for (int jobId : orderedJobs) {
-							for (BaseDag dag : runningJobs) {
-								if (dag.dagId == jobId) {
-									Resources totalResShare = Resources.clone(dag.rsrcQuota);
-									dag.rsrcQuota = Resources.clone(cluster.getClusterResAvail()); // TODO:
-																																									// why?
-									intraJobSched.schedule((StageDag) dag);
-									dag.rsrcQuota = totalResShare;
-									break;
-								}
-							}
-						}
-
-					} else {
-						// compute if any tasks should be scheduled based on reverse
-						// schedule
-						for (BaseDag dag : runningJobs) {
-							dag.timeToComplete = intraJobSched.planSchedule((StageDag) dag, null);
-						}
-						// Output.debugln(DEBUG,"Tasks which should start as of now:"
-						// + Simulator.tasksToStartNow);
-
-						// schedule the DAGs -> looking at the list of tasksToStartNow
-						for (BaseDag dag : runningJobs) {
-							intraJobSched.schedule((StageDag) dag);
-						}
-
-						// Step2: redistribute the leftOverResources and ensuring is work
-						// conserving
-						leftOverResAllocator.allocLeftOverRsrcs();
-					}
-				}
-			}
-
-			for (BaseDag dag : Simulator.runningJobs) {
-				dag.receivedService.addUsage(dag.rsrcInUse);
-			}
-
-//			Simulator.printUsedResources();
-
-			Output.debugln(DEBUG, "[Simulator]: END work conserving; clusterAvail:" + Simulator.cluster.getClusterResAvail());
-		}
-	}
-
-	public void simulateMultiQueues() {
-		for (Simulator.CURRENT_TIME = 0; Simulator.CURRENT_TIME < Globals.SIM_END_TIME; Simulator.CURRENT_TIME += Globals.STEP_TIME) {
+//			if (Simulator.CURRENT_TIME >= 2.0 && Simulator.CURRENT_TIME <= 4.0) {
+//				DEBUG = true;
+//				Output.debugln(DEBUG, "\n==== STEP_TIME:" + Simulator.CURRENT_TIME + " ====\n");
+//			} else
+//				DEBUG = false;
 
 			Output.debugln(DEBUG, "\n==== STEP_TIME:" + Simulator.CURRENT_TIME + " ====\n");
 
@@ -327,42 +191,38 @@ public class Simulator {
 			else {
 				Output.debugln(DEBUG, "[Simulator]: jobCompleted:" + jobCompleted + " newJobArrivals:" + newJobArrivals);
 
-//				if (jobCompleted || newJobArrivals) { // TODO: deal with preemption and long tasks 
-				queueSched.schedule(); 
-//				}
+				// if (jobCompleted || newJobArrivals) { // TODO: deal with preemption
+				// and long tasks
+				queueSched.schedule();
+				// }
 				Output.debugln(DEBUG, "Running jobs size:" + runningJobs.size());
-				
+
 				// Allocate the share to the jobs
 				queueSched.adjustShares();
-				
-			// do intra-job scheduling for every running job
+
+				// do intra-job scheduling for every running job
 				if (Globals.INTRA_JOB_POLICY == Globals.SchedulingPolicy.Yarn) {
 					// if still available resources, go one job at a time and fill if
 					// something. can be scheduled more
-					Output.debugln(DEBUG,
-							"[Simulator]: START work conserving; clusterAvail:" + Simulator.cluster.getClusterResAvail());
-					List<Integer> orderedJobs = interJobSched.orderedListOfJobsBasedOnPolicy();
-					for (int jobId : orderedJobs) {
-						for (BaseDag dag : runningJobs) {
-							if (dag.dagId == jobId) {
-								Resources totalResShare = Resources.clone(dag.rsrcQuota);
-								// dag.rsrcQuota =
-								// Resources.clone(cluster.getClusterResAvail());
-								intraJobSched.schedule((StageDag) dag);
-								dag.rsrcQuota = totalResShare;
-								break;
-							}
+//					Output.debugln(DEBUG,
+//							"[Simulator]: START work conserving; clusterAvail:" + Simulator.cluster.getClusterResAvail());
+					for (BaseDag job : runningJobs) {
+						if (job.rsrcQuota.distinct(Resources.ZEROS)) {
+							intraJobSched.schedule((StageDag) job);
 						}
+//						Output.debugln(DEBUG,
+//								"[DRFScheduler] Allocated to job:" + job.dagId + " @ " + job.getQueueName() + " " + job.rsrcQuota);
 					}
-					Output.debugln(DEBUG, "[Simulator]: END work conserving; clusterAvail:" + Simulator.cluster.getClusterResAvail());
-				} 
+//					Output.debugln(DEBUG,
+//							"[Simulator]: END work conserving; clusterAvail:" + Simulator.cluster.getClusterResAvail());
+				}
 			}
-			
+
 			for (BaseDag dag : Simulator.runningJobs) {
 				dag.receivedService.addUsage(dag.rsrcInUse);
 			}
 
-			Simulator.printUsedResources();
+//			Simulator.printUsedResources();
 			Simulator.writeResourceUsage();
 		}
 		System.out.println("\n==== END STEP_TIME:" + Simulator.CURRENT_TIME + " ====\n");
@@ -391,9 +251,10 @@ public class Simulator {
 			System.out.println(dagId + " " + results.get(dagId));
 		}
 		System.out.println("---------------------");
-//		for (JobQueue queue : QUEUE_LIST.getJobQueues()) {
-//			System.out.println("Queue " + queue.getQueueName() + "'s job compl. time: " + queue.avgCompletionTime()); //TODO:
-//		}
+		// for (JobQueue queue : QUEUE_LIST.getJobQueues()) {
+		// System.out.println("Queue " + queue.getQueueName() + "'s job compl. time:
+		// " + queue.avgCompletionTime()); //TODO:
+		// }
 		System.out.println("NUM_OPT:" + Globals.NUM_OPT + " NUM_PES:" + Globals.NUM_PES);
 	}
 
@@ -416,25 +277,30 @@ public class Simulator {
 
 	public static void printUsedResources() {
 		for (BaseDag dag : runningJobs) {
-			Output.debugln(DEBUG, "Dag Id " + dag.dagId + "in " + dag.getQueueName()+ " -- dag.rsrcInUse: " + dag.rsrcInUse);
+			Output.debugln(DEBUG, "Dag Id " + dag.dagId + "in " + dag.getQueueName() + " -- dag.rsrcInUse: " + dag.rsrcInUse);
 			// Output.writeln(dag.dagId + ", " + dag.rsrcInUse, true,
 			// Globals.PathToResourceLog);
-//			Output.debugln(DEBUG, "Dag Id " + dag.dagId + " -- Resource Share: " + dag.rsrcQuota);
-//			Resources minReq = dag.serviceCurve.getMinReqService(Simulator.CURRENT_TIME - dag.jobStartTime);
-//			boolean isSatisfied = dag.serviceCurve.isSatisfied(dag.receivedService, Simulator.CURRENT_TIME);
-//			if (!isSatisfied)
-//				Output.debugln(DEBUG,
-//						"Dag Id " + dag.dagId + " " + " is NOT satified" + " -- Received : " + dag.receivedService);
-//			Output.debugln(DEBUG, "Dag Id " + dag.dagId + " -- Received: " + dag.receivedService + " -- S.Curve: " + minReq);
+			// Output.debugln(DEBUG, "Dag Id " + dag.dagId + " -- Resource Share: " +
+			// dag.rsrcQuota);
+			// Resources minReq =
+			// dag.serviceCurve.getMinReqService(Simulator.CURRENT_TIME -
+			// dag.jobStartTime);
+			// boolean isSatisfied = dag.serviceCurve.isSatisfied(dag.receivedService,
+			// Simulator.CURRENT_TIME);
+			// if (!isSatisfied)
+			// Output.debugln(DEBUG,
+			// "Dag Id " + dag.dagId + " " + " is NOT satified" + " -- Received : " +
+			// dag.receivedService);
+			// Output.debugln(DEBUG, "Dag Id " + dag.dagId + " -- Received: " +
+			// dag.receivedService + " -- S.Curve: " + minReq);
 		}
 	}
-	
+
 	public static void writeResourceUsage() {
 		for (JobQueue q : QUEUE_LIST.getJobQueues()) {
 			Output.writeln(q.getResourceUsageStr(), true, Globals.PathToResourceLog);
 		}
 	}
-	
 
 	boolean stop() {
 		return (runnableJobs.isEmpty() && runningJobs.isEmpty() && (completedJobs.size() == totalReplayedJobs));
@@ -458,7 +324,7 @@ public class Simulator {
 					Output.debugln(DEBUG, "DAG:" + crdag.dagId + " finished at time:" + Simulator.CURRENT_TIME);
 					nextTimeToLaunchJob = Simulator.CURRENT_TIME;
 					completedJobs.add(crdag);
-					
+
 					QUEUE_LIST.addCompletionJob2Queue(crdag, crdag.getQueueName());
 
 					iter.remove();
@@ -655,4 +521,147 @@ public class Simulator {
 		}
 		return null;
 	}
+	
+	public void simulate() {
+		for (Simulator.CURRENT_TIME = 0; Simulator.CURRENT_TIME < Globals.SIM_END_TIME; Simulator.CURRENT_TIME += Globals.STEP_TIME) {
+			if (!Globals.DEBUG_ALL && !Globals.DEBUG_LOCAL)
+				System.out.print(".");
+
+			Output.debugln(DEBUG, "\n==== STEP_TIME:" + Simulator.CURRENT_TIME + " ====\n");
+
+			Simulator.CURRENT_TIME = Utils.round(Simulator.CURRENT_TIME, 2);
+			tasksToStartNow.clear();
+
+			// terminate any task if it can finish and update cluster available
+			// resources
+			Map<Integer, List<Integer>> finishedTasks = cluster.finishTasks();
+
+			// update jobs status with newly finished tasks
+			boolean jobCompleted = updateJobsStatus(finishedTasks);
+
+			// STOP condition
+			if (stop()) {
+				printReport();
+				writeReport();
+				// EXIT the loop
+				break;
+			}
+
+			// handle jobs completion and arrivals
+			boolean newJobArrivals = handleNewJobArrival();
+
+			if (!jobCompleted && !newJobArrivals && finishedTasks.isEmpty()
+					&& Globals.INTER_JOB_POLICY != Globals.SharingPolicy.SpeedFair)
+				Output.debugln(DEBUG, "----- Do nothing ----");
+			else {
+
+				if (Globals.TETRIS_UNIVERSAL) {
+					interJobSched.resSharePolicy.packTasks();
+				} else {
+					Output.debugln(DEBUG, "[Simulator]: jobCompleted:" + jobCompleted + " newJobArrivals:" + newJobArrivals);
+					if (jobCompleted || newJobArrivals) {
+						interJobSched.schedule(); // TODO: add preemption
+					}
+
+					Output.debugln(DEBUG, "Running jobs size:" + runningJobs.size());
+
+					// reallocate the share
+					interJobSched.adjustShares();
+
+					// do intra-job scheduling for every running job
+					if (Globals.INTRA_JOB_POLICY == Globals.SchedulingPolicy.Yarn) {
+						// if still available resources, go one job at a time and fill if
+						// something. can be scheduled more
+						Output.debugln(DEBUG,
+								"[Simulator]: START work conserving; clusterAvail:" + Simulator.cluster.getClusterResAvail());
+
+						List<Integer> orderedJobs = interJobSched.orderedListOfJobsBasedOnPolicy();
+						for (int jobId : orderedJobs) {
+							for (BaseDag dag : runningJobs) {
+								if (dag.dagId == jobId) {
+									Resources totalResShare = Resources.clone(dag.rsrcQuota);
+									// dag.rsrcQuota =
+									// Resources.clone(cluster.getClusterResAvail());
+									intraJobSched.schedule((StageDag) dag);
+									dag.rsrcQuota = totalResShare;
+									break;
+								}
+							}
+						}
+					} else if (Globals.INTRA_JOB_POLICY == Globals.SchedulingPolicy.SpeedFair) { // TODO:
+
+						// if still available resources, go one job at a time and fill if
+						// something. can be scheduled more
+						Output.debugln(DEBUG,
+								"[Simulator]: START work conserving; clusterAvail:" + Simulator.cluster.getClusterResAvail());
+
+						List<Integer> orderedJobs = interJobSched.orderedListOfJobsBasedOnPolicy();
+						for (int jobId : orderedJobs) {
+							for (BaseDag dag : runningJobs) {
+								if (dag.dagId == jobId) {
+									Resources totalResShare = Resources.clone(dag.rsrcQuota);
+									dag.rsrcQuota = Resources.clone(cluster.getClusterResAvail()); // TODO:
+									intraJobSched.schedule((StageDag) dag);
+									dag.rsrcQuota = totalResShare;
+									break;
+								}
+							}
+						}
+
+					} else if (Globals.INTRA_JOB_POLICY != Globals.SchedulingPolicy.Carbyne) {
+
+						// if still available resources, go one job at a time and fill if
+						// something. can be scheduled more
+						Output.debugln(DEBUG,
+								"[Simulator]: START work conserving; clusterAvail:" + Simulator.cluster.getClusterResAvail());
+
+						// while things can happen, give total resources to a job at a time,
+						// the order is dictated by the inter job scheduler:
+						// Shortest JobFirst - for SJF
+						// RR - for Fair and DRF
+						List<Integer> orderedJobs = interJobSched.orderedListOfJobsBasedOnPolicy();
+						for (int jobId : orderedJobs) {
+							for (BaseDag dag : runningJobs) {
+								if (dag.dagId == jobId) {
+									Resources totalResShare = Resources.clone(dag.rsrcQuota);
+									dag.rsrcQuota = Resources.clone(cluster.getClusterResAvail()); // TODO:
+																																									// why?
+									intraJobSched.schedule((StageDag) dag);
+									dag.rsrcQuota = totalResShare;
+									break;
+								}
+							}
+						}
+
+					} else {
+						// compute if any tasks should be scheduled based on reverse
+						// schedule
+						for (BaseDag dag : runningJobs) {
+							dag.timeToComplete = intraJobSched.planSchedule((StageDag) dag, null);
+						}
+						// Output.debugln(DEBUG,"Tasks which should start as of now:"
+						// + Simulator.tasksToStartNow);
+
+						// schedule the DAGs -> looking at the list of tasksToStartNow
+						for (BaseDag dag : runningJobs) {
+							intraJobSched.schedule((StageDag) dag);
+						}
+
+						// Step2: redistribute the leftOverResources and ensuring is work
+						// conserving
+						leftOverResAllocator.allocLeftOverRsrcs();
+					}
+				}
+			}
+
+			for (BaseDag dag : Simulator.runningJobs) {
+				dag.receivedService.addUsage(dag.rsrcInUse);
+			}
+
+			// Simulator.printUsedResources();
+
+			Output.debugln(DEBUG, "[Simulator]: END work conserving; clusterAvail:" + Simulator.cluster.getClusterResAvail());
+		}
+	}
+
 }

@@ -15,7 +15,7 @@ import cluster.utils.JobArrivalComparator;
 import cluster.utils.Output;
 
 public class SpeedFairScheduler implements Scheduler {
-	private boolean DEBUG = true;
+	private boolean DEBUG = false;
 
 	private String schedulePolicy;
 

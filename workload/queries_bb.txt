@@ -1,0 +1,422 @@
+# 0: BIG_BENCH query10
+2 0
+Reducer2 40 0.19 0.23 0.07 0.12 0.01 0.14 1
+Map1 496 0.17 0.18 0.0 0.0 0.01 0.03 6
+1
+Map1 Reducer2 ata
+# 1: BIG_BENCH query11
+7 1
+Map5 2 0.16 0.23 0.02 0.0 0.01 0.0 1
+Map6 9 0.1 0.23 0.02 0.0 0.05 0.01 67
+Reducer7 2 0.21 0.23 0.02 0.0 0.01 0.0 446
+Map1 4 0.17 0.23 0.02 0.0 0.01 0.02 6
+Reducer2 4 0.21 0.23 0.03 0.04 0.01 0.04 3
+Reducer3 1 0.27 0.23 0.02 0.0 0.01 0.0 224
+Reducer4 2 0.2 0.23 0.02 0.0 0.01 0.0 1
+6
+Map1 Reducer2 ata
+Reducer2 Reducer3 ata
+Reducer7 Reducer3 ata
+Map6 Reducer7 ata
+Map5 Map6 ata
+Reducer3 Reducer4 ata
+# 2: BIG_BENCH query12
+9 2
+Reducer4 3 0.2 0.23 0.0 0.02 0.01 0.02 1
+Reducer3 9 0.18 0.23 0.04 0.0 0.01 0.02 13
+Reducer2 6 0.2 0.21 0.03 0.04 0.01 0.04 22
+Map1 24 0.14 0.23 0.1 0.0 0.19 0.02 67
+Reducer8 3 0.24 0.23 0.02 0.0 0.01 0.0 159
+Map7 5 0.16 0.17 0.01 0.0 0.02 0.01 100
+Map6 4 0.17 0.23 0.02 0.0 0.01 0.05 1
+Map9 4 0.17 0.19 0.0 0.0 0.01 0.01 1
+Reducer5 3 0.2 0.23 0.02 0.01 0.01 0.01 1
+8
+Map9 Reducer8 ata
+Map6 Reducer2 ata
+Reducer3 Reducer4 ata
+Map1 Reducer2 ata
+Reducer2 Reducer3 ata
+Reducer4 Reducer5 ata
+Reducer8 Reducer3 ata
+Map7 Reducer8 ata
+# 3: BIG_BENCH query14
+10 3
+Reducer2 2 0.19 0.23 0.02 0.0 0.01 0.0 1
+Map1 6 0.1 0.23 0.02 0.0 0.02 0.01 67
+Map10 2 0.15 0.23 0.02 0.0 0.01 0.0 2
+Map3 2 0.15 0.23 0.02 0.0 0.01 0.0 1
+Reducer7 1 0.21 0.23 0.04 0.0 0.0 0.0 1
+Map6 6 0.1 0.27 0.02 0.0 0.02 0.01 67
+Map9 2 0.26 0.23 0.02 0.0 0.01 0.0 1
+Map8 2 0.18 0.23 0.02 0.0 0.08 0.0 1
+Map5 2 0.25 0.21 0.02 0.0 0.11 0.0 2
+Map4 2 0.16 0.18 0.02 0.0 0.01 0.0 1
+9
+Map10 Map6 ata
+Map3 Map1 ata
+Map8 Map6 ata
+Map5 Map1 ata
+Map9 Map6 ata
+Reducer7 Reducer2 ata
+Map1 Reducer2 ata
+Map6 Reducer7 ata
+Map4 Map1 ata
+# 4: BIG_BENCH query15
+6 4
+Reducer4 2 0.17 0.19 0.0 0.06 0.01 0.0 192
+Reducer5 2 0.18 0.19 0.0 0.03 0.01 0.0 1
+Map6 4 0.17 0.33 0.0 0.03 0.0 0.02 1
+Map1 2 0.16 0.33 0.0 0.0 0.01 0.0 1
+Map2 6 0.1 0.19 0.01 0.03 0.04 0.0 100
+Reducer3 2 0.21 0.19 0.0 0.0 0.0 0.0 175
+5
+Reducer3 Reducer4 ata
+Map1 Map2 ata
+Reducer4 Reducer5 ata
+Map6 Reducer3 ata
+Map2 Reducer3 ata
+# 5: BIG_BENCH query16
+9 5
+Map7 4 0.16 0.26 0.0 0.03 0.01 0.03 1
+Map6 10 0.19 0.33 0.01 0.03 0.03 0.16 8
+Map9 4 0.17 0.27 0.0 0.01 0.01 0.0 1
+Map8 2 0.15 0.33 0.0 0.11 0.01 0.0 1
+Reducer4 2 0.25 0.19 0.0 0.03 0.01 0.0 297
+Reducer3 10 0.2 0.19 0.05 0.04 0.01 0.04 224
+Reducer2 14 0.17 0.19 0.11 0.11 0.01 0.01 231
+Map1 16 0.19 0.33 0.01 0.03 0.06 0.08 67
+Reducer5 10 0.17 0.19 0.39 0.35 0.02 0.0 1
+8
+Reducer3 Reducer4 ata
+Map8 Reducer3 ata
+Map7 Reducer3 ata
+Reducer2 Reducer3 ata
+Reducer4 Reducer5 ata
+Map6 Reducer2 ata
+Map9 Reducer3 ata
+Map1 Reducer2 ata
+# 6: BIG_BENCH query17
+25 6
+Map11 2 0.15 0.33 0.0 0.03 0.01 0.0 1
+Reducer3 3 0.27 0.19 0.01 0.03 0.01 0.01 44
+Reducer16 3 0.27 0.19 0.01 0.12 0.0 0.01 44
+Reducer17 3 0.28 0.19 0.0 0.03 0.0 0.0 60
+Reducer18 2 0.26 0.19 0.0 0.09 0.0 0.0 65
+Reducer19 1 0.21 0.19 0.0 0.03 0.01 0.0 1
+Reducer2 35 0.14 0.19 0.37 0.07 0.02 0.05 40
+Map13 4 0.18 0.33 0.0 0.03 0.01 0.01 2
+Map14 12 0.17 0.33 0.01 0.03 0.05 0.03 100
+Reducer15 36 0.14 0.19 0.37 0.01 0.02 0.01 40
+Reducer4 3 0.29 0.19 0.0 0.08 0.01 0.0 60
+Map12 7 0.17 0.33 0.0 0.03 0.01 0.09 1
+Reducer6 2 0.19 0.19 0.0 0.03 0.01 0.0 1
+Reducer5 2 0.25 0.19 0.0 0.0 0.01 0.0 65
+Reducer7 2 0.17 0.19 0.0 0.03 0.01 0.0 1
+Map1 12 0.17 0.33 0.01 0.03 0.05 0.12 100
+Map10 2 0.15 0.33 0.0 0.03 0.0 0.0 1
+Map23 2 0.15 0.33 0.02 0.0 0.01 0.0 1
+Map22 2 0.15 0.33 0.07 0.07 0.01 0.0 1
+Map21 4 0.17 0.33 0.11 0.03 0.0 0.01 1
+Map20 3 0.16 0.33 0.0 0.13 0.01 0.0 1
+Map9 4 0.17 0.33 0.01 0.03 0.01 0.01 1
+Map8 3 0.15 0.33 0.0 0.13 0.01 0.0 1
+Map25 4 0.18 0.33 0.01 0.0 0.0 0.01 2
+Map24 7 0.17 0.33 0.0 0.02 0.01 0.09 1
+24
+Reducer6 Reducer7 ata
+Reducer16 Reducer17 ata
+Reducer15 Reducer16 ata
+Reducer4 Reducer5 ata
+Map11 Reducer3 ata
+Map14 Reducer15 ata
+Reducer5 Reducer6 ata
+Map8 Reducer2 ata
+Reducer19 Reducer6 ata
+Map10 Reducer3 ata
+Map13 Reducer5 ata
+Map21 Reducer16 ata
+Reducer17 Reducer18 ata
+Map22 Reducer16 ata
+Map12 Reducer4 ata
+Map23 Reducer16 ata
+Map9 Reducer3 ata
+Map1 Reducer2 ata
+Map25 Reducer18 ata
+Reducer2 Reducer3 ata
+Map24 Reducer17 ata
+Map20 Reducer15 ata
+Reducer18 Reducer19 ata
+Reducer3 Reducer4 ata
+# 7: BIG_BENCH query19
+13 7
+Map3 3 0.26 0.33 0.0 0.08 0.0 0.0 1
+Map8 3 0.27 0.21 0.0 0.03 0.01 0.0 1
+Reducer9 2 0.2 0.19 0.0 0.03 0.0 0.0 1
+Reducer6 96 0.13 0.19 0.16 0.21 0.03 0.0 6
+Map13 7 0.25 0.33 0.05 0.0 0.22 0.59 6
+Map1 3 0.17 0.21 0.0 0.03 0.01 0.0 1
+Reducer12 2 0.22 0.19 0.0 0.13 0.01 0.0 8
+Map11 17 0.1 0.19 0.01 0.0 0.0 0.01 8
+Map4 16 0.1 0.19 0.01 0.11 0.02 0.0 7
+Reducer2 2 0.23 0.19 0.0 0.01 0.0 0.0 1
+Reducer5 2 0.22 0.19 0.0 0.0 0.01 0.0 8
+Map10 3 0.26 0.33 0.0 0.03 0.01 0.0 1
+Reducer7 4 0.21 0.19 0.11 0.12 0.01 0.12 1
+12
+Reducer6 Reducer7 ata
+Map1 Reducer2 ata
+Map13 Reducer6 ata
+Reducer5 Reducer6 ata
+Map3 Reducer2 ata
+Reducer12 Reducer6 ata
+Reducer9 Map11 ata
+Map10 Reducer9 ata
+Map11 Reducer12 ata
+Map4 Reducer5 ata
+Map8 Reducer9 ata
+Reducer2 Map4 ata
+# 8: BIG_BENCH query1
+6 8
+Reducer5 2 0.25 0.22 0.02 0.0 0.01 0.0 1
+Reducer4 4 0.23 0.22 0.06 0.05 0.01 0.05 22
+Map1 4 0.23 0.33 0.02 0.0 0.07 0.0 100
+Map6 4 0.21 0.33 0.02 0.0 0.01 0.12 1
+Reducer3 5 0.3 0.22 0.02 0.04 0.0 0.04 44
+Reducer2 3 0.34 0.22 0.06 0.0 0.01 0.0 317
+5
+Reducer4 Reducer5 ata
+Reducer3 Reducer4 ata
+Map6 Reducer2 ata
+Map1 Reducer2 ata
+Reducer2 Reducer3 ata
+# 9: BIG_BENCH query20
+6 9
+Map1 10 0.26 0.33 0.02 0.0 0.04 0.03 100
+Reducer2 3 0.32 0.22 0.02 0.0 0.01 0.0 1009
+Map5 10 0.27 0.33 0.02 0.0 0.04 0.05 7
+Reducer6 3 0.3 0.22 0.02 0.01 0.01 0.01 55
+Reducer3 3 0.41 0.22 0.0 0.0 0.08 0.0 660
+Reducer4 3 0.28 0.22 0.12 0.0 0.11 0.0 696
+5
+Reducer2 Reducer3 ata
+Reducer3 Reducer4 ata
+Map5 Reducer6 ata
+Reducer6 Reducer3 ata
+Map1 Reducer2 ata
+# 10: BIG_BENCH query21
+16 10
+Map11 12 0.25 0.33 0.02 0.0 0.04 0.03 67
+Map14 3 0.21 0.33 0.02 0.0 0.01 0.0 1
+Map13 3 0.21 0.33 0.02 0.0 0.08 0.0 1
+Reducer2 32 0.18 0.22 0.07 0.09 0.04 0.19 43
+Map1 11 0.24 0.33 0.02 0.0 0.03 0.11 100
+Map10 10 0.24 0.33 0.12 0.0 0.06 0.14 7
+Map16 5 0.22 0.33 0.09 0.0 0.04 0.19 1
+Map15 2 0.2 0.33 0.02 0.0 0.01 0.0 1
+Reducer4 5 0.25 0.22 0.07 0.15 0.01 0.15 223
+Reducer5 2 0.31 0.22 0.0 0.0 0.01 0.0 245
+Reducer6 2 0.33 0.21 0.02 0.0 0.06 0.0 270
+Reducer7 2 0.28 0.19 0.06 0.0 0.01 0.0 327
+Reducer8 2 0.38 0.22 0.0 0.06 0.02 0.04 1
+Reducer9 2 0.27 0.18 0.02 0.01 0.01 0.01 1
+Map12 3 0.21 0.33 0.02 0.0 0.01 0.0 1
+Reducer3 9 0.26 0.22 0.09 0.13 0.01 0.13 246
+15
+Map15 Reducer6 ata
+Reducer2 Reducer3 ata
+Reducer7 Reducer8 ata
+Reducer5 Reducer6 ata
+Map16 Reducer7 ata
+Reducer3 Reducer4 ata
+Reducer6 Reducer7 ata
+Map11 Reducer3 ata
+Map1 Reducer2 ata
+Map12 Reducer4 ata
+Map13 Reducer5 ata
+Map10 Reducer2 ata
+Map14 Reducer6 ata
+Reducer4 Reducer5 ata
+Reducer8 Reducer9 ata
+# 11: BIG_BENCH query22
+7 11
+Map6 2 0.2 0.33 0.02 0.0 0.11 0.0 1
+Map7 3 0.22 0.25 0.02 0.0 0.06 0.0 1
+Map5 5 0.24 0.33 0.02 0.0 0.01 0.0 1
+Map1 57 0.34 0.31 0.03 0.0 0.13 0.08 51
+Reducer2 157 0.17 0.22 0.14 0.05 0.11 0.0 20
+Reducer3 3 0.31 0.22 0.08 0.01 0.01 0.01 1
+Reducer4 2 0.28 0.22 0.02 0.0 0.01 0.0 1
+6
+Reducer3 Reducer4 ata
+Map6 Reducer2 ata
+Reducer2 Reducer3 ata
+Map1 Reducer2 ata
+Map7 Reducer2 ata
+Map5 Reducer2 ata
+# 12: BIG_BENCH query24
+19 12
+Reducer9 3 0.3 0.22 0.02 0.02 0.01 0.02 810
+Reducer4 2 0.28 0.28 0.02 0.0 0.09 0.0 794
+Reducer14 2 0.22 0.22 0.02 0.0 0.03 0.0 1
+Reducer15 1 0.22 0.25 0.02 0.24 0.01 0.0 1
+Reducer3 1 0.21 0.21 0.02 0.0 0.01 0.0 1
+Reducer8 1 0.22 0.22 0.02 0.0 0.26 0.0 1
+Map1 3 0.22 0.33 0.02 0.0 0.01 0.0 1
+Reducer2 2 0.22 0.22 0.02 0.0 0.01 0.0 1
+Reducer17 1 0.25 0.19 0.02 0.0 0.11 0.0 696
+Reducer16 3 0.3 0.22 0.12 0.12 0.01 0.02 633
+Map6 3 0.22 0.31 0.02 0.07 0.01 0.0 1
+Map5 5 0.24 0.33 0.02 0.0 0.02 0.0 1
+Map12 10 0.25 0.34 0.02 0.0 0.03 0.19 67
+Map19 8 0.24 0.33 0.02 0.0 0.02 0.13 100
+Reducer7 2 0.22 0.22 0.02 0.0 0.01 0.0 1
+Map18 5 0.24 0.33 0.02 0.01 0.02 0.0 1
+Map13 3 0.22 0.33 0.02 0.0 0.14 0.0 1
+Map11 5 0.25 0.33 0.02 0.0 0.02 0.0 1
+Reducer10 1 0.26 0.22 0.12 0.0 0.08 0.0 891
+18
+Reducer14 Reducer15 ata
+Reducer16 Reducer17 ata
+Reducer3 Reducer4 ata
+Reducer2 Reducer3 ata
+Reducer9 Reducer10 ata
+Reducer15 Reducer16 ata
+Reducer17 Reducer4 ata
+Map11 Reducer7 ata
+Map1 Reducer2 ata
+Map18 Reducer14 ata
+Map12 Reducer9 ata
+Reducer10 Reducer4 ata
+Map6 Reducer7 ata
+Map5 Reducer2 ata
+Map13 Reducer14 ata
+Reducer8 Reducer9 ata
+Map19 Reducer16 ata
+Reducer7 Reducer8 ata
+# 13: BIG_BENCH query26
+4 13
+Map4 4 0.23 0.33 0.02 0.0 0.01 0.0 1
+Map1 8 0.25 0.29 0.22 0.0 0.12 0.13 100
+Reducer2 6 0.27 0.22 0.02 0.05 0.01 0.05 317
+Reducer3 3 0.31 0.22 0.02 0.01 0.0 0.01 348
+3
+Reducer2 Reducer3 ata
+Map4 Reducer2 ata
+Map1 Reducer2 ata
+# 14: BIG_BENCH query27
+2 14
+Map1 25 0.21 0.33 0.05 0.0 0.22 0.0 6
+Reducer2 2 0.29 0.22 0.02 0.0 0.21 0.0 1
+1
+Map1 Reducer2 ata
+# 15: BIG_BENCH query2
+5 15
+Reducer5 3 0.26 0.22 0.03 0.02 0.01 0.02 1
+Reducer3 41 0.18 0.22 0.05 0.08 0.04 0.18 84
+Reducer4 4 0.27 0.26 0.05 0.09 0.01 0.01 21
+Map1 64 0.26 0.33 0.16 0.0 0.02 0.06 67
+Reducer2 84 0.26 0.19 0.28 0.11 0.07 0.01 84
+4
+Map1 Reducer2 ata
+Reducer4 Reducer5 ata
+Reducer2 Reducer3 ata
+Reducer3 Reducer4 ata
+# 16: BIG_BENCH query3
+7 16
+Reducer6 3 0.26 0.22 0.02 0.02 0.08 0.02 1
+Reducer5 2 0.31 0.22 0.06 0.0 0.01 0.0 12
+Reducer4 3 0.29 0.28 0.01 0.0 0.09 0.05 12
+Reducer3 4 0.3 0.22 0.0 0.01 0.01 0.01 43
+Reducer2 74 0.16 0.22 0.08 0.07 0.1 0.07 84
+Map1 66 0.27 0.31 0.16 0.0 0.14 0.19 67
+Map7 4 0.22 0.33 0.02 0.0 0.01 0.01 1
+6
+Reducer2 Reducer3 ata
+Reducer5 Reducer6 ata
+Map1 Reducer2 ata
+Reducer3 Reducer4 ata
+Reducer4 Reducer5 ata
+Map7 Reducer3 ata
+# 17: BIG_BENCH query4
+5 17
+Map5 2 0.2 0.23 0.0 0.04 0.01 0.0 2
+Map1 87 0.1 0.17 0.01 0.04 0.03 0.09 67
+Reducer2 552 0.27 0.17 0.03 0.06 0.05 0.16 12
+Reducer3 276 0.17 0.24 0.13 0.25 0.03 0.04 12
+Reducer4 2 0.23 0.26 0.0 0.04 0.01 0.0 1
+4
+Map5 Map1 ata
+Reducer3 Reducer4 ata
+Reducer2 Reducer3 ata
+Map1 Reducer2 ata
+# 18: BIG_BENCH query6
+11 18
+Reducer3 3 0.37 0.25 0.0 0.0 0.01 0.0 87
+Reducer4 3 0.36 0.17 0.0 0.09 0.01 0.0 102
+Map10 3 0.21 0.23 0.0 0.04 0.01 0.0 1
+Reducer5 5 0.24 0.19 0.01 0.04 0.01 0.01 1
+Map6 3 0.21 0.23 0.0 0.12 0.05 0.0 1
+Map7 25 0.22 0.23 0.0 0.04 0.0 0.02 67
+Map11 9 0.23 0.23 0.0 0.09 0.0 0.04 1
+Reducer2 16 0.24 0.17 0.0 0.08 0.01 0.01 317
+Reducer9 3 0.39 0.17 0.0 0.04 0.02 0.0 112
+Map1 18 0.22 0.23 0.0 0.0 0.0 0.01 100
+Reducer8 13 0.25 0.17 0.0 0.02 0.01 0.07 405
+10
+Map6 Reducer2 ata
+Reducer9 Reducer4 ata
+Reducer2 Reducer3 ata
+Reducer3 Reducer4 ata
+Map1 Reducer2 ata
+Map11 Reducer4 ata
+Reducer8 Reducer9 ata
+Map10 Reducer8 ata
+Reducer4 Reducer5 ata
+Map7 Reducer8 ata
+# 19: BIG_BENCH query7
+14 19
+Reducer6 2 0.23 0.17 0.0 0.04 0.01 0.0 1
+Reducer5 2 0.24 0.17 0.0 0.05 0.0 0.0 14
+Reducer2 8 0.23 0.17 0.0 0.0 0.01 0.01 2
+Map1 5 0.21 0.23 0.0 0.0 0.01 0.0 2
+Reducer4 25 0.17 0.17 0.02 0.06 0.02 0.06 192
+Reducer3 26 0.22 0.17 0.01 0.04 0.01 0.04 160
+Map9 4 0.21 0.23 0.0 0.03 0.11 0.0 1
+Map8 8 0.25 0.23 0.0 0.04 0.01 0.02 100
+Map10 3 0.22 0.23 0.0 0.04 0.01 0.0 1
+Map7 8 0.23 0.23 0.0 0.04 0.01 0.0 1
+Map4 4 0.23 0.23 0.0 0.08 0.08 0.0 1
+Map1 3 0.23 0.23 0.0 0.12 0.01 0.0 1
+Reducer2 2 0.22 0.17 0.0 0.04 0.01 0.0 2
+Reducer3 11 0.24 0.17 0.0 0.13 0.01 0.0 1
+9
+Map7 Reducer2 ata
+Map9 Reducer3 ata
+Map8 Reducer3 ata
+Reducer5 Reducer6 ata
+Reducer3 Reducer4 ata
+Reducer2 Reducer3 ata
+Reducer4 Reducer5 ata
+Map1 Reducer2 ata
+Map10 Reducer4 ata
+# 20: BIG_BENCH query9
+9 20
+Map6 3 0.21 0.23 0.0 0.04 0.02 0.0 1
+Map7 5 0.22 0.23 0.0 0.0 0.01 0.0 2
+Map8 2 0.2 0.23 0.0 0.07 0.04 0.0 1
+Map9 8 0.25 0.23 0.0 0.0 0.01 0.01 1
+Reducer3 11 0.24 0.19 0.0 0.04 0.03 0.01 89
+Reducer4 7 0.26 0.17 0.0 0.04 0.01 0.0 107
+Map1 16 0.22 0.23 0.0 0.05 0.01 0.01 100
+Reducer2 30 0.2 0.22 0.01 0.08 0.07 0.03 80
+Reducer5 2 0.25 0.17 0.0 0.04 0.09 0.0 1
+8
+Map6 Reducer2 ata
+Reducer3 Reducer4 ata
+Reducer4 Reducer5 ata
+Map7 Reducer3 ata
+Map1 Reducer2 ata
+Reducer2 Reducer3 ata
+Map9 Reducer4 ata
+Map8 Reducer3 ata

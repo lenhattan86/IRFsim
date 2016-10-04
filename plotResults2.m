@@ -2,9 +2,10 @@ addpath('matlab_func');
 common_settings;
 %%
 result_folder = '';
+% result_folder = 'result_20161003_short/';
 % result_folder = 'result_20161003_long/';
 % result_folder = 'result_20161003_vlong/';
-% result_folder = 'result_20161003_short/';
+
 
 output_folder = [result_folder 'output/'];
 is_printed = true;
@@ -64,15 +65,16 @@ num_batch_queues = 4;
 num_interactive_queue = 1;
 STEP_TIME = 0.2;
 num_queues = num_batch_queues+num_interactive_queue;
-START_TIME = 0; END_TIME = 95;
+START_TIME = 0; END_TIME = 90;
 start_time_step = START_TIME/STEP_TIME;
 max_time_step = END_TIME/STEP_TIME;
 startIdx = start_time_step*num_queues+1;
 endIdx = max_time_step*num_queues;
 num_time_steps = max_time_step-start_time_step;
-linewidth=2;
+linewidth= 2;
 barwidth = 1.0;
 timeInSeconds = START_TIME+STEP_TIME:STEP_TIME:END_TIME;
+MAX_RESOURCE = 200;
    
 if plots(1)   
    logFile = [ logfolder 'DRF-output_' int2str(num_batch_queues) '.csv'];
@@ -85,7 +87,7 @@ if plots(1)
       shapeRes1 = reshape(resCutOff,num_queues,num_time_steps);
       bar(timeInSeconds,shapeRes1',barwidth,'stacked','EdgeColor','none');
       ylabel('CPUs');xlabel('seconds');
-      ylim([0 200]);
+      ylim([0 MAX_RESOURCE]);
       legend('interactive','batch01','batch02','batch03','batch04');
       title('DRF - CPUs');
       
@@ -94,7 +96,7 @@ if plots(1)
       shapeRes1 = reshape(resCutOff,num_queues,num_time_steps);
       bar(timeInSeconds,shapeRes1',barwidth,'stacked','EdgeColor','none');
       ylabel('GB');xlabel('seconds');
-      ylim([0 200]);
+      ylim([0 MAX_RESOURCE]);
       legend('interactive','batch01','batch02','batch03','batch04');
       title('DRF - Memory');
       
@@ -115,7 +117,7 @@ if plots(2)
       shapeRes1 = reshape(resCutOff,num_queues,num_time_steps);
       bar(timeInSeconds,shapeRes1',barwidth,'stacked','EdgeColor','none');
       ylabel('CPUs');xlabel('seconds');
-      ylim([0 200]);
+      ylim([0 MAX_RESOURCE]);
       legend('interactive','batch01','batch02','batch03','batch04');
       title('DRF-W - CPUs');
       
@@ -124,7 +126,7 @@ if plots(2)
       shapeRes1 = reshape(resCutOff,num_queues,num_time_steps);
       bar(timeInSeconds,shapeRes1',barwidth,'stacked','EdgeColor','none');
       ylabel('GB');xlabel('seconds');
-      ylim([0 200]);
+      ylim([0 MAX_RESOURCE]);
       legend('interactive','batch01','batch02','batch03','batch04');
       title('DRF-W - Memory');
       
@@ -146,7 +148,7 @@ if plots(3)
       shapeRes1 = reshape(resCutOff,num_queues,num_time_steps);
       bar(timeInSeconds,shapeRes1',barwidth,'stacked','EdgeColor','none');
       ylabel('CPUs');xlabel('seconds');
-      ylim([0 200]);
+      ylim([0 MAX_RESOURCE]);
       legend('interactive','batch01','batch02','batch03','batch04');
       title('Strict Priority - CPUs');
       
@@ -155,7 +157,7 @@ if plots(3)
       shapeRes1 = reshape(resCutOff,num_queues,num_time_steps);
       bar(timeInSeconds,shapeRes1',barwidth,'stacked','EdgeColor','none');
       ylabel('GB');xlabel('seconds');
-      ylim([0 200]);
+      ylim([0 MAX_RESOURCE]);
       legend('interactive','batch01','batch02','batch03','batch04');
       title('Strict Priority - Memory');
       
@@ -175,7 +177,7 @@ if plots(4)
       shapeRes1 = reshape(resCutOff,num_queues,num_time_steps);
       bar(timeInSeconds,shapeRes1',barwidth,'stacked','EdgeColor','none');
       ylabel('CPUs');xlabel('seconds');
-      ylim([0 200]);
+      ylim([0 MAX_RESOURCE]);
       legend('interactive','batch01','batch02','batch03','batch04');
       title('SpeedFair - CPUs');      
       
@@ -184,7 +186,7 @@ if plots(4)
       shapeRes1 = reshape(resCutOff,num_queues,num_time_steps);
       bar(timeInSeconds,shapeRes1',barwidth,'stacked','EdgeColor','none');
       ylabel('GB');xlabel('seconds');
-      ylim([0 200]);
+      ylim([0 MAX_RESOURCE]);
       legend('interactive','batch01','batch02','batch03','batch04');
       title('SpeedFair - Memory');
       

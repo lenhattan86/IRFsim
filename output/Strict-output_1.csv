@@ -16,4 +16,3 @@ JobId, startTime, endTime, duration, queueName
 14,4.0,95.2,91.2,batch0
 15,5.0,110.4,105.4,batch0
 16,6.0,125.4,119.4,batch0
-17,7.0,140.4,133.4,batch0

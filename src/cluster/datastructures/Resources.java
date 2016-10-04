@@ -17,6 +17,8 @@ public class Resources implements Comparable {
 
 	private static final boolean DEBUG = true;
 	public double[] resources;
+	
+	public static Resources ZEROS = new Resources(0.0);
 
 	public Resources() {
 		resources = new double[Globals.NUM_DIMENSIONS];

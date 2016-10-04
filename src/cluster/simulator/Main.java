@@ -62,7 +62,7 @@ public class Main {
 
 		public static int NUM_MACHINES = 1; // TODO: NUM_MACHINES > 1 may results in
 																				// low utilization this simulation.
-		public static int NUM_DIMENSIONS;
+		public static int NUM_DIMENSIONS = 2;
 		public static double MACHINE_MAX_RESOURCE;
 		public static int DagIdStart, DagIdEnd;
 
@@ -77,11 +77,11 @@ public class Main {
 		public static double ZERO = 0.001;
 
 		public static double SIM_END_TIME = 5;
-		public static double STEP_TIME = 0.2;
+		
 
 		public static int NUM_OPT = 0, NUM_PES = 0;
 
-		public static int MAX_NUM_TASKS_DAG = 3000;
+		public static int MAX_NUM_TASKS_DAG = 10000;
 
 		public static boolean TETRIS_UNIVERSAL = false;
 		/**
@@ -116,16 +116,19 @@ public class Main {
 		public static int numBatchQueues = 3, numBatchJobPerQueue = 10;
 		public static int numbatchTask = 10000;
 		
+		public static int SCALE = 1;
+		public static double STEP_TIME = 0.2;
+		
 
 		public static void setupParameters(SetupMode setup) {
 			DagIdStart = 0;
 			DagIdEnd = 500;
 			SIM_END_TIME = 5000;
 			NUM_DIMENSIONS = 2;
-			MACHINE_MAX_RESOURCE = 200;
+			MACHINE_MAX_RESOURCE = 200/SCALE;
 			DRFW_weight = 4.0;
-			SpeedFair_WEIGHT = 0.3;
-			double[] rates = { 200 };
+			SpeedFair_WEIGHT = 0.5;
+			double[] rates = { 200/SCALE };
 			double[] durations = { 2.0 };
 			RATES = rates;
 			RATE_DURATIONS = durations;
@@ -138,21 +141,21 @@ public class Main {
 
 			switch (setup) {
 			case ShortInteractive:
-				Globals.numInteractiveTask = 2000;
+				Globals.numInteractiveTask = 2000/SCALE;
 				Globals.numInteractiveJobPerQueue = 10;
-				Globals.numbatchTask = 10000;
-				Globals.numBatchJobPerQueue = 8;
+				Globals.numbatchTask = 10000/SCALE;
+				Globals.numBatchJobPerQueue = 7;
 				break;
 			case LongInteractive:
-				Globals.numInteractiveTask = 10000;
-				Globals.numInteractiveJobPerQueue = 5;
-				Globals.numbatchTask = 10000;
+				Globals.numInteractiveTask = 10000/SCALE;
+				Globals.numInteractiveJobPerQueue = 15; //the larger number, the larger perf. gap.
+				Globals.numbatchTask = 10000/SCALE;
 				Globals.numBatchJobPerQueue = 5;
 				break;
 			case VeryLongInteractive:
-				Globals.numInteractiveTask = 80000;
+				Globals.numInteractiveTask = 80000/SCALE;
 				Globals.numInteractiveJobPerQueue = 5;
-				Globals.numbatchTask = 10000;
+				Globals.numbatchTask = 10000/SCALE;
 				Globals.numBatchJobPerQueue = 5;
 				break;
 			case CommandLine:
@@ -167,15 +170,15 @@ public class Main {
 
 	public static void main(String[] args) {
 		// Globals.JOBS_ARRIVAL_POLICY = JobsArrivalPolicy.All;
-//		Globals.setupParameters(Globals.SetupMode.ShortInteractive);
-		Globals.setupParameters(Globals.SetupMode.LongInteractive);
-		Globals.runmode = Runmode.MultipleRun;
+		Globals.setupParameters(Globals.SetupMode.ShortInteractive);
+//		Globals.setupParameters(Globals.SetupMode.LongInteractive);
+		Globals.runmode = Runmode.SingleRun;
 
 		if (Globals.runmode.equals(Runmode.MultipleRun)) {
 			Method[] methods = { Method.DRF, Method.DRFW, Method.Strict, Method.SpeedFair };
 			int[] batchQueueNums = { 1, 2, 3, 4 };
-			// Method[] methods = { Method.DRF, Method.SpeedFair };
-//			 int[] batchQueueNums = { 4 };
+//			 Method[] methods = { Method.Strict, Method.SpeedFair };
+//			 int[] batchQueueNums = {2, 3};
 
 			for (int j = 0; j < batchQueueNums.length; j++) {
 				for (int i = 0; i < methods.length; i++) {
@@ -197,11 +200,12 @@ public class Main {
 			Globals.METHOD = Method.Strict;
 //			 Globals.METHOD = Method.DRF;
 //			 Globals.METHOD = Method.SpeedFair;
-//			 Globals.SIM_END_TIME = 10;
+//			 Globals.SIM_END_TIME = 20;
 			// Globals.MACHINE_MAX_RESOURCE = 2;
-			 Globals.numInteractiveTask = 10000;
-			// Globals.numbatchTask = 100;
+//			 Globals.numInteractiveTask = 400;
+//			 Globals.numbatchTask = 100;
 			Globals.numBatchQueues = 1;
+			Globals.DEBUG_LOCAL = true;
 			System.out.println("========================================================================");
 			System.out.println("Run METHOD: " + Globals.METHOD + " with " + Globals.numBatchQueues + " batch queues.");
 			runSimulationScenario();

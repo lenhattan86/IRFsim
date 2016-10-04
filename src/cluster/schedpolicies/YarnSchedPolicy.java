@@ -50,7 +50,7 @@ public class YarnSchedPolicy extends SchedPolicy {
 				continue;
 			}
 
-			// try to assign the next task on a machine. This function needs to be
+			// TODO: try to assign the next task on a machine. This function needs to be
 			// modified for multiple machines. It results in
 			// low utilization as it cannot optimally allocate the resources on each
 			// machine.

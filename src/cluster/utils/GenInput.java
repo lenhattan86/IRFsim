@@ -1,5 +1,10 @@
 package cluster.utils;
 
+import java.util.LinkedList;
+import java.util.Queue;
+
+import cluster.datastructures.BaseDag;
+import cluster.datastructures.StageDag;
 import cluster.simulator.Main.Globals;
 
 public class GenInput {
@@ -95,8 +100,20 @@ public class GenInput {
 	public static void main(String[] args) {
 		int numInteractiveQueues = 1, numInteractiveJobPerQueue = 10, numInteractiveTask = 200, numBatchQueues = 3,
 				numBatchJobPerQueue = 10;
-
-		genInput(numInteractiveQueues, numInteractiveJobPerQueue, numInteractiveTask, numBatchQueues, numBatchJobPerQueue);
+		
+//		genInput(numInteractiveQueues, numInteractiveJobPerQueue, numInteractiveTask, numBatchQueues, numBatchJobPerQueue);
+		
+		genInputFromWorkload(numInteractiveQueues, numInteractiveJobPerQueue, numInteractiveTask, numBatchQueues, numBatchJobPerQueue);
+		Queue<BaseDag> jobs = readWorkloadTrace("workload/"+"50Jobs.txt");
+		System.out.println("Print Jobs");
+		 for (BaseDag job : jobs) {
+			 String str = ((StageDag) job).viewDag();
+			 System.out.println(str);
+		 }
+	}
+	
+	public static void genInputFromWorkload(int numInteractiveQueues, int numInteractiveJobPerQueue, int numInteractiveTask,
+			int numBatchQueues, int numBatchJobPerQueue){
 	}
 
 	public static void genInput(int numInteractiveQueues, int numInteractiveJobPerQueue, int numInteractiveTask,
@@ -104,5 +121,11 @@ public class GenInput {
 		genQueueInput(numInteractiveQueues, numBatchQueues);
 		genJobInput(numInteractiveQueues, numInteractiveJobPerQueue, numInteractiveTask, numBatchQueues,
 				numBatchJobPerQueue);
+	}
+	
+	public static Queue<BaseDag> readWorkloadTrace(String workloadFile){
+		Queue<BaseDag> jobs = new LinkedList<BaseDag>();
+		jobs = StageDag.readDags(workloadFile, 0, 50);
+		return jobs;
 	}
 }

@@ -198,28 +198,30 @@ public class StageDag extends BaseDag implements Cloneable{
   }
 
   // view dag methods //
-  public void viewDag() {
-    Output.debugln(DEBUG,"\n == DAG: " + this.dagId + " == arrives at " + this.timeArrival + " in Queue: " + this.queueName);
+  public String viewDag() {
+  	String str = "";
+    str += "\n == DAG: " + this.dagId + " == arrives at " + this.timeArrival + " in Queue: " + this.queueName + "\n";
 
     for (Stage stage : stages.values()) {
-      Output.debug(DEBUG,"Stage: " + stage.id + " "+stage.name+ " lasts " +stage.vDuration + " " + " [");
+    	str += "Stage: " + stage.id + " "+stage.name+ " lasts " +stage.vDuration + " " + " [";
       for (int i = 0; i < Globals.NUM_DIMENSIONS; i++)
-        Output.debug(DEBUG,stage.vDemands.resource(i) + " ");
-      Output.debug(DEBUG,"]\n");
+      	str += stage.vDemands.resource(i) + " ";
+      str += "]\n";
 
-      Output.debug(DEBUG,"  Tasks:");
-      for (int i = stage.vids.begin; i <= stage.vids.end; i++)
-        Output.debug(DEBUG,i + " ");
-      Output.debugln(DEBUG);
+      str += " Task No: "+ (stage.vids.end-stage.vids.begin+1);
+//      for (int i = stage.vids.begin; i <= stage.vids.end; i++)
+//      	str += i + " ";
+      str += "\n";
 
-      Output.debug(DEBUG,"  Parents: ");
+      str += "  Parents: ";
       for (String parent : stage.parents.keySet())
-        Output.debug(DEBUG, parent + ", ");
-      Output.debugln(DEBUG);
+      	str += parent + ", ";
+      str += "\n";
     }
 
-    Output.debugln(DEBUG,"== CP ==");
-    Output.debugln(DEBUG,CPlength.toString());
+//    str += "== CP ==";
+//    str += CPlength.toString();
+    return str;
   }
 
   // end print dag //
@@ -279,7 +281,10 @@ public class StageDag extends BaseDag implements Cloneable{
         StageDag dag = new StageDag(ddagId, arrival);
         dag.dagName = dag_name;
         dag.setQueueName(queueName);
-        Simulator.QUEUE_LIST.addJobQueue(queueName);
+        if(Simulator.QUEUE_LIST!=null)
+        	Simulator.QUEUE_LIST.addJobQueue(queueName);
+        else
+        	Simulator.QUEUE_LIST = new JobQueueList();
 //        dag.serviceCurve = Simulator.QUEUE_LIST.getJobQueue(queueName).serviceCurve;
 
         for (int i = 0; i < numStages; ++i) {

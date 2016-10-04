@@ -11,7 +11,6 @@ import java.util.Queue;
 import cluster.datastructures.BaseDag;
 import cluster.datastructures.JobQueue;
 import cluster.datastructures.Resources;
-import cluster.datastructures.StageDag;
 import cluster.simulator.Simulator;
 import cluster.simulator.Main.Globals;
 import cluster.simulator.Main.Globals.Method;
@@ -20,7 +19,7 @@ import cluster.utils.Output;
 import cluster.utils.Utils;
 
 public class DRFScheduler implements Scheduler {
-	private static final boolean DEBUG = true;
+	private static boolean DEBUG = false;
 
 	private String schedulePolicy;
 	// Map<String, Resources> resDemandsQueues = null;
@@ -48,6 +47,12 @@ public class DRFScheduler implements Scheduler {
 	// N - total number of running jobs
 	@Override
 	public void computeResShare() {
+		
+//		if(Simulator.CURRENT_TIME>=2.0 && Simulator.CURRENT_TIME<=4.0){
+//			DEBUG = true;
+//			Output.debugln(DEBUG, "\n==== STEP_TIME:" + Simulator.CURRENT_TIME + " ====\n");
+//		}else
+//			DEBUG = false;
 
 		int numQueuesRuning = Simulator.QUEUE_LIST.getRunningQueues().size();
 		if (numQueuesRuning == 0) {
@@ -90,7 +95,8 @@ public class DRFScheduler implements Scheduler {
 				double ratio = Utils.round(q.getWeight() / factor, 3);
 				avgResDemandDag.multiply(ratio);
 			}
-			avgResDemandDag.round(Globals.TOLERANT_ERROR);
+			
+//			avgResDemandDag.round(Globals.TOLERANT_ERROR);
 
 			Resources resDemand = Resources.piecewiseMin(q.getMaxDemand(), avgResDemandDag); // increase
 																																												// utilization.
@@ -111,7 +117,7 @@ public class DRFScheduler implements Scheduler {
 		for (JobQueue q : runningQueues) {
 			Resources drfQuota = Resources.clone(resDemandsQueues.get(q.getQueueName()));
 			drfQuota.multiply(drfShare);
-			drfQuota.round(Globals.TOLERANT_ERROR);
+//			drfQuota.round(Globals.TOLERANT_ERROR);
 			q.setRsrcQuota(drfQuota);
 			Output.debugln(DEBUG, "[DRFScheduler] Allocated to queue:" + q.getQueueName() + " " + q.getRsrcQuota());
 		}

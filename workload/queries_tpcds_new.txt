@@ -1,0 +1,950 @@
+# 0: TPC-DS query12
+6 0
+Reducer4 2 0.26 0.12 0.0 0.0 0.0 0.0 1
+Reducer3 2 0.26 0.12 0.0 0.0 0.0 0.0 2
+Map5 3 0.24 0.21 0.0 0.0 0.01 0.0 1
+Map6 3 0.22 0.21 0.0 0.0 0.01 0.0 1
+Reducer2 2 0.29 0.12 0.01 0.0 0.0 0.0 3
+Map1 11 0.1 0.12 0.09 0.0 0.14 0.0 67
+5
+Map6 Map1 ata
+Map5 Map1 ata
+Map1 Reducer2 ata
+Reducer2 Reducer3 ata
+Reducer3 Reducer4 ata
+# 1: TPC-DS query15
+8 1
+Map6 5 0.22 0.21 0.01 0.0 0.03 0.0 6
+Map8 2 0.22 0.21 0.0 0.0 0.01 0.0 1
+Map1 22 0.23 0.21 0.18 0.0 0.14 0.06 62
+Map7 5 0.22 0.21 0.01 0.0 0.03 0.01 2
+Reducer3 16 0.22 0.12 0.07 0.01 0.0 0.01 67
+Reducer2 17 0.25 0.12 0.05 0.1 0.0 0.1 61
+Reducer5 2 0.23 0.12 0.0 0.0 0.0 0.0 1
+Reducer4 1 0.25 0.12 0.0 0.0 0.0 0.0 14
+7
+Map8 Reducer3 ata
+Map1 Reducer2 ata
+Map6 Reducer2 ata
+Reducer3 Reducer4 ata
+Reducer2 Reducer3 ata
+Reducer4 Reducer5 ata
+Map7 Reducer3 ata
+# 2: TPC-DS query17
+12 2
+Map6 8 0.2 0.21 0.02 0.0 0.08 0.02 67
+Map7 24 0.24 0.21 0.18 0.0 0.11 0.08 62
+Map8 2 0.22 0.21 0.0 0.0 0.01 0.0 1
+Map9 3 0.23 0.21 0.0 0.0 0.01 0.0 1
+Map11 2 0.2 0.21 0.0 0.0 0.0 0.0 1
+Map12 3 0.24 0.21 0.0 0.0 0.01 0.01 1
+Map10 3 0.23 0.21 0.0 0.0 0.01 0.0 1
+Map1 36 0.23 0.21 0.17 0.0 0.07 0.14 87
+Reducer2 212 0.18 0.12 0.23 0.23 0.02 0.29 12
+Reducer3 32 0.19 0.12 0.16 0.06 0.01 0.06 41
+Reducer4 2 0.25 0.12 0.0 0.0 0.0 0.0 1
+Reducer5 2 0.22 0.12 0.0 0.0 0.0 0.0 1
+11
+Map6 Reducer2 ata
+Map12 Reducer3 ata
+Map10 Reducer3 ata
+Reducer3 Reducer4 ata
+Map8 Reducer3 ata
+Map9 Reducer3 ata
+Map7 Reducer3 ata
+Reducer2 Reducer3 ata
+Reducer4 Reducer5 ata
+Map1 Reducer2 ata
+Map11 Reducer3 ata
+# 3: TPC-DS query18
+13 3
+Reducer2 18 0.2 0.12 0.11 0.11 0.01 0.11 17
+Map12 4 0.23 0.21 0.01 0.0 0.03 0.0 2
+Reducer4 3 0.32 0.12 0.01 0.01 0.0 0.01 23
+Reducer3 4 0.29 0.12 0.01 0.02 0.0 0.02 20
+Map11 5 0.23 0.21 0.01 0.0 0.03 0.0 6
+Map1 138 0.1 0.12 0.18 0.0 0.04 0.03 62
+Map10 3 0.23 0.21 0.0 0.0 0.01 0.0 1
+Map9 4 0.22 0.21 0.01 0.0 0.02 0.0 3
+Map8 2 0.22 0.21 0.0 0.0 0.01 0.0 1
+Reducer5 5 0.35 0.12 0.0 0.01 0.0 0.01 25
+Reducer6 42 0.2 0.12 0.12 0.12 0.01 0.12 1
+Reducer7 6 0.24 0.12 0.04 0.04 0.0 0.04 1
+Map13 6 0.21 0.21 0.01 0.0 0.02 0.0 3
+12
+Reducer3 Reducer4 ata
+Reducer2 Reducer3 ata
+Reducer6 Reducer7 ata
+Reducer5 Reducer6 ata
+Reducer4 Reducer5 ata
+Map8 Map1 ata
+Map9 Reducer2 ata
+Map10 Reducer2 ata
+Map13 Reducer5 ata
+Map12 Reducer4 ata
+Map1 Reducer2 ata
+Map11 Reducer3 ata
+# 4: TPC-DS query19
+10 4
+Reducer5 2 0.31 0.12 0.0 0.0 0.0 0.0 1
+Reducer6 2 0.23 0.12 0.0 0.0 0.0 0.0 1
+Map1 2 0.22 0.21 0.0 0.0 0.01 0.0 1
+Map2 58 0.1 0.12 0.17 0.0 0.12 0.01 87
+Reducer3 3 0.36 0.12 0.0 0.0 0.0 0.0 25
+Reducer4 3 0.35 0.12 0.0 0.0 0.0 0.0 27
+Map8 5 0.22 0.21 0.01 0.0 0.03 0.0 6
+Map9 5 0.22 0.21 0.01 0.0 0.03 0.01 2
+Map7 2 0.22 0.21 0.0 0.0 0.01 0.0 1
+Map10 2 0.2 0.21 0.0 0.0 0.0 0.0 1
+9
+Map2 Reducer3 ata
+Reducer5 Reducer6 ata
+Map10 Reducer4 ata
+Map7 Map2 ata
+Map8 Reducer3 ata
+Reducer3 Reducer4 ata
+Map9 Reducer4 ata
+Reducer4 Reducer5 ata
+Map1 Map2 ata
+# 5: TPC-DS query20
+6 5
+Reducer4 2 0.27 0.12 0.02 0.0 0.01 0.0 1
+Reducer3 2 0.25 0.12 0.02 0.0 0.01 0.0 3
+Map5 3 0.25 0.21 0.02 0.0 0.01 0.0 1
+Map6 3 0.23 0.21 0.02 0.0 0.01 0.0 1
+Reducer2 2 0.29 0.12 0.02 0.0 0.01 0.0 5
+Map1 18 0.1 0.12 0.18 0.0 0.24 0.0 62
+5
+Map6 Map1 ata
+Map1 Reducer2 ata
+Map5 Map1 ata
+Reducer2 Reducer3 ata
+Reducer3 Reducer4 ata
+# 6: TPC-DS query21
+6 6
+Reducer2 2 0.3 0.12 0.03 0.04 0.01 0.0 1
+Reducer3 2 0.26 0.12 0.03 0.04 0.01 0.0 1
+Map5 3 0.22 0.21 0.03 0.04 0.01 0.0 1
+Map1 10 0.1 0.12 0.03 0.04 0.03 0.0 17
+Map6 2 0.23 0.21 0.03 0.04 0.01 0.0 1
+Map4 2 0.2 0.21 0.03 0.04 0.01 0.0 1
+5
+Map5 Map1 ata
+Map1 Reducer2 ata
+Map6 Map1 ata
+Map4 Map1 ata
+Reducer2 Reducer3 ata
+# 7: TPC-DS query22
+6 7
+Reducer3 3 0.26 0.12 0.03 0.01 0.01 0.01 1
+Reducer2 53 0.18 0.12 0.21 0.21 0.01 0.26 1
+Map1 30 0.1 0.12 0.03 0.0 0.07 0.21 17
+Map5 3 0.23 0.21 0.03 0.0 0.02 0.01 1
+Map4 3 0.23 0.21 0.03 0.0 0.02 0.0 1
+Map6 2 0.21 0.21 0.03 0.0 0.01 0.0 1
+5
+Map4 Map1 ata
+Map6 Map1 ata
+Map1 Reducer2 ata
+Map5 Map1 ata
+Reducer2 Reducer3 ata
+# 8: TPC-DS query25
+12 8
+Reducer3 35 0.18 0.12 0.09 0.03 0.01 0.03 41
+Reducer2 240 0.18 0.12 0.15 0.02 0.03 0.01 12
+Reducer5 2 0.23 0.12 0.03 0.0 0.01 0.0 1
+Map9 3 0.22 0.21 0.03 0.0 0.01 0.0 1
+Map8 2 0.23 0.21 0.03 0.0 0.01 0.0 1
+Map7 25 0.24 0.21 0.09 0.0 0.17 0.05 62
+Map6 9 0.2 0.21 0.03 0.0 0.04 0.01 67
+Map1 39 0.23 0.21 0.09 0.0 0.12 0.08 87
+Map10 3 0.22 0.21 0.03 0.0 0.01 0.0 1
+Map12 3 0.23 0.21 0.03 0.0 0.01 0.0 1
+Map11 2 0.2 0.21 0.03 0.0 0.01 0.0 1
+Reducer4 1 0.24 0.12 0.03 0.0 0.01 0.0 1
+11
+Map1 Reducer2 ata
+Map11 Reducer3 ata
+Reducer4 Reducer5 ata
+Reducer3 Reducer4 ata
+Reducer2 Reducer3 ata
+Map8 Reducer3 ata
+Map9 Reducer3 ata
+Map12 Reducer3 ata
+Map7 Reducer3 ata
+Map10 Reducer3 ata
+Map6 Reducer2 ata
+# 9: TPC-DS query26
+7 9
+Map4 4 0.21 0.21 0.03 0.0 0.02 0.0 3
+Map5 2 0.22 0.21 0.02 0.0 0.01 0.0 1
+Map6 3 0.23 0.21 0.03 0.1 0.03 0.0 1
+Map7 2 0.21 0.21 0.15 0.0 0.01 0.0 1
+Reducer3 2 0.27 0.12 0.03 0.0 0.01 0.0 1
+Map1 166 0.1 0.12 0.18 0.0 0.14 0.0 62
+Reducer2 3 0.29 0.12 0.03 0.01 0.01 0.01 2
+6
+Map5 Map1 ata
+Map6 Map1 ata
+Map7 Map1 ata
+Map1 Reducer2 ata
+Map4 Map1 ata
+Reducer2 Reducer3 ata
+# 10: TPC-DS query27
+7 10
+Map4 4 0.2 0.21 0.23 0.0 0.02 0.0 3
+Map5 2 0.22 0.21 0.03 0.1 0.01 0.0 1
+Map6 2 0.19 0.21 0.19 0.0 0.1 0.0 1
+Map7 3 0.22 0.21 0.03 0.01 0.01 0.0 1
+Reducer3 3 0.27 0.12 0.03 0.0 0.01 0.0 1
+Map1 175 0.1 0.12 0.17 0.0 0.07 0.01 87
+Reducer2 5 0.25 0.12 0.05 0.03 0.01 0.03 1
+6
+Map6 Map1 ata
+Map1 Reducer2 ata
+Map4 Map1 ata
+Reducer2 Reducer3 ata
+Map7 Map1 ata
+Map5 Map1 ata
+# 11: TPC-DS query29
+12 11
+Map10 2 0.22 0.21 0.03 0.0 0.01 0.02 1
+Map1 37 0.23 0.21 0.09 0.0 0.25 0.07 87
+Reducer5 2 0.23 0.12 0.03 0.0 0.01 0.0 1
+Reducer4 1 0.25 0.12 0.15 0.0 0.01 0.0 1
+Map8 2 0.22 0.21 0.03 0.0 0.01 0.17 1
+Map9 3 0.22 0.21 0.02 0.0 0.01 0.0 1
+Map6 8 0.2 0.21 0.03 0.0 0.04 0.01 67
+Map7 24 0.24 0.21 0.09 0.0 0.16 0.04 62
+Reducer2 214 0.18 0.12 0.08 0.04 0.03 0.07 12
+Reducer3 31 0.19 0.12 0.08 0.02 0.01 0.03 41
+Map12 3 0.23 0.21 0.03 0.0 0.01 0.32 1
+Map11 2 0.2 0.21 0.03 0.0 0.01 0.0 1
+11
+Reducer4 Reducer5 ata
+Reducer3 Reducer4 ata
+Map1 Reducer2 ata
+Map10 Reducer3 ata
+Map12 Reducer3 ata
+Map7 Reducer3 ata
+Map9 Reducer3 ata
+Reducer2 Reducer3 ata
+Map6 Reducer2 ata
+Map11 Reducer3 ata
+Map8 Reducer3 ata
+# 12: TPC-DS query31
+32 12
+Map7 5 0.22 0.21 0.03 0.0 0.03 0.01 2
+Map1 51 0.1 0.12 0.17 0.0 0.07 0.01 87
+Reducer2 3 0.32 0.12 0.03 0.0 0.01 0.0 88
+Reducer3 1 0.3 0.12 0.03 0.0 0.01 0.0 25
+Map13 52 0.1 0.12 0.17 0.0 0.07 0.01 87
+Map18 27 0.1 0.12 0.09 0.0 0.14 0.0 67
+Map16 2 0.22 0.21 0.03 0.0 0.01 0.0 1
+Reducer19 3 0.29 0.12 0.03 0.0 0.01 0.0 34
+Reducer20 1 0.29 0.12 0.03 0.0 0.01 0.0 10
+Reducer4 2 0.32 0.12 0.03 0.0 0.01 0.0 50
+Reducer5 2 0.24 0.12 0.03 0.0 0.01 0.0 1
+Map31 2 0.21 0.21 0.03 0.0 0.01 0.0 1
+Map28 24 0.1 0.12 0.09 0.0 0.24 0.0 67
+Map22 5 0.22 0.21 0.03 0.0 0.03 0.01 2
+Reducer9 3 0.32 0.12 0.14 0.0 0.01 0.0 88
+Reducer10 1 0.3 0.12 0.03 0.0 0.01 0.0 25
+Map21 2 0.22 0.21 0.03 0.0 0.01 0.0 1
+Map27 5 0.21 0.21 0.03 0.0 0.03 0.01 2
+Map26 3 0.21 0.21 0.03 0.0 0.01 0.0 1
+Map6 2 0.22 0.21 0.03 0.0 0.01 0.0 1
+Reducer25 1 0.29 0.12 0.03 0.0 0.01 0.0 10
+Reducer24 3 0.33 0.12 0.03 0.0 0.01 0.0 34
+Map23 24 0.1 0.12 0.09 0.0 0.14 0.0 67
+Reducer29 3 0.3 0.12 0.03 0.0 0.01 0.0 34
+Map32 5 0.22 0.21 0.03 0.0 0.03 0.01 2
+Reducer14 3 0.3 0.12 0.03 0.0 0.01 0.0 88
+Reducer30 1 0.29 0.12 0.03 0.0 0.01 0.0 10
+Map11 2 0.22 0.21 0.03 0.0 0.01 0.0 1
+Reducer15 1 0.3 0.12 0.03 0.0 0.01 0.0 25
+Map12 5 0.22 0.21 0.03 0.0 0.03 0.01 2
+Map8 53 0.1 0.12 0.17 0.0 0.14 0.01 87
+Map17 5 0.21 0.21 0.03 0.0 0.03 0.01 2
+31
+Map16 Map13 ata
+Map27 Reducer24 ata
+Map31 Map28 ata
+Reducer9 Reducer10 ata
+Map17 Reducer14 ata
+Reducer14 Reducer15 ata
+Map32 Reducer29 ata
+Map8 Reducer9 ata
+Map1 Reducer2 ata
+Map12 Reducer9 ata
+Map13 Reducer14 ata
+Map26 Map23 ata
+Reducer19 Reducer20 ata
+Reducer25 Reducer4 ata
+Reducer24 Reducer25 ata
+Reducer20 Reducer4 ata
+Map18 Reducer19 ata
+Reducer30 Reducer4 ata
+Reducer15 Reducer4 ata
+Reducer3 Reducer4 ata
+Map22 Reducer19 ata
+Reducer2 Reducer3 ata
+Reducer29 Reducer30 ata
+Reducer4 Reducer5 ata
+Map28 Reducer29 ata
+Map23 Reducer24 ata
+Map11 Map8 ata
+Map6 Map1 ata
+Map7 Reducer2 ata
+Reducer10 Reducer4 ata
+Map21 Map18 ata
+# 13: TPC-DS query32
+8 13
+Reducer2 2 0.3 0.12 0.03 0.0 0.01 0.0 99
+Reducer3 2 0.25 0.12 0.12 0.0 0.01 0.0 1
+Reducer6 2 0.24 0.12 0.03 0.0 0.01 0.0 66
+Map1 14 0.1 0.12 0.18 0.0 0.12 0.0 62
+Map4 3 0.22 0.21 0.03 0.23 0.01 0.08 1
+Map5 14 0.1 0.12 0.18 0.01 0.12 0.0 62
+Map8 3 0.22 0.21 0.03 0.0 0.01 0.0 1
+Map7 3 0.22 0.21 0.03 0.07 0.01 0.0 1
+7
+Map4 Map1 ata
+Map7 Map5 ata
+Reducer2 Reducer3 ata
+Map8 Reducer2 ata
+Map5 Reducer6 ata
+Reducer6 Reducer2 ata
+Map1 Reducer2 ata
+# 14: TPC-DS query34
+7 14
+Map6 138 0.1 0.12 0.03 0.0 0.03 0.0 6
+Reducer2 1 0.22 0.12 0.03 0.0 0.01 0.0 1
+Reducer7 2 0.22 0.12 0.03 0.0 0.01 0.0 1
+Map5 2 0.22 0.21 0.03 0.0 0.01 0.0 1
+Map4 2 0.22 0.21 0.03 0.0 0.01 0.0 1
+Map1 153 0.1 0.12 0.17 0.0 0.07 0.01 87
+Map3 3 0.24 0.21 0.03 0.0 0.01 0.0 1
+6
+Map3 Map1 ata
+Map4 Map1 ata
+Map6 Reducer7 ata
+Map5 Map1 ata
+Reducer2 Map6 ata
+Map1 Reducer2 ata
+# 15: TPC-DS query3
+5 15
+Reducer4 2 0.25 0.12 0.03 0.0 0.08 0.0 1
+Reducer3 1 0.26 0.12 0.03 0.0 0.02 0.0 25
+Map2 198 0.1 0.12 0.17 0.0 0.22 0.01 87
+Map1 2 0.23 0.21 0.13 0.0 0.01 0.0 1
+Map5 2 0.22 0.21 0.19 0.0 0.05 0.0 1
+4
+Map1 Map2 ata
+Reducer3 Reducer4 ata
+Map5 Map2 ata
+Map2 Reducer3 ata
+# 16: TPC-DS query40
+8 16
+Map7 3 0.22 0.21 0.03 0.41 0.01 0.0 1
+Map5 6 0.22 0.21 0.03 0.0 0.05 0.01 67
+Map8 3 0.23 0.21 0.03 0.02 0.01 0.0 1
+Map6 2 0.2 0.21 0.03 0.0 0.01 0.19 1
+Reducer3 2 0.31 0.12 0.03 0.0 0.01 0.0 2
+Reducer4 2 0.26 0.12 0.03 0.0 0.05 0.0 1
+Map1 24 0.25 0.21 0.18 0.0 0.14 0.1 62
+Reducer2 56 0.19 0.12 0.16 0.03 0.11 0.03 39
+7
+Reducer3 Reducer4 ata
+Map8 Reducer2 ata
+Map7 Reducer2 ata
+Map6 Reducer2 ata
+Map1 Reducer2 ata
+Map5 Reducer2 ata
+Reducer2 Reducer3 ata
+# 17: TPC-DS query42
+5 17
+Map1 2 0.22 0.21 0.03 0.0 0.12 0.0 1
+Map5 2 0.22 0.21 0.03 0.0 0.08 0.0 1
+Reducer3 1 0.23 0.12 0.03 0.0 0.01 0.0 25
+Map2 59 0.1 0.12 0.17 0.0 0.11 0.01 87
+Reducer4 2 0.24 0.12 0.03 0.0 0.16 0.0 1
+4
+Reducer3 Reducer4 ata
+Map5 Map2 ata
+Map2 Reducer3 ata
+Map1 Map2 ata
+# 18: TPC-DS query43
+5 18
+Map1 2 0.22 0.21 0.03 0.0 0.19 0.0 1
+Map5 2 0.22 0.21 0.05 0.0 0.02 0.04 1
+Reducer3 1 0.23 0.12 0.03 0.0 0.01 0.0 25
+Map2 59 0.1 0.12 0.17 0.0 0.11 0.01 87
+Reducer4 2 0.24 0.12 0.02 0.0 0.01 0.0 1
+4
+Map5 Map2 ata
+Reducer3 Reducer4 ata
+Map2 Reducer3 ata
+Map1 Map2 ata
+# 19: TPC-DS query45
+10 19
+Map8 2 0.22 0.31 0.05 0.0 0.01 0.0 1
+Map9 3 0.23 0.11 0.01 0.0 0.01 0.0 1
+Map6 5 0.22 0.21 0.03 0.0 0.02 0.0 6
+Map7 5 0.21 0.21 0.12 0.0 0.01 0.16 2
+Map10 2 0.22 0.28 0.03 0.0 0.01 0.0 1
+Map1 14 0.22 0.21 0.09 0.0 0.11 0.04 67
+Reducer2 33 0.25 0.12 0.11 0.07 0.01 0.17 16
+Reducer3 29 0.2 0.11 0.1 0.09 0.03 0.09 17
+Reducer4 1 0.24 0.12 0.03 0.0 0.11 0.0 25
+Reducer5 2 0.25 0.18 0.03 0.0 0.12 0.0 1
+9
+Map10 Reducer3 ata
+Map7 Reducer3 ata
+Reducer2 Reducer3 ata
+Map6 Reducer2 ata
+Reducer4 Reducer5 ata
+Reducer3 Reducer4 ata
+Map9 Reducer3 ata
+Map1 Reducer2 ata
+Map8 Reducer3 ata
+# 20: TPC-DS query46
+12 20
+Map10 5 0.22 0.21 0.05 0.0 0.03 0.02 2
+Reducer6 2 0.21 0.08 0.05 0.0 0.01 0.02 1
+Map11 5 0.22 0.21 0.05 0.0 0.03 0.02 6
+Map1 61 0.1 0.08 0.17 0.0 0.05 0.02 87
+Reducer2 3 0.32 0.08 0.05 0.0 0.01 0.02 14
+Map12 4 0.22 0.21 0.05 0.0 0.03 0.02 2
+Map9 2 0.22 0.21 0.05 0.0 0.01 0.02 1
+Map8 2 0.22 0.21 0.05 0.0 0.01 0.02 1
+Reducer5 5 0.25 0.08 0.05 0.05 0.01 0.02 1
+Map7 2 0.23 0.21 0.05 0.0 0.01 0.02 1
+Reducer4 8 0.22 0.08 0.05 0.03 0.01 0.03 1
+Reducer3 1 0.21 0.08 0.05 0.0 0.01 0.02 1
+11
+Map11 Reducer4 ata
+Map12 Reducer5 ata
+Reducer5 Reducer6 ata
+Reducer4 Reducer5 ata
+Map8 Map1 ata
+Map9 Map1 ata
+Reducer2 Reducer3 ata
+Map10 Reducer2 ata
+Map1 Reducer2 ata
+Map7 Map1 ata
+Reducer3 Reducer4 ata
+# 21: TPC-DS query50
+8 21
+Map1 32 0.24 0.21 0.09 0.0 0.05 0.07 87
+Reducer2 263 0.17 0.09 0.16 0.05 0.03 0.0 12
+Reducer3 1 0.25 0.01 0.05 0.0 0.01 0.02 1
+Reducer4 2 0.23 0.08 0.01 0.0 0.01 0.02 1
+Map8 2 0.22 0.31 0.12 0.0 0.01 0.02 1
+Map6 2 0.21 0.21 0.15 0.0 0.12 0.16 1
+Map7 3 0.23 0.42 0.05 0.0 0.01 0.02 1
+Map5 8 0.2 0.21 0.06 0.0 0.04 0.01 67
+7
+Map7 Reducer2 ata
+Reducer2 Reducer3 ata
+Map6 Reducer2 ata
+Reducer3 Reducer4 ata
+Map8 Reducer2 ata
+Map5 Reducer2 ata
+Map1 Reducer2 ata
+# 22: TPC-DS query51
+11 22
+Reducer5 8 0.22 0.08 0.05 0.04 0.01 0.04 7
+Reducer4 17 0.22 0.08 0.05 0.0 0.01 0.08 8
+Map1 13 0.1 0.08 0.09 0.0 0.14 0.02 67
+Map7 2 0.22 0.21 0.05 0.0 0.01 0.02 1
+Map8 26 0.1 0.08 0.17 0.0 0.07 0.03 87
+Map11 3 0.22 0.21 0.05 0.0 0.01 0.02 1
+Reducer10 11 0.24 0.08 0.05 0.07 0.01 0.07 6
+Reducer9 27 0.17 0.08 0.26 0.13 0.01 0.13 11
+Reducer3 18 0.25 0.08 0.07 0.14 0.01 0.14 3
+Reducer2 20 0.2 0.08 0.15 0.12 0.01 0.12 5
+Reducer6 2 0.27 0.08 0.05 0.0 0.01 0.02 1
+10
+Reducer3 Reducer4 ata
+Reducer10 Reducer4 ata
+Map7 Map1 ata
+Reducer4 Reducer5 ata
+Map11 Map8 ata
+Reducer5 Reducer6 ata
+Reducer9 Reducer10 ata
+Reducer2 Reducer3 ata
+Map1 Reducer2 ata
+Map8 Reducer9 ata
+# 23: TPC-DS query52
+5 23
+Map2 59 0.1 0.18 0.17 0.0 0.05 0.09 87
+Reducer3 1 0.26 0.08 0.05 0.0 0.01 0.12 25
+Map5 2 0.22 0.21 0.05 0.0 0.01 0.14 1
+Map1 2 0.22 0.21 0.13 0.0 0.07 0.02 1
+Reducer4 2 0.24 0.08 0.05 0.0 0.01 0.02 1
+4
+Map1 Map2 ata
+Reducer3 Reducer4 ata
+Map5 Map2 ata
+Map2 Reducer3 ata
+# 24: TPC-DS query54
+16 24
+Map10 9 0.1 0.16 0.14 0.01 0.06 0.01 67
+Map12 2 0.23 0.23 0.02 0.0 0.03 0.01 1
+Map11 2 0.22 0.23 0.02 0.01 0.04 0.01 1
+Map14 29 0.22 0.23 0.17 0.01 0.09 0.04 87
+Map13 5 0.22 0.23 0.03 0.02 0.11 0.01 6
+Map16 2 0.22 0.21 0.02 0.01 0.0 0.01 1
+Map15 5 0.22 0.23 0.03 0.0 0.13 0.04 2
+Map17 3 0.22 0.23 0.02 0.01 0.03 0.01 1
+Reducer4 1 0.22 0.16 0.12 0.01 0.0 0.01 8
+Reducer5 14 0.2 0.19 0.24 0.21 0.01 0.01 84
+Reducer6 2 0.31 0.16 0.02 0.01 0.0 0.01 88
+Reducer7 2 0.22 0.16 0.01 0.01 0.0 0.01 2
+Reducer8 2 0.21 0.16 0.02 0.0 0.0 0.01 1
+Reducer9 2 0.21 0.18 0.05 0.01 0.0 0.01 1
+Reducer3 2 0.34 0.16 0.02 0.01 0.0 0.01 55
+Map1 16 0.1 0.16 0.34 0.01 0.05 0.02 62
+17
+Map16 Reducer6 ata
+Reducer5 Reducer6 ata
+Reducer3 Reducer4 ata
+Map1 Reducer3 ata
+Map11 Map10 ata
+Map11 Map1 ata
+Map10 Reducer3 ata
+Reducer4 Reducer5 ata
+Map17 Reducer6 ata
+Map13 Reducer3 ata
+Reducer6 Reducer7 ata
+Map14 Reducer5 ata
+Map12 Map1 ata
+Map12 Map10 ata
+Map15 Reducer6 ata
+Reducer7 Reducer8 ata
+Reducer8 Reducer9 ata
+# 25: TPC-DS query55
+5 25
+Map5 2 0.22 0.23 0.02 0.01 0.04 0.01 1
+Map1 2 0.22 0.23 0.02 0.0 0.03 0.01 1
+Map2 60 0.1 0.16 0.17 0.07 0.09 0.02 87
+Reducer3 1 0.26 0.16 0.02 0.01 0.0 0.01 25
+Reducer4 2 0.25 0.16 0.02 0.01 0.0 0.01 1
+4
+Map1 Map2 ata
+Map5 Map2 ata
+Reducer3 Reducer4 ata
+Map2 Reducer3 ata
+# 26: TPC-DS query56
+23 26
+Map8 5 0.23 0.23 0.03 0.01 0.13 0.01 2
+Map9 3 0.23 0.23 0.02 0.01 0.04 0.01 1
+Map7 2 0.22 0.23 0.02 0.01 0.03 0.01 1
+Map17 3 0.22 0.23 0.02 0.01 0.04 0.01 1
+Map15 5 0.23 0.23 0.03 0.01 0.13 0.01 2
+Map16 3 0.23 0.23 0.02 0.01 0.04 0.01 1
+Reducer13 2 0.3 0.16 0.02 0.01 0.0 0.01 1
+Reducer5 2 0.29 0.16 0.02 0.01 0.0 0.01 1
+Reducer2 3 0.35 0.16 0.02 0.01 0.0 0.01 44
+Reducer3 2 0.3 0.16 0.02 0.01 0.0 0.01 1
+Reducer6 2 0.23 0.16 0.02 0.01 0.0 0.01 1
+Map10 3 0.22 0.23 0.02 0.01 0.04 0.01 1
+Map1 57 0.1 0.16 0.27 0.01 0.09 0.02 87
+Reducer12 3 0.34 0.16 0.02 0.01 0.0 0.01 34
+Map11 53 0.1 0.16 0.37 0.01 0.15 0.02 62
+Reducer20 3 0.25 0.16 0.02 0.01 0.0 0.01 1
+Reducer19 3 0.33 0.16 0.02 0.01 0.0 0.01 17
+Map24 3 0.22 0.23 0.02 0.0 0.04 0.01 1
+Map14 2 0.22 0.23 0.02 0.0 0.03 0.01 1
+Map23 3 0.23 0.23 0.02 0.01 0.04 0.01 1
+Map22 5 0.23 0.23 0.03 0.0 0.13 0.01 2
+Map18 28 0.1 0.16 0.34 0.01 0.16 0.01 67
+Map21 2 0.22 0.23 0.02 0.0 0.03 0.01 1
+22
+Map7 Map1 ata
+Map10 Reducer2 ata
+Reducer19 Reducer20 ata
+Reducer2 Reducer3 ata
+Map22 Reducer19 ata
+Reducer5 Reducer6 ata
+Reducer13 Reducer5 ata
+Map8 Reducer2 ata
+Map15 Reducer12 ata
+Map1 Reducer2 ata
+Reducer12 Reducer13 ata
+Map18 Reducer19 ata
+Map14 Map11 ata
+Map9 Reducer2 ata
+Map21 Map18 ata
+Reducer20 Reducer5 ata
+Map17 Reducer12 ata
+Reducer3 Reducer5 ata
+Map24 Reducer19 ata
+Map11 Reducer12 ata
+Map23 Reducer19 ata
+Map16 Reducer12 ata
+# 27: TPC-DS query58
+20 27
+Reducer18 2 0.3 0.16 0.02 0.0 0.04 0.0 40
+Map1 4 0.1 0.16 0.02 0.0 0.04 0.0 1
+Map3 47 0.1 0.16 0.07 0.0 0.09 0.03 87
+Reducer4 2 0.31 0.16 0.02 0.0 0.04 0.0 106
+Map13 3 0.23 0.23 0.02 0.0 0.04 0.0 1
+Map14 3 0.23 0.23 0.02 0.0 0.04 0.01 1
+Map11 33 0.1 0.16 0.14 0.0 0.05 0.02 62
+Reducer12 1 0.22 0.16 0.02 0.0 0.0 0.0 80
+Reducer5 2 0.31 0.16 0.02 0.0 0.04 0.0 113
+Reducer6 2 0.23 0.16 0.02 0.0 0.0 0.0 1
+Map17 19 0.1 0.16 0.14 0.0 0.06 0.01 67
+Map20 3 0.23 0.13 0.02 0.0 0.04 0.01 1
+Map2 2 0.22 0.23 0.02 0.0 0.04 0.0 1
+Map9 4 0.1 0.16 0.02 0.0 0.02 0.0 1
+Map10 2 0.22 0.23 0.02 0.0 0.04 0.0 1
+Map19 3 0.23 0.23 0.02 0.0 0.02 0.0 1
+Map15 4 0.1 0.16 0.02 0.0 0.04 0.0 1
+Map16 2 0.22 0.23 0.02 0.0 0.04 0.0 1
+Map7 3 0.23 0.23 0.02 0.0 0.04 0.0 1
+Map8 3 0.23 0.23 0.02 0.0 0.04 0.01 1
+19
+Map19 Map17 ata
+Map9 Map11 ata
+Reducer4 Reducer5 ata
+Reducer5 Reducer6 ata
+Map16 Map15 ata
+Map17 Reducer18 ata
+Map15 Map17 ata
+Reducer18 Reducer5 ata
+Reducer12 Reducer5 ata
+Map10 Map9 ata
+Map20 Map17 ata
+Map2 Map1 ata
+Map11 Reducer12 ata
+Map8 Map3 ata
+Map1 Map3 ata
+Map3 Reducer4 ata
+Map14 Map11 ata
+Map13 Map11 ata
+Map7 Map3 ata
+# 28: TPC-DS query60
+23 28
+Map11 52 0.1 0.16 0.14 0.0 0.05 0.02 62
+Map23 3 0.23 0.23 0.02 0.0 0.04 0.0 1
+Map24 3 0.22 0.23 0.02 0.0 0.04 0.0 1
+Reducer12 4 0.31 0.16 0.02 0.01 0.04 0.01 34
+Map18 27 0.1 0.16 0.34 0.0 0.11 0.01 67
+Map21 2 0.22 0.23 0.02 0.0 0.01 0.0 1
+Map14 2 0.22 0.23 0.02 0.0 0.0 0.0 1
+Map22 5 0.23 0.23 0.03 0.0 0.13 0.01 2
+Reducer20 3 0.26 0.16 0.02 0.0 0.04 0.0 1
+Reducer19 5 0.25 0.16 0.02 0.01 0.04 0.01 17
+Map15 5 0.23 0.23 0.03 0.0 0.13 0.01 2
+Reducer13 3 0.28 0.16 0.02 0.01 0.04 0.01 1
+Reducer5 2 0.35 0.16 0.02 0.0 0.04 0.0 1
+Reducer6 2 0.24 0.16 0.02 0.0 0.04 0.0 1
+Map16 3 0.23 0.23 0.02 0.0 0.04 0.0 1
+Map7 2 0.23 0.23 0.02 0.0 0.04 0.0 1
+Map17 3 0.22 0.23 0.02 0.0 0.02 0.0 1
+Map8 5 0.23 0.18 0.03 0.0 0.13 0.01 2
+Map9 3 0.23 0.12 0.02 0.0 0.04 0.0 1
+Reducer2 4 0.32 0.16 0.02 0.02 0.04 0.02 44
+Reducer3 3 0.29 0.16 0.02 0.01 0.04 0.01 1
+Map10 3 0.22 0.23 0.02 0.0 0.04 0.0 1
+Map1 57 0.25 0.16 0.27 0.0 0.19 0.02 87
+22
+Reducer19 Reducer20 ata
+Map11 Reducer12 ata
+Reducer13 Reducer5 ata
+Map15 Reducer12 ata
+Map18 Reducer19 ata
+Map10 Reducer2 ata
+Reducer2 Reducer3 ata
+Map21 Map18 ata
+Map9 Reducer2 ata
+Map17 Reducer12 ata
+Reducer5 Reducer6 ata
+Map24 Reducer19 ata
+Reducer3 Reducer5 ata
+Map7 Map1 ata
+Map1 Reducer2 ata
+Map22 Reducer19 ata
+Map23 Reducer19 ata
+Map16 Reducer12 ata
+Reducer12 Reducer13 ata
+Map8 Reducer2 ata
+Map14 Map11 ata
+Reducer20 Reducer5 ata
+# 29: TPC-DS query65
+10 29
+Map5 3 0.21 0.23 0.02 0.0 0.04 0.0 1
+Map10 42 0.1 0.16 0.02 0.0 0.12 0.08 1
+Map1 42 0.1 0.16 0.07 0.0 0.04 0.02 87
+Reducer2 69 0.1 0.16 0.13 0.05 0.17 0.05 6
+Map8 3 0.22 0.23 0.02 0.0 0.04 0.0 1
+Map9 2 0.23 0.23 0.02 0.0 0.0 0.0 1
+Map6 45 0.1 0.16 0.17 0.0 0.09 0.02 87
+Reducer7 1 0.22 0.16 0.02 0.0 0.03 0.0 3
+Reducer3 2 0.22 0.14 0.02 0.0 0.04 0.01 3
+Reducer4 2 0.22 0.16 0.01 0.0 0.02 0.0 1
+9
+Map1 Reducer2 ata
+Reducer3 Reducer4 ata
+Reducer2 Reducer3 ata
+Map5 Map1 ata
+Map6 Reducer7 ata
+Map10 Reducer2 ata
+Map8 Map6 ata
+Map9 Map10 ata
+Reducer7 Reducer3 ata
+# 30: TPC-DS query67
+7 30
+Map5 2 0.22 0.23 0.02 0.0 0.04 0.0 1
+Map1 112 0.1 0.16 0.17 0.0 0.09 0.01 87
+Map6 2 0.21 0.23 0.01 0.0 0.04 0.0 1
+Map7 3 0.23 0.23 0.02 0.0 0.01 0.01 1
+Reducer4 2 0.25 0.16 0.02 0.0 0.02 0.0 1
+Reducer2 82 0.14 0.16 0.06 0.17 0.14 0.07 30
+Reducer3 15 0.18 0.16 0.02 0.03 0.04 0.13 15
+6
+Map5 Map1 ata
+Map6 Map1 ata
+Reducer2 Reducer3 ata
+Map1 Reducer2 ata
+Reducer3 Reducer4 ata
+Map7 Map1 ata
+# 31: TPC-DS query68
+12 31
+Reducer6 2 0.21 0.16 0.02 0.0 0.04 0.0 1
+Map10 5 0.22 0.23 0.03 0.0 0.13 0.03 2
+Reducer4 9 0.22 0.16 0.15 0.16 0.04 0.16 1
+Reducer3 1 0.21 0.16 0.02 0.0 0.02 0.0 1
+Map9 2 0.22 0.23 0.02 0.0 0.07 0.0 1
+Map8 2 0.22 0.23 0.02 0.0 0.04 0.0 1
+Reducer5 5 0.27 0.16 0.05 0.03 0.01 0.03 1
+Map7 3 0.23 0.23 0.02 0.0 0.04 0.0 1
+Map11 5 0.21 0.23 0.03 0.0 0.11 0.03 6
+Map1 64 0.1 0.16 0.31 0.0 0.09 0.02 87
+Reducer2 3 0.33 0.16 0.02 0.0 0.04 0.0 14
+Map12 4 0.22 0.23 0.03 0.0 0.13 0.03 2
+11
+Reducer5 Reducer6 ata
+Map8 Map1 ata
+Map9 Map1 ata
+Reducer4 Reducer5 ata
+Reducer3 Reducer4 ata
+Map11 Reducer4 ata
+Map1 Reducer2 ata
+Reducer2 Reducer3 ata
+Map7 Map1 ata
+Map12 Reducer5 ata
+Map10 Reducer2 ata
+# 32: TPC-DS query70
+12 32
+Reducer2 7 0.18 0.16 0.25 0.02 0.04 0.05 98
+Reducer3 2 0.21 0.16 0.02 0.0 0.04 0.0 318
+Reducer5 2 0.24 0.16 0.02 0.0 0.11 0.0 1
+Reducer4 2 0.23 0.16 0.02 0.0 0.03 0.0 159
+Map6 2 0.22 0.23 0.02 0.0 0.04 0.0 1
+Map7 2 0.2 0.23 0.02 0.0 0.04 0.0 1
+Map1 182 0.1 0.16 0.06 0.0 0.09 0.12 87
+Map11 2 0.21 0.23 0.02 0.0 0.01 0.0 1
+Map12 2 0.22 0.23 0.02 0.0 0.0 0.0 1
+Map8 59 0.1 0.16 0.17 0.0 0.09 0.02 87
+Reducer9 1 0.23 0.16 0.02 0.0 0.04 0.0 13
+Reducer10 2 0.22 0.16 0.02 0.0 0.04 0.0 7
+11
+Reducer3 Reducer4 ata
+Map7 Map1 ata
+Map11 Map8 ata
+Reducer2 Reducer3 ata
+Reducer4 Reducer5 ata
+Reducer9 Reducer10 ata
+Map12 Map8 ata
+Reducer10 Reducer2 ata
+Map1 Reducer2 ata
+Map6 Map1 ata
+Map8 Reducer9 ata
+# 33: TPC-DS query71
+10 33
+Map8 61 0.1 0.17 0.12 0.01 0.13 0.02 87
+Map6 68 0.1 0.16 0.14 0.01 0.05 0.02 62
+Map1 32 0.1 0.17 0.14 0.0 0.16 0.0 67
+Map11 3 0.25 0.28 0.0 0.01 0.02 0.0 1
+Map10 2 0.22 0.23 0.01 0.01 0.04 0.0 1
+Map5 2 0.22 0.12 0.01 0.0 0.03 0.1 1
+Map7 2 0.22 0.23 0.01 0.01 0.06 0.0 1
+Map9 2 0.21 0.23 0.01 0.0 0.03 0.0 1
+Reducer4 3 0.3 0.17 0.01 0.11 0.02 0.01 1
+Reducer3 1 0.34 0.17 0.0 0.05 0.02 0.0 57
+13
+Map6 Reducer3 ata
+Map5 Map1 ata
+Map8 Reducer3 ata
+Map10 Map8 ata
+Map10 Map6 ata
+Map10 Map1 ata
+Map1 Reducer3 ata
+Map11 Map8 ata
+Map11 Map6 ata
+Map11 Map1 ata
+Map9 Map8 ata
+Reducer3 Reducer4 ata
+Map7 Map6 ata
+# 34: TPC-DS query73
+7 34
+Reducer7 2 0.21 0.17 0.0 0.02 0.04 0.0 1
+Reducer2 1 0.22 0.17 0.0 0.01 0.02 0.0 1
+Map6 63 0.1 0.17 0.03 0.0 0.11 0.0 6
+Map3 2 0.22 0.23 0.01 0.01 0.03 0.0 1
+Map1 69 0.1 0.17 0.07 0.0 0.09 0.02 87
+Map4 2 0.2 0.23 0.0 0.01 0.02 0.0 1
+Map5 2 0.21 0.23 0.0 0.01 0.02 0.0 1
+6
+Map1 Reducer2 ata
+Reducer2 Map6 ata
+Map6 Reducer7 ata
+Map3 Map1 ata
+Map5 Map1 ata
+Map4 Map1 ata
+# 35: TPC-DS query76
+11 35
+Reducer4 2 0.25 0.17 0.0 0.01 0.02 0.0 1
+Reducer3 1 0.33 0.17 0.0 0.01 0.02 0.0 26
+Map10 15 0.1 0.17 0.14 0.01 0.05 0.02 62
+Map12 3 0.23 0.12 0.0 0.01 0.03 0.0 1
+Map11 3 0.23 0.23 0.01 0.0 0.04 0.0 1
+Map1 23 0.2 0.17 0.07 0.01 0.13 0.03 87
+Map5 3 0.23 0.23 0.01 0.0 0.04 0.0 1
+Map7 9 0.1 0.17 0.14 0.01 0.1 0.01 67
+Map6 3 0.23 0.2 0.01 0.0 0.03 0.0 1
+Map9 3 0.23 0.27 0.01 0.01 0.03 0.0 1
+Map8 3 0.23 0.12 0.0 0.0 0.04 0.0 1
+10
+Map12 Map10 ata
+Map8 Map7 ata
+Map1 Reducer3 ata
+Map11 Map10 ata
+Map9 Map7 ata
+Map5 Map1 ata
+Map6 Map1 ata
+Reducer3 Reducer4 ata
+Map10 Reducer3 ata
+Map7 Reducer3 ata
+# 36: TPC-DS query79
+8 36
+Map8 5 0.22 0.23 0.03 0.0 0.11 0.02 6
+Map6 2 0.21 0.23 0.0 0.01 0.02 0.0 1
+Map7 2 0.22 0.23 0.0 0.0 0.02 0.0 1
+Map5 2 0.23 0.23 0.01 0.01 0.03 0.0 1
+Map1 70 0.1 0.17 0.07 0.01 0.09 0.02 87
+Reducer2 22 0.23 0.17 0.06 0.14 0.02 0.0 1
+Reducer3 34 0.22 0.17 0.08 0.02 0.03 0.04 1
+Reducer4 11 0.2 0.17 0.02 0.03 0.0 0.01 1
+7
+Map8 Reducer3 ata
+Reducer3 Reducer4 ata
+Map6 Map1 ata
+Map7 Map1 ata
+Map5 Map1 ata
+Reducer2 Reducer3 ata
+Map1 Reducer2 ata
+# 37: TPC-DS query7
+7 37
+Map7 2 0.2 0.23 0.0 0.0 0.02 0.0 1
+Map6 3 0.23 0.23 0.01 0.0 0.04 0.0 1
+Map5 2 0.22 0.23 0.01 0.01 0.03 0.0 1
+Map4 4 0.2 0.23 0.02 0.01 0.08 0.0 3
+Reducer2 4 0.26 0.17 0.15 0.11 0.02 0.11 2
+Map1 226 0.1 0.17 0.07 0.01 0.19 0.02 87
+Reducer3 2 0.27 0.17 0.0 0.01 0.02 0.0 1
+6
+Reducer2 Reducer3 ata
+Map4 Map1 ata
+Map6 Map1 ata
+Map5 Map1 ata
+Map7 Map1 ata
+Map1 Reducer2 ata
+# 38: TPC-DS query87
+17 38
+Map12 5 0.21 0.23 0.03 0.0 0.11 0.02 6
+Reducer3 3 0.3 0.17 0.02 0.02 0.03 0.02 97
+Reducer2 6 0.27 0.17 0.06 0.07 0.03 0.07 88
+Reducer10 3 0.29 0.17 0.02 0.02 0.03 0.02 73
+Map13 10 0.1 0.17 0.34 0.0 0.06 0.03 67
+Map17 5 0.22 0.23 0.03 0.0 0.11 0.02 6
+Map11 3 0.22 0.23 0.02 0.0 0.03 0.0 1
+Map8 16 0.1 0.17 0.14 0.0 0.15 0.06 62
+Map16 2 0.22 0.23 0.02 0.0 0.03 0.0 1
+Reducer15 3 0.3 0.17 0.02 0.01 0.03 0.01 37
+Reducer14 5 0.27 0.17 0.05 0.05 0.03 0.05 34
+Map6 2 0.22 0.23 0.02 0.0 0.03 0.0 1
+Map7 5 0.22 0.23 0.03 0.0 0.11 0.02 6
+Reducer4 3 0.36 0.17 0.02 0.02 0.03 0.02 103
+Reducer9 5 0.28 0.17 0.04 0.05 0.03 0.05 67
+Map1 20 0.1 0.17 0.07 0.0 0.09 0.08 87
+Reducer5 2 0.26 0.17 0.02 0.0 0.03 0.0 1
+16
+Reducer14 Reducer15 ata
+Reducer2 Reducer3 ata
+Reducer9 Reducer10 ata
+Map1 Reducer2 ata
+Map16 Map13 ata
+Map11 Map8 ata
+Reducer3 Reducer4 ata
+Map8 Reducer9 ata
+Map6 Map1 ata
+Map12 Reducer9 ata
+Reducer15 Reducer4 ata
+Reducer4 Reducer5 ata
+Map7 Reducer2 ata
+Map17 Reducer14 ata
+Map13 Reducer14 ata
+Reducer10 Reducer4 ata
+# 39: TPC-DS query89
+7 39
+Map2 24 0.1 0.17 0.07 0.0 0.09 0.02 87
+Map1 3 0.24 0.23 0.02 0.0 0.12 0.0 1
+Map7 2 0.21 0.23 0.15 0.0 0.0 0.1 1
+Map6 2 0.23 0.23 0.02 0.0 0.03 0.0 1
+Reducer5 2 0.26 0.17 0.02 0.0 0.02 0.0 1
+Reducer4 2 0.27 0.17 0.02 0.0 0.03 0.0 1
+Reducer3 2 0.3 0.17 0.05 0.06 0.01 0.01 2
+6
+Map1 Map2 ata
+Map6 Map2 ata
+Reducer3 Reducer4 ata
+Reducer4 Reducer5 ata
+Map2 Reducer3 ata
+Map7 Map2 ata
+# 40: TPC-DS query95
+15 40
+Reducer3 2 0.39 0.17 0.02 0.0 0.03 0.0 149
+Map11 15 0.23 0.23 0.01 0.0 0.06 0.19 67
+Map10 5 0.22 0.23 0.03 0.0 0.14 0.01 45
+Reducer7 17 0.35 0.17 0.03 0.11 0.03 0.06 120
+Reducer8 35 0.19 0.19 0.08 0.07 0.03 0.07 70
+Map5 10 0.23 0.23 0.14 0.0 0.01 0.06 67
+Reducer2 11 0.23 0.17 0.0 0.03 0.0 0.03 120
+Reducer12 49 0.18 0.17 0.0 0.1 0.07 0.1 8
+Map1 10 0.23 0.23 0.14 0.0 0.16 0.06 67
+Map15 3 0.23 0.23 0.02 0.0 0.03 0.0 1
+Map9 10 0.23 0.23 0.14 0.0 0.11 0.01 67
+Map6 10 0.23 0.23 0.08 0.0 0.02 0.0 67
+Reducer4 2 0.31 0.17 0.02 0.0 0.03 0.0 1
+Map13 4 0.23 0.23 0.03 0.0 0.13 0.0 2
+Map14 2 0.2 0.23 0.02 0.0 0.03 0.0 1
+14
+Reducer12 Reducer3 ata
+Map1 Reducer2 ata
+Map5 Reducer2 ata
+Reducer8 Reducer3 ata
+Map9 Reducer7 ata
+Map15 Reducer12 ata
+Reducer7 Reducer8 ata
+Map13 Reducer12 ata
+Map11 Reducer12 ata
+Reducer2 Reducer3 ata
+Map10 Reducer8 ata
+Reducer3 Reducer4 ata
+Map6 Reducer7 ata
+Map14 Reducer12 ata
