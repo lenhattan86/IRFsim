@@ -16,7 +16,7 @@ public class Main {
 	public static class Globals {
 
 		public enum SetupMode {
-			Mosharaf, ShortInteractive, LongInteractive, VeryLongInteractive, CommandLine, GenerateTrace
+			Mosharaf, VeryShortInteractive, ShortInteractive, LongInteractive, VeryLongInteractive, CommandLine, GenerateTrace
 		};
 
 		public enum Runmode {
@@ -27,8 +27,8 @@ public class Main {
 
 		public static final int TASK_ARRIVAL_RANGE = 50;
 
-		public static final double DEBUG_START =26.0;
-		public static final double DEBUG_END = 30.0;
+		public static final double DEBUG_START =70.0;
+		public static final double DEBUG_END = 75.0;
 
 		public static int SCALE_UP_INTERACTIV_JOB = 50;
 
@@ -152,7 +152,7 @@ public class Main {
 			COMPUTE_STATISTICS = false;
 
 			switch (setup) {
-			case ShortInteractive:
+			case VeryShortInteractive:
 				Globals.numInteractiveJobPerQueue = 5;
 				Globals.numBatchJobPerQueue = 5;
 				Globals.SCALE_UP_INTERACTIV_JOB = 50;
@@ -160,17 +160,25 @@ public class Main {
 				Globals.numInteractiveTask = 2000; 
 				Globals.numbatchTask = 10000;
 				break;
+			case ShortInteractive:
+				Globals.numInteractiveJobPerQueue = 10;
+				Globals.numBatchJobPerQueue = 10;
+				Globals.SCALE_UP_INTERACTIV_JOB = 50;
+				// for generated workload only
+				Globals.numInteractiveTask = 2000; 
+				Globals.numbatchTask = 10000;
+				break;
 			case LongInteractive:
-				Globals.numInteractiveJobPerQueue = 5; // the larger number, the larger
-				Globals.numBatchJobPerQueue = 5;
+				Globals.numInteractiveJobPerQueue = 10; // the larger number, the larger
+				Globals.numBatchJobPerQueue = 10;
 				Globals.SCALE_UP_INTERACTIV_JOB = 200;
 			// for generated workload only
 				Globals.numInteractiveTask = 10000;
 				Globals.numbatchTask = 10000;
 				break;
 			case VeryLongInteractive:
-				Globals.numInteractiveJobPerQueue = 5;
-				Globals.numBatchJobPerQueue = 5;
+				Globals.numInteractiveJobPerQueue = 10;
+				Globals.numBatchJobPerQueue = 10;
 				Globals.SCALE_UP_INTERACTIV_JOB = 400;
 				
 			// for generated workload only
@@ -189,15 +197,15 @@ public class Main {
 
 	public static void main(String[] args) {
 		// Globals.JOBS_ARRIVAL_POLICY = JobsArrivalPolicy.All;
-		Globals.setupParameters(Globals.SetupMode.ShortInteractive);
-		// Globals.setupParameters(Globals.SetupMode.LongInteractive);
+//		Globals.setupParameters(Globals.SetupMode.ShortInteractive);
+		 Globals.setupParameters(Globals.SetupMode.LongInteractive);
 		Globals.runmode = Runmode.MultipleRun;
 
 		if (Globals.runmode.equals(Runmode.MultipleRun)) {
-//			Method[] methods = { Method.DRF, Method.DRFW, Method.Strict, Method.SpeedFair };
-//			int[] batchQueueNums = { 1, 2, 3, 4 };
-			 Method[] methods = { Method.Strict, Method.SpeedFair };
-			 int[] batchQueueNums = {3};
+			Method[] methods = { Method.DRF, Method.DRFW, Method.Strict, Method.SpeedFair };
+			int[] batchQueueNums = { 1, 2, 3, 4 };
+//			 Method[] methods = { Method.Strict, Method.SpeedFair };
+//			 int[] batchQueueNums = {3};
 
 			for (int j = 0; j < batchQueueNums.length; j++) {
 				for (int i = 0; i < methods.length; i++) {
@@ -220,7 +228,7 @@ public class Main {
 //			 Globals.METHOD = Method.Strict;
 //			Globals.METHOD = Method.DRF;
 			 Globals.METHOD = Method.SpeedFair;
-			Globals.SIM_END_TIME = 200;
+			Globals.SIM_END_TIME = 50000;
 			Globals.MACHINE_MAX_RESOURCE = 100;
 			Globals.NUM_MACHINES = 1;
 			Globals.numBatchQueues = 3;

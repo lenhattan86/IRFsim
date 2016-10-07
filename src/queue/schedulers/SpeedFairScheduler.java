@@ -40,11 +40,13 @@ public class SpeedFairScheduler implements Scheduler {
 		if (numQueuesRuning == 0) {
 			return;
 		}
-		Resources flexibleResources = null;
+		Resources avaiRes = null;
 		if (Globals.ENABLE_PREEMPTION)
-			flexibleResources = Simulator.cluster.getClusterMaxResAlloc();
+			avaiRes = Simulator.cluster.getClusterMaxResAlloc();
 		else
-			flexibleResources = Simulator.cluster.getClusterResAvail();
+			avaiRes = Simulator.cluster.getClusterResAvail();
+		
+		Resources speedFairRes = new Resources();
 		
 		List<JobQueue> queuesNeedAlloc = new LinkedList<JobQueue>();
 		
@@ -53,20 +55,22 @@ public class SpeedFairScheduler implements Scheduler {
 			Resources rsrcQuota = Resources.piecewiseMin(q.getMinService(Simulator.CURRENT_TIME), q.getMaxDemand());
 			if (q.getMaxDemand().greater(rsrcQuota))
 				queuesNeedAlloc.add(q);
-			Resources assignedRes = Resources.subtractPositivie(rsrcQuota, q.getResourceUsage());
-			assignedRes = Resources.piecewiseMin(assignedRes, flexibleResources);
-			Resources remain = q.assign(assignedRes);
+			Resources moreRes = Resources.subtractPositivie(rsrcQuota, q.getResourceUsage());
+			moreRes = Resources.piecewiseMin(moreRes, avaiRes);
+			Resources remain = q.assign(moreRes);
 			
 			// assign the task
 			rsrcQuota = Resources.subtract(rsrcQuota, remain);
 			q.setRsrcQuota(rsrcQuota);
-			flexibleResources = Resources.subtractPositivie(flexibleResources, Resources.subtract(assignedRes, remain));
+			speedFairRes = Resources.sum(speedFairRes, rsrcQuota);
+			avaiRes = Resources.subtractPositivie(avaiRes, Resources.subtract(moreRes, remain));
 			Output.debugln(DEBUG, "[SpeedFairScheduler] Step 1: SpeedFair share: " + q.getQueueName() + " " + q.getRsrcQuota());
 		}
 		
 		// use DRF for the remaining resources
 //		onlineDRFShare(flexibleResources, queuesNeedAlloc);
-		DRFScheduler.onlineDRFShare(flexibleResources, queuesNeedAlloc);
+		Resources remainingResources = Resources.subtract(clusterTotCapacity, speedFairRes);
+		DRFScheduler.onlineDRFShare(remainingResources, queuesNeedAlloc);
 	}
 
 	public void computeResShareOffline() {
