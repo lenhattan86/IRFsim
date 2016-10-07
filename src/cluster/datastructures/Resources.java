@@ -96,10 +96,11 @@ public class Resources implements Comparable {
 	}
 	
 	public static Resources sum(Resources res, Resources addedRes) {
+		Resources newRes = new Resources();
 		for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
-			res.resources[i] += Utils.round(addedRes.resources[i], 2);
+			newRes.resources[i] = res.resources[i] + Utils.round(addedRes.resources[i], 2);
 		}
-		return res;
+		return newRes;
 	}
 	
 	// same as add operation, except we don't cap to 1.0

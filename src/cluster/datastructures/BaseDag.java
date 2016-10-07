@@ -1,5 +1,8 @@
 package cluster.datastructures;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +17,7 @@ public abstract class BaseDag implements Cloneable{
 	private static final boolean DEBUG = true;
 	
 	protected String queueName = ""; 
+	private boolean fullyAllocated = false;
 	
 	public void setQueueName(String queueName){
 		this.queueName = queueName;
@@ -24,7 +28,12 @@ public abstract class BaseDag implements Cloneable{
 	}
 
   public int dagId;
-  public int timeArrival; // arrival time from the input
+  public int arrivalTime; // arrival time from the input
+  public int numStages; 
+  public int numEdgesBtwStages;
+  
+  public Map<String, Stage> stages;
+	public Map<Integer, String> vertexToStage;
 
   public Map<Integer, Double> CPlength, BFSOrder;
 
@@ -68,7 +77,7 @@ public abstract class BaseDag implements Cloneable{
 
   public BaseDag(int id, int... arrival) {
     this.dagId = id;
-    this.timeArrival = (arrival.length > 0) ? arrival[0] : 0;
+    this.arrivalTime = (arrival.length > 0) ? arrival[0] : 0;
 
     rsrcQuota = new Resources();
     rsrcInUse = new Resources();
@@ -104,5 +113,29 @@ public abstract class BaseDag implements Cloneable{
     return demand;
   }
   
+	public boolean isFulllyAllocated() {
+	  return this.runnableTasks.size()==0;
+  }
+	
+	public int getCommingTaskId() {
+		return this.runnableTasks.iterator().next();
+  }
+
+	public Resources getCommingTaskRes() {
+		int nextTaskId = this.runnableTasks.iterator().next();
+	  return this.rsrcDemands(nextTaskId);
+  }
+	
+	public double minCompletionTime(){
+		// for simplicity, assumming that all stages can start at the same time.
+		double complTime = -Double.MAX_VALUE;
+		for (Map.Entry<String, Stage> entry : this.stages.entrySet()) {
+			Stage stage = entry.getValue();
+			if (complTime<stage.vDuration)
+				complTime = stage.vDuration;
+		}
+		return complTime;
+	}
+	
 //  public Object BaseDag clone();
 }

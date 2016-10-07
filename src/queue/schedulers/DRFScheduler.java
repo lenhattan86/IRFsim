@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
+import jdk.nashorn.internal.objects.Global;
 import cluster.datastructures.BaseDag;
 import cluster.datastructures.JobQueue;
 import cluster.datastructures.Resources;
@@ -47,31 +48,95 @@ public class DRFScheduler implements Scheduler {
 	// N - total number of running jobs
 	@Override
 	public void computeResShare() {
-		
-//		if(Simulator.CURRENT_TIME>=2.0 && Simulator.CURRENT_TIME<=4.0){
-//			DEBUG = true;
-//			Output.debugln(DEBUG, "\n==== STEP_TIME:" + Simulator.CURRENT_TIME + " ====\n");
-//		}else
-//			DEBUG = false;
+
+		if (Simulator.CURRENT_TIME >= Globals.DEBUG_START && Simulator.CURRENT_TIME <= Globals.DEBUG_END) {
+			DEBUG = true;
+		} else
+			DEBUG = false;
 
 		int numQueuesRuning = Simulator.QUEUE_LIST.getRunningQueues().size();
 		if (numQueuesRuning == 0) {
 			return;
 		}
-		//
-		// if (Globals.METHOD.equals(Method.Strict)){
-		// getRunningInteractiveQueues()
-		// }
 
-		computeDRFShare(clusterTotCapacity, Simulator.QUEUE_LIST.getRunningQueues());
-
-		Resources availRes = Simulator.cluster.getClusterMaxResAlloc();
 		for (JobQueue q : Simulator.QUEUE_LIST.getRunningQueues()) {
-			fifoShareForJobs(q, availRes);
+			Collections.sort((List<BaseDag>) q.getRunningJobs(), new JobArrivalComparator());
+		}
+
+		onlineDRFShare(clusterTotCapacity, Simulator.QUEUE_LIST.getRunningQueues());
+	}
+
+	public static void onlineDRFShare(Resources resCapacity, List<JobQueue> runningQueues) {
+		// init
+		Resources consumedRes = new Resources();
+		double[] userDominantShareArr = new double[runningQueues.size()];
+		// TODO: consider the allocated share (because of no preemption).
+		int i = 0;
+		double[] auxilaryShare = new double[runningQueues.size()];
+		for (JobQueue queue : runningQueues) {
+			Resources normalizedShare = Resources.divideVector(queue.getResourceUsage(),
+			    Simulator.cluster.getClusterMaxResAlloc());
+			if (queue.isInteractive && Globals.METHOD.equals(Method.Strict))
+				auxilaryShare[i] = -Double.MAX_VALUE;
+			else
+				auxilaryShare[i] = 0.0;
+			userDominantShareArr[i] = Utils.round(normalizedShare.max() / queue.getWeight(), 2)
+			    + auxilaryShare[i];
+			i++;
+		}
+		while (true) {
+			// step 1: pick user i with lowest s_i
+			int sMinIdx = Utils.getMinValIdx(userDominantShareArr);
+			if (sMinIdx < 0) {
+				// There are more resources than demand.
+				break;
+			}
+			// D_i demand for the next task
+			JobQueue q = runningQueues.get(sMinIdx);
+			BaseDag unallocJob = q.getUnallocRunningJob();
+			if (unallocJob == null) {
+				userDominantShareArr[sMinIdx] = Double.MAX_VALUE;
+				// do not allocate to this queue any more
+				continue;
+			}
+
+			int taskId = unallocJob.getCommingTaskId();
+			Resources allocRes = unallocJob.rsrcDemands(taskId);
+			// Like Yarn, assign one single container for the task
+			// step 3: if fit, C+D_i <= R, allocate
+			Resources temp = Resources.sum(consumedRes, allocRes);
+			if (resCapacity.greaterOrEqual(temp)) {
+				consumedRes = temp;
+				q.setRsrcQuota(Resources.sum(q.getRsrcQuota(), q.nextTaskRes()));
+				boolean assigned = Simulator.cluster.assignTask(unallocJob.dagId, taskId,
+				    unallocJob.duration(taskId), allocRes);
+				if (assigned) {
+					// remove the task from runnable and put it in running
+					unallocJob.runningTasks.add(taskId);
+					// unallocJob.launchedTasksNow.add(taskId);
+					unallocJob.runnableTasks.remove(taskId);
+
+					// update userDominantShareArr
+					double maxRes = Resources.divideVector(q.getResourceUsage(),
+					    Simulator.cluster.getClusterMaxResAlloc()).max();
+					userDominantShareArr[sMinIdx] = Utils.round(maxRes / q.getWeight(), 2)
+					    + auxilaryShare[sMinIdx];
+
+				} else {
+					Output.debugln(DEBUG, "[DRFScheduler] Cannot assign resource to the task" + taskId
+					    + " of Job " + unallocJob.dagId + " " + allocRes);
+					userDominantShareArr[sMinIdx] = Double.MAX_VALUE;
+				}
+
+			} else {
+				userDominantShareArr[sMinIdx] = Double.MAX_VALUE;
+				// do not allocate to this queue any more
+				// break;
+			}
 		}
 	}
 
-	public static void computeDRFShare(Resources flexibleResources, List<JobQueue> runningQueues) {
+	public void computeDRFShare(Resources flexibleResources, List<JobQueue> runningQueues) {
 		HashMap<String, Resources> resDemandsQueues = new HashMap<String, Resources>();
 		double factor = 0.0;
 		for (JobQueue q : runningQueues) {
@@ -95,11 +160,11 @@ public class DRFScheduler implements Scheduler {
 				double ratio = Utils.round(q.getWeight() / factor, 3);
 				avgResDemandDag.multiply(ratio);
 			}
-			
-//			avgResDemandDag.round(Globals.TOLERANT_ERROR);
+
+			// avgResDemandDag.round(Globals.TOLERANT_ERROR);
 
 			Resources resDemand = Resources.piecewiseMin(q.getMaxDemand(), avgResDemandDag); // increase
-																																												// utilization.
+			                                                                                 // utilization.
 
 			resDemandsQueues.put(q.getQueueName(), resDemand);
 		}
@@ -117,9 +182,10 @@ public class DRFScheduler implements Scheduler {
 		for (JobQueue q : runningQueues) {
 			Resources drfQuota = Resources.clone(resDemandsQueues.get(q.getQueueName()));
 			drfQuota.multiply(drfShare);
-//			drfQuota.round(Globals.TOLERANT_ERROR);
+			// drfQuota.round(Globals.TOLERANT_ERROR);
 			q.setRsrcQuota(drfQuota);
-			Output.debugln(DEBUG, "[DRFScheduler] Allocated to queue:" + q.getQueueName() + " " + q.getRsrcQuota());
+			Output.debugln(DEBUG,
+			    "[DRFScheduler] Allocated to queue:" + q.getQueueName() + " " + q.getRsrcQuota());
 		}
 	}
 
@@ -129,7 +195,8 @@ public class DRFScheduler implements Scheduler {
 			Resources newQuota = Resources.piecewiseMin(availRes, q.getRsrcQuota());
 			q.setRsrcQuota(newQuota);
 		}
-		Output.debugln(DEBUG, "[DRFScheduler] drf share allocated to queue:" + q.getQueueName() + " " + q.getRsrcQuota());
+		Output.debugln(DEBUG, "[DRFScheduler] drf share allocated to queue:" + q.getQueueName() + " "
+		    + q.getRsrcQuota());
 		q.receivedResourcesList.add(q.getRsrcQuota());
 
 		Resources remain = q.getRsrcQuota();
@@ -143,7 +210,8 @@ public class DRFScheduler implements Scheduler {
 			remain.subtract(rsShare);
 		}
 		// shareRemainRes(q, remain);
-		Output.debugln(DEBUG, "[DRFScheduler] Allocated to queue:" + q.getQueueName() + " " + q.getJobsQuota());
+		Output.debugln(DEBUG,
+		    "[DRFScheduler] Allocated to queue:" + q.getQueueName() + " " + q.getJobsQuota());
 		availRes = Resources.subtract(availRes, q.getRsrcQuota());
 	}
 
@@ -163,13 +231,15 @@ public class DRFScheduler implements Scheduler {
 			job.rsrcQuota = rsShare;
 			remain.subtract(rsShare);
 			Output.debugln(DEBUG,
-					"[DRFScheduler] Allocated to job:" + job.dagId + " @ " + job.getQueueName() + " " + job.rsrcQuota);
+			    "[DRFScheduler] Allocated to job:" + job.dagId + " @ " + job.getQueueName() + " "
+			        + job.rsrcQuota);
 		}
 		availRes = Resources.subtract(availRes, q.getRsrcQuota());
 	}
 
 	public void fairShare() { // backup
-		Queue<JobQueue> nonAllocatedQueues = new LinkedList<JobQueue>(Simulator.QUEUE_LIST.getRunningQueues());
+		Queue<JobQueue> nonAllocatedQueues = new LinkedList<JobQueue>(
+		    Simulator.QUEUE_LIST.getRunningQueues());
 		Resources availRes = Simulator.cluster.getClusterMaxResAlloc();
 		// update the resourceShareAllocated for every running job
 		for (JobQueue q : Simulator.QUEUE_LIST.getRunningQueues()) {
@@ -187,7 +257,8 @@ public class DRFScheduler implements Scheduler {
 			availRes = Resources.subtractPositivie(availRes, q.getRsrcQuota());
 
 			q.setRsrcQuota(allocRes);
-			Output.debugln(DEBUG, "Allocated to queue:" + q.getQueueName() + " share:" + q.getRsrcQuota());
+			Output
+			    .debugln(DEBUG, "Allocated to queue:" + q.getQueueName() + " share:" + q.getRsrcQuota());
 		}
 	}
 

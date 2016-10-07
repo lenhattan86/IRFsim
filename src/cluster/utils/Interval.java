@@ -19,7 +19,7 @@ public class Interval {
     return clonedIntval;
   }
 
-  public int Length() {
+  public int length() {
     return end - begin + 1;
   }
 

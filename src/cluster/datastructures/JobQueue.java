@@ -237,4 +237,49 @@ public class JobQueue {
 			jobs.add(job);
 		return jobs;
 	}
+
+	public Resources nextTaskRes() {
+		Resources res = new Resources();
+		
+	  return res;
+  }
+
+	public BaseDag getUnallocRunningJob() {
+		for (BaseDag job: this.runningJobs)
+			if (!job.isFulllyAllocated()){
+				return job;
+			}
+		return null;
+  }
+
+	public Resources assign(Resources assignedRes) {
+		Resources remain = Resources.clone(assignedRes);
+		while (true){
+			BaseDag unallocJob = this.getUnallocRunningJob();
+			if (unallocJob == null) {
+				return remain;
+			}
+			
+			//TODO: a job may have a variety of tasks having different resource demands.
+			int taskId = unallocJob.getCommingTaskId();
+			Resources allocRes = unallocJob.rsrcDemands(taskId);
+			if (remain.greaterOrEqual(allocRes)) {
+				boolean assigned = Simulator.cluster.assignTask(unallocJob.dagId, taskId,
+				    unallocJob.duration(taskId), allocRes);
+				if (assigned) {
+					unallocJob.runningTasks.add(taskId);
+					unallocJob.runnableTasks.remove(taskId);
+					remain = Resources.subtract(remain, allocRes);
+					// update userDominantShareArr
+				} else {
+					Output.debugln(DEBUG,"[DRFScheduler] Cannot assign resource to the task" + taskId
+					    + " of Job " + unallocJob.dagId + " " + allocRes);
+				}
+			} else {
+				// do not allocate to this queue any more
+				 break;
+			}
+		}
+	  return remain;
+  }
 }

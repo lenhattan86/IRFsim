@@ -50,7 +50,7 @@ public class Utils {
         //take a random DAG and write it to file with next dag ID
         BaseDag nextDag = inputJobsMap.get(nextDagIdx);
         nextDag.dagId = nextDagId;
-        nextDag.timeArrival = time;
+        nextDag.arrivalTime = time;
         nextDagId++;
         Utils.writeDagToFile((StageDag)nextDag, true);
       }
@@ -98,7 +98,7 @@ public class Utils {
       BufferedWriter bw = new BufferedWriter(new FileWriter(file, true));
       bw.write("# "+dag.dagName+"\n");
       if (considerTimeDistr) {
-        bw.write(dag.stages.size()+" "+dag.dagId+" "+dag.timeArrival+"\n");
+        bw.write(dag.stages.size()+" "+dag.dagId+" "+dag.arrivalTime+"\n");
       }
       else {
         bw.write(dag.stages.size()+" "+dag.dagId+" "+"\n");
@@ -108,7 +108,7 @@ public class Utils {
         for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
           bw.write(stage.vDemands.resource(i)+" ");
         }
-        bw.write(stage.vids.Length()+"\n");
+        bw.write(stage.vids.length()+"\n");
       }
       int numEdges = 0;
       for (Stage stage : dag.stages.values()) {
@@ -137,5 +137,17 @@ public class Utils {
   
   public static double roundDefault(double value) {
   	return round(value, 2);
+  }
+  
+  public static int getMinValIdx(double[] nonNegArray){
+  	double minVal = Double.MAX_VALUE-1;
+  	int idx = -1;
+  	for (int i=0; i< nonNegArray.length; i++){
+  		if (minVal > nonNegArray[i]){
+  			minVal = nonNegArray[i];
+  			idx = i;
+  		}
+  	}
+  	return idx;
   }
 }

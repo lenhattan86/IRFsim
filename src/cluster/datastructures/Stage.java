@@ -17,6 +17,7 @@ public class Stage {
 
   public double vDuration;
   public Resources vDemands;
+  public int arrivalTime =0; // relative Arrival Time
 
   public Map<String, Dependency> parents, children;
 

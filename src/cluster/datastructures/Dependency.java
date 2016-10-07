@@ -56,7 +56,7 @@ public class Dependency {
     } else if (type.contains("o2o") || type.contains("o2m")
         || type.contains("m2o") || type.contains("scg") || type.contains("oto")) {
 
-      int ll = local_ids.Length(), dl = dep_ids.Length();
+      int ll = local_ids.length(), dl = dep_ids.length();
       if (ll >= dl) {
         int ratio = (int) Math.floor((ll * 1.0) / (dl * 1.0));
         int dst = (task - local_ids.begin) / ratio + dep_ids.begin;

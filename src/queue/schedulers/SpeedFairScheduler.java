@@ -9,13 +9,16 @@ import java.util.Queue;
 import cluster.datastructures.BaseDag;
 import cluster.datastructures.JobQueue;
 import cluster.datastructures.Resources;
+import cluster.datastructures.StageDag;
 import cluster.simulator.Simulator;
 import cluster.simulator.Main.Globals;
+import cluster.simulator.Main.Globals.Method;
 import cluster.utils.JobArrivalComparator;
 import cluster.utils.Output;
+import cluster.utils.Utils;
 
 public class SpeedFairScheduler implements Scheduler {
-	private boolean DEBUG = false;
+	private boolean DEBUG = true;
 
 	private String schedulePolicy;
 
@@ -25,17 +28,54 @@ public class SpeedFairScheduler implements Scheduler {
 		clusterTotCapacity = Simulator.cluster.getClusterMaxResAlloc();
 		this.schedulePolicy = "SpeedFair";
 	}
-
-	// FairShare = 1 / N across all dimensions
-	// N - total number of running jobs
+	
 	@Override
 	public void computeResShare() {
-//		if(Simulator.CURRENT_TIME>=0 && Simulator.CURRENT_TIME<=2.0){
-//			DEBUG = true;
-//		}else
-//			DEBUG = false;
+		if(Simulator.CURRENT_TIME>=Globals.DEBUG_START && Simulator.CURRENT_TIME<=Globals.DEBUG_END){
+			DEBUG = true;
+		}else
+			DEBUG = false;
 			
-		Output.debugln(DEBUG, "[SpeedFairScheduler] STEP_TIME:" + Simulator.CURRENT_TIME);
+		int numQueuesRuning = Simulator.QUEUE_LIST.getRunningQueues().size();
+		if (numQueuesRuning == 0) {
+			return;
+		}
+		Resources flexibleResources = null;
+		if (Globals.ENABLE_PREEMPTION)
+			flexibleResources = Simulator.cluster.getClusterMaxResAlloc();
+		else
+			flexibleResources = Simulator.cluster.getClusterResAvail();
+		
+		List<JobQueue> queuesNeedAlloc = new LinkedList<JobQueue>();
+		
+		for (JobQueue q : Simulator.QUEUE_LIST.getRunningQueues()) {
+			// compute the rsrcQuota based on the guarateed rate.
+			Resources rsrcQuota = Resources.piecewiseMin(q.getMinService(Simulator.CURRENT_TIME), q.getMaxDemand());
+			if (q.getMaxDemand().greater(rsrcQuota))
+				queuesNeedAlloc.add(q);
+			Resources assignedRes = Resources.subtractPositivie(rsrcQuota, q.getResourceUsage());
+			assignedRes = Resources.piecewiseMin(assignedRes, flexibleResources);
+			Resources remain = q.assign(assignedRes);
+			
+			// assign the task
+			rsrcQuota = Resources.subtract(rsrcQuota, remain);
+			q.setRsrcQuota(rsrcQuota);
+			flexibleResources = Resources.subtractPositivie(flexibleResources, Resources.subtract(assignedRes, remain));
+			Output.debugln(DEBUG, "[SpeedFairScheduler] Step 1: SpeedFair share: " + q.getQueueName() + " " + q.getRsrcQuota());
+		}
+		
+		// use DRF for the remaining resources
+//		onlineDRFShare(flexibleResources, queuesNeedAlloc);
+		DRFScheduler.onlineDRFShare(flexibleResources, queuesNeedAlloc);
+	}
+
+	public void computeResShareOffline() {
+		if(Simulator.CURRENT_TIME>=Globals.DEBUG_START && Simulator.CURRENT_TIME<=Globals.DEBUG_END){
+			DEBUG = true;
+		}else
+			DEBUG = false;
+			
+//		Output.debugln(DEBUG, "[SpeedFairScheduler] STEP_TIME:" + Simulator.CURRENT_TIME);
 		int numQueuesRuning = Simulator.QUEUE_LIST.getRunningQueues().size();
 		if (numQueuesRuning == 0) {
 			return;
@@ -76,7 +116,16 @@ public class SpeedFairScheduler implements Scheduler {
 			Output.debugln(DEBUG, "[SpeedFairScheduler] Step 2: FIFO share @ " + q.getQueueName() + " " + q.getJobsQuota());
 			availRes = Resources.subtract(availRes, q.getRsrcQuota());
 		}
-
+		
+		// assign the resource
+		
+		Simulator.queueSched.adjustShares();
+		
+		for (BaseDag job : Simulator.runningJobs) {
+			if (job.rsrcQuota.distinct(Resources.ZEROS)) {
+				Simulator.intraJobSched.schedule((StageDag) job);
+			}
+		}
 	}
 	
 	private void computeDRFShare(Resources flexibleResources, List<JobQueue> runningQueues){

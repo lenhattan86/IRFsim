@@ -61,11 +61,11 @@ end
 %%
 plots = [true, true, true , true]; %DRF, DRF-W, Strict, SpeedFair
 logfolder = [result_folder 'log/'];
-num_batch_queues = 4;
+num_batch_queues = 3;
 num_interactive_queue = 1;
-STEP_TIME = 0.2;
+STEP_TIME = 1.0;
 num_queues = num_batch_queues+num_interactive_queue;
-START_TIME = 0; END_TIME = 90;
+START_TIME = 0; END_TIME = 200;
 start_time_step = START_TIME/STEP_TIME;
 max_time_step = END_TIME/STEP_TIME;
 startIdx = start_time_step*num_queues+1;
@@ -74,7 +74,7 @@ num_time_steps = max_time_step-start_time_step;
 linewidth= 2;
 barwidth = 1.0;
 timeInSeconds = START_TIME+STEP_TIME:STEP_TIME:END_TIME;
-MAX_RESOURCE = 200;
+MAX_RESOURCE = 100;
    
 if plots(1)   
    logFile = [ logfolder 'DRF-output_' int2str(num_batch_queues) '.csv'];
@@ -82,7 +82,12 @@ if plots(1)
    
    if (flag)
       figure;
-      subplot(2,1,1);      
+      subplot(2,1,1);   
+%       resAll = zeros(1,num_queues*num_time_steps);
+%       if(num_queues*num_time_steps<length(res1))
+%          resAll(1:length(res1)) = res1;
+%       else
+%          resAll = res1(startIdx:endIdx);
       resCutOff = res1(startIdx:endIdx);
       shapeRes1 = reshape(resCutOff,num_queues,num_time_steps);
       bar(timeInSeconds,shapeRes1',barwidth,'stacked','EdgeColor','none');
