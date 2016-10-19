@@ -111,17 +111,11 @@ public class DRFScheduler implements Scheduler {
 				boolean assigned = Simulator.cluster.assignTask(unallocJob.dagId, taskId,
 				    unallocJob.duration(taskId), allocRes);
 				if (assigned) {
-					// remove the task from runnable and put it in running
-					unallocJob.runningTasks.add(taskId);
-					// unallocJob.launchedTasksNow.add(taskId);
-					unallocJob.runnableTasks.remove(taskId);
-
 					// update userDominantShareArr
 					double maxRes = Resources.divideVector(q.getResourceUsage(),
 					    Simulator.cluster.getClusterMaxResAlloc()).max();
 					userDominantShareArr[sMinIdx] = Utils.round(maxRes / q.getWeight(), 2)
 					    + auxilaryShare[sMinIdx];
-
 				} else {
 					Output.debugln(DEBUG, "[DRFScheduler] Cannot assign resource to the task" + taskId
 					    + " of Job " + unallocJob.dagId + " " + allocRes);

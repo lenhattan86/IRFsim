@@ -1,0 +1,20 @@
+JobId, startTime, endTime, duration, queueName
+5,0.0,6.0,6.0,interactive1
+0,0.0,12.0,12.0,interactive0
+10,0.0,26.0,26.0,batch0
+6,50.0,61.0,11.0,interactive1
+1,50.0,66.0,16.0,interactive0
+11,18.0,73.0,55.0,batch0
+7,100.0,107.0,7.0,interactive1
+2,100.0,115.0,15.0,interactive0
+12,42.0,116.0,74.0,batch0
+13,63.0,139.0,76.0,batch0
+8,150.0,161.0,11.0,interactive1
+3,150.0,168.0,18.0,interactive0
+14,87.0,176.0,89.0,batch0
+15,110.0,177.0,67.0,batch0
+9,200.0,212.0,12.0,interactive1
+4,200.0,217.0,17.0,interactive0
+16,127.0,236.0,109.0,batch0
+18,164.0,287.0,123.0,batch0
+17,145.0,326.0,181.0,batch0

@@ -160,10 +160,12 @@ public class JobQueue {
 	// getters & setters
 	public double getWeight() {
 		double res = weight;
-		if (isInteractive && Globals.METHOD==Method.Strict)
+		if (isInteractive && Globals.METHOD.equals(Method.Strict))
 			res = Globals.STRICT_WEIGHT;
-		else if (isInteractive && Globals.METHOD==Method.DRFW)
+		else if (isInteractive && Globals.METHOD.equals(Method.DRFW))
 			res = Globals.DRFW_weight;
+		else if(isInteractive && Globals.METHOD.equals(Method.SpeedFair))
+			res = this.getSpeedFairWeight();
 		return res;
 	}
 	

@@ -1,5 +1,8 @@
 package cluster.utils;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
@@ -10,6 +13,7 @@ import cluster.datastructures.Dependency;
 import cluster.datastructures.Stage;
 import cluster.datastructures.StageDag;
 import cluster.simulator.Main.Globals;
+import cluster.simulator.Main.Globals.JobsArrivalPolicy;
 
 public class GenInput {
 
@@ -17,7 +21,7 @@ public class GenInput {
 	public static double weight = 1.0;
 	public static String queueFile = "input_gen/queue_input";
 	public static String jobFile = "input_gen/jobs_input";
-	
+
 	public static Randomness rand = new Randomness();
 
 	// test geninput
@@ -29,11 +33,11 @@ public class GenInput {
 		// numBatchJobsPerQueue);
 
 		Queue<BaseDag> jobs = readWorkloadTrace("workload/" + "queries_bb_FB_distr.txt");
-//		System.out.println("Print Jobs");
-//		for (BaseDag job : jobs) {
-//			String str = ((StageDag) job).viewDag();
-//			System.out.println(str);
-//		}
+		// System.out.println("Print Jobs");
+		// for (BaseDag job : jobs) {
+		// String str = ((StageDag) job).viewDag();
+		// System.out.println(str);
+		// }
 
 		genInputFromWorkload(numInteractiveQueues, numInteractiveJobsPerQueue, numInteractiveTask,
 		    numBatchQueues, numBatchJobsPerQueue, jobs);
@@ -107,25 +111,30 @@ public class GenInput {
 		return str;
 	}
 
-	public static String genSingleJobInfo(int jobId, String queueName, StageDag job, int arrivalTime, int scale) {
+	public static String genSingleJobInfo(int jobId, String queueName, StageDag job, int arrivalTime,
+	    int taskNumScale, double durScale) {
 		String str = "";
 		str += "# " + jobId + "\n";
-		//TODO: customize the job arrival time
-		str += "" + job.numStages + " " + jobId + " " + arrivalTime + " " + queueName + "\n"; 
+		// TODO: customize the job arrival time
+		str += "" + job.numStages + " " + jobId + " " + arrivalTime + " " + queueName + "\n";
 		for (Map.Entry<String, Stage> entry : job.stages.entrySet()) {
 			Stage stage = entry.getValue();
-			str += stage.name + " " + stage.vDuration;
+			double duration = stage.vDuration * durScale / Globals.STEP_TIME;
+			duration = Utils.round(duration,0) * Globals.STEP_TIME;
+			duration = Utils.round(duration, 2);
+			duration = Math.max(duration, Globals.STEP_TIME);
+			str += stage.name + " " + duration;
 			for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
 				str += " " + stage.vDemands.resource(i);
 			}
-			str += " " + stage.vids.length()*scale + "\n";
+			str += " " + stage.vids.length() * taskNumScale + "\n";
 		}
 		str += job.numEdgesBtwStages;
 		for (Map.Entry<String, Stage> entry : job.stages.entrySet()) {
 			Stage stage = entry.getValue();
-			if (!stage.children.isEmpty()){
-				for (Map.Entry<String, Dependency> child : stage.children.entrySet()) 
-					str += "\n"+stage.name + " " + child.getKey() + " ata";
+			if (!stage.children.isEmpty()) {
+				for (Map.Entry<String, Dependency> child : stage.children.entrySet())
+					str += "\n" + stage.name + " " + child.getKey() + " ata";
 			}
 		}
 		return str;
@@ -153,58 +162,102 @@ public class GenInput {
 
 		genQueueInput(numInteractiveQueues, numBatchQueues);
 
-		customizeJobs(numInteractiveQueues, numInteractiveJobsPerQueue, numBatchQueues, numBatchJobsPerQueue, 
-				jobs);
+		customizeJobs(numInteractiveQueues, numInteractiveJobsPerQueue, numBatchQueues,
+		    numBatchJobsPerQueue, jobs);
 	}
 
-	private static void customizeJobs(int numInteractiveQueues, int numInteractiveJobsPerQueue, int numBatchQueues, int numBatchJobsPerQueue, Queue<BaseDag> jobs) {
-		
+	private static void customizeJobs(int numInteractiveQueues, int numInteractiveJobsPerQueue,
+	    int numBatchQueues, int numBatchJobsPerQueue, Queue<BaseDag> jobs) {
+
 		String file = GenInput.jobFile + "_" + numInteractiveQueues + "_" + numBatchQueues + ".txt";
 		Output.write("", false, file);
 		// TODO: pick the short jobs for the interactive queue.
-		Queue<BaseDag> shortJobs = getJobs(jobs, Globals.SMALL_JOB_MAX_DURATION , Globals.SMALL_JOB_THRESHOLD, true);
+		Queue<BaseDag> shortJobs = getJobs(jobs, Globals.SMALL_JOB_MAX_DURATION,
+		    Globals.SMALL_JOB_THRESHOLD, true);
 		Iterator<BaseDag> jobIter1 = shortJobs.iterator();
-		for (int i = 0; i < numInteractiveQueues; i++) {
-			int arrivalTime = 0 + i;
-			for (int j = 0; j < numInteractiveJobsPerQueue; j++) {
-				if (jobIter1.hasNext()){
+			for (int i = 0; i < numInteractiveQueues; i++) {
+				for (int j = 0; j < numInteractiveJobsPerQueue; j++) {
+				if (jobIter1.hasNext()) {
 					StageDag job = (StageDag) jobIter1.next();
-					arrivalTime = j * Globals.PERIODIC_INTERVAL + i;
+					int arrivalTime = j * Globals.PERIODIC_INTERVAL ;
 					int newJobId = i * numInteractiveJobsPerQueue + j;
-					String toWrite = genSingleJobInfo(newJobId , "interactive" + (i), job, arrivalTime, Globals.SCALE_UP_INTERACTIV_JOB);
+					String toWrite = genSingleJobInfo(newJobId, "interactive" + (i), job, arrivalTime,
+					    Globals.SCALE_UP_INTERACTIV_JOB, Globals.SCALE_INTERACTIVE_DURATION);
 					Output.writeln(toWrite, true, file);
 				} else {
-					System.err.println("[GenInput] lack of the number of small jobs at "+shortJobs.size());
+					System.err.println("[GenInput] lack of the number of small jobs at " + shortJobs.size());
 					break;
 				}
 			}
 		}
-		
-		Queue<BaseDag> longJobs = getJobs(jobs, Globals.LARGE_JOB_MAX_DURATION, Globals.LARGE_JOB_THRESHOLD, false);
+		// TODO: load the distribution for time arrivals.
+		Queue<BaseDag> longJobs = getJobs(jobs, Globals.LARGE_JOB_MAX_DURATION,
+		    Globals.LARGE_JOB_THRESHOLD, false);
 		Iterator<BaseDag> jobIter2 = longJobs.iterator();
 		int batchStartId = numInteractiveQueues * numInteractiveJobsPerQueue;
 		for (int i = 0; i < numBatchQueues; i++) {
+			int[] arrivalTimes = readRandomProcess(Globals.DIST_FILE, i);
 			for (int j = 0; j < numBatchJobsPerQueue; j++) {
 				int jobIdx = i * numBatchJobsPerQueue + j;
 				if (jobIter2.hasNext()) {
 					StageDag job = (StageDag) jobIter2.next();
 					int newJobId = jobIdx + batchStartId;
-					String toWrite = genSingleJobInfo(newJobId, "batch" + (i), job, job.arrivalTime, 1);
+					String toWrite = "";
+					if (!Globals.GEN_JOB_ARRIVAL)
+						toWrite = genSingleJobInfo(newJobId, "batch" + (i), job, job.arrivalTime, 1,
+					    Globals.SCALE_BATCH_DURATION);
+					else
+						toWrite = genSingleJobInfo(newJobId, "batch" + (i), job, arrivalTimes[j], Globals.SCALE_UP_BATCH_JOB,
+					    Globals.SCALE_BATCH_DURATION);
 					Output.writeln(toWrite, true, file);
 				} else {
-					System.err.println("[GenInput] lack of the number of large jobs at "+longJobs.size());
+					System.err.println("[GenInput] lack of the number of large jobs at " + longJobs.size());
 					break;
 				}
 			}
 		}
 	}
-	
-	public static Queue<BaseDag> getJobs(Queue<BaseDag> jobs, double minComplTime, int numOfTasks, boolean isSmall){
+
+	public static int[] readRandomProcess(String filePathStr, int row) {
+		int[] res = null;
+		File file = new File(filePathStr);
+		assert (file.exists() && !file.isDirectory());
+		try {
+			BufferedReader br = new BufferedReader(new FileReader(file));
+			String line;
+			int rowIdx = 0;
+			while ((line = br.readLine()) != null) {
+				if (row == rowIdx) {
+					String[] args = line.split(",");
+					int len = args.length;
+					int[] arrivals = new int[len + 1];
+					int arrivalTime = 0;
+					arrivals[0] = arrivalTime;
+					for (int i = 0; i < len; i++) {
+						arrivalTime += Integer.parseInt(args[i]);
+						arrivals[i + 1] = arrivalTime;
+					}
+					res = arrivals;
+				} else if(rowIdx>row)
+					break;
+				rowIdx++;
+			}
+			br.close();
+		} catch (Exception e) {
+			System.err.println("Catch exception: " + e);
+			e.printStackTrace();
+		}
+		return res;
+	}
+
+	public static Queue<BaseDag> getJobs(Queue<BaseDag> jobs, double minComplTime, int numOfTasks,
+	    boolean isSmall) {
 		Queue<BaseDag> interactiveJobs = new LinkedList<BaseDag>();
-		for (BaseDag job: jobs){
-			if (job.minCompletionTime() < minComplTime && job.allTasks().size()<numOfTasks && isSmall)
+		for (BaseDag job : jobs) {
+			if (job.minCompletionTime() < minComplTime && job.allTasks().size() < numOfTasks && isSmall)
 				interactiveJobs.add(job);
-			else if(job.minCompletionTime() > minComplTime && job.allTasks().size()>numOfTasks && !isSmall)
+			else if (job.minCompletionTime() > minComplTime && job.allTasks().size() > numOfTasks
+			    && !isSmall)
 				interactiveJobs.add(job);
 		}
 		return interactiveJobs;

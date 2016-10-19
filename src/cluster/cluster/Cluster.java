@@ -8,7 +8,10 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Logger;
 
+import cluster.datastructures.BaseDag;
 import cluster.datastructures.Resources;
+import cluster.datastructures.Task;
+import cluster.simulator.Simulator;
 import cluster.simulator.Main.Globals;
 
 /**
@@ -59,11 +62,33 @@ public class Cluster {
         continue;
 
       machine.assignTask(dagId, taskId, taskDuration, taskResources);
-
+      
+      // update resource allocated to the corresponding job
+      BaseDag dag = Simulator.getDag(dagId);
+      dag.rsrcInUse.addWith(dag.rsrcDemands(taskId));
+      
+   // remove the task from runnable and put it in running
+  		dag.runningTasks.add(taskId);
+  		// unallocJob.launchedTasksNow.add(taskId);
+  		dag.runnableTasks.remove(taskId);
+			
       return true;
     }
     return false;
   }
+  
+//checks for fitting in resShare should already be done
+ public Resources preemptTask(String queueName) {
+	 Resources returnedRes = null;
+	 
+   for (Machine machine : machines.values()) {
+  	 Task task = machine.getLastRunningTask(queueName);
+     if (task != null){
+    	 returnedRes = machine.preemptTask(task);
+     }
+   }
+   return returnedRes;
+ }
 
   // return: [Key: dagId -- Value: List<taskId>]
   public Map<Integer, List<Integer>> finishTasks(double... earliestFinishTime) {

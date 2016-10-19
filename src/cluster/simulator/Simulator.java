@@ -190,8 +190,8 @@ public class Simulator {
 			// handle jobs completion and arrivals
 			boolean newJobArrivals = handleNewJobArrival4MultiQueues();
 			QUEUE_LIST.updateRunningQueues();
-			if(false)
-//			if (!jobCompleted && !newJobArrivals && finishedTasks.isEmpty())
+//			if(false)
+			if (!jobCompleted && !newJobArrivals && finishedTasks.isEmpty() && Globals.ENABLE_PREEMPTION)
 				Output.debugln(DEBUG, "----- Do nothing ----");
 			else {
 				Output.debugln(DEBUG, "[Simulator]: START work conserving; clusterAvail:"

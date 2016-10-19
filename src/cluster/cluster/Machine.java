@@ -74,10 +74,23 @@ public class Machine {
     double expTaskComplTime = Utils.round(currentTime + taskDuration, 2);
     Task t = new Task(dagId, taskId, taskDuration, taskResources);
     runningTasks.put(t, expTaskComplTime);
-
-    // update resource allocated to the corresponding job
-    BaseDag dag = Simulator.getDag(dagId);
-    dag.rsrcInUse.addWith(dag.rsrcDemands(taskId));
+   
+  }
+  
+  public Resources preemptTask(Task task) {
+    // TODO - change 0.0 in case of self editing state thing
+    currentTime = execMode ? Simulator.CURRENT_TIME : currentTime;
+    
+    runningTasks.remove(task);
+    BaseDag dag = Simulator.getDag(task.dagId);
+    dag.rsrcInUse.subtract(task.resDemands);
+    
+ // remove the task from runnable and put it in running
+ 		dag.runningTasks.add(task.dagId);
+ 		// unallocJob.launchedTasksNow.add(taskId);
+ 		dag.runnableTasks.remove(task.dagId);
+    
+    return task.resDemands;
   }
 
   // [dagId -> List<TaskId>]
@@ -115,5 +128,19 @@ public class Machine {
 
   public int getMachineId() {
     return this.machineId;
+  }
+
+	public Task getLastRunningTask(String queueName) {
+		Task res = null;
+		Iterator<Map.Entry<Task, Double>> iter = runningTasks.entrySet().iterator();
+    while (iter.hasNext()) {
+      Map.Entry<Task, Double> entry = iter.next();
+      Task task = entry.getKey();
+      String qName = Simulator.getDag(task.dagId).getQueueName();
+      if (qName.equals(queueName)) {
+      	res = task;
+      }
+    }
+	  return res;
   }
 }
