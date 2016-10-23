@@ -48,11 +48,11 @@ public class DRFScheduler implements Scheduler {
 	// N - total number of running jobs
 	@Override
 	public void computeResShare() {
-
-		if (Simulator.CURRENT_TIME >= Globals.DEBUG_START && Simulator.CURRENT_TIME <= Globals.DEBUG_END) {
-			DEBUG = true;
-		} else
-			DEBUG = false;
+//
+//		if (Simulator.CURRENT_TIME >= Globals.DEBUG_START && Simulator.CURRENT_TIME <= Globals.DEBUG_END) {
+//			DEBUG = true;
+//		} else
+//			DEBUG = false;
 
 		int numQueuesRuning = Simulator.QUEUE_LIST.getRunningQueues().size();
 		if (numQueuesRuning == 0) {
@@ -104,7 +104,7 @@ public class DRFScheduler implements Scheduler {
 			Resources allocRes = unallocJob.rsrcDemands(taskId);
 			// Like Yarn, assign one single container for the task
 			// step 3: if fit, C+D_i <= R, allocate
-			Resources temp = Resources.sum(consumedRes, allocRes);
+			Resources temp = Resources.sumRound(consumedRes, allocRes);
 			if (resCapacity.greaterOrEqual(temp)) {
 				consumedRes = temp;
 				q.setRsrcQuota(Resources.sum(q.getRsrcQuota(), q.nextTaskRes()));

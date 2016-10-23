@@ -28,19 +28,13 @@ public class GenInput {
 	public static void main(String[] args) {
 		int numInteractiveQueues = 1, numInteractiveJobsPerQueue = 10;
 		int numInteractiveTask = 200, numBatchQueues = 3, numBatchJobsPerQueue = 20;
-		// genInput(numInteractiveQueues, numInteractiveJobsPerQueue,
-		// numInteractiveTask, numBatchQueues,
-		// numBatchJobsPerQueue);
+		 genInput(numInteractiveQueues, numInteractiveJobsPerQueue,
+		 numInteractiveTask, numBatchQueues,
+		 numBatchJobsPerQueue);
 
-		Queue<BaseDag> jobs = readWorkloadTrace("workload/" + "queries_bb_FB_distr.txt");
-		// System.out.println("Print Jobs");
-		// for (BaseDag job : jobs) {
-		// String str = ((StageDag) job).viewDag();
-		// System.out.println(str);
-		// }
-
-		genInputFromWorkload(numInteractiveQueues, numInteractiveJobsPerQueue, numInteractiveTask,
-		    numBatchQueues, numBatchJobsPerQueue, jobs);
+//		Queue<BaseDag> jobs = readWorkloadTrace("workload/" + "queries_bb_FB_distr.txt");
+//		genInputFromWorkload(numInteractiveQueues, numInteractiveJobsPerQueue, numInteractiveTask,
+//		    numBatchQueues, numBatchJobsPerQueue, jobs);
 
 	}
 
@@ -65,7 +59,7 @@ public class GenInput {
 	public static void genJobInput(int numInteractiveQueues, int numInteractiveJobsPerQueue,
 	    int numInteractiveTask, int numBatchQueues, int numBatchJobsPerQueue) {
 
-		double[] resources1 = { 0.1, 0.05, 0.0, 0.0, 0.0, 0.0 };
+		double[] resources1 = { 1, 0.5, 0.0, 0.0, 0.0, 0.0 };
 
 		String file = GenInput.jobFile + "_" + numInteractiveQueues + "_" + numBatchQueues + ".txt";
 		Output.write("", false, file);
@@ -73,7 +67,7 @@ public class GenInput {
 		for (int i = 0; i < numInteractiveQueues; i++) {
 			int arrivalTime = 0 + i;
 			for (int j = 0; j < numInteractiveJobsPerQueue; j++) {
-				arrivalTime = j * 10 + i;
+				arrivalTime = j * Globals.PERIODIC_INTERVAL + i;
 				int jobId = i * numInteractiveJobsPerQueue + j;
 				String toWrite = genSingleJobInfo(jobId, "interactive" + i, jobId + "", arrivalTime,
 				    numInteractiveTask, Globals.STEP_TIME, resources1);
@@ -81,15 +75,15 @@ public class GenInput {
 			}
 		}
 
-		double[] resources2 = { 0.1, 0.15, 0.0, 0.0, 0.0, 0.0 };
+		double[] resources2 = { 1, 1.5, 0.0, 0.0, 0.0, 0.0 };
 
 		int batchStartId = numInteractiveQueues * numInteractiveJobsPerQueue;
-		for (int i = 0; i < numBatchQueues; i++) {
-			int arrivalTime = 0 + i;
-			for (int j = 0; j < numBatchJobsPerQueue; j++) {
-				arrivalTime = j * 1 + i;
-				int jobId = i * numBatchJobsPerQueue + j + batchStartId;
-				String toWrite = genSingleJobInfo(jobId, "batch" + (i), jobId + "", arrivalTime,
+		int[] arrivalTimes = readRandomProcess(Globals.DIST_FILE);
+		int arrivalIdx = 0;
+		for (int j = 0; j < numBatchJobsPerQueue; j++) {
+			for (int i = 0; i < numBatchQueues; i++) {
+				int jobId = j * numBatchQueues + i + batchStartId;
+				String toWrite = genSingleJobInfo(jobId, "batch" + (i), jobId + "", arrivalTimes[arrivalIdx++] ,
 				    Globals.numbatchTask, Globals.STEP_TIME, resources2);
 				Output.writeln(toWrite, true, file);
 			}
@@ -172,7 +166,7 @@ public class GenInput {
 		String file = GenInput.jobFile + "_" + numInteractiveQueues + "_" + numBatchQueues + ".txt";
 		Output.write("", false, file);
 		// TODO: pick the short jobs for the interactive queue.
-		Queue<BaseDag> shortJobs = getJobs(jobs, Globals.SMALL_JOB_MAX_DURATION,
+		Queue<BaseDag> shortJobs = getJobs(jobs, Globals.SMALL_JOB_DUR_THRESHOLD,
 		    Globals.SMALL_JOB_THRESHOLD, true);
 		Iterator<BaseDag> jobIter1 = shortJobs.iterator();
 			for (int i = 0; i < numInteractiveQueues; i++) {
@@ -195,20 +189,21 @@ public class GenInput {
 		    Globals.LARGE_JOB_THRESHOLD, false);
 		Iterator<BaseDag> jobIter2 = longJobs.iterator();
 		int batchStartId = numInteractiveQueues * numInteractiveJobsPerQueue;
-		for (int i = 0; i < numBatchQueues; i++) {
-			int[] arrivalTimes = readRandomProcess(Globals.DIST_FILE, i);
-			for (int j = 0; j < numBatchJobsPerQueue; j++) {
-				int jobIdx = i * numBatchJobsPerQueue + j;
+		int[] arrivalTimes = readRandomProcess(Globals.DIST_FILE);
+		int arrivalIdx = 0;
+		for (int j = 0; j < numBatchJobsPerQueue; j++) {
+			for (int i = 0; i < numBatchQueues; i++) {
+				int jobIdx = j * numBatchQueues + i + batchStartId;
 				if (jobIter2.hasNext()) {
 					StageDag job = (StageDag) jobIter2.next();
-					int newJobId = jobIdx + batchStartId;
 					String toWrite = "";
 					if (!Globals.GEN_JOB_ARRIVAL)
-						toWrite = genSingleJobInfo(newJobId, "batch" + (i), job, job.arrivalTime, 1,
+						toWrite = genSingleJobInfo(jobIdx, "batch" + (i), job, job.arrivalTime, 1,
 					    Globals.SCALE_BATCH_DURATION);
-					else
-						toWrite = genSingleJobInfo(newJobId, "batch" + (i), job, arrivalTimes[j], Globals.SCALE_UP_BATCH_JOB,
+					else {
+						toWrite = genSingleJobInfo(jobIdx, "batch" + (i), job, arrivalTimes[arrivalIdx++] , Globals.SCALE_UP_BATCH_JOB,
 					    Globals.SCALE_BATCH_DURATION);
+					}
 					Output.writeln(toWrite, true, file);
 				} else {
 					System.err.println("[GenInput] lack of the number of large jobs at " + longJobs.size());
@@ -218,7 +213,8 @@ public class GenInput {
 		}
 	}
 
-	public static int[] readRandomProcess(String filePathStr, int row) {
+	public static int[] readRandomProcess(String filePathStr) {
+		int row = 0; // only first line
 		int[] res = null;
 		File file = new File(filePathStr);
 		assert (file.exists() && !file.isDirectory());

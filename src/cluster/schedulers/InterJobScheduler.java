@@ -62,14 +62,14 @@ public class InterJobScheduler {
 
 		final Map<Integer, Resources> unhappyDagsDistFromResShare = new HashMap<Integer, Resources>();
 		for (BaseDag dag : Simulator.runningJobs) {
-			if (!dag.rsrcQuota.distinct(dag.rsrcInUse)) {
+			if (!dag.rsrcQuota.distinct(dag.getRsrcInUse())) {
 				continue;
 			}
 
-			if (dag.rsrcInUse.greaterOrEqual(dag.rsrcQuota)) {
+			if (dag.getRsrcInUse().greaterOrEqual(dag.rsrcQuota)) {
 				// TODO: do we need to deal with this case: this dag has more resources than fairshare.
 			} else {
-				Resources farthestFromShare = Resources.subtract(dag.rsrcQuota, dag.rsrcInUse);
+				Resources farthestFromShare = Resources.subtract(dag.rsrcQuota, dag.getRsrcInUse());
 				unhappyDagsIds.add(dag.dagId);
 				unhappyDagsDistFromResShare.put(dag.dagId, farthestFromShare);
 			}
@@ -133,7 +133,7 @@ public class InterJobScheduler {
 			final Map<Integer, Resources> runnableDagsComparatorVal = new HashMap<Integer, Resources>();
 			for (BaseDag dag : Simulator.runningJobs) {
 				runningDagsIds.add(dag.dagId);
-				Resources farthestFromShare = Resources.subtract(dag.rsrcQuota, dag.rsrcInUse);
+				Resources farthestFromShare = Resources.subtract(dag.rsrcQuota, dag.getRsrcInUse());
 				runnableDagsComparatorVal.put(dag.dagId, farthestFromShare);
 			}
 			Collections.sort(runningDagsIds, new Comparator<Integer>() {

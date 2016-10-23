@@ -65,7 +65,7 @@ public class Cluster {
       
       // update resource allocated to the corresponding job
       BaseDag dag = Simulator.getDag(dagId);
-      dag.rsrcInUse.addWith(dag.rsrcDemands(taskId));
+      dag.getRsrcInUse().addWith(dag.rsrcDemands(taskId));
       
    // remove the task from runnable and put it in running
   		dag.runningTasks.add(taskId);

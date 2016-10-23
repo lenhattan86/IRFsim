@@ -83,7 +83,7 @@ public class Machine {
     
     runningTasks.remove(task);
     BaseDag dag = Simulator.getDag(task.dagId);
-    dag.rsrcInUse.subtract(task.resDemands);
+    dag.getRsrcInUse().subtract(task.resDemands);
     
  // remove the task from runnable and put it in running
  		dag.runningTasks.add(task.dagId);
@@ -110,7 +110,7 @@ public class Machine {
 
         // update resource freed from corresponding job
         BaseDag dag = Simulator.getDag(t.dagId);
-        dag.rsrcInUse.subtract(t.resDemands);
+        dag.getRsrcInUse().subtract(t.resDemands);
 
         if (tasksFinished.get(t.dagId) == null) {
           tasksFinished.put(t.dagId, new ArrayList<Integer>());

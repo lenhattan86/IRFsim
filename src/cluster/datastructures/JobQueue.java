@@ -145,7 +145,7 @@ public class JobQueue {
 	public Resources getResourceUsage(){
 		Resources res = new Resources();
 		for (BaseDag job : this.runningJobs) {
-			res.addWith(job.rsrcInUse);
+			res.addWith(job.getRsrcInUse());
 		}
 		return res;
 	}
@@ -164,8 +164,8 @@ public class JobQueue {
 			res = Globals.STRICT_WEIGHT;
 		else if (isInteractive && Globals.METHOD.equals(Method.DRFW))
 			res = Globals.DRFW_weight;
-		else if(isInteractive && Globals.METHOD.equals(Method.SpeedFair))
-			res = this.getSpeedFairWeight();
+//		else if(isInteractive && Globals.METHOD.equals(Method.SpeedFair))
+//			res = this.getSpeedFairWeight();
 		return res;
 	}
 	
@@ -187,9 +187,17 @@ public class JobQueue {
 	public Resources getMinService(double currTime){
 		return this.serviceRate.guaranteedResources(this.getMaxDemand(), Simulator.CURRENT_TIME, this.startTimeOfNewJob);
 	}
+	
+	public Resources getGuaranteeRate(double currTime){
+    return this.serviceRate.guaranteedResources(this.getMaxDemand(), Simulator.CURRENT_TIME, this.startTimeOfNewJob);
+  }
 
 	public void addRate(double slope, double duration) {
 		this.serviceRate.addSlope(slope, duration);
+	}
+	
+	public ServiceRate getServiceRate(){
+	  return this.serviceRate;
 	}
 
 	public void addRunnableJob(BaseDag newJob) {
@@ -268,9 +276,10 @@ public class JobQueue {
 			if (remain.greaterOrEqual(allocRes)) {
 				boolean assigned = Simulator.cluster.assignTask(unallocJob.dagId, taskId,
 				    unallocJob.duration(taskId), allocRes);
+				Resources realResRemain = Simulator.cluster.getClusterResAvail();
 				if (assigned) {
-					unallocJob.runningTasks.add(taskId);
-					unallocJob.runnableTasks.remove(taskId);
+//					unallocJob.runningTasks.add(taskId);
+//					unallocJob.runnableTasks.remove(taskId);
 					remain = Resources.subtract(remain, allocRes);
 					// update userDominantShareArr
 				} else {

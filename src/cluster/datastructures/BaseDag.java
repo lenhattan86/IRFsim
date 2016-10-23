@@ -60,7 +60,15 @@ public abstract class BaseDag implements Cloneable{
   public abstract Set<Integer> allTasks();
 
   public Resources rsrcQuota; // resource should be allocated
-  public Resources rsrcInUse; // real used resources
+  private Resources rsrcInUse; // real used resources
+
+  public Resources getRsrcInUse() {
+    return rsrcInUse;
+  }
+
+  public void setRsrcInUse(Resources rsrcInUse) {
+    this.rsrcInUse = rsrcInUse;
+  }
 
   public LinkedHashSet<Integer> runnableTasks;
   public LinkedHashSet<Integer> runningTasks;

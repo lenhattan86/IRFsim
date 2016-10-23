@@ -8,7 +8,7 @@ import cluster.simulator.Simulator;
 
 public class ServiceRate {
 	private final boolean DEBUG = true;
-	private ArrayList<Double> slopes = new ArrayList<Double>();
+	public ArrayList<Double> slopes = new ArrayList<Double>();
 	private ArrayList<Double> curveDurations = new ArrayList<Double>();
 
 	public enum Type {
@@ -61,8 +61,27 @@ public class ServiceRate {
 		}
 		return mCurrTime > xDuration;
 	}
-
+	
 	public Resources guaranteedResources(Resources demand, double curTime, double startTime) {
+    double rate = getGuaranteedRate(curTime, startTime);
+    Resources res = new Resources(0);
+    if (rate>0)
+      res = new Resources(rate);
+    else if(this.slopes.size()>0){
+      res = new Resources();
+      for (int i=0; i< Globals.NUM_DIMENSIONS; i++) {
+        double ans = (Simulator.cluster.getClusterMaxResAlloc().resource(i)*Globals.PERIODIC_INTERVAL/(Simulator.QUEUE_LIST.getRunningQueues().size()));
+        ans = ans - this.slopes.get(0)*this.curveDurations.get(0);
+        ans = ans/(Globals.PERIODIC_INTERVAL-this.curveDurations.get(0));
+        ans = Math.min(Simulator.cluster.getClusterMaxResAlloc().resource(i), ans);
+        ans = Math.max(0, ans);
+        res.resources[i]=ans;
+      }
+    }
+    return res;
+  }
+
+	public Resources guaranteedResources_bk(Resources demand, double curTime, double startTime) {
 		Resources res = new Resources();
 		if (this.type == Type.max) {
 			int idxOfMax = demand.idxOfMax();

@@ -1,7 +1,7 @@
 # 0
-interactive0 0.5 1.0
+interactive0 1.0 1.0
 1
-30.0 100.0
+20.0 200.0
 # 0
 batch0 1.0 1.0
 0

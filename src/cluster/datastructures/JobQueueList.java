@@ -121,7 +121,7 @@ public class JobQueueList {
 	
 	public void printQueueInfo(){
 		for (JobQueue q: this.jobQueues)
-			System.out.println(q.getQueueName() + " weight: " + q.getWeight());
+			System.out.println(q.getQueueName() + " weight: " + q.getWeight() + " rate: " + q.getServiceRate().slopes);
 	}
 	
 	public void readQueue(String filePathString){

@@ -31,7 +31,7 @@ import cluster.utils.Utils;
 // implement the timeline server
 public class Simulator {
 
-	public static boolean DEBUG = false;
+	public static boolean DEBUG = true;
 
 	public static double CURRENT_TIME = 0;
 
@@ -159,7 +159,7 @@ public class Simulator {
 	}
 
 	public void simulateMultiQueues() {
-		for (Simulator.CURRENT_TIME = 0; Simulator.CURRENT_TIME < Globals.SIM_END_TIME; Simulator.CURRENT_TIME += Globals.STEP_TIME) {
+		for (Simulator.CURRENT_TIME = 0; Simulator.CURRENT_TIME <= Globals.SIM_END_TIME; Simulator.CURRENT_TIME += Globals.STEP_TIME) {
 
 			if (Simulator.CURRENT_TIME >= Globals.DEBUG_START
 			    && Simulator.CURRENT_TIME <= Globals.DEBUG_END) {
@@ -204,7 +204,7 @@ public class Simulator {
 			}
 
 			for (BaseDag dag : Simulator.runningJobs) {
-				dag.receivedService.addUsage(dag.rsrcInUse);
+				dag.receivedService.addUsage(dag.getRsrcInUse());
 			}
 
 			Simulator.printUsedResources();
@@ -263,7 +263,7 @@ public class Simulator {
 	public static void printUsedResources() {
 		for (BaseDag dag : runningJobs) {
 			Output.debugln(DEBUG, "Dag Id " + dag.dagId + "in " + dag.getQueueName()
-			    + " -- dag.rsrcInUse: " + dag.rsrcInUse);
+			    + " -- dag.rsrcInUse: " + dag.getRsrcInUse());
 			// Output.writeln(dag.dagId + ", " + dag.rsrcInUse, true,
 			// Globals.PathToResourceLog);
 			// Output.debugln(DEBUG, "Dag Id " + dag.dagId + " -- Resource Share: " +
@@ -291,6 +291,8 @@ public class Simulator {
 
 	boolean stop() {
 		// System.out.println(runnableJobs.size()+" "+runningJobs.size()+" "+completedJobs.size()+" ");
+		if (Simulator.CURRENT_TIME>=Globals.SIM_END_TIME)
+			return true;
 		return (runnableJobs.isEmpty() && runningJobs.isEmpty() && (completedJobs.size() == totalReplayedJobs));
 	}
 
@@ -647,7 +649,7 @@ public class Simulator {
 			}
 
 			for (BaseDag dag : Simulator.runningJobs) {
-				dag.receivedService.addUsage(dag.rsrcInUse);
+				dag.receivedService.addUsage(dag.getRsrcInUse());
 			}
 
 			// Simulator.printUsedResources();
