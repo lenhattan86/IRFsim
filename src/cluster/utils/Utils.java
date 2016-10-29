@@ -32,8 +32,7 @@ public class Utils {
 
     int numJobs = 5000;
     Map<Integer, BaseDag> inputJobsMap = new HashMap<Integer, BaseDag>();
-    Queue<BaseDag> inputJobs = StageDag.readDags(Globals.PathToInputFile,
-        Globals.DagIdStart, Globals.DagIdEnd - Globals.DagIdStart + 1);
+    Queue<BaseDag> inputJobs = StageDag.readDags(Globals.PathToInputFile);
     for (BaseDag dag : inputJobs) {
       inputJobsMap.put(dag.dagId, dag);
     }

@@ -77,7 +77,7 @@ public abstract class BaseDag implements Cloneable{
   public LinkedHashSet<Integer> launchedTasksNow;
 
   public double jobStartTime, jobEndTime; // start-time & end-time of serving a job
-  public double jobStartRunningTime; // when the job is allocated resources.
+  public double jobStartRunningTime = -1.0; // when the job is allocated resources.
   public double jobExpDur; // real completion time of the job.
 
   // keep track remaining time from current time given some share
@@ -107,7 +107,9 @@ public abstract class BaseDag implements Cloneable{
   }
   
   public double getCompletionTime(){
-  	return this.jobEndTime - this.jobStartTime;
+    if (this.jobStartRunningTime<0)
+      System.err.println("you haven't set the starting time for this job "+ this.dagId);
+  	return this.jobEndTime - this.jobStartRunningTime;
   }
   
   public Resources getMaxDemand(){ 
@@ -143,6 +145,10 @@ public abstract class BaseDag implements Cloneable{
 				complTime = stage.vDuration;
 		}
 		return complTime;
+	}
+	
+	public JobQueue getQueue(){
+	    return Simulator.QUEUE_LIST.getJobQueue(queueName);
 	}
 	
 //  public Object BaseDag clone();

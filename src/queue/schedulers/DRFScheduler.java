@@ -116,6 +116,10 @@ public class DRFScheduler implements Scheduler {
 					    Simulator.cluster.getClusterMaxResAlloc()).max();
 					userDominantShareArr[sMinIdx] = Utils.round(maxRes / q.getWeight(), 2)
 					    + auxilaryShare[sMinIdx];
+					
+					if (unallocJob.jobStartRunningTime<0){
+					  unallocJob.jobStartRunningTime = Simulator.CURRENT_TIME;
+					}
 				} else {
 					Output.debugln(DEBUG, "[DRFScheduler] Cannot assign resource to the task" + taskId
 					    + " of Job " + unallocJob.dagId + " " + allocRes);
@@ -253,28 +257,6 @@ public class DRFScheduler implements Scheduler {
 			q.setRsrcQuota(allocRes);
 			Output
 			    .debugln(DEBUG, "Allocated to queue:" + q.getQueueName() + " share:" + q.getRsrcQuota());
-		}
-	}
-
-	private void shareRemainRes(JobQueue q, Resources remain) {
-		Queue<BaseDag> runningJobs = q.cloneRunningJobs();
-		while (true) {
-			if (runningJobs.isEmpty() || remain.isEmpty()) {
-				break;
-			}
-			Queue<BaseDag> jobs = new LinkedList<BaseDag>(runningJobs);
-			for (BaseDag job : jobs) {
-				if (remain.isEmpty())
-					break;
-
-				if (job.getMaxDemand().greater(job.rsrcQuota)) {
-					Resources unit = Resources.piecewiseMin(new Resources(1.0), remain);
-					job.rsrcQuota.addWith(unit);
-					remain.subtract(unit);
-				} else {
-					runningJobs.remove(job);
-				}
-			}
 		}
 	}
 

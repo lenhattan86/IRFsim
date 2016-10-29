@@ -30,8 +30,12 @@ public class StageDag extends BaseDag implements Cloneable {
 	public Map<String, String> nextHopOnCriticalPath;
 
 	// keep track of ancestors and descendants of tasks per task
-	public Map<Integer, Set<Integer>> ancestorsT, descendantsT, unorderedNeighborsT;
-	public Map<String, Set<String>> ancestorsS, descendantsS, unorderedNeighborsS;
+	public Map<Integer, Set<Integer>> ancestorsT = new HashMap<Integer, Set<Integer>>();
+	public Map<Integer, Set<Integer>>  descendantsT = new HashMap<Integer, Set<Integer>>(); 
+	public Map<Integer, Set<Integer>> unorderedNeighborsT= new HashMap<Integer, Set<Integer>>();
+	public Map<String, Set<String>> ancestorsS = new HashMap<String, Set<String>>();
+	public Map<String, Set<String>> descendantsS = new HashMap<String, Set<String>>();
+	public Map<String, Set<String>> unorderedNeighborsS= new HashMap<String, Set<String>>();
 
 	public Set<String> chokePointsS;
 	public Set<Integer> chokePointsT;
@@ -77,7 +81,10 @@ public class StageDag extends BaseDag implements Cloneable {
 
 		clonedDag.ancestorsT = new HashMap<Integer, Set<Integer>>(dag.ancestorsT);
 		clonedDag.descendantsT = new HashMap<Integer, Set<Integer>>(dag.descendantsT);
-
+		
+		clonedDag.setQueueName(dag.getQueueName());
+		
+		
 		return clonedDag;
 	}
 
@@ -219,7 +226,7 @@ public class StageDag extends BaseDag implements Cloneable {
 	// end print dag //
 
 	// read dags from file //
-	public static Queue<BaseDag> readDags(String filePathString, int bDagId, int numDags) {
+	public static Queue<BaseDag> readDags(String filePathString) {
 
 		Randomness r = new Randomness();
 		Queue<BaseDag> dags = new LinkedList<BaseDag>();
@@ -366,24 +373,20 @@ public class StageDag extends BaseDag implements Cloneable {
 				// dag.serviceCurve.addSlope(slope, duration);
 				// }
 
-				if (ddagId >= bDagId && ddagId - bDagId < numDags) {
-					// dag.scaleDag();
-					dag.setCriticalPaths();
-					dag.setBFSOrder();
-					// add initial runnable tasks => all tasks with no parents
-					for (int taskId : dag.allTasks()) {
-						if (dag.getParents(taskId).isEmpty()) {
-							dag.runnableTasks.add(taskId);
-						}
+				// dag.scaleDag();
+				dag.setCriticalPaths();
+				dag.setBFSOrder();
+				// add initial runnable tasks => all tasks with no parents
+				for (int taskId : dag.allTasks()) {
+					if (dag.getParents(taskId).isEmpty()) {
+						dag.runnableTasks.add(taskId);
 					}
+				}
 //					Output.debugln(DEBUG,"Job: " + dag.dagId + " has " + dag.allTasks().size() + " tasks and "
 //					    + dag.runnableTasks.size() + " runnable tasks");
-					// dag.seedUnorderedNeighbors();
-					dags.add(dag);
-					// Simulator.QUEUE_LIST.addRunnableJob2Queue(dag, dag.getQueueName());
-				}
-				if (ddagId > bDagId + numDags)
-					break;
+				// dag.seedUnorderedNeighbors();
+				dags.add(dag);
+				// Simulator.QUEUE_LIST.addRunnableJob2Queue(dag, dag.getQueueName());
 			}
 			br.close();
 		} catch (Exception e) {

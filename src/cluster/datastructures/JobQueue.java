@@ -269,18 +269,20 @@ public class JobQueue {
 			if (unallocJob == null) {
 				return remain;
 			}
-			
 			//TODO: a job may have a variety of tasks having different resource demands.
 			int taskId = unallocJob.getCommingTaskId();
 			Resources allocRes = unallocJob.rsrcDemands(taskId);
 			if (remain.greaterOrEqual(allocRes)) {
 				boolean assigned = Simulator.cluster.assignTask(unallocJob.dagId, taskId,
 				    unallocJob.duration(taskId), allocRes);
-				Resources realResRemain = Simulator.cluster.getClusterResAvail();
 				if (assigned) {
 //					unallocJob.runningTasks.add(taskId);
 //					unallocJob.runnableTasks.remove(taskId);
 					remain = Resources.subtract(remain, allocRes);
+					
+					if (unallocJob.jobStartRunningTime<0){
+            unallocJob.jobStartRunningTime = Simulator.CURRENT_TIME;
+          }
 					// update userDominantShareArr
 				} else {
 					Output.debugln(DEBUG,"[DRFScheduler] Cannot assign resource to the task" + taskId

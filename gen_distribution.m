@@ -1,7 +1,8 @@
 clear all; close all; clc;
 
-numOfQueues = 32;
-lambda = 20;
+numOfQueues = 1;
+% lambda = 20;
+lambda = 17;
 queueSize = 2000;
 toWrite = zeros(numOfQueues,queueSize);
 for i=1:numOfQueues
@@ -9,4 +10,4 @@ for i=1:numOfQueues
 %    toWrite(i,:) = sort(interTimeArrival);
    toWrite(i,:) = interTimeArrival;
 end
-csvwrite('dist_gen/poissrnd.csv',toWrite);
+csvwrite('bin/poissrnd.csv',toWrite);

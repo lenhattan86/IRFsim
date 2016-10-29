@@ -51,30 +51,20 @@ public class SpeedFairScheduler implements Scheduler {
 		  isAdmitted = false;
 		  if (q.isInteractive){
   			// compute the rsrcQuota based on the guarateed rate.
-//  			Resources rsrcQuota = Resources.piecewiseMin(q.getMinService(Simulator.CURRENT_TIME), q.getMaxDemand());
 		    Resources rate = q.getGuaranteeRate(Simulator.CURRENT_TIME);
 		    Resources rsrcQuota = Resources.piecewiseMin(rate, avaiRes);
-		    
-//		    if (rate.greaterOrEqual(avaiRes)){
-//		      queuesNeedAlloc.add(q);
-//		    }
 		    
 		    if (!rate.smaller(admissionControlRes) 
 		    		&& avaiRes.greaterOrEqual(rsrcQuota)){ // admission control condition.
 		    	//TODO add 2nd admission condition
 		    	isAdmitted = true;
 		    	admissionControlRes.subtract(rate);	
-		    	Resources currentUsage = q.getResourceUsage();
-//    			Resources moreRes = Resources.subtractPositivie(rsrcQuota, currentUsage);
 		    	Resources moreRes = Resources.piecewiseMin(rsrcQuota, avaiRes);
-    			Resources realResRemain = Simulator.cluster.getClusterResAvail();
     			Resources remain = q.assign(moreRes);
-    			realResRemain = Simulator.cluster.getClusterResAvail();
     			// assign the task
     			rsrcQuota = Resources.subtract(rsrcQuota, remain);
     			q.setRsrcQuota(rsrcQuota);
     			speedFairRes = Resources.sum(speedFairRes, rsrcQuota);
-//    			avaiRes = Resources.subtractPositivie(avaiRes, Resources.subtract(moreRes, remain));
     			avaiRes = Resources.subtractPositivie(avaiRes, rsrcQuota);
 //    			Output.debugln(DEBUG, "[SpeedFairScheduler] Step 1: SpeedFair share: " + q.getQueueName() + " " + q.getRsrcQuota());
 		    }
@@ -86,10 +76,7 @@ public class SpeedFairScheduler implements Scheduler {
 		}
 		
 		// use DRF for the remaining resources
-//		onlineDRFShare(flexibleResources, queuesNeedAlloc);
-//		Resources remainingResources = Resources.subtract(clusterTotCapacity, speedFairRes);
 		Resources remainingResources = Resources.clone(avaiRes);
-		Resources realResRemain = Simulator.cluster.getClusterResAvail();
 		if (remainingResources.distinct(Resources.ZEROS))
 		  DRFScheduler.onlineDRFShare(remainingResources, queuesNeedAlloc);
 	}
@@ -219,29 +206,6 @@ public class SpeedFairScheduler implements Scheduler {
 		availRes = Resources.subtract(availRes, q.getRsrcQuota());
 	}
 	
-	private void shareRemainRes(JobQueue q, Resources remain){
-		Queue<BaseDag> runningJobs = q.cloneRunningJobs();
-		while (true) {
-			if (runningJobs.isEmpty() || remain.isEmpty()){
-				break;
-			}
-			Queue<BaseDag> jobs = new LinkedList<BaseDag>(runningJobs);
-			for (BaseDag job: jobs){
-				if (remain.isEmpty())
-					break;
-				
-				if (job.getMaxDemand().greater(job.rsrcQuota)){
-					Resources tmp = Resources.piecewiseMin(new Resources(1.0), remain);
-					job.rsrcQuota.addWith(tmp);
-					remain.subtract(tmp);
-				}
-				else {
-					runningJobs.remove(job);
-				}
-			}
-		}
-	}
-
 	public void computeResShare_prev() {
 		int numJobsRunning = Simulator.runningJobs.size();
 		if (numJobsRunning == 0) {
