@@ -204,7 +204,7 @@ public class GenInput {
           if (!Globals.GEN_JOB_ARRIVAL)
             toWrite = genSingleJobInfo(jobIdx, "batch" + (i), job, job.arrivalTime, 1, Globals.SCALE_BATCH_DURATION);
           else {
-            if(arrivalIdx>arrivalTimes.length)
+            if(arrivalIdx>=arrivalTimes.length)
               arrivalIdx=0;
             toWrite = genSingleJobInfo(jobIdx, "batch" + (i), job, arrivalTimes[arrivalIdx++],
                 Globals.SCALE_UP_BATCH_JOB, Globals.SCALE_BATCH_DURATION);

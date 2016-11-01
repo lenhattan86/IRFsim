@@ -339,7 +339,7 @@ public class Main {
 //     Globals.DEBUG_START = 0.0;
 //     Globals.DEBUG_END = 5.0;
     
-    Globals.WorkLoadType workload = Globals.WorkLoadType.TPC_H;
+    Globals.WorkLoadType workload = Globals.WorkLoadType.TPC_DS;
     
     // Globals.runmode = Runmode.MultipleInteractiveQueueRun;
     Globals.runmode = Runmode.MultipleBatchQueueRun;
