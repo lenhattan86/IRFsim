@@ -334,12 +334,12 @@ public class Main {
   public static void main(String[] args) {
     Globals.BATCH_JOBS_ARRIVAL_POLICY = JobsArrivalPolicy.All;
     Globals.BURSTY_JOBS_ARRIVAL_POLICY = JobsArrivalPolicy.Period;
-     Globals.SIM_END_TIME = 500;
+//     Globals.SIM_END_TIME = 500;
 //     Globals.DEBUG_LOCAL = true;
 //     Globals.DEBUG_START = 0.0;
 //     Globals.DEBUG_END = 5.0;
     
-    Globals.WorkLoadType workload = Globals.WorkLoadType.BB;
+    Globals.WorkLoadType workload = Globals.WorkLoadType.TPC_H;
     
     // Globals.runmode = Runmode.MultipleInteractiveQueueRun;
     Globals.runmode = Runmode.MultipleBatchQueueRun;
@@ -347,10 +347,10 @@ public class Main {
     if (Globals.runmode.equals(Runmode.MultipleBatchQueueRun)) {
       Globals.SetupMode mode = Globals.SetupMode.ShortInteractive;
       
-//      Method[] methods = { Method.DRF, Method.DRFW, Method.Strict, Method.SpeedFair };
-//      int[] batchQueueNums = { 0, 1, 2, 4, 8, 16, 32 };
-       Method[] methods = {Method.DRF, Method.SpeedFair};
-       int[] batchQueueNums = {1};
+      Method[] methods = { Method.DRF, Method.DRFW, Method.Strict, Method.SpeedFair };
+      int[] batchQueueNums = { 1, 2, 4, 8, 16, 32, 64 };
+//       Method[] methods = {Method.DRF, Method.SpeedFair};
+//       int[] batchQueueNums = {1};
       
       Globals.setupParameters(mode, workload, 1);
       
