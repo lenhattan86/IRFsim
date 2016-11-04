@@ -39,7 +39,7 @@ public class Main {
     };
 
     public enum Runmode {
-      SingleRun, MultipleBatchQueueRun, MultipleBurstyQueues, ScaleUpBurstyJobs, BatchQueuesOnly
+      SingleRun, MultipleBatchQueueRun, MultipleBurstyQueues, ScaleUpBurstyJobs, TrialRun
     }
 
     public static boolean USE_TRACE = true;
@@ -47,6 +47,8 @@ public class Main {
     public static final int TASK_ARRIVAL_RANGE = 50;
 
     public static final int BATCH_START_ID = 100000;
+
+    public static final double User2QueueInterval = 200.0;
 
     public static double DEBUG_START = 0;
     public static double DEBUG_END = -1;
@@ -146,7 +148,10 @@ public class Main {
     public static String PathToQueueInputFile;
     public static String PathToOutputFile = "";
     public static String PathToResourceLog = "";
-
+    
+    public static String User1Input = DataFolder + "/" + FileInput;
+    public static String User2Input = DataFolder + "/" + FileInput;
+    
     public static double[] RATES = null;
     public static double[] RATE_DURATIONS = null;
     public static double SpeedFair_WEIGHT = 1.0; // not use anymore
@@ -167,12 +172,14 @@ public class Main {
 
     public static int INTERVAL_JOB_NUM;
 
-    public static int USER1_Q_NUM;
-    public static int USER2_Q_NUM;
+    public static int USER1_MAX_Q_NUM;
+    public static int USER2_MAX_Q_NUM;
+    public static int USER1_START_IDX = 0;
+    public static int USER2_START_IDX = 100000;
 
     public static void setupParameters(SetupMode setup, WorkLoadType workload, int scaleUpBursty) {
       NUM_DIMENSIONS = 2;
-      MACHINE_MAX_RESOURCE = 200;
+      MACHINE_MAX_RESOURCE = 100;
       DRFW_weight = 4.0;
       SpeedFair_WEIGHT = 0.5;
 
@@ -212,7 +219,10 @@ public class Main {
           break;
         default:
           Globals.SCALE_UP_BATCH_JOB = 1;
-          Globals.LARGE_JOB__TASK_NUM_THRESHOLD = 100;
+          Globals.SCALE_UP_BURSTY_JOB = 50;
+          Globals.SCALE_BURSTY_DURATION = 1 / 3.0;
+          Globals.SMALL_JOB_TASK_NUM_THRESHOLD = 80;
+          Globals.LARGE_JOB__TASK_NUM_THRESHOLD = 300;
         }
         break;
       case TPC_DS:
@@ -344,7 +354,7 @@ public class Main {
   
   public static void runDynamicQueueNumber() {
     long tStart = System.currentTimeMillis();
-    String extraName = "u"+Globals.USER1_Q_NUM+"_u"+Globals.USER2_Q_NUM;
+    String extraName = "u"+Globals.USER1_MAX_Q_NUM+"_u"+Globals.USER2_MAX_Q_NUM;
     
     if (Globals.METHOD.equals(Method.DRF)) {
       Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.DRF;
@@ -376,15 +386,15 @@ public class Main {
     
     if (Globals.IS_GEN) {
       Queue<BaseDag> tracedJobs = GenInput.readWorkloadTrace(Globals.WORK_LOAD);
-      GenInput.genInputFromWorkload(Globals.USER1_Q_NUM, Globals.USER2_Q_NUM, Globals.INTERVAL_JOB_NUM, tracedJobs);
+      GenInput.genInputFromWorkload(Globals.USER1_MAX_Q_NUM, Globals.USER2_MAX_Q_NUM, Globals.INTERVAL_JOB_NUM, tracedJobs);
     }
 
     // print ALL parameters for the record
     System.out.println("==============================================");
     System.out.println("Simulation Parameters");
     System.out.println("==============================================");
-    System.out.println("user1's queue num   = " + Globals.USER1_Q_NUM);
-    System.out.println("user2's queue num   = " + Globals.USER2_Q_NUM);
+    System.out.println("user1's queue num   = " + Globals.USER1_MAX_Q_NUM);
+    System.out.println("user2's queue num   = " + Globals.USER2_MAX_Q_NUM);
     System.out.println("Workload            = " + Globals.WORK_LOAD);
     System.out.println("PathToInputFile     = " + Globals.PathToInputFile);
     System.out.println("PathToOutputFile    = " + Globals.PathToOutputFile);
@@ -396,7 +406,7 @@ public class Main {
 
     System.out.println("Start simulation ...");
     System.out.println("Please wait ...");
-    Simulator simulator = new Simulator();
+    Simulator simulator = new Simulator(1);
     simulator.simulateDynamicQueues();
     System.out.println("\nEnd simulation ...");
     long duration = System.currentTimeMillis() - tStart;
@@ -415,8 +425,8 @@ public class Main {
     Globals.WorkLoadType workload = Globals.WorkLoadType.BB;
 
     // Globals.runmode = Runmode.MultipleInteractiveQueueRun;
-    Globals.runmode = Runmode.MultipleBatchQueueRun;
-//    Globals.runmode = Runmode.BatchQueuesOnly;
+//    Globals.runmode = Runmode.MultipleBatchQueueRun;
+    Globals.runmode = Runmode.TrialRun;
 
     if (Globals.runmode.equals(Runmode.MultipleBatchQueueRun)) {
       Globals.SetupMode mode = Globals.SetupMode.ShortInteractive;
@@ -467,21 +477,20 @@ public class Main {
           System.out.println("==================================================================");
         }
       }
-    } else if (Globals.runmode.equals(Runmode.BatchQueuesOnly)) {
-      /* user 1 & user 2
+    } else if (Globals.runmode.equals(Runmode.TrialRun)) {
+      /* user 1 runs streaming jobs
        * user 2 keep changing its number of queues
-       * user 1 only use a single queue or multiple queues.
        */
       Globals.IS_GEN= true;
       Globals.numBurstyQueues = 0;
 //      Globals.DEBUG_LOCAL = true;
 //      Globals.DEBUG_START = 0.0;
 //      Globals.DEBUG_END = 10.0;
-      Globals.SIM_END_TIME = 5000;
-      Globals.USER1_Q_NUM =4;
-      Globals.USER2_Q_NUM =4;
+      Globals.SIM_END_TIME = 50000;
+      Globals.USER1_MAX_Q_NUM = 1;
+      Globals.USER2_MAX_Q_NUM = 10;
       
-      Globals.INTERVAL_JOB_NUM = 5; // a user increase its number running queues after finish jobNumInter jobs
+      Globals.INTERVAL_JOB_NUM = (int)(3*Globals.User2QueueInterval/Globals.PERIODIC_INTERVAL); // a user increase its number running queues after finish jobNumInter jobs
       
       Globals.METHOD = Method.DRF;
       
@@ -500,7 +509,7 @@ public class Main {
       // Globals.METHOD = Method.Strict;
       // Globals.METHOD = Method.DRF;
       Globals.METHOD = Method.SpeedFair;
-      Globals.SIM_END_TIME = 50000;
+      Globals.SIM_END_TIME = 5000000;
       // Globals.MACHINE_MAX_RESOURCE = 100;
       Globals.NUM_MACHINES = 1;
       Globals.numBatchQueues = 4;

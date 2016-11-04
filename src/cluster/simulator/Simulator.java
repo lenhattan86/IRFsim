@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import cluster.cluster.Cluster;
+import cluster.data.RandomNum;
 import cluster.datastructures.BaseDag;
 import cluster.datastructures.JobQueue;
 import cluster.datastructures.JobQueueList;
@@ -67,6 +68,15 @@ public class Simulator {
   public static boolean ADD_MORE = true;
   public static int user1_q_num = 1;
   public static int user2_q_num = 1;
+  
+  public static int USER1_JOB_IDX = 0;
+  public static int USER2_JOB_IDX = 0;
+  private static int[] user2_q_nums = RandomNum.QUEUE_NUM;
+  private static int user2_q_nums_idx = 0;
+  private static int user2_q_nums_STOP = user2_q_nums.length;
+  
+  public static Queue<BaseDag> user2RunableJobs = new LinkedList<BaseDag>();
+  public static Queue<BaseDag> user1RunableJobs = new LinkedList<BaseDag>();
   
   public static boolean IS_STOP = false;
   
@@ -165,7 +175,8 @@ public class Simulator {
     // Initialize output & log files
     Output.write("", false, Globals.PathToResourceLog);
   }
-
+  
+  
   public void simulateMultiQueues() {
     Simulator.CURRENT_TIME = 0;
     while (true) {
@@ -224,67 +235,12 @@ public class Simulator {
     System.out.println("\n==== END STEP_TIME:" + Simulator.CURRENT_TIME + " ====\n");
   }
   
-  public void simulateDynamicQueues() {
-    Simulator.CURRENT_TIME = 0;
-    while (true) {
-      // for (Simulator.CURRENT_TIME = 0; Simulator.CURRENT_TIME <=
-      // Globals.SIM_END_TIME; Simulator.CURRENT_TIME += Globals.STEP_TIME) {
-
-      if (Simulator.CURRENT_TIME >= Globals.DEBUG_START && Simulator.CURRENT_TIME <= Globals.DEBUG_END) {
-        DEBUG = true;
-      } else
-        DEBUG = false;
-
-      Output.debugln(DEBUG, "\n==== STEP_TIME:" + Simulator.CURRENT_TIME + " ====\n");
-
-      Simulator.CURRENT_TIME = Utils.round(Simulator.CURRENT_TIME, 2);
-      tasksToStartNow.clear();
-
-      // terminate any task if it can finish and update cluster available
-      // resources; converting waiting tasks to runnable tasks
-      Map<Integer, List<Integer>> finishedTasks = cluster.finishTasks();
-
-      // update jobs status with newly finished tasks
-      boolean jobCompleted = updateJobsStatusDynamicQueues(finishedTasks);
-
-      // handle jobs completion and arrivals
-      boolean newJobArrivals = handleNewJobArrival4DynamicQueues();
-
-      // STOP condition
-      if (isStop()) {
-        printReport();
-        writeReport();
-        // EXIT the loop
-        break;
-      }
-
-      QUEUE_LIST.updateRunningQueues();
-
-      // if(false)
-      if (!jobCompleted && !newJobArrivals && finishedTasks.isEmpty() && Globals.ENABLE_PREEMPTION)
-        Output.debugln(DEBUG, "----- Do nothing ----");
-      else {
-        Output.debugln(DEBUG,
-            "[Simulator]: START work conserving; clusterAvail:" + Simulator.cluster.getClusterResAvail());
-        queueSched.schedule();
-        Output.debugln(DEBUG,
-            "[Simulator]: END work conserving; clusterAvail:" + Simulator.cluster.getClusterResAvail());
-      }
-
-      for (BaseDag dag : Simulator.runningJobs) {
-        dag.receivedService.addUsage(dag.getRsrcInUse());
-      }
-
-      Simulator.printUsedResources();
-      Simulator.writeResourceUsage();
-      Simulator.CURRENT_TIME += Globals.STEP_TIME;
-    }
-    System.out.println("\n==== END STEP_TIME:" + Simulator.CURRENT_TIME + " ====\n");
-  }
+ 
 
   private boolean isStop() {
     if (Simulator.CURRENT_TIME >= Globals.SIM_END_TIME)
       return true;
+//    return false;
     return IS_STOP;
   }
 
@@ -402,50 +358,7 @@ public class Simulator {
                             // finished.
   }
   
-  boolean updateJobsStatusDynamicQueues(Map<Integer, List<Integer>> finishedTasks) {
-    boolean someDagFinished = false;
-    if (!finishedTasks.isEmpty()) {
-      Iterator<BaseDag> iter = runningJobs.iterator();
-      while (iter.hasNext()) {
-        BaseDag crdag = iter.next();
-        if (finishedTasks.get(crdag.dagId) == null) {
-          continue;
-        }
-
-        Output.debugln(DEBUG, "DAG:" + crdag.dagId + ": " + finishedTasks.get(crdag.dagId).size()
-            + " tasks finished at time:" + Simulator.CURRENT_TIME);
-        boolean thisDagFinished = ((StageDag) crdag).finishTasks(finishedTasks.get(crdag.dagId), false);
-
-        if (thisDagFinished) {
-          Output.debugln(DEBUG, "DAG:" + crdag.dagId + " finished at time:" + Simulator.CURRENT_TIME);
-          runningBatchJobs.remove(crdag);
-          completedJobs.add(crdag);
-
-          QUEUE_LIST.addCompletionJob2Queue(crdag, crdag.getQueueName());
-
-          iter.remove();
-          someDagFinished = true;
-          
-          if (crdag.getQueueName().equals("user1_0")) {
-            completedJobCnt++;
-            if (completedJobCnt==Globals.INTERVAL_JOB_NUM){
-              ADD_MORE = true;
-              System.out.println("ADD MORE at " + Simulator.CURRENT_TIME);
-              completedJobCnt = 0;
-              user1_q_num = Math.min(++user1_q_num, Globals.USER1_Q_NUM);
-              user2_q_num = Math.min(++user2_q_num, Globals.USER2_Q_NUM);
-            }
-          }
-          
-          if (user2_q_num==Globals.USER2_Q_NUM && runningJobs.isEmpty()){
-            IS_STOP = true;
-          }
-        }
-      }
-    }
-    return someDagFinished; // return true if one of the running jobs are
-                            // finished.
-  }
+  
 
   boolean handleNewJobArrival4MultiQueues() {
     // flag which specifies if jobs have inter-arrival times or starts at t=0
@@ -544,75 +457,7 @@ public class Simulator {
     return true;
   }
   
-  boolean handleNewJobArrival4DynamicQueues() {
-    // flag which specifies if jobs have inter-arrival times or starts at t=0
-    Output.debugln(DEBUG,
-        "handleNewJobArrival; currentTime:" + Simulator.CURRENT_TIME + " nextTime:" + nextTimeToLaunchJob);
-
-    if (runnableJobs.isEmpty()) {
-      return false;
-    }
-
-    if (Globals.JOBS_ARRIVAL_POLICY == JobsArrivalPolicy.JobPeriod) {
-      
-      if (ADD_MORE){
-        Set<BaseDag> newlyStartedJobs = new HashSet<BaseDag>();
-        // add jobs for user1
-        for (int i=0; i<user1_q_num; i++) {
-          int jobCount = 0;
-          for (BaseDag newJob : runnableJobs) {
-            String queueName="user1_"+i;
-            if (newJob.getQueueName().equals(queueName)) {
-              newlyStartedJobs.add(newJob);
-              Simulator.QUEUE_LIST.addRunningJob2Queue(newJob, newJob.getQueueName());
-              newJob.jobStartTime = Simulator.CURRENT_TIME;
-              jobCount++;
-              if(jobCount==Globals.INTERVAL_JOB_NUM)
-                break;
-            }
-          }
-        }
-        // add jobs for user2
-        for (int i=0; i<user2_q_num; i++) {
-          int jobCount = 0;
-          for (BaseDag newJob : runnableJobs) {
-            String queueName="user2_"+i;
-            if (newJob.getQueueName().equals(queueName)) {
-              newlyStartedJobs.add(newJob);
-              Simulator.QUEUE_LIST.addRunningJob2Queue(newJob, newJob.getQueueName());
-              newJob.jobStartTime = Simulator.CURRENT_TIME;
-              jobCount++;
-              if(jobCount==Globals.INTERVAL_JOB_NUM)
-                break;
-            }
-          }
-        }
-        
-        runnableJobs.removeAll(newlyStartedJobs);
-        runningJobs.addAll(newlyStartedJobs);
-        ADD_MORE = false;
-      }
-    } else if (Globals.JOBS_ARRIVAL_POLICY == JobsArrivalPolicy.Trace) {
-      Set<BaseDag> newlyStartedJobs = new HashSet<BaseDag>();
-      for (BaseDag dag : runnableJobs) {
-        if (dag.arrivalTime == Simulator.CURRENT_TIME) {
-          dag.jobStartTime = Simulator.CURRENT_TIME;
-          // dag.jobStartRunningTime = dag.jobStartTime;
-          newlyStartedJobs.add(dag);
-          Simulator.QUEUE_LIST.addRunningJob2Queue(dag, dag.getQueueName());
-          Output.debugln(DEBUG, "Started job:" + dag.dagId + " at time:" + Simulator.CURRENT_TIME);
-        }
-      }
-      // clear the datastructures
-      runnableJobs.removeAll(newlyStartedJobs);
-      runningJobs.addAll(newlyStartedJobs);
-      runningBatchJobs.addAll(newlyStartedJobs);
-    } else {
-      System.err.println("JOBS_ARRIVAL_POLICY: " + Globals.JOBS_ARRIVAL_POLICY);
-    }
-
-    return true;
-  }
+  
 
   boolean handleNewJobCompleted() {
     int currCompletedJobs = completedJobs.size();
@@ -630,6 +475,210 @@ public class Simulator {
       }
     }
     return null;
+  }
+  
+  public Simulator(int version) {
+    QUEUE_LIST = new JobQueueList();
+
+    QUEUE_LIST.readQueue(Globals.PathToQueueInputFile);
+
+    QUEUE_LIST.printQueueInfo();
+    
+    Queue<BaseDag> runnableJobs = StageDag.readDags(Globals.PathToInputFile);
+    for (BaseDag job: runnableJobs){
+      if (job.getQueueName().startsWith("user1_")){
+        user1RunableJobs.add(job);
+        USER1_JOB_IDX = Globals.USER1_START_IDX + user1RunableJobs.size();
+      } else {
+        user2RunableJobs.add(job);
+        USER2_JOB_IDX = Globals.USER2_START_IDX + user2RunableJobs.size();
+      }
+    }
+
+    Output.debugln(DEBUG, "Print DAGs");
+
+    cluster = new Cluster(true, new Resources(Globals.MACHINE_MAX_RESOURCE));
+
+    totalReplayedJobs = user2RunableJobs.size()+user1RunableJobs.size();
+    runningJobs = new LinkedList<BaseDag>();
+    completedJobs = new LinkedList<BaseDag>();
+
+    queueSched = new QueueScheduler();
+
+    leftOverResAllocator = new LeftOverResAllocator();
+
+    tasksToStartNow = new TreeMap<Integer, Set<Integer>>();
+
+    r = new Randomness();
+
+    // Initialize output & log files
+    Output.write("", false, Globals.PathToResourceLog);
+  }
+
+  public void simulateDynamicQueues() {
+    Simulator.CURRENT_TIME = 0;
+    while (true) {
+      // for (Simulator.CURRENT_TIME = 0; Simulator.CURRENT_TIME <=
+      // Globals.SIM_END_TIME; Simulator.CURRENT_TIME += Globals.STEP_TIME) {
+
+      if (Simulator.CURRENT_TIME >= Globals.DEBUG_START && Simulator.CURRENT_TIME <= Globals.DEBUG_END) {
+        DEBUG = true;
+      } else
+        DEBUG = false;
+
+      Output.debugln(DEBUG, "\n==== STEP_TIME:" + Simulator.CURRENT_TIME + " ====\n");
+
+      Simulator.CURRENT_TIME = Utils.round(Simulator.CURRENT_TIME, 2);
+      tasksToStartNow.clear();
+
+      // terminate any task if it can finish and update cluster available
+      // resources; converting waiting tasks to runnable tasks
+      Map<Integer, List<Integer>> finishedTasks = cluster.finishTasks();
+
+      // update jobs status with newly finished tasks
+      boolean jobCompleted = updateJobsStatusDynamicQueues(finishedTasks);
+
+      // handle jobs completion and arrivals
+      boolean newJobArrivals = handleNewJobArrival4DynamicQueues();
+
+      // STOP condition
+      if (isStop()) {
+        printReport();
+        writeReport();
+        // EXIT the loop
+        break;
+      }
+
+      QUEUE_LIST.updateRunningQueues();
+
+      // if(false)
+      if (!jobCompleted && !newJobArrivals && finishedTasks.isEmpty() && Globals.ENABLE_PREEMPTION)
+        Output.debugln(DEBUG, "----- Do nothing ----");
+      else {
+        Output.debugln(DEBUG,
+            "[Simulator]: START work conserving; clusterAvail:" + Simulator.cluster.getClusterResAvail());
+        queueSched.schedule();
+        Output.debugln(DEBUG,
+            "[Simulator]: END work conserving; clusterAvail:" + Simulator.cluster.getClusterResAvail());
+      }
+
+      for (BaseDag dag : Simulator.runningJobs) {
+        dag.receivedService.addUsage(dag.getRsrcInUse());
+      }
+
+      Simulator.printUsedResources();
+      Simulator.writeResourceUsage();
+      Simulator.CURRENT_TIME += Globals.STEP_TIME;
+    }
+    System.out.println("\n==== END STEP_TIME:" + Simulator.CURRENT_TIME + " ====\n");
+  }
+  
+  boolean updateJobsStatusDynamicQueues(Map<Integer, List<Integer>> finishedTasks) {
+    boolean someDagFinished = false;
+    if (!finishedTasks.isEmpty()) {
+      Iterator<BaseDag> iter = runningJobs.iterator();
+      while (iter.hasNext()) {
+        BaseDag crdag = iter.next();
+        if (finishedTasks.get(crdag.dagId) == null) {
+          continue;
+        }
+
+        Output.debugln(DEBUG, "DAG:" + crdag.dagId + ": " + finishedTasks.get(crdag.dagId).size()
+            + " tasks finished at time:" + Simulator.CURRENT_TIME);
+        boolean thisDagFinished = ((StageDag) crdag).finishTasks(finishedTasks.get(crdag.dagId), false);
+
+        if (thisDagFinished) {
+          Output.debugln(DEBUG, "DAG:" + crdag.dagId + " finished at time:" + Simulator.CURRENT_TIME);
+          runningBatchJobs.remove(crdag);
+          completedJobs.add(crdag);
+
+          QUEUE_LIST.addCompletionJob2Queue(crdag, crdag.getQueueName());
+
+          iter.remove();
+          someDagFinished = true;
+          
+          if (user2_q_nums_idx==user2_q_nums_STOP && runningJobs.isEmpty()){
+            IS_STOP = true;
+          }
+        }
+      }
+    }
+    return someDagFinished; // return true if one of the running jobs are
+                            // finished.
+  }
+  
+  boolean handleNewJobArrival4DynamicQueues() {
+    // flag which specifies if jobs have inter-arrival times or starts at t=0
+    Output.debugln(DEBUG,
+        "handleNewJobArrival; currentTime:" + Simulator.CURRENT_TIME + " nextTime:" + nextTimeToLaunchJob);
+    
+    if (user2RunableJobs.isEmpty() && user1RunableJobs.isEmpty())
+      return true;
+
+    if (Globals.JOBS_ARRIVAL_POLICY == JobsArrivalPolicy.JobPeriod) {
+      
+      if (Simulator.CURRENT_TIME % Globals.User2QueueInterval == 0 && user2_q_nums_idx<user2_q_nums_STOP){
+        
+        // add jobs for user2
+        for (int i=0; i<user2_q_nums[user2_q_nums_idx]; i++) {
+          Set<BaseDag> newlyStartedJobs = new HashSet<BaseDag>();
+          int jobCount = 0;
+          for (BaseDag newJob : user2RunableJobs) {
+            String queueName="user2_"+i;
+            newlyStartedJobs.add(newJob);
+            newJob.setQueueName(queueName);
+            Simulator.QUEUE_LIST.addRunningJob2Queue(newJob, newJob.getQueueName());
+            newJob.jobStartTime = Simulator.CURRENT_TIME;
+            jobCount++;
+            if(jobCount==Globals.INTERVAL_JOB_NUM)
+              break;
+          }
+          user2RunableJobs.removeAll(newlyStartedJobs);
+          runningJobs.addAll(newlyStartedJobs);
+          for (BaseDag newJob:newlyStartedJobs){
+            BaseDag recycleJob = StageDag.clone((StageDag)newJob);
+            USER2_JOB_IDX++;
+            recycleJob.dagId = USER2_JOB_IDX;
+            user2RunableJobs.add(recycleJob);
+          }
+        }
+        user2_q_nums_idx++;
+      }
+      
+      if (Simulator.CURRENT_TIME % Globals.PERIODIC_INTERVAL==0) {
+        // add jobs for user1
+        String queueName="user1_"+0;
+        BaseDag newJob = user1RunableJobs.poll();
+        assert newJob != null;
+        newJob.setQueueName(queueName);
+        Simulator.QUEUE_LIST.addRunningJob2Queue(newJob, newJob.getQueueName());
+        runningJobs.add(newJob);
+        USER1_JOB_IDX++;
+        BaseDag recycleJob = StageDag.clone((StageDag)newJob);
+        recycleJob.dagId = USER1_JOB_IDX;
+        user1RunableJobs.add(recycleJob);
+      }
+      
+    } else if (Globals.JOBS_ARRIVAL_POLICY == JobsArrivalPolicy.Trace) {
+      Set<BaseDag> newlyStartedJobs = new HashSet<BaseDag>();
+      for (BaseDag dag : user2RunableJobs) {
+        if (dag.arrivalTime == Simulator.CURRENT_TIME) {
+          dag.jobStartTime = Simulator.CURRENT_TIME;
+          // dag.jobStartRunningTime = dag.jobStartTime;
+          newlyStartedJobs.add(dag);
+          Simulator.QUEUE_LIST.addRunningJob2Queue(dag, dag.getQueueName());
+          Output.debugln(DEBUG, "Started job:" + dag.dagId + " at time:" + Simulator.CURRENT_TIME);
+        }
+      }
+      // clear the datastructures
+      user2RunableJobs.removeAll(newlyStartedJobs);
+      runningJobs.addAll(newlyStartedJobs);
+      runningBatchJobs.addAll(newlyStartedJobs);
+    } else {
+      System.err.println("JOBS_ARRIVAL_POLICY: " + Globals.JOBS_ARRIVAL_POLICY);
+    }
+
+    return true;
   }
 
 }

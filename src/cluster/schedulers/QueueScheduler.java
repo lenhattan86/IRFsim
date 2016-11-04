@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
+import cluster.cluster.Cluster;
 import cluster.datastructures.BaseDag;
 import cluster.datastructures.JobQueue;
 import cluster.datastructures.Resources;
@@ -22,11 +23,11 @@ import cluster.simulator.Main.Globals;
 
 public class QueueScheduler {
 	private final static boolean DEBUG = true;
-
+	
 	public Scheduler scheduler;
-
+	
 	public QueueScheduler() {
-
+	  
 		switch (Globals.QUEUE_SCHEDULER) {
 		case Fair:
 			scheduler = new FairScheduler();

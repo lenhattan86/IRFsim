@@ -195,40 +195,44 @@ public class GenInput {
     
     int jobSetNum = Math.max(user1QueueNum, user2QueueNum);
     String file = Globals.PathToInputFile;
+    
     Output.write("", false, file);
-    Queue<BaseDag> longJobs = getJobs(jobs, Globals.LARGE_JOB_MAX_DURATION, Globals.LARGE_JOB__TASK_NUM_THRESHOLD, false);
-    int maxJobNum = jobSetNum*intervalJobNum;
+    Queue<BaseDag> user1Jobs = getJobs(jobs, Globals.SMALL_JOB_DUR_THRESHOLD, Globals.SMALL_JOB_TASK_NUM_THRESHOLD, true);
+    StageDag job1 = (StageDag) user1Jobs.poll();
     int arrivalIdx = 0;
-    int jobId = 0;
+    int jobId = Globals.USER1_START_IDX;
     for (int i = 0; i < user1QueueNum; i++) {
-      int jobNum = (jobSetNum-i)*intervalJobNum;
+      int jobNum = user1QueueNum*intervalJobNum;
       for (int j = 0; j < jobNum; j++) {
-        Iterator<BaseDag> jobIter1 = longJobs.iterator();
-        if (jobIter1.hasNext()) {
-          StageDag job = (StageDag) jobIter1.next();
+//        Iterator<BaseDag> jobIter1 = user1Jobs.iterator();
+//        if (jobIter1.hasNext()) {
+//          StageDag job = (StageDag) jobIter1.next();
           
-          String toWrite = genSingleJobInfo(jobId++, "user1_" + (i), job, arrivalTimes[arrivalIdx++],
-              Globals.SCALE_UP_BATCH_JOB, Globals.SCALE_BATCH_DURATION);
+          String toWrite = genSingleJobInfo(jobId++, "user1_" + (i), job1, arrivalTimes[arrivalIdx++],
+              Globals.SCALE_UP_BURSTY_JOB, Globals.SCALE_BURSTY_DURATION);
           Output.writeln(toWrite, true, file);
-        } else {
-          System.err.println("[GenInput] lack of the number of jobs for user_1 at " + longJobs.size());
-          jobIter1 = longJobs.iterator();
-        }
+//        } else {
+//          System.err.println("[GenInput] lack of the number of jobs for user_1 at " + user1Jobs.size());
+//          jobIter1 = user1Jobs.iterator();
+//        }
       }
     }
+    
+    jobId = Globals.USER2_START_IDX;
+    Queue<BaseDag> usre2Jobs = getJobs(jobs, Globals.LARGE_JOB_MAX_DURATION, Globals.LARGE_JOB__TASK_NUM_THRESHOLD, false);
     arrivalIdx = 0;
     for (int i = 0; i < user2QueueNum; i++) {
-      int jobNum = (jobSetNum-i)*intervalJobNum;
+      int jobNum = user2QueueNum*intervalJobNum;
       for (int j = 0; j < jobNum; j++) {
-        Iterator<BaseDag> jobIter2 = longJobs.iterator();
+        Iterator<BaseDag> jobIter2 = usre2Jobs.iterator();
         if (jobIter2.hasNext()) {
-          StageDag job = (StageDag) jobIter2.next();
-          String toWrite = genSingleJobInfo(jobId++, "user2_" + (i), job, arrivalTimes[arrivalIdx++],
+          StageDag job2 = (StageDag) jobIter2.next();
+          String toWrite = genSingleJobInfo(jobId++, "user2_" + (i), job2, arrivalTimes[arrivalIdx++],
               Globals.SCALE_UP_BATCH_JOB, Globals.SCALE_BATCH_DURATION);
           Output.writeln(toWrite, true, file);
         } else {
-          System.err.println("[GenInput] lack of the number of jobs for user_2 at " + longJobs.size());
-          jobIter2 = longJobs.iterator();
+          System.err.println("[GenInput] lack of the number of jobs for user_2 at " + usre2Jobs.size());
+          jobIter2 = usre2Jobs.iterator();
         }
       }
     }

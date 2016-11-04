@@ -13,18 +13,21 @@ multi_queue_files = {'DRF-output_u1_u1.csv';
                      'DRF-output_u3_u3.csv'};
 
 %%
-result_folder = '';
+% result_folder = '';
+% result_folder = '/home/tanle/projects/0_dynamic_q/';
+result_folder = '/home/tanle/projects/0_dynamic_q2/';
 workload='BB';
 user1_q_num = 1;
-user2_q_num = 4;
+user2_q_num = 10;
 num_queues = user1_q_num + user2_q_num;
-START_TIME = 0; END_TIME = 3500;
+START_TIME = 0; END_TIME = 4000;
 STEP_TIME = 1.0;
 is_printed = true;
 
 
 %%
 output_folder = [result_folder 'output/'];
+output_file = ['DRF-outputu1_u10.csv'];
 
 figIdx = 0;
 
@@ -34,7 +37,7 @@ figIdx = 0;
 % batchJobRange = [1:10]
 
 queues_len = length(queues);
-plots  = [false];
+plots  = [false true true];
 improvements = zeros(queues_len, 4);
 user1_queue = 'user1_';
 user2_queue = 'user2_';
@@ -58,7 +61,7 @@ if plots(1)
     set (gcf, 'Units', 'Inches', 'Position', figSize, 'PaperUnits', 'inches', 'PaperPosition', figSize);
     xlabel(xLabel,'FontSize',fontAxis);
     ylabel(yLabel,'FontSize',fontAxis);
-    set(gca,'XTickLabel',xLabels,'FontSize',fontAxis);
+    set(gca,'XTickLabel',xLabels ,'FontSize',fontAxis);
    
    if is_printed
        figIdx=figIdx +1;
@@ -68,7 +71,30 @@ if plots(1)
    end
 end
 %%
-plots = [true]; %DRF, DRF-W, Strict, SpeedFair
+user1_queue = 'user1_';
+if plots(2) 
+   [ user1_compl_time ]  = queue_compl_time( output_folder, output_file, user1_queue);   
+   figure;
+   
+   bar(user1_compl_time,0.5)
+   %title('Average completion time of interactive jobs','fontsize',fontLegend);
+    xLabel='Job id';
+    yLabel='completion time (seconds)';       
+    
+    figSize = [0.0 0 5.0 3.0];
+    set (gcf, 'Units', 'Inches', 'Position', figSize, 'PaperUnits', 'inches', 'PaperPosition', figSize);
+    xlabel(xLabel,'FontSize',fontAxis);
+    ylabel(yLabel,'FontSize',fontAxis);
+    set(gca,'FontSize',fontAxis);
+   
+   if is_printed
+       figIdx=figIdx +1;
+      fileNames{figIdx} = 'user_1_compl_time';
+      epsFile = [ LOCAL_FIG fileNames{figIdx} '.eps'];
+        print ('-depsc', epsFile);
+   end
+end
+%%
 logfolder = [result_folder 'log/'];
 
 start_time_step = START_TIME/STEP_TIME;
@@ -94,7 +120,7 @@ end
 % else
    extraStr = ['u' int2str(user1_q_num) '_' 'u' int2str(user2_q_num)];
    
-if plots(1)   
+if plots(3)   
    logFile = [ logfolder 'DRF-output' extraStr '.csv'];
    [queueNames, res1, res2, flag] = import_res_usage(logFile);
    
