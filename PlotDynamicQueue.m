@@ -2,20 +2,18 @@ addpath('matlab_func');
 common_settings;
 
 fig_path = '/home/tanle/Dropbox/proposals/QueueScheduler/fig/';
+% fig_path = 'figs/';
 
-queues = {1,2,4,8,16,32};
-single_queue_files = {'DRF-output_u1_u1.csv';
-                      'DRF-output_u1_u2.csv';
-                      'DRF-output_u1_u3.csv'};
-                  
-multi_queue_files = {'DRF-output_u1_u1.csv';
-                     'DRF-output_u2_u2.csv';
-                     'DRF-output_u3_u3.csv'};
 
 %%
 % result_folder = '';
-% result_folder = '/home/tanle/projects/0_dynamic_q/';
-result_folder = '/home/tanle/projects/0_dynamic_q2/';
+result_folder = '/home/tanle/projects/0_dynamic_q/';
+% result_folder = '/home/tanle/projects/0_dynamic_q2/';
+% extraName='_perfect';
+% extraName='_wrong';
+extraName='_static';
+% extraName='_good';
+
 workload='BB';
 user1_q_num = 1;
 user2_q_num = 10;
@@ -27,7 +25,7 @@ is_printed = true;
 
 %%
 output_folder = [result_folder 'output/'];
-output_file = ['DRF-outputu1_u10.csv'];
+output_file = ['DRF_outputu1_u10' extraName '.csv'];
 
 figIdx = 0;
 
@@ -36,9 +34,7 @@ figIdx = 0;
 % global batchJobRange
 % batchJobRange = [1:10]
 
-queues_len = length(queues);
 plots  = [false true true];
-improvements = zeros(queues_len, 4);
 user1_queue = 'user1_';
 user2_queue = 'user2_';
 if plots(1) 
@@ -50,6 +46,7 @@ if plots(1)
    figure;
    scrsz = get(groot,'ScreenSize');   
    bar(interactive_time', 'group');
+   
    %title('Average completion time of interactive jobs','fontsize',fontLegend);
    xLabel='number of batch queues';
     yLabel='time (seconds)';
@@ -65,7 +62,7 @@ if plots(1)
    
    if is_printed
        figIdx=figIdx +1;
-      fileNames{figIdx} = 'interactive_compl_time';
+      fileNames{figIdx} = ['interactive_compl_time' extraName];
       epsFile = [ LOCAL_FIG fileNames{figIdx} '.eps'];
         print ('-depsc', epsFile);
    end
@@ -73,23 +70,24 @@ end
 %%
 user1_queue = 'user1_';
 if plots(2) 
-   [ user1_compl_time ]  = queue_compl_time( output_folder, output_file, user1_queue);   
+   [ user1_compl_time ]  = queue_compl_time( output_folder, output_file, user1_queue);
    figure;
    
    bar(user1_compl_time,0.5)
+   ylim([0 70]);
    %title('Average completion time of interactive jobs','fontsize',fontLegend);
-    xLabel='Job id';
-    yLabel='completion time (seconds)';       
+   xLabel='Job id';
+   yLabel='completion time (seconds)';       
     
-    figSize = [0.0 0 5.0 3.0];
-    set (gcf, 'Units', 'Inches', 'Position', figSize, 'PaperUnits', 'inches', 'PaperPosition', figSize);
-    xlabel(xLabel,'FontSize',fontAxis);
-    ylabel(yLabel,'FontSize',fontAxis);
-    set(gca,'FontSize',fontAxis);
+   figSize = [0.0 0 5.0 3.0];
+   set (gcf, 'Units', 'Inches', 'Position', figSize, 'PaperUnits', 'inches', 'PaperPosition', figSize);
+   xlabel(xLabel,'FontSize',fontAxis);
+   ylabel(yLabel,'FontSize',fontAxis);
+   set(gca,'FontSize',fontAxis);
    
    if is_printed
        figIdx=figIdx +1;
-      fileNames{figIdx} = 'user_1_compl_time';
+      fileNames{figIdx} = ['user_1_compl_time' extraName];
       epsFile = [ LOCAL_FIG fileNames{figIdx} '.eps'];
         print ('-depsc', epsFile);
    end
@@ -121,7 +119,7 @@ end
    extraStr = ['u' int2str(user1_q_num) '_' 'u' int2str(user2_q_num)];
    
 if plots(3)   
-   logFile = [ logfolder 'DRF-output' extraStr '.csv'];
+   logFile = [ logfolder 'DRF_output' extraStr extraName '.csv'];
    [queueNames, res1, res2, flag] = import_res_usage(logFile);
    
    if (flag)
@@ -165,16 +163,16 @@ if plots(3)
       set (gcf, 'Units', 'Inches', 'Position', figSize, 'PaperUnits', 'inches', 'PaperPosition', figSize);
       if is_printed         
           figIdx=figIdx +1;
-            fileNames{figIdx} = [extraStr '_res_usage_drf'];         
-            epsFile = [ LOCAL_FIG fileNames{figIdx} '.eps'];
-            print ('-depsc', epsFile);
+        fileNames{figIdx} = ['res_usage_drf'  extraName];         
+        epsFile = [ LOCAL_FIG fileNames{figIdx} '.eps'];
+        print ('-depsc', epsFile);
       end
    end
 end
 
 return;
 %%
-
+close all;
 for i=1:length(fileNames)
     fileName = fileNames{i};
     epsFile = [ LOCAL_FIG fileName '.eps'];
