@@ -219,7 +219,7 @@ public class GenInput {
     }
     
     jobId = Globals.USER2_START_IDX;
-    Queue<BaseDag> usre2Jobs = getJobs(jobs, Globals.LARGE_JOB_MAX_DURATION, Globals.LARGE_JOB__TASK_NUM_THRESHOLD, false);
+    Queue<BaseDag> usre2Jobs = getJobs(jobs, Globals.LARGE_JOB_MAX_DURATION, Globals.LARGE_JOB_TASK_NUM_THRESHOLD, false);
     arrivalIdx = 0;
     for (int i = 0; i < user2QueueNum; i++) {
       int jobNum = user2QueueNum*intervalJobNum;
@@ -262,7 +262,7 @@ public class GenInput {
       }
     }
     // TODO: load the distribution for time arrivals.
-    Queue<BaseDag> longJobs = getJobs(jobs, Globals.LARGE_JOB_MAX_DURATION, Globals.LARGE_JOB__TASK_NUM_THRESHOLD, false);
+    Queue<BaseDag> longJobs = getJobs(jobs, Globals.LARGE_JOB_MAX_DURATION, Globals.LARGE_JOB_TASK_NUM_THRESHOLD, false);
     Iterator<BaseDag> jobIter2 = longJobs.iterator();
     int batchStartId = Globals.BATCH_START_ID;
     int[] arrivalTimes = readRandomProcess(Globals.DIST_FILE);

@@ -131,6 +131,7 @@ public class Main {
     public static int MAX_NUM_TASKS_DAG = 10000;
 
     public static boolean TETRIS_UNIVERSAL = false;
+    
     /**
      * these variables control the sensitivity of the simulator to various
      * factors
@@ -172,7 +173,7 @@ public class Main {
 
     public static boolean ENABLE_PREEMPTION = false;
 
-    public static int LARGE_JOB__TASK_NUM_THRESHOLD = 100;
+    public static int LARGE_JOB_TASK_NUM_THRESHOLD = 100;
 
     public static double SCALE_BURSTY_DURATION = 1.0;
     public static double SCALE_BATCH_DURATION = 1.0;
@@ -209,7 +210,7 @@ public class Main {
           Globals.numBurstyJobPerQueue = 25;
           Globals.SMALL_JOB_DUR_THRESHOLD = 30.0;
           Globals.SMALL_JOB_TASK_NUM_THRESHOLD = 80;
-          Globals.LARGE_JOB__TASK_NUM_THRESHOLD = 300;
+          Globals.LARGE_JOB_TASK_NUM_THRESHOLD = 300;
           Globals.SCALE_UP_BURSTY_JOB = 50;
           Globals.SCALE_BURSTY_DURATION = 1 / 2.0;
           Globals.SCALE_UP_BATCH_JOB = 1;
@@ -219,7 +220,7 @@ public class Main {
           Globals.numBurstyJobPerQueue = 25; // the larger
           Globals.SMALL_JOB_DUR_THRESHOLD = 30.0;
           Globals.SMALL_JOB_TASK_NUM_THRESHOLD = 80;
-          Globals.LARGE_JOB__TASK_NUM_THRESHOLD = 300;
+          Globals.LARGE_JOB_TASK_NUM_THRESHOLD = 300;
           Globals.SCALE_UP_BURSTY_JOB = 50 * scaleUpBursty;
           Globals.SCALE_BURSTY_DURATION = 1 / 2.0;
           Globals.SCALE_UP_BATCH_JOB = 1;
@@ -229,7 +230,7 @@ public class Main {
           Globals.SCALE_UP_BURSTY_JOB = 50;
           Globals.SCALE_BURSTY_DURATION = 1 / 3.0;
           Globals.SMALL_JOB_TASK_NUM_THRESHOLD = 80;
-          Globals.LARGE_JOB__TASK_NUM_THRESHOLD = 300;
+          Globals.LARGE_JOB_TASK_NUM_THRESHOLD = 300;
         }
         break;
       case TPC_DS:
@@ -240,7 +241,7 @@ public class Main {
           Globals.SCALE_UP_BURSTY_JOB = 50;
           Globals.SMALL_JOB_DUR_THRESHOLD = 30.0;
           Globals.SMALL_JOB_TASK_NUM_THRESHOLD = 50;
-          Globals.LARGE_JOB__TASK_NUM_THRESHOLD = 150;
+          Globals.LARGE_JOB_TASK_NUM_THRESHOLD = 150;
           Globals.SCALE_BURSTY_DURATION = 1 / 2.0;
           Globals.SCALE_BATCH_DURATION = 1 / 1.0;
           Globals.SCALE_UP_BATCH_JOB = 3;
@@ -248,7 +249,7 @@ public class Main {
           break;
         default:
           Globals.SCALE_UP_BATCH_JOB = 3;
-          Globals.LARGE_JOB__TASK_NUM_THRESHOLD = 150;
+          Globals.LARGE_JOB_TASK_NUM_THRESHOLD = 150;
         }
         break;
       case TPC_H:
@@ -259,13 +260,13 @@ public class Main {
           Globals.SCALE_UP_BURSTY_JOB = 5; // ??
           Globals.SMALL_JOB_DUR_THRESHOLD = 30.0;
           Globals.SMALL_JOB_TASK_NUM_THRESHOLD = 250;
-          Globals.LARGE_JOB__TASK_NUM_THRESHOLD = 300;
+          Globals.LARGE_JOB_TASK_NUM_THRESHOLD = 300;
           Globals.SCALE_BURSTY_DURATION = 1 / 2.0;
           Globals.PERIODIC_INTERVAL = 100;
           break;
         default:
           Globals.SCALE_UP_BATCH_JOB = 1;
-          Globals.LARGE_JOB__TASK_NUM_THRESHOLD = 100;
+          Globals.LARGE_JOB_TASK_NUM_THRESHOLD = 100;
         }
         break;
       case SIMPLE:
