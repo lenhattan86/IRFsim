@@ -70,7 +70,8 @@ public class ServiceRate {
     else if(this.slopes.size()>0){
       res = new Resources();
       for (int i=0; i< Globals.NUM_DIMENSIONS; i++) {
-        double ans = (Simulator.cluster.getClusterMaxResAlloc().resource(i)*Globals.PERIODIC_INTERVAL/(Simulator.QUEUE_LIST.getRunningQueues().size()));
+        double C = Simulator.cluster.getClusterMaxResAlloc().resource(i);
+        double ans = (C*Globals.PERIODIC_INTERVAL/(Simulator.QUEUE_LIST.getRunningQueues().size()));
         ans = ans - this.slopes.get(0)*this.curveDurations.get(0);
         ans = ans/(Globals.PERIODIC_INTERVAL-this.curveDurations.get(0));
         ans = Math.min(Simulator.cluster.getClusterMaxResAlloc().resource(i), ans);
@@ -80,6 +81,33 @@ public class ServiceRate {
     }
     return res;
   }
+	
+	public Resources guaranteedResourcesbk(Resources demand, double curTime, double startTime) {
+    double rate = getGuaranteedRate(curTime, startTime);
+    Resources res = new Resources(0);
+    if (rate>0)
+      res = new Resources(rate);
+    else if(this.slopes.size()>0){
+      res = new Resources();
+      for (int i=0; i< Globals.NUM_DIMENSIONS; i++) {
+        double C = Simulator.cluster.getClusterMaxResAlloc().resource(i);
+        double ans = (C*Globals.PERIODIC_INTERVAL/(Simulator.QUEUE_LIST.getRunningQueues().size()));
+        ans = ans - this.slopes.get(0)*this.curveDurations.get(0);
+        ans = ans/(Globals.PERIODIC_INTERVAL-this.curveDurations.get(0));
+        ans = Math.min(Simulator.cluster.getClusterMaxResAlloc().resource(i), ans);
+        ans = Math.max(0, ans);
+        res.resources[i]=ans;
+      }
+    }
+    return res;
+  }
+	
+	public Resources getAlpha(){
+	  Resources res = new Resources(0);
+    if (this.slopes.size()>0)
+      res = new Resources(this.slopes.get(0));
+    return res;
+	}
 
 	public Resources guaranteedResources_bk(Resources demand, double curTime, double startTime) {
 		Resources res = new Resources();
@@ -99,6 +127,10 @@ public class ServiceRate {
 		}
 //		res = new Resources(200.0);
 		return res;
+	}
+	
+	public ArrayList<Double> getCurveDurations(){
+	  return this.curveDurations;
 	}
 
 }

@@ -191,6 +191,11 @@ public class JobQueue {
 	public Resources getGuaranteeRate(double currTime){
     return this.serviceRate.guaranteedResources(this.getMaxDemand(), Simulator.CURRENT_TIME, this.startTimeOfNewJob);
   }
+	
+	public Resources getAlpha(){
+    return this.serviceRate.getAlpha();
+  }
+
 
 	public void addRate(double slope, double duration) {
 		this.serviceRate.addSlope(slope, duration);
@@ -198,6 +203,13 @@ public class JobQueue {
 	
 	public ServiceRate getServiceRate(){
 	  return this.serviceRate;
+	}
+	
+	public double getStage1Duration(){
+	  double res = 0;
+	  if (this.serviceRate.getCurveDurations().get(0)!=null)
+	    res = this.serviceRate.getCurveDurations().get(0);
+	  return res;
 	}
 
 	public void addRunnableJob(BaseDag newJob) {

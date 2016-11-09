@@ -312,7 +312,7 @@ public class Simulator {
   }
 
   boolean stop() {
-    if (Globals.DEBUG_ALL && Simulator.CURRENT_TIME >= Globals.SIM_END_TIME)
+    if ((Globals.DEBUG_ALL||Globals.DEBUG_LOCAL) && Simulator.CURRENT_TIME >= Globals.SIM_END_TIME)
       return true;
     // return (runnableJobs.isEmpty() && runningJobs.isEmpty() &&
     // (completedJobs.size() == totalReplayedJobs));

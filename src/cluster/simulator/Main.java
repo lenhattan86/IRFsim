@@ -60,7 +60,7 @@ public class Main {
     public static double SMALL_JOB_DUR_THRESHOLD = 40.0;
     public static double LARGE_JOB_MAX_DURATION = 0.0;
 
-    public static String DIST_FILE = "bin/poissrnd.csv";
+    public static String DIST_FILE = "pdf/poissrnd.csv";
 
     public static Runmode runmode = Runmode.MultipleBatchQueueRun;
 
@@ -186,11 +186,6 @@ public class Main {
     public static int USER2_START_IDX = 100000;
 
     public static void setupParameters(SetupMode setup, WorkLoadType workload, int scaleUpBursty) {
-      NUM_DIMENSIONS = 2;
-      MACHINE_MAX_RESOURCE = 100;
-      DRFW_weight = 4.0;
-      SpeedFair_WEIGHT = 0.5;
-
       COMPUTE_STATISTICS = false;
 
       Globals.PERIODIC_INTERVAL = 100;
@@ -271,12 +266,11 @@ public class Main {
         break;
       case SIMPLE:
         Globals.STEP_TIME = 1.0;
-        SIM_END_TIME = 500;
         Globals.USE_TRACE = false;
-        Globals.numBurstyJobPerQueue = 2;
-        Globals.numBatchPerQueue = 30;
-        Globals.numInteractiveTask = 2000;
-        Globals.numbatchTask = 5000;
+        Globals.numBurstyJobPerQueue = 5;
+        Globals.numBatchPerQueue = 5;
+        Globals.numInteractiveTask = (int) ((int) 20*NUM_MACHINES*MACHINE_MAX_RESOURCE);
+        Globals.numbatchTask = (int) ((int) 50*NUM_MACHINES*MACHINE_MAX_RESOURCE);
         Globals.PERIODIC_INTERVAL = 100;
         break;
       default:
@@ -290,7 +284,7 @@ public class Main {
 
     double[] rates = { Globals.MACHINE_MAX_RESOURCE * Globals.NUM_MACHINES / Globals.numBurstyQueues };
     // double[] rates = { 500 };
-    double[] durations = { 50 };
+    double[] durations = { 20 };
     Globals.RATES = rates;
     Globals.RATE_DURATIONS = durations;
 
@@ -417,18 +411,24 @@ public class Main {
   }
 
   public static void main(String[] args) {
+    Globals.NUM_DIMENSIONS = 2;
+    Globals.MACHINE_MAX_RESOURCE = 10;
+    Globals.DRFW_weight = 4.0;
+    
     Globals.BATCH_JOBS_ARRIVAL_POLICY = JobsArrivalPolicy.All;
     Globals.BURSTY_JOBS_ARRIVAL_POLICY = JobsArrivalPolicy.Period;
-    // Globals.SIM_END_TIME = 500;
-    // Globals.DEBUG_LOCAL = true;
-    // Globals.DEBUG_START = 0.0;
-    // Globals.DEBUG_END = 5.0;
+     Globals.SIM_END_TIME = 200;
+     Globals.DEBUG_LOCAL = true;
+//     Globals.DEBUG_START = 0.0;
+//     Globals.DEBUG_END = 5.0;
 
-    Globals.WorkLoadType workload = Globals.WorkLoadType.BB;
+//    Globals.WorkLoadType workload = Globals.WorkLoadType.BB;
+    Globals.WorkLoadType workload = Globals.WorkLoadType.SIMPLE;
 
     // Globals.runmode = Runmode.MultipleInteractiveQueueRun;
-    // Globals.runmode = Runmode.MultipleBatchQueueRun;
-    Globals.runmode = Runmode.TrialRun;
+//     Globals.runmode = Runmode.MultipleBatchQueueRun;
+//    Globals.runmode = Runmode.TrialRun;
+    Globals.runmode = Runmode.SingleRun;
 
     if (Globals.runmode.equals(Runmode.MultipleBatchQueueRun)) {
       Globals.SetupMode mode = Globals.SetupMode.ShortInteractive;
@@ -436,8 +436,8 @@ public class Main {
       // Method[] methods = { Method.DRF, Method.DRFW, Method.Strict,
       // Method.SpeedFair };
       // int[] batchQueueNums = { 1, 2, 4, 8, 16, 32, 64 };
-      Method[] methods = { Method.DRF, Method.DRFW };
-      int[] batchQueueNums = { 64 };
+      Method[] methods = { Method.SpeedFair};
+      int[] batchQueueNums = {3};
 
       Globals.setupParameters(mode, workload, 1);
 
@@ -514,12 +514,17 @@ public class Main {
       // Globals.METHOD = Method.Strict;
       // Globals.METHOD = Method.DRF;
       Globals.METHOD = Method.SpeedFair;
-      Globals.SIM_END_TIME = 5000000;
-      // Globals.MACHINE_MAX_RESOURCE = 100;
+      Globals.SIM_END_TIME = 50;
+       Globals.MACHINE_MAX_RESOURCE = 10;
       Globals.NUM_MACHINES = 1;
-      Globals.numBatchQueues = 4;
+      Globals.numBatchQueues = 2;
+      Globals.numBurstyQueues = 2;
       Globals.numBurstyJobPerQueue = 5;
-      Globals.DEBUG_LOCAL = false;
+      Globals.DEBUG_LOCAL = true;
+      workload = Globals.WorkLoadType.SIMPLE;
+      
+      Globals.setupParameters(Globals.SetupMode.ShortInteractive, workload, 1);
+      
       // Globals.IS_GEN = true;
       // double[] rates = {
       // Globals.MACHINE_MAX_RESOURCE*Globals.NUM_MACHINES };

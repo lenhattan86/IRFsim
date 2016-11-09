@@ -386,6 +386,18 @@ public class Resources implements Comparable {
 		}
 		return false;
 	}
+	
+	public boolean smallerOrEqual(Resources res) {
+    // at least equal in all dimensions
+    // at least greater in one dimension
+    for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
+      if (resources[i] > res.resource(i)) {
+        return false;
+      }
+    }
+
+    return true;
+  }
 
 	public boolean equal(Resources res) {
 		// at least equal in all dimensions

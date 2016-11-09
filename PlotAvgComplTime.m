@@ -95,9 +95,9 @@ end
 workload='BB';
 
 %%
-% result_folder= '';
+result_folder= '';
 % result_folder = '../0_run_BB/'; workload='BB';
-result_folder = '../0_run_TPC-H/'; workload='TPC-H'; % weird
+% result_folder = '../0_run_TPC-H/'; workload='TPC-H'; % weird
 % result_folder = '../0_run_TPC-DS/'; workload='TPC-DS'; % okay 
 % STEP_TIME = 1.0; output_sufix = '';
 % fig_path = ['figs/' output_sufix]; 
@@ -110,11 +110,12 @@ output_sufix = 'short/'; STEP_TIME = 1.0;
 % result_folder = ['result/20161023/' workload '/' output_sufix '/']; 
 fig_path = ['/home/tanle/projects/EuroSys17/fig/' workload '-'];
 
-num_batch_queues = 1;
-num_interactive_queue = 1;
+num_batch_queues = 2;
+num_interactive_queue = 2;
 num_queues = num_batch_queues + num_interactive_queue;
-START_TIME = 0; END_TIME = 1600;
+START_TIME = 0; END_TIME = 200;
 is_printed = true;
+MAX_RESOURCE = 10;
 
 %%
 output_folder = [result_folder 'output/'];
@@ -127,7 +128,7 @@ figIdx = 0;
 % batchJobRange = [1:10]
 
 queues_len = length(queues);
-plots  = [true, true];
+plots  = [false, false];
 improvements = zeros(queues_len, 4);
 if plots(1) 
 %    INTERACTIVE_QUEUE = 'interactive';
@@ -202,7 +203,7 @@ if plots(2)
 
 end
 %%
-plots = [false, false, false , false]; %DRF, DRF-W, Strict, SpeedFair
+plots = [false, false, false , true]; %DRF, DRF-W, Strict, SpeedFair
 logfolder = [result_folder 'log/'];
 
 start_time_step = START_TIME/STEP_TIME;
@@ -213,7 +214,7 @@ num_time_steps = max_time_step-start_time_step;
 linewidth= 2;
 barwidth = 1.0;
 timeInSeconds = START_TIME+STEP_TIME:STEP_TIME:END_TIME;
-MAX_RESOURCE = 100;
+
 
 lengendStr = cell(1, num_queues);
 for i=1:num_interactive_queue

@@ -18,7 +18,11 @@ import cluster.utils.Output;
 import cluster.utils.Utils;
 
 public class SpeedFairScheduler implements Scheduler {
-	private boolean DEBUG = false;
+	private boolean DEBUG = true;
+	
+	private Queue<JobQueue> admittedBurstyQueues = null;  
+	private Queue<JobQueue> admittedBatchQueues = null;
+	private Queue<JobQueue> bestEffortQueues = null;
 
 	private String schedulePolicy;
 
@@ -27,58 +31,195 @@ public class SpeedFairScheduler implements Scheduler {
 	public SpeedFairScheduler() {
 		clusterTotCapacity = Simulator.cluster.getClusterMaxResAlloc();
 		this.schedulePolicy = "SpeedFair";
+		this.admittedBurstyQueues = new LinkedList<JobQueue>();
+		this.admittedBatchQueues = new LinkedList<JobQueue>();
+		this.bestEffortQueues = new LinkedList<JobQueue>();
 	}
 	
 	@Override
 	public void computeResShare() {
-		if(Simulator.CURRENT_TIME>=Globals.DEBUG_START && Simulator.CURRENT_TIME<=Globals.DEBUG_END){
-			DEBUG = true;
-		}else
-			DEBUG = false;
-//		System.out.println("SpeedFairScheduler:" + Simulator.CURRENT_TIME);	
-		int numQueuesRuning = Simulator.QUEUE_LIST.getRunningQueues().size();
-		if (numQueuesRuning == 0) {
-			return;
-		}
-		Resources avaiRes = Simulator.cluster.getClusterResAvail();
-		Resources admissionControlRes =  Resources.clone(Simulator.cluster.getClusterMaxResAlloc());
-		
-		Resources speedFairRes = new Resources();
-		
-		List<JobQueue> queuesNeedAlloc = new LinkedList<JobQueue>();
-		boolean isAdmitted = false;
-		for (JobQueue q : Simulator.QUEUE_LIST.getRunningQueues()) {
-		  isAdmitted = false;
-		  if (q.isInteractive){
-  			// compute the rsrcQuota based on the guarateed rate.
-		    Resources rate = q.getGuaranteeRate(Simulator.CURRENT_TIME);
-		    Resources rsrcQuota = Resources.piecewiseMin(rate, avaiRes);
-		    
-		    if (!rate.smaller(admissionControlRes) 
-		    		&& avaiRes.greaterOrEqual(rsrcQuota)){ // admission control condition.
-		    	//TODO add 2nd admission condition
-		    	isAdmitted = true;
-		    	admissionControlRes.subtract(rate);	
-		    	Resources moreRes = Resources.piecewiseMin(rsrcQuota, avaiRes);
-    			Resources remain = q.assign(moreRes);
-    			// assign the task
-    			rsrcQuota = Resources.subtract(rsrcQuota, remain);
-    			q.setRsrcQuota(rsrcQuota);
-    			speedFairRes = Resources.sum(speedFairRes, rsrcQuota);
-    			avaiRes = Resources.subtractPositivie(avaiRes, rsrcQuota);
-//    			Output.debugln(DEBUG, "[SpeedFairScheduler] Step 1: SpeedFair share: " + q.getQueueName() + " " + q.getRsrcQuota());
-		    }
-		  } 
-		  
-		  if(!isAdmitted){
-		    queuesNeedAlloc.add(q);
-		  }
-		}
-		
-		// use DRF for the remaining resources
-		Resources remainingResources = Resources.clone(avaiRes);
-		if (remainingResources.distinct(Resources.ZEROS))
-		  DRFScheduler.onlineDRFShare(remainingResources, queuesNeedAlloc);
+		this.schedulev02();
+//	  this.schedulev01();
+	}
+	
+	private void schedulev02(){
+//    if(Simulator.CURRENT_TIME>=Globals.DEBUG_START && Simulator.CURRENT_TIME<=Globals.DEBUG_END){
+//      DEBUG = true;
+//    }else
+//      DEBUG = false;
+    // update queue status
+	  Output.debugln(DEBUG, "\n==== STEP_TIME:" + Simulator.CURRENT_TIME + " ====");
+	  
+    updateQueueStatus();
+    // add queues to the best effort queues    
+    updateBestEfforQueue();
+    // obtain the available resource
+    Resources avaiRes = Simulator.cluster.getClusterResAvail();
+    // admission control
+    admit();
+    // allocate resources to bursty and batch queues
+    allocate();
+    // allocate spare resousrces.
+    allocateSpareResources();
+  }
+	
+	private void allocateSpareResources() {
+	  // allocate the spare resource
+    Resources remainingResources = Resources.clone(Simulator.cluster.getClusterResAvail());
+    DRFScheduler.onlineDRFShare(remainingResources, (List) this.bestEffortQueues);
+  }
+
+  private void allocate() {
+    Resources avaiRes = Simulator.cluster.getClusterResAvail();
+    Resources admissionControlRes =  Resources.clone(clusterTotCapacity);
+    
+    Resources speedFairRes = new Resources();
+    
+    for (JobQueue q : this.admittedBurstyQueues) {
+      // compute the rsrcQuota based on the guarateed rate.
+      Resources a = q.getGuaranteeRate(Simulator.CURRENT_TIME);
+      
+      Resources rsrcQuota = Resources.piecewiseMin(a, avaiRes);
+      admissionControlRes.subtract(a); 
+      Resources moreRes = Resources.piecewiseMin(rsrcQuota, avaiRes);
+      Resources remain = q.assign(moreRes);
+      // assign the task
+      rsrcQuota = Resources.subtract(rsrcQuota, remain);
+      q.setRsrcQuota(rsrcQuota);
+      speedFairRes = Resources.sum(speedFairRes, rsrcQuota);
+      avaiRes = Resources.subtractPositivie(avaiRes, rsrcQuota);
+      Output.debugln(DEBUG, "[SpeedFairScheduler] [allocate] " + q.getQueueName() +": "+rsrcQuota);
+    }
+    
+    // use DRF for the admitted batch queues
+    Resources remainingResources = Resources.clone(avaiRes);
+    if (remainingResources.distinct(Resources.ZEROS))
+      DRFScheduler.onlineDRFShare(remainingResources, (List) this.admittedBatchQueues);
+  }
+
+  private void admit() {
+    Resources burstyRes = new Resources(Resources.ZEROS);
+    for (JobQueue q: this.admittedBurstyQueues){
+      burstyRes.addWith(q.getGuaranteeRate(Simulator.CURRENT_TIME));
+    }
+    Queue<JobQueue> newAdmittedQueues = new LinkedList<JobQueue>();
+    for (JobQueue q: this.bestEffortQueues){
+      if (q.isInteractive){
+        Resources alpha = q.getAlpha(); // TODO: some time it is not alpha
+        boolean condition1 = alpha.smallerOrEqual(Resources.subtractPositivie(this.clusterTotCapacity, burstyRes)); 
+        Resources lhs = Resources.multiply(alpha, q.getStage1Duration()*Globals.STEP_TIME);
+        Resources rhs = Resources.multiply(this.clusterTotCapacity, Globals.PERIODIC_INTERVAL*Globals.STEP_TIME);
+        double denom = Math.max(this.admittedBurstyQueues.size()+this.admittedBatchQueues.size(),Double.MIN_VALUE);
+        rhs.divide(denom);
+        boolean condition2 = lhs.smallerOrEqual(rhs);
+        if ( condition1 && condition2 ){
+          this.admittedBurstyQueues.add(q);
+          newAdmittedQueues.add(q);
+          burstyRes.addRes(alpha);
+          Output.debugln(DEBUG, "[SpeedFairScheduler] [admit] admit " + q.getQueueName());
+        }
+        else
+          Output.debugln(DEBUG, "[SpeedFairScheduler] [admit] cannot addmit " + q.getQueueName());
+      }
+      else{
+        boolean condition = true;
+        for (JobQueue A: this.admittedBurstyQueues){
+          Resources alpha = q.getAlpha();
+          Resources lhs = Resources.multiply(alpha, A.getStage1Duration()*Globals.STEP_TIME);
+          Resources rhs = Resources.multiply(this.clusterTotCapacity, Globals.PERIODIC_INTERVAL*Globals.STEP_TIME);
+          double denom = Math.max(this.admittedBurstyQueues.size()+this.admittedBatchQueues.size()+1, Double.MIN_VALUE);
+          rhs.divide(denom);
+          condition = lhs.smallerOrEqual(rhs);
+          if(!condition)
+            break;
+        }
+        
+        if (condition){
+          this.admittedBatchQueues.add(q);
+          newAdmittedQueues.add(q);
+          Output.debugln(DEBUG, "[SpeedFairScheduler] [admission control] addmit " + q.getQueueName());
+        }else
+          Output.debugln(DEBUG, "[SpeedFairScheduler] [admission control] cannot addmit " + q.getQueueName());
+      }
+    } 
+    this.bestEffortQueues.removeAll(newAdmittedQueues);
+  }
+  
+  private void updateBestEfforQueue(){
+    for (JobQueue q: Simulator.QUEUE_LIST.getJobQueues()){
+      if(this.admittedBatchQueues.contains(q) || this.admittedBurstyQueues.contains(q) || this.bestEffortQueues.contains(q)){
+      }
+      else {
+//        Output.debugln(DEBUG, "[SpeedFairScheduler] updateBestEfforQueue adds " + q.getQueueName() + " to best effort queues");
+        this.bestEffortQueues.add(q);
+      }
+    }
+  }
+
+  private void updateQueueStatus() {
+    for (JobQueue q: this.admittedBurstyQueues){
+      if (!q.isActive())
+        this.admittedBurstyQueues.remove(q);
+    }
+    for (JobQueue q: this.admittedBatchQueues){
+      if (!q.isActive())
+        this.admittedBatchQueues.remove(q);
+    }
+    for (JobQueue q: this.bestEffortQueues){
+      if (!q.isActive())
+        this.bestEffortQueues.remove(q);
+    }
+  }
+
+  private void schedulev01(){
+	  if(Simulator.CURRENT_TIME>=Globals.DEBUG_START && Simulator.CURRENT_TIME<=Globals.DEBUG_END){
+      DEBUG = true;
+    }else
+      DEBUG = false;
+//    System.out.println("SpeedFairScheduler:" + Simulator.CURRENT_TIME); 
+    int numQueuesRuning = Simulator.QUEUE_LIST.getRunningQueues().size();
+    if (numQueuesRuning == 0) {
+      return;
+    }
+    Resources avaiRes = Simulator.cluster.getClusterResAvail();
+    Resources admissionControlRes =  Resources.clone(Simulator.cluster.getClusterMaxResAlloc());
+    
+    Resources speedFairRes = new Resources();
+    
+    List<JobQueue> queuesNeedAlloc = new LinkedList<JobQueue>();
+    boolean isAdmitted = false;
+    for (JobQueue q : Simulator.QUEUE_LIST.getRunningQueues()) {
+      isAdmitted = false;
+      if (q.isInteractive){
+        // compute the rsrcQuota based on the guarateed rate.
+        Resources rate = q.getGuaranteeRate(Simulator.CURRENT_TIME);
+        Resources rsrcQuota = Resources.piecewiseMin(rate, avaiRes);
+        
+        if (!rate.smaller(admissionControlRes) 
+            && avaiRes.greaterOrEqual(rsrcQuota)){ // admission control condition.
+          //TODO add 2nd admission condition
+          isAdmitted = true;
+          admissionControlRes.subtract(rate); 
+          Resources moreRes = Resources.piecewiseMin(rsrcQuota, avaiRes);
+          Resources remain = q.assign(moreRes);
+          // assign the task
+          rsrcQuota = Resources.subtract(rsrcQuota, remain);
+          q.setRsrcQuota(rsrcQuota);
+          speedFairRes = Resources.sum(speedFairRes, rsrcQuota);
+          avaiRes = Resources.subtractPositivie(avaiRes, rsrcQuota);
+//          Output.debugln(DEBUG, "[SpeedFairScheduler] Step 1: SpeedFair share: " + q.getQueueName() + " " + q.getRsrcQuota());
+        }
+      } 
+      
+      if(!isAdmitted){
+        queuesNeedAlloc.add(q);
+      }
+    }
+    
+    // use DRF for the remaining resources
+    Resources remainingResources = Resources.clone(avaiRes);
+    if (remainingResources.distinct(Resources.ZEROS))
+      DRFScheduler.onlineDRFShare(remainingResources, queuesNeedAlloc);
 	}
 
 	public void computeResShareOffline() {
