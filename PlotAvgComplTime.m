@@ -110,8 +110,8 @@ output_sufix = 'short/'; STEP_TIME = 1.0;
 % result_folder = ['result/20161023/' workload '/' output_sufix '/']; 
 fig_path = ['/home/tanle/projects/EuroSys17/fig/' workload '-'];
 
-num_batch_queues = 2;
-num_interactive_queue = 2;
+num_batch_queues = 16;
+num_interactive_queue = 1;
 num_queues = num_batch_queues + num_interactive_queue;
 START_TIME = 0; END_TIME = 200;
 is_printed = true;
@@ -224,14 +224,12 @@ for i=1:num_batch_queues
     lengendStr{i+num_interactive_queue} = ['batch' int2str(i-1)];
 end
 
-% if num_interactive_queue==1
-%    extraStr = '';
-% else
-   extraStr = [int2str(num_interactive_queue) '_'];
-% end
+
+% extraStr = '';
+extraStr = ['_' int2str(num_interactive_queue) '_' int2str(num_batch_queues)];
    
 if plots(1)   
-   logFile = [ logfolder 'DRF-output_' extraStr int2str(num_batch_queues) '.csv'];
+   logFile = [ logfolder 'DRF-output' extraStr  '.csv'];
    [queueNames, res1, res2, flag] = import_res_usage(logFile);
    
    if (flag)
@@ -280,7 +278,7 @@ if plots(1)
    end
 end
 if plots(2)
-   logFile = [ logfolder 'DRF-W-output_' extraStr int2str(num_batch_queues) '.csv'];
+   logFile = [ logfolder 'DRF-W-output' extraStr '.csv'];
    [queueNames, res1, res2, flag] = import_res_usage(logFile);
    if (flag)
       figure;
@@ -329,7 +327,7 @@ if plots(2)
 end
 
 if plots(3)  
-   logFile = [ logfolder 'Strict-output_' extraStr int2str(num_batch_queues) '.csv'];
+   logFile = [ logfolder 'Strict-output' extraStr '.csv'];
    [queueNames, res1, res2, flag] = import_res_usage(logFile);
    if (flag)
       figure;
@@ -378,7 +376,7 @@ if plots(3)
 end
 %%
 if plots(4)   
-   logFile = [ logfolder 'SpeedFair-output_' extraStr int2str(num_batch_queues) '.csv'];
+   logFile = [ logfolder 'SpeedFair-output' extraStr '.csv'];
    [queueNames, res1, res2, flag] = import_res_usage(logFile);
    if (flag)
       figure;

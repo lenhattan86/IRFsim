@@ -9,7 +9,7 @@ is_printed = true;
 
 figIdx=0;
 
-LOCAL_FIG = '/home/tanle/projects/SpeedFairSim/figs/';
+LOCAL_FIG = 'figs/';
 
 PS_CMD_FORMAT='ps2pdf -dEmbedAllFonts#true -dSubsetFonts#true -dEPSCrop#true -dPDFSETTINGS#/prepress %s %s';
 

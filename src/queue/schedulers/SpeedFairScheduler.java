@@ -77,7 +77,8 @@ public class SpeedFairScheduler implements Scheduler {
     
     for (JobQueue q : this.admittedBurstyQueues) {
       // compute the rsrcQuota based on the guarateed rate.
-      Resources a = q.getGuaranteeRate(Simulator.CURRENT_TIME);
+//      Resources a = q.getGuaranteeRate(Simulator.CURRENT_TIME);
+    	Resources a = this.getBurstyGuarantee(q);
       
       Resources rsrcQuota = Resources.piecewiseMin(a, avaiRes);
       admissionControlRes.subtract(a); 
@@ -88,13 +89,26 @@ public class SpeedFairScheduler implements Scheduler {
       q.setRsrcQuota(rsrcQuota);
       speedFairRes = Resources.sum(speedFairRes, rsrcQuota);
       avaiRes = Resources.subtractPositivie(avaiRes, rsrcQuota);
-      Output.debugln(DEBUG, "[SpeedFairScheduler] [allocate] " + q.getQueueName() +": "+rsrcQuota);
+//      Output.debugln(DEBUG, "[SpeedFairScheduler] [allocate] " + q.getQueueName() +": "+rsrcQuota);
     }
     
     // use DRF for the admitted batch queues
     Resources remainingResources = Resources.clone(avaiRes);
     if (remainingResources.distinct(Resources.ZEROS))
       DRFScheduler.onlineDRFShare(remainingResources, (List) this.admittedBatchQueues);
+  }
+  
+  private Resources getBurstyGuarantee(JobQueue q){
+  	Resources res = new Resources();
+  	Resources alpha = q.getAlpha();
+  	Resources nom  = Resources.multiply(this.clusterTotCapacity, q.getPeriod()/(this.admittedBatchQueues.size()+this.admittedBurstyQueues.size()));
+  	nom = Resources.subtract(nom, Resources.multiply(alpha, q.getStage1Duration()));
+  	Resources beta = Resources.divide(nom, (q.getPeriod()-q.getStage1Duration()));
+  	if (Simulator.CURRENT_TIME % Globals.PERIODIC_INTERVAL <= q.getStage1Duration())
+  		res = alpha;
+  	else
+  		res = beta;
+  	return res;
   }
 
   private void admit() {
@@ -107,8 +121,8 @@ public class SpeedFairScheduler implements Scheduler {
       if (q.isInteractive){
         Resources alpha = q.getAlpha(); // TODO: some time it is not alpha
         boolean condition1 = alpha.smallerOrEqual(Resources.subtractPositivie(this.clusterTotCapacity, burstyRes)); 
-        Resources lhs = Resources.multiply(alpha, q.getStage1Duration()*Globals.STEP_TIME);
-        Resources rhs = Resources.multiply(this.clusterTotCapacity, Globals.PERIODIC_INTERVAL*Globals.STEP_TIME);
+        Resources lhs = Resources.multiply(alpha, q.getStage1Duration());
+        Resources rhs = Resources.multiply(this.clusterTotCapacity, q.getPeriod());
         double denom = Math.max(this.admittedBurstyQueues.size()+this.admittedBatchQueues.size(),Double.MIN_VALUE);
         rhs.divide(denom);
         boolean condition2 = lhs.smallerOrEqual(rhs);
@@ -126,7 +140,7 @@ public class SpeedFairScheduler implements Scheduler {
         for (JobQueue A: this.admittedBurstyQueues){
           Resources alpha = q.getAlpha();
           Resources lhs = Resources.multiply(alpha, A.getStage1Duration()*Globals.STEP_TIME);
-          Resources rhs = Resources.multiply(this.clusterTotCapacity, Globals.PERIODIC_INTERVAL*Globals.STEP_TIME);
+          Resources rhs = Resources.multiply(this.clusterTotCapacity, A.getPeriod()*Globals.STEP_TIME);
           double denom = Math.max(this.admittedBurstyQueues.size()+this.admittedBatchQueues.size()+1, Double.MIN_VALUE);
           rhs.divide(denom);
           condition = lhs.smallerOrEqual(rhs);
@@ -137,16 +151,17 @@ public class SpeedFairScheduler implements Scheduler {
         if (condition){
           this.admittedBatchQueues.add(q);
           newAdmittedQueues.add(q);
-          Output.debugln(DEBUG, "[SpeedFairScheduler] [admission control] addmit " + q.getQueueName());
+          Output.debugln(DEBUG, "[SpeedFairScheduler] [admission] addmit " + q.getQueueName());
         }else
-          Output.debugln(DEBUG, "[SpeedFairScheduler] [admission control] cannot addmit " + q.getQueueName());
+          Output.debugln(DEBUG, "[SpeedFairScheduler] [admission] cannot addmit " + q.getQueueName());
       }
     } 
     this.bestEffortQueues.removeAll(newAdmittedQueues);
   }
   
   private void updateBestEfforQueue(){
-    for (JobQueue q: Simulator.QUEUE_LIST.getJobQueues()){
+//    for (JobQueue q: Simulator.QUEUE_LIST.getJobQueues()){
+  	for (JobQueue q: Simulator.QUEUE_LIST.getRunningQueues()){
       if(this.admittedBatchQueues.contains(q) || this.admittedBurstyQueues.contains(q) || this.bestEffortQueues.contains(q)){
       }
       else {
@@ -157,18 +172,24 @@ public class SpeedFairScheduler implements Scheduler {
   }
 
   private void updateQueueStatus() {
+  	Queue<JobQueue> temp = new LinkedList<JobQueue>();
     for (JobQueue q: this.admittedBurstyQueues){
       if (!q.isActive())
-        this.admittedBurstyQueues.remove(q);
+      	temp.add(q);
     }
+    this.admittedBurstyQueues.removeAll(temp);
+    temp.clear();
     for (JobQueue q: this.admittedBatchQueues){
       if (!q.isActive())
-        this.admittedBatchQueues.remove(q);
+      	temp.add(q);
     }
+    this.admittedBatchQueues.removeAll(temp);
+    temp.clear();
     for (JobQueue q: this.bestEffortQueues){
       if (!q.isActive())
-        this.bestEffortQueues.remove(q);
+      	temp.add(q);
     }
+    this.bestEffortQueues.removeAll(temp);
   }
 
   private void schedulev01(){

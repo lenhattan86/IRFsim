@@ -301,7 +301,7 @@ public class Main {
     String extraName = "";
     if (Globals.runmode == Runmode.ScaleUpBurstyJobs)
       extraName = "_s" + Globals.SCALE_UP_BURSTY_JOB / 50;
-    else if (Globals.runmode == Runmode.MultipleBatchQueueRun)
+    else
       extraName = "_" + Globals.numBurstyQueues + "_" + Globals.numBatchQueues;
 
     if (Globals.METHOD.equals(Method.DRF)) {
@@ -514,11 +514,11 @@ public class Main {
       // Globals.METHOD = Method.Strict;
       // Globals.METHOD = Method.DRF;
       Globals.METHOD = Method.SpeedFair;
-      Globals.SIM_END_TIME = 50;
+      Globals.SIM_END_TIME = 100;
        Globals.MACHINE_MAX_RESOURCE = 10;
       Globals.NUM_MACHINES = 1;
-      Globals.numBatchQueues = 2;
-      Globals.numBurstyQueues = 2;
+      Globals.numBatchQueues = 16;
+      Globals.numBurstyQueues = 1;
       Globals.numBurstyJobPerQueue = 5;
       Globals.DEBUG_LOCAL = true;
       workload = Globals.WorkLoadType.SIMPLE;

@@ -139,13 +139,15 @@ public class JobQueueList {
         }
         
         args = line.split(" ");
-        assert (args.length < 3) : 
-          "queueName weightForSpeedShare DRFweight";
+        assert (args.length < 4) : 
+          "queueName DRFweight startTime period";
         queueName = args[0];        
       	queueName = queueName.trim();
       	JobQueue queue = new JobQueue(queueName);
-      	queue.setSpeedFairWeight(Double.parseDouble(args[1]));
-      	queue.setWeight(Double.parseDouble(args[2]));
+//      	queue.setSpeedFairWeight(Double.parseDouble(args[1]));
+      	queue.setWeight(Double.parseDouble(args[1]));
+      	queue.setStartTime(Double.parseDouble(args[2]));
+      	queue.setPeriod(Double.parseDouble(args[3]));
       	//TODO: hard-code the high weight for interactive queues for DRF-W
       	if (Globals.METHOD.equals(Method.DRFW) && queueName.startsWith("interactive")) {
       		queue.setWeight(Globals.DRFW_weight);

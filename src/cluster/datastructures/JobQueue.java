@@ -24,6 +24,16 @@ public class JobQueue {
 	
 	private double weight = 1.0;
 	
+	public double getStartTime() {
+		return startTime;
+	}
+
+	public void setStartTime(double startTime) {
+		this.startTime = startTime;
+	}
+
+	private double startTime = 0.0;
+	
 	private double speedFairWeight = 1.0;
 
 	private double startTimeOfNewJob = -1.0;
@@ -35,6 +45,8 @@ public class JobQueue {
 	private Resources rsrcQuota = new Resources();
 
 	String queueName = "";
+
+	private double period;
 
 	public JobQueue(String queueName) {
 		this.queueName = queueName;
@@ -171,6 +183,14 @@ public class JobQueue {
 	
 	public void setWeight(double weight) {
 		this.weight = weight;
+	}
+	
+	public void setPeriod(double period){
+		this.period = period;
+	}
+	
+	public double getPeriod(){
+		return this.period;
 	}
 	
 	public void setSpeedFairWeight(double weight) {
