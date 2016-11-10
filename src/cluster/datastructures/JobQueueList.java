@@ -3,19 +3,22 @@ package cluster.datastructures;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
 import cluster.simulator.Main.Globals;
 import cluster.simulator.Main.Globals.Method;
+import cluster.utils.JobArrivalComparator;
+import cluster.utils.QueueArrivalComparator;
 import cluster.simulator.Simulator;
 
 public class JobQueueList {
-	private Queue<JobQueue> jobQueues = null;
+	private List<JobQueue> jobQueues = null;
 	private List<JobQueue> runningQueues = null; 
 	
-	public  Queue<JobQueue>  getJobQueues(){
+	public  List<JobQueue>  getJobQueues(){
 		return jobQueues;
 	}
 	
@@ -51,6 +54,15 @@ public class JobQueueList {
 		}
 		return queue;
 	}
+	
+	@SuppressWarnings("unchecked")
+  public void sortJobQueues(){
+	  Collections.sort((List<JobQueue>) this.jobQueues, new QueueArrivalComparator());
+	}
+	
+	public void sortRunningQueues(){
+    Collections.sort((List<JobQueue>) this.runningQueues, new QueueArrivalComparator());
+  }
 
 	public void addRunnableJob2Queue(BaseDag newJob, String queueName) {
 		JobQueue queue = getJobQueue(queueName);
@@ -104,6 +116,7 @@ public class JobQueueList {
 				this.addRunningQueue(q);
 			}
 		}
+		sortRunningQueues();
 		return this.runningQueues;
 	}
 	
@@ -178,6 +191,7 @@ public class JobQueueList {
         }
       }
       br.close();
+      sortJobQueues();
     } catch (Exception e) {
       System.err.println("Catch exception: " + e);
     }

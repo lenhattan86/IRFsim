@@ -247,6 +247,10 @@ public class JobQueue {
 	public boolean isActive(){
 		return this.runningJobs.size()>0;
 	}
+	
+	public boolean isDeactived(){
+    return false; //TODO: need to add this property
+  }
 
 	public Queue<BaseDag> getRunningJobs() {
 		return this.runningJobs;

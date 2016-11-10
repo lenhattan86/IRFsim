@@ -10,4 +10,4 @@ for i=1:numOfQueues
 %    toWrite(i,:) = sort(interTimeArrival);
    toWrite(i,:) = interTimeArrival;
 end
-csvwrite('pdf/poissrnd.csv',toWrite);
+csvwrite('bin/poissrnd.csv',toWrite);

@@ -71,19 +71,20 @@ public class GenInput {
 	public static void genQueueInput(int numInteractiveQueues, int numBatchQueues) {
 		String file = GenInput.queueFile + "_" + numInteractiveQueues + "_" + numBatchQueues + ".txt";
 		Output.write("", false, file);
+		
 		for (int i = 0; i < numInteractiveQueues; i++) {
-			int queueId = i;
-			String toWrite = GenInput.genSingleQueueInfo(queueId, "bursty" + queueId, weight,
-			    Globals.RATES, Globals.RATE_DURATIONS, 0.0, Globals.PERIODIC_INTERVAL);
-			Output.writeln(toWrite, true, file);
-		}
-
+      int queueId = i;
+      String toWrite = GenInput.genSingleQueueInfo(queueId, "bursty" + queueId, weight,
+          Globals.RATES, Globals.RATE_DURATIONS, 0.0, Globals.PERIODIC_INTERVAL);
+      Output.writeln(toWrite, true, file);
+    }
+		
 		for (int i = 0; i < numBatchQueues; i++) {
-			int queueId = i;
-			String toWrite = GenInput.genSingleQueueInfo(queueId, "batch" + queueId, weight, NaN, NaN,
-			    0.0, Globals.PERIODIC_INTERVAL);
-			Output.writeln(toWrite, true, file);
-		}
+      int queueId = i;
+      String toWrite = GenInput.genSingleQueueInfo(queueId, "batch" + queueId, weight, NaN, NaN,
+          0.0, Globals.PERIODIC_INTERVAL);
+      Output.writeln(toWrite, true, file);
+    }
 	}
 
 	public static void genJobInput(int numInteractiveQueues, int numInteractiveJobsPerQueue,

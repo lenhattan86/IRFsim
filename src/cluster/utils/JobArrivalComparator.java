@@ -11,7 +11,7 @@ public class JobArrivalComparator implements Comparator<BaseDag>{
 		int res = 0; 
 		if (job1.arrivalTime > job2.arrivalTime){
 			res = 1;
-		}else if (job1.arrivalTime > job2.arrivalTime){
+		}else if (job1.arrivalTime < job2.arrivalTime){
 			res = -1;
 		}
 		return res;

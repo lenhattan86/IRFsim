@@ -32,7 +32,7 @@ import cluster.utils.Utils;
 // implement the timeline server
 public class Simulator {
 
-  public static boolean DEBUG = true;
+  public static boolean DEBUG = false;
 
   public static double CURRENT_TIME = 0;
 

@@ -3,9 +3,11 @@ addpath('matlab_func');
 common_settings;
 is_printed = true;
 
-% inputFile = 'pdf/queries_bb_FB_distr.csv'; workload='BB';
+MAX_DUR = 350;
+
+inputFile = 'pdf/queries_bb_FB_distr.csv'; workload='BB';
 % inputFile = 'pdf/queries_tpch_FB_distr.csv'; workload='TPC-H';
-inputFile = 'pdf/queries_tpcds_FB_distr_new.csv'; workload='TPC-DS';
+% inputFile = 'pdf/queries_tpcds_FB_distr_new.csv'; workload='TPC-DS';
 [durations,num_tasks] = importAllTaskInfo(inputFile);
 
 fig_path = ['/home/tanle/projects/EuroSys17/fig/' workload '-'];
@@ -20,14 +22,18 @@ for i=1:length(num_tasks)
     end
 end
 
+allDurations = allDurations(allDurations<MAX_DUR);
 hist(allDurations, 100);
+
 xLabel='task duration (secs)';
 yLabel='Number of tasks';
+
 
 figSize = [0.0 0 5.0 3.0];
 set (gcf, 'Units', 'Inches', 'Position', figSize, 'PaperUnits', 'inches', 'PaperPosition', figSize);
 xlabel(xLabel,'FontSize',fontAxis);
 ylabel(yLabel,'FontSize',fontAxis);
+xlim([0 MAX_DUR]);
 set(gca,'FontSize',fontAxis);
 
 if is_printed
