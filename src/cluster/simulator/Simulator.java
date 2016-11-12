@@ -73,9 +73,8 @@ public class Simulator {
 
   private int USER1_JOB_IDX = 0;
   private int USER2_JOB_IDX = 0;
-  private static int[] user2_q_nums = QueueData.QUEUE_NUM_FB;
   private int user2_q_nums_idx = 0;
-  private int user2_q_nums_STOP = user2_q_nums.length;
+  private int user2_q_nums_STOP = 0;
   private String USER2_Q = "user2_";
   private String USER1_Q = "user1_0";
 
@@ -468,6 +467,8 @@ public class Simulator {
   }
 
   public Simulator(int version) {
+    this.user2_q_nums_STOP = Globals.user2_q_nums.length;
+    
     QUEUE_LIST = new JobQueueList();
 
     QUEUE_LIST.readQueue(Globals.PathToQueueInputFile);
@@ -621,10 +622,12 @@ public class Simulator {
         Set<BaseDag> newlyStartedJobs = new HashSet<BaseDag>();
         int jobCount = 0;
         Iterator<BaseDag> jobIter = user2RunableJobs.iterator();
-        int addedJobNum = (Globals.JOB_NUM_PER_QUEUE_CHANGE / user2_q_nums[user2_q_nums_idx])
-            * user2_q_nums[user2_q_nums_idx];
-        while (true) {
-          for (int i = 0; i < user2_q_nums[user2_q_nums_idx]; i++) {
+        int addedJobNum = 0; 
+        if (Globals.user2_q_nums[user2_q_nums_idx]>0)
+          addedJobNum = (Globals.JOB_NUM_PER_QUEUE_CHANGE / Globals.user2_q_nums[user2_q_nums_idx])
+            * Globals.user2_q_nums[user2_q_nums_idx];
+        while (addedJobNum>0) {
+          for (int i = 0; i < Globals.user2_q_nums[user2_q_nums_idx]; i++) {
             String queueName = USER2_Q + i;
             BaseDag newJob = (BaseDag) jobIter.next();
             newlyStartedJobs.add(newJob);
@@ -702,16 +705,16 @@ public class Simulator {
 //          System.out.print(optWeight+",");
           break;
         case GoodPrediction:
-          weight = QueueData.getWeight(user2_q_nums, user2_q_nums_idx-1);
+          weight = QueueData.getWeight(Globals.user2_q_nums, user2_q_nums_idx-1);
           this.setWeight4Queue(USER1_Q, weight);
 //          System.out.print((int)weight+",");
           break;
         case WrongPrediction:
-          weight = QueueData.getWeight(QueueData.QUEUE_NUM_CC, user2_q_nums_idx-1);
+          weight = QueueData.getWeight(QueueData.QUEUE_NUM_CC_e, user2_q_nums_idx-1);
           this.setWeight4Queue(USER1_Q, weight);
           break;
         case StaticPrediction:
-          this.setWeight4Queue(USER1_Q, QueueData.getAverageWeight(user2_q_nums));
+          this.setWeight4Queue(USER1_Q, QueueData.getAverageWeight(Globals.user2_q_nums));
           break;
         default:
           break;

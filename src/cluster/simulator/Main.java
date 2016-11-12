@@ -3,6 +3,7 @@ package cluster.simulator;
 import java.util.Queue;
 import java.util.logging.Logger;
 
+import cluster.data.QueueData;
 import cluster.datastructures.BaseDag;
 import cluster.simulator.Main.Globals.JobsArrivalPolicy;
 import cluster.simulator.Main.Globals.Method;
@@ -59,7 +60,7 @@ public class Main {
     public static double SMALL_JOB_DUR_THRESHOLD = 40.0;
     public static double LARGE_JOB_MAX_DURATION = 0.0;
 
-    public static String DIST_FILE = "bin/poissrnd.csv";
+    public static String DIST_FILE = "pdf/poissrnd.csv";
 
     public static Runmode runmode = Runmode.MultipleBatchQueueRun;
 
@@ -159,7 +160,7 @@ public class Main {
     public static String User1Input = DataFolder + "/" + FileInput;
     public static String User2Input = DataFolder + "/" + FileInput;
 
-    public static double[] RATES = null;
+    public static double[][] RATES = null;
     public static double[] RATE_DURATIONS = null;
     public static double SpeedFair_WEIGHT = 1.0; // not use anymore
 
@@ -183,11 +184,14 @@ public class Main {
     public static int USER2_MAX_Q_NUM;
     public static int USER1_START_IDX = 0;
     public static int USER2_START_IDX = 100000;
+    public static int[] user2_q_nums = null;
 
     public static void setupParameters(SetupMode setup, WorkLoadType workload, double scaleUpBursty) {
       COMPUTE_STATISTICS = false;
       
-      double[] rates = { Globals.MACHINE_MAX_RESOURCE * Globals.NUM_MACHINES / Globals.numBurstyQueues };
+      double rateVal = Globals.MACHINE_MAX_RESOURCE * Globals.NUM_MACHINES / Globals.numBurstyQueues ;
+//      double[][] rates = {{rateVal, rateVal}};
+      double[][] rates = {{rateVal, rateVal, rateVal, rateVal, rateVal, rateVal}};
       // double[] rates = { 500 };
       double[] durations = { 20 };
       Globals.RATES = rates;
@@ -420,9 +424,10 @@ public class Main {
 //    Globals.WorkLoadType workload = Globals.WorkLoadType.SIMPLE;
 
     // Globals.runmode = Runmode.MultipleInteractiveQueueRun;
-     Globals.runmode = Runmode.MultipleBatchQueueRun;
-//    Globals.runmode = Runmode.TrialRun;
-//    Globals.runmode = Runmode.SingleRun;
+//     Globals.runmode = Runmode.MultipleBatchQueueRun;
+    Globals.runmode = Runmode.SingleRun;
+     
+//   Globals.runmode = Runmode.TrialRun;
 
     if (Globals.runmode.equals(Runmode.MultipleBatchQueueRun)) {
       Globals.SetupMode mode = Globals.SetupMode.ShortInteractive;
@@ -485,6 +490,8 @@ public class Main {
 //      Globals.SIM_END_TIME = 300;
       Globals.USER1_MAX_Q_NUM = 1;
       Globals.USER2_MAX_Q_NUM = 10;
+      Globals.PERIODIC_INTERVAL = 100;
+      Globals.user2_q_nums = QueueData.QUEUE_NUM_CC_c;
 
       Globals.JOB_NUM_PER_QUEUE_CHANGE = (int) (10 * Globals.User2QueueInterval / Globals.PERIODIC_INTERVAL);
       Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.DRF;

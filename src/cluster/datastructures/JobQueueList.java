@@ -184,7 +184,7 @@ public class JobQueueList {
             "Incorrect entry for guaranteed service rates";
 
           double duration = Double.parseDouble(args[0]);
-          double slope = Double.parseDouble(args[1]);
+          Resources slope = new Resources(Double.parseDouble(args[1]));
 //          if(i==numOfSlopes-1) duration = Double.MAX_VALUE;
 //          queue.serviceCurve.addSlope(slope, duration);
           queue.addRate(slope, duration);

@@ -204,12 +204,8 @@ public class JobQueue {
 			return 1.0; // make equal share to others.
 	}
 	
-	public Resources getMinService(double currTime){
-		return this.serviceRate.guaranteedResources(this.getMaxDemand(), Simulator.CURRENT_TIME, this.startTimeOfNewJob);
-	}
-	
 	public Resources getGuaranteeRate(double currTime){
-    return this.serviceRate.guaranteedResources(this.getMaxDemand(), Simulator.CURRENT_TIME, this.startTimeOfNewJob);
+    return this.serviceRate.guaranteedResources(Simulator.CURRENT_TIME, this.startTimeOfNewJob);
   }
 	
 	public Resources getAlpha(){
@@ -217,7 +213,7 @@ public class JobQueue {
   }
 
 
-	public void addRate(double slope, double duration) {
+	public void addRate(Resources slope, double duration) {
 		this.serviceRate.addSlope(slope, duration);
 	}
 	

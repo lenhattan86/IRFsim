@@ -18,7 +18,8 @@ import cluster.simulator.Main.Globals;
 
 public class GenInput {
 
-	public static double[] NaN = {};
+	public static double[] NaN_1 = {};
+	public static double[][] NaN_2 = {};
 	public static double weight = 1.0;
 	public static String queueFile = "input_gen/queue_input";
 	public static String jobFile = "input_gen/jobs_input";
@@ -55,14 +56,14 @@ public class GenInput {
 		Output.write("", false, file);
 		for (int i = 0; i < user1QueueNum; i++) {
 			int queueId = i;
-			String toWrite = GenInput.genSingleQueueInfo(queueId, "user1_" + queueId, 1.0, NaN, NaN, 0.0,
+			String toWrite = GenInput.genSingleQueueInfo(queueId, "user1_" + queueId, 1.0, NaN_2, NaN_1, 0.0,
 			    Globals.PERIODIC_INTERVAL);
 			Output.writeln(toWrite, true, file);
 		}
 
 		for (int i = 0; i < user2QueueNum; i++) {
 			int queueId = i;
-			String toWrite = GenInput.genSingleQueueInfo(queueId, "user2_" + queueId, 1.0, NaN, NaN, 0.0,
+			String toWrite = GenInput.genSingleQueueInfo(queueId, "user2_" + queueId, 1.0, NaN_2, NaN_1, 0.0,
 			    Globals.PERIODIC_INTERVAL);
 			Output.writeln(toWrite, true, file);
 		}
@@ -81,7 +82,7 @@ public class GenInput {
 		
 		for (int i = 0; i < numBatchQueues; i++) {
       int queueId = i;
-      String toWrite = GenInput.genSingleQueueInfo(queueId, "batch" + queueId, weight, NaN, NaN,
+      String toWrite = GenInput.genSingleQueueInfo(queueId, "batch" + queueId, weight, NaN_2, NaN_1,
           0.0, Globals.PERIODIC_INTERVAL);
       Output.writeln(toWrite, true, file);
     }
@@ -166,7 +167,7 @@ public class GenInput {
 	}
 
 	public static String genSingleQueueInfo(int queueId, String queueName, double weight,
-	    double[] rates, double[] durations, double startTime, double period) {
+	    double[][] rates, double[] durations, double startTime, double period) {
 		String str = "";
 		str += "# " + queueId + "\n";
 		str += "" + queueName + " " + weight + " " + startTime + " " + period + "\n";
@@ -175,7 +176,9 @@ public class GenInput {
 		if (rateLen > 0)
 			str += "\n";
 		for (int i = 0; i < rateLen; i++) {
-			str += "" + durations[i] + " " + rates[i];
+			str += "" + durations[i];
+			for (int j=0; j<Globals.NUM_DIMENSIONS; j++)
+			  str += " " + rates[i][j];
 			if (i < rateLen - 1)
 				str += "\n";
 		}

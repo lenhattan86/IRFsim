@@ -1,18 +1,19 @@
 addpath('matlab_func');
 common_settings;
 
-fig_path = '/home/tanle/Dropbox/proposals/QueueScheduler/fig/';
+fig_path = '/home/tanle/Dropbox/proposals/NSF_predictions/simulations/fig/';
 % fig_path = 'figs/';
 
 
 %%
 % result_folder = '';
-result_folder = '/home/tanle/projects/0_dynamic_q/';
-% result_folder = '/home/tanle/projects/0_dynamic_q2/';
+% result_folder = '/home/tanle/projects/0_dynamic_q/';
+result_folder = '/home/tanle/projects/0_dynamic_q2/';
 % extraName='_perfect';
 % extraName='_wrong';
 extraName='_static';
 % extraName='_good';
+trace = '_cc_c';
 
 workload='BB';
 user1_q_num = 1;
@@ -34,7 +35,7 @@ figIdx = 0;
 % global batchJobRange
 % batchJobRange = [1:10]
 
-plots  = [false true true];
+plots  = [false true false];
 user1_queue = 'user1_';
 user2_queue = 'user2_';
 if plots(1) 
@@ -62,7 +63,7 @@ if plots(1)
    
    if is_printed
        figIdx=figIdx +1;
-      fileNames{figIdx} = ['interactive_compl_time' extraName];
+      fileNames{figIdx} = ['interactive_compl_time' extraName trace];
       epsFile = [ LOCAL_FIG fileNames{figIdx} '.eps'];
         print ('-depsc', epsFile);
    end
@@ -87,7 +88,7 @@ if plots(2)
    
    if is_printed
        figIdx=figIdx +1;
-      fileNames{figIdx} = ['user_1_compl_time' extraName];
+      fileNames{figIdx} = ['user_1_compl_time' extraName  trace];
       epsFile = [ LOCAL_FIG fileNames{figIdx} '.eps'];
         print ('-depsc', epsFile);
    end
@@ -163,7 +164,7 @@ if plots(3)
       set (gcf, 'Units', 'Inches', 'Position', figSize, 'PaperUnits', 'inches', 'PaperPosition', figSize);
       if is_printed         
           figIdx=figIdx +1;
-        fileNames{figIdx} = ['res_usage_drf'  extraName];         
+        fileNames{figIdx} = ['res_usage_drf'  extraName trace];         
         epsFile = [ LOCAL_FIG fileNames{figIdx} '.eps'];
         print ('-depsc', epsFile);
       end
