@@ -28,6 +28,126 @@ Map1 13.0 0.21 0.33 300
 Reducer2 1.0 0.29 0.22 50
 1
 Map1 Reducer2 ata
+# 5
+2 5 1000 bursty0
+Map1 13.0 0.21 0.33 300
+Reducer2 1.0 0.29 0.22 50
+1
+Map1 Reducer2 ata
+# 6
+2 6 1200 bursty0
+Map1 13.0 0.21 0.33 300
+Reducer2 1.0 0.29 0.22 50
+1
+Map1 Reducer2 ata
+# 7
+2 7 1400 bursty0
+Map1 13.0 0.21 0.33 300
+Reducer2 1.0 0.29 0.22 50
+1
+Map1 Reducer2 ata
+# 8
+2 8 1600 bursty0
+Map1 13.0 0.21 0.33 300
+Reducer2 1.0 0.29 0.22 50
+1
+Map1 Reducer2 ata
+# 9
+2 9 1800 bursty0
+Map1 13.0 0.21 0.33 300
+Reducer2 1.0 0.29 0.22 50
+1
+Map1 Reducer2 ata
+# 10
+2 10 2000 bursty0
+Map1 13.0 0.21 0.33 300
+Reducer2 1.0 0.29 0.22 50
+1
+Map1 Reducer2 ata
+# 11
+2 11 2200 bursty0
+Map1 13.0 0.21 0.33 300
+Reducer2 1.0 0.29 0.22 50
+1
+Map1 Reducer2 ata
+# 12
+2 12 2400 bursty0
+Map1 13.0 0.21 0.33 300
+Reducer2 1.0 0.29 0.22 50
+1
+Map1 Reducer2 ata
+# 13
+2 13 2600 bursty0
+Map1 13.0 0.21 0.33 300
+Reducer2 1.0 0.29 0.22 50
+1
+Map1 Reducer2 ata
+# 14
+2 14 2800 bursty0
+Map1 13.0 0.21 0.33 300
+Reducer2 1.0 0.29 0.22 50
+1
+Map1 Reducer2 ata
+# 15
+2 15 3000 bursty0
+Map1 13.0 0.21 0.33 300
+Reducer2 1.0 0.29 0.22 50
+1
+Map1 Reducer2 ata
+# 16
+2 16 3200 bursty0
+Map1 13.0 0.21 0.33 300
+Reducer2 1.0 0.29 0.22 50
+1
+Map1 Reducer2 ata
+# 17
+2 17 3400 bursty0
+Map1 13.0 0.21 0.33 300
+Reducer2 1.0 0.29 0.22 50
+1
+Map1 Reducer2 ata
+# 18
+2 18 3600 bursty0
+Map1 13.0 0.21 0.33 300
+Reducer2 1.0 0.29 0.22 50
+1
+Map1 Reducer2 ata
+# 19
+2 19 3800 bursty0
+Map1 13.0 0.21 0.33 300
+Reducer2 1.0 0.29 0.22 50
+1
+Map1 Reducer2 ata
+# 20
+2 20 4000 bursty0
+Map1 13.0 0.21 0.33 300
+Reducer2 1.0 0.29 0.22 50
+1
+Map1 Reducer2 ata
+# 21
+2 21 4200 bursty0
+Map1 13.0 0.21 0.33 300
+Reducer2 1.0 0.29 0.22 50
+1
+Map1 Reducer2 ata
+# 22
+2 22 4400 bursty0
+Map1 13.0 0.21 0.33 300
+Reducer2 1.0 0.29 0.22 50
+1
+Map1 Reducer2 ata
+# 23
+2 23 4600 bursty0
+Map1 13.0 0.21 0.33 300
+Reducer2 1.0 0.29 0.22 50
+1
+Map1 Reducer2 ata
+# 24
+2 24 4800 bursty0
+Map1 13.0 0.21 0.33 300
+Reducer2 1.0 0.29 0.22 50
+1
+Map1 Reducer2 ata
 # 100000
 4 100000 0 batch0
 Map1 8.0 0.25 0.29 100

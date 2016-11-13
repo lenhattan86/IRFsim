@@ -417,15 +417,15 @@ public class Main {
     Globals.BURSTY_JOBS_ARRIVAL_POLICY = JobsArrivalPolicy.Period;
      Globals.SIM_END_TIME = 50000;
 //     Globals.DEBUG_LOCAL = true;
-//     Globals.DEBUG_START = 0.0;
-//     Globals.DEBUG_END = 30;
+//     Globals.DEBUG_START = 226.0;
+//     Globals.DEBUG_END = 230.0;
 
     Globals.WorkLoadType workload = Globals.WorkLoadType.BB;
 //    Globals.WorkLoadType workload = Globals.WorkLoadType.SIMPLE;
 
     // Globals.runmode = Runmode.MultipleInteractiveQueueRun;
-//     Globals.runmode = Runmode.MultipleBatchQueueRun;
-    Globals.runmode = Runmode.SingleRun;
+     Globals.runmode = Runmode.MultipleBatchQueueRun;
+//    Globals.runmode = Runmode.SingleRun;
      
 //   Globals.runmode = Runmode.TrialRun;
 
@@ -434,8 +434,8 @@ public class Main {
 
        Method[] methods = { Method.DRF, Method.DRFW, Method.Strict, Method.SpeedFair };
        int[] batchQueueNums = { 1, 2, 4, 8 };
-//      Method[] methods = { Method.Strict, Method.SpeedFair};
-//      int[] batchQueueNums = {1,2,4};
+//      Method[] methods = {Method.SpeedFair};
+//      int[] batchQueueNums = {4};
 
       Globals.setupParameters(mode, workload, 1);
 

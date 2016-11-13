@@ -219,10 +219,6 @@ public class Simulator {
             "[Simulator]: END work conserving; clusterAvail:" + Simulator.cluster.getClusterResAvail());
       }
 
-      for (BaseDag dag : Simulator.runningJobs) {
-        dag.receivedService.addUsage(dag.getRsrcInUse());
-      }
-
       Simulator.printUsedResources();
       Simulator.writeResourceUsage();
       Simulator.CURRENT_TIME += Globals.STEP_TIME;

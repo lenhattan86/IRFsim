@@ -116,9 +116,7 @@ public class JobQueue {
 		Iterator<Resources> iRes = this.receivedResourcesList.iterator();
 		int timeSteps = (int) Math.round(term / Globals.STEP_TIME);
 		int i = 0;
-		while (iRes.hasNext()) {
-			if (i++ > timeSteps)
-				break;
+		while (iRes.hasNext() && i++ < timeSteps) {
 			res.addWith(iRes.next());
 		}
 		return res;

@@ -31,21 +31,9 @@ if false
                       'Strict-output_1_16.csv';
                       'Strict-output_1_32.csv'};  
 elseif true
-    queues = {1,2,4,8,16,32, 64};
+    queues = {1,2,4,8,16,32,64};
     drf_compl_files = {'DRF-output_1_1.csv';
                       'DRF-output_1_2.csv';
-\Function{allocate($\mathbb{A}$, $\mathbb{B}$, Resources $\myvec{L}$)}{}
-\ForAll{bursty queue $A \in \mathbb{A}$}
-		\State $\myvec{R_{in}}:=$ in-use resources of A
-		\State $\myvec{R_{more}}$ = $maxwise(\myvec{a_i} - \myvec{R_{in}}, \myvec{0})$ 
-		\State $\myvec{R_{more}}$ = $minwise(\myvec{L}, \myvec{0})$
-		\State Allocate $\myvec{R_{more}}$ more to queue $A$
-		\State \diff{Obtain real-time resource usage $\myvec{R_d}$ of $A$}
-		\State \diff{Update} $\myvec{L} = \myvec{L} - R_{more}$
-\EndFor
-\State $\myvec{R_b}$ = \textsc{DRF}($\mathbb{B}$,$\myvec{L}$) as Algorithm 1 of \cite{drf}.  
-\State \textbf{return} $\{\myvec{L} - \myvec{R_b}\}$	
-\EndFunction
                       'DRF-output_1_4.csv';
                       'DRF-output_1_8.csv';
                       'DRF-output_1_16.csv';
@@ -109,8 +97,8 @@ workload='BB';
 %%
 % result_folder= '';
 % result_folder = '../0_run_simple/'; workload='simple';
-% result_folder = '../0_run_BB/'; workload='BB';
-result_folder = '../0_run_BB2/'; workload='BB2';
+result_folder = '../0_run_BB/'; workload='BB';
+% result_folder = '../0_run_BB2/'; workload='BB2';
 % result_folder = '../0_run_TPC-H/'; workload='TPC-H'; % weird
 % result_folder = '../0_run_TPC-DS/'; workload='TPC-DS'; % okay 
 % STEP_TIME = 1.0; output_sufix = '';
@@ -122,7 +110,7 @@ result_folder = '../0_run_BB2/'; workload='BB2';
 output_sufix = 'short/'; STEP_TIME = 1.0; 
 % output_sufix = 'long/'; STEP_TIME = 1.0; 
 % result_folder = ['result/20161023/' workload '/' output_sufix '/']; 
-fig_path = ['/home/tanle/projects/EuroSys17/fig/' workload '-'];
+fig_path = ['../EuroSys17/fig/' workload '-'];
 
 num_batch_queues = 4;
 num_interactive_queue = 1;
@@ -217,7 +205,7 @@ if plots(2)
 
 end
 %%
-plots = [false, false, false , true]; %DRF, DRF-W, Strict, SpeedFair
+plots = [false, false, false, true]; %DRF, DRF-W, Strict, SpeedFair
 logfolder = [result_folder 'log/'];
 
 start_time_step = START_TIME/STEP_TIME;
@@ -299,18 +287,6 @@ if plots(2)
        lengendStr = flipud(queueNames(1:num_queues));
       figure;
       
-\Function{allocate($\mathbb{A}$, $\mathbb{B}$, Resources $\myvec{L}$)}{}
-\ForAll{bursty queue $A \in \mathbb{A}$}
-		\State $\myvec{R_{in}}:=$ in-use resources of A
-		\State $\myvec{R_{more}}$ = $maxwise(\myvec{a_i} - \myvec{R_{in}}, \myvec{0})$ 
-		\State $\myvec{R_{more}}$ = $minwise(\myvec{L}, \myvec{0})$
-		\State Allocate $\myvec{R_{more}}$ more to queue $A$
-		\State \diff{Obtain real-time resource usage $\myvec{R_d}$ of $A$}
-		\State \diff{Update} $\myvec{L} = \myvec{L} - R_{more}$
-\EndFor
-\State $\myvec{R_b}$ = \textsc{DRF}($\mathbb{B}$,$\myvec{L}$) as Algorithm 1 of \cite{drf}.  
-\State \textbf{return} $\{\myvec{L} - \myvec{R_b}\}$	
-\EndFunction
       subplot(2,1,1);
       resAll = zeros(1,num_queues*num_time_steps);
       res = res1(startIdx:length(res1));
@@ -333,18 +309,6 @@ if plots(2)
       if(length(resAll)>length(res))
          resAll(1:length(res)) = res;
       else
-\Function{allocate($\mathbb{A}$, $\mathbb{B}$, Resources $\myvec{L}$)}{}
-\ForAll{bursty queue $A \in \mathbb{A}$}
-		\State $\myvec{R_{in}}:=$ in-use resources of A
-		\State $\myvec{R_{more}}$ = $maxwise(\myvec{a_i} - \myvec{R_{in}}, \myvec{0})$ 
-		\State $\myvec{R_{more}}$ = $minwise(\myvec{L}, \myvec{0})$
-		\State Allocate $\myvec{R_{more}}$ more to queue $A$
-		\State \diff{Obtain real-time resource usage $\myvec{R_d}$ of $A$}
-		\State \diff{Update} $\myvec{L} = \myvec{L} - R_{more}$
-\EndFor
-\State $\myvec{R_b}$ = \textsc{DRF}($\mathbb{B}$,$\myvec{L}$) as Algorithm 1 of \cite{drf}.  
-\State \textbf{return} $\{\myvec{L} - \myvec{R_b}\}$	
-\EndFunction
          resAll = res(1:num_queues*num_time_steps);
       end
 %       resCutOff = res2(startIdx:endIdx);

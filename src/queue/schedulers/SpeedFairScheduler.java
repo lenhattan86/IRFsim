@@ -61,6 +61,11 @@ public class SpeedFairScheduler implements Scheduler {
     allocate();
     // allocate spare resousrces.
     allocateSpareResources();
+    
+    // update resources
+    for (JobQueue q : Simulator.QUEUE_LIST.getJobQueues()) {
+      q.addResourcesList(q.getResourceUsage());
+    }
   }
 	
 	private void allocateSpareResources() {
@@ -81,12 +86,8 @@ public class SpeedFairScheduler implements Scheduler {
       Resources remain = q.assign(moreRes);
       // assign the task
       Resources rsrcQuota = null;
-      if(DIFF){
-        rsrcQuota = Resources.subtract(a, remain);
-        moreRes = Resources.subtract(moreRes, remain);
-      } else {
-        rsrcQuota = a;
-      }
+      rsrcQuota = Resources.subtract(a, remain);
+      moreRes = Resources.subtract(moreRes, remain);
       q.setRsrcQuota(rsrcQuota);
       avaiRes = Resources.subtractPositivie(avaiRes, moreRes);
       Output.debugln(DEBUG, "[SpeedFairScheduler] [allocate] " + q.getQueueName() +": "+rsrcQuota);
@@ -101,14 +102,33 @@ public class SpeedFairScheduler implements Scheduler {
   private Resources getBurstyGuarantee(JobQueue q){
   	Resources res = new Resources();
   	Resources alpha = q.getAlpha();
-  	Resources nom  = Resources.multiply(this.clusterTotCapacity, q.getPeriod()/(this.admittedBatchQueues.size()+this.admittedBurstyQueues.size()));
-  	nom = Resources.subtract(nom, Resources.multiply(alpha, q.getStage1Duration()));
-  	Resources beta = Resources.divide(nom, (q.getPeriod()-q.getStage1Duration()));
-  	if (Simulator.CURRENT_TIME % Globals.PERIODIC_INTERVAL <= q.getStage1Duration())
+  	Resources guaranteedRes = Resources.multiply(alpha, q.getStage1Duration());
+  	double lasting = (Simulator.CURRENT_TIME - q.getStartTime()) % Globals.PERIODIC_INTERVAL;
+  	boolean inStage1 = lasting <= q.getStage1Duration();
+  	Resources receivedRes = q.getReceivedRes(lasting);
+  	boolean isGuaranteed = receivedRes.greaterOrEqual(guaranteedRes); 
+  	if (inStage1 || !isGuaranteed)
   		res = alpha;
-  	else
+  	else {
+  	  Resources nom  = Resources.multiply(this.clusterTotCapacity, q.getPeriod()/(this.admittedBatchQueues.size()+this.admittedBurstyQueues.size()));
+      nom = Resources.subtractPositivie(nom, receivedRes);
+      Resources beta = Resources.divide(nom, (q.getPeriod()-q.getStage1Duration()));
   		res = beta;
+  	}
   	return res;
+  }
+  
+  private Resources getBurstyGuaranteePreemption(JobQueue q){
+    Resources res = new Resources();
+    Resources alpha = q.getAlpha();
+    Resources nom  = Resources.multiply(this.clusterTotCapacity, q.getPeriod()/(this.admittedBatchQueues.size()+this.admittedBurstyQueues.size()));
+    nom = Resources.subtract(nom, Resources.multiply(alpha, q.getStage1Duration()));
+    Resources beta = Resources.divide(nom, (q.getPeriod()-q.getStage1Duration()));
+    if (Simulator.CURRENT_TIME % Globals.PERIODIC_INTERVAL <= q.getStage1Duration())
+      res = alpha;
+    else
+      res = beta;
+    return res;
   }
   
   private boolean resGuarateeCond(JobQueue newQueue){
@@ -118,7 +138,7 @@ public class SpeedFairScheduler implements Scheduler {
       for (JobQueue q: this.admittedBurstyQueues){
         burstyRes.addWith(q.getGuaranteeRate(Simulator.CURRENT_TIME+t));
       }
-      Resources alpha = newQueue.getAlpha(); // TODO: some time it is not alpha
+      Resources alpha = newQueue.getAlpha(); // TODO: sometime it is not alpha
       result = alpha.smallerOrEqual(Resources.subtractPositivie(this.clusterTotCapacity, burstyRes));
       if (!result)
         break;

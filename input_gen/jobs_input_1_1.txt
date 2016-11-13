@@ -159,7 +159,7 @@ Map1 Reducer2 ata
 Map4 Reducer2 ata
 Reducer2 Reducer3 ata
 # 100001
-19 100001 10 batch0
+19 100001 14 batch0
 Reducer17 1.0 0.25 0.19 696
 Map18 5.0 0.24 0.33 1
 Reducer16 3.0 0.3 0.22 633
@@ -199,7 +199,7 @@ Reducer3 Reducer4 ata
 Map6 Reducer7 ata
 Reducer2 Reducer3 ata
 # 100002
-9 100002 23 batch0
+9 100002 34 batch0
 Reducer5 2.0 0.25 0.17 1
 Reducer4 7.0 0.26 0.17 107
 Map1 16.0 0.22 0.23 100
@@ -219,7 +219,7 @@ Reducer3 Reducer4 ata
 Map7 Reducer3 ata
 Reducer2 Reducer3 ata
 # 100003
-16 100003 45 batch0
+16 100003 58 batch0
 Map15 2.0 0.2 0.33 1
 Map16 5.0 0.22 0.33 1
 Reducer5 2.0 0.31 0.22 245
@@ -253,7 +253,7 @@ Map12 Reducer4 ata
 Reducer3 Reducer4 ata
 Reducer2 Reducer3 ata
 # 100004
-11 100004 60 batch0
+11 100004 69 batch0
 Reducer5 5.0 0.24 0.19 1
 Reducer4 3.0 0.36 0.17 102
 Map10 3.0 0.21 0.23 1
@@ -277,7 +277,7 @@ Map6 Reducer2 ata
 Map7 Reducer8 ata
 Reducer2 Reducer3 ata
 # 100005
-7 100005 69 batch0
+7 100005 94 batch0
 Map1 4.0 0.17 0.23 6
 Reducer4 2.0 0.2 0.23 1
 Reducer7 2.0 0.21 0.23 446
@@ -293,7 +293,7 @@ Map6 Reducer7 ata
 Reducer3 Reducer4 ata
 Reducer2 Reducer3 ata
 # 100006
-19 100006 79 batch0
+19 100006 111 batch0
 Reducer17 1.0 0.25 0.19 696
 Map18 5.0 0.24 0.33 1
 Reducer16 3.0 0.3 0.22 633
@@ -333,7 +333,7 @@ Reducer3 Reducer4 ata
 Map6 Reducer7 ata
 Reducer2 Reducer3 ata
 # 100007
-11 100007 99 batch0
+11 100007 130 batch0
 Reducer5 5.0 0.24 0.19 1
 Reducer4 3.0 0.36 0.17 102
 Map10 3.0 0.21 0.23 1
@@ -357,7 +357,7 @@ Map6 Reducer2 ata
 Map7 Reducer8 ata
 Reducer2 Reducer3 ata
 # 100008
-7 100008 115 batch0
+7 100008 154 batch0
 Map1 4.0 0.17 0.23 6
 Reducer4 2.0 0.2 0.23 1
 Reducer7 2.0 0.21 0.23 446
@@ -373,7 +373,7 @@ Map6 Reducer7 ata
 Reducer3 Reducer4 ata
 Reducer2 Reducer3 ata
 # 100009
-9 100009 127 batch0
+9 100009 166 batch0
 Reducer5 2.0 0.25 0.17 1
 Reducer4 7.0 0.26 0.17 107
 Map1 16.0 0.22 0.23 100
@@ -393,7 +393,7 @@ Reducer3 Reducer4 ata
 Map7 Reducer3 ata
 Reducer2 Reducer3 ata
 # 100010
-11 100010 138 batch0
+11 100010 177 batch0
 Reducer5 2.0 0.24 0.17 14
 Map1 3.0 0.23 0.23 1
 Reducer4 25.0 0.17 0.17 192
@@ -416,7 +416,7 @@ Reducer3 Reducer4 ata
 Reducer2 Reducer3 ata
 Map7 Reducer2 ata
 # 100011
-6 100011 164 batch0
+6 100011 197 batch0
 Map1 10.0 0.26 0.33 100
 Reducer4 3.0 0.28 0.22 696
 Reducer6 3.0 0.3 0.22 55
@@ -430,7 +430,7 @@ Map5 Reducer6 ata
 Reducer3 Reducer4 ata
 Reducer2 Reducer3 ata
 # 100012
-16 100012 173 batch0
+16 100012 213 batch0
 Map15 2.0 0.2 0.33 1
 Map16 5.0 0.22 0.33 1
 Reducer5 2.0 0.31 0.22 245
@@ -464,7 +464,7 @@ Map12 Reducer4 ata
 Reducer3 Reducer4 ata
 Reducer2 Reducer3 ata
 # 100013
-6 100013 186 batch0
+6 100013 227 batch0
 Map1 10.0 0.26 0.33 100
 Reducer4 3.0 0.28 0.22 696
 Reducer6 3.0 0.3 0.22 55
@@ -478,7 +478,7 @@ Map5 Reducer6 ata
 Reducer3 Reducer4 ata
 Reducer2 Reducer3 ata
 # 100014
-25 100014 205 batch0
+25 100014 248 batch0
 Map20 3.0 0.16 0.33 1
 Map1 12.0 0.17 0.33 100
 Map21 4.0 0.17 0.33 1
@@ -530,7 +530,7 @@ Map12 Reducer4 ata
 Reducer3 Reducer4 ata
 Reducer2 Reducer3 ata
 # 100015
-19 100015 226 batch0
+19 100015 254 batch0
 Reducer17 1.0 0.25 0.19 696
 Map18 5.0 0.24 0.33 1
 Reducer16 3.0 0.3 0.22 633
@@ -570,7 +570,7 @@ Reducer3 Reducer4 ata
 Map6 Reducer7 ata
 Reducer2 Reducer3 ata
 # 100016
-19 100016 246 batch0
+19 100016 279 batch0
 Reducer17 1.0 0.25 0.19 696
 Map18 5.0 0.24 0.33 1
 Reducer16 3.0 0.3 0.22 633
@@ -610,7 +610,7 @@ Reducer3 Reducer4 ata
 Map6 Reducer7 ata
 Reducer2 Reducer3 ata
 # 100017
-6 100017 272 batch0
+6 100017 305 batch0
 Reducer5 2.0 0.18 0.19 1
 Reducer4 2.0 0.17 0.19 192
 Map1 2.0 0.16 0.33 1
@@ -624,7 +624,7 @@ Map2 Reducer3 ata
 Map6 Reducer3 ata
 Reducer3 Reducer4 ata
 # 100018
-4 100018 281 batch0
+4 100018 315 batch0
 Map1 8.0 0.25 0.29 100
 Map4 4.0 0.23 0.33 1
 Reducer3 3.0 0.31 0.22 348
@@ -634,7 +634,7 @@ Map1 Reducer2 ata
 Map4 Reducer2 ata
 Reducer2 Reducer3 ata
 # 100019
-4 100019 299 batch0
+4 100019 330 batch0
 Map1 8.0 0.25 0.29 100
 Map4 4.0 0.23 0.33 1
 Reducer3 3.0 0.31 0.22 348
@@ -644,7 +644,7 @@ Map1 Reducer2 ata
 Map4 Reducer2 ata
 Reducer2 Reducer3 ata
 # 100020
-9 100020 320 batch0
+9 100020 343 batch0
 Reducer5 3.0 0.2 0.23 1
 Reducer4 3.0 0.2 0.23 1
 Map1 24.0 0.14 0.23 67
@@ -664,7 +664,7 @@ Map6 Reducer2 ata
 Reducer2 Reducer3 ata
 Map7 Reducer8 ata
 # 100021
-7 100021 337 batch0
+7 100021 364 batch0
 Map1 4.0 0.17 0.23 6
 Reducer4 2.0 0.2 0.23 1
 Reducer7 2.0 0.21 0.23 446
@@ -680,7 +680,7 @@ Map6 Reducer7 ata
 Reducer3 Reducer4 ata
 Reducer2 Reducer3 ata
 # 100022
-6 100022 353 batch0
+6 100022 383 batch0
 Reducer5 2.0 0.25 0.22 1
 Reducer4 4.0 0.23 0.22 22
 Map1 4.0 0.23 0.33 100
@@ -694,7 +694,7 @@ Map6 Reducer2 ata
 Reducer3 Reducer4 ata
 Reducer2 Reducer3 ata
 # 100023
-25 100023 369 batch0
+25 100023 396 batch0
 Map20 3.0 0.16 0.33 1
 Map1 12.0 0.17 0.33 100
 Map21 4.0 0.17 0.33 1
@@ -746,7 +746,7 @@ Map12 Reducer4 ata
 Reducer3 Reducer4 ata
 Reducer2 Reducer3 ata
 # 100024
-11 100024 384 batch0
+11 100024 413 batch0
 Reducer5 2.0 0.24 0.17 14
 Map1 3.0 0.23 0.23 1
 Reducer4 25.0 0.17 0.17 192
@@ -769,7 +769,7 @@ Reducer3 Reducer4 ata
 Reducer2 Reducer3 ata
 Map7 Reducer2 ata
 # 100025
-19 100025 397 batch0
+19 100025 427 batch0
 Reducer17 1.0 0.25 0.19 696
 Map18 5.0 0.24 0.33 1
 Reducer16 3.0 0.3 0.22 633
@@ -809,7 +809,7 @@ Reducer3 Reducer4 ata
 Map6 Reducer7 ata
 Reducer2 Reducer3 ata
 # 100026
-19 100026 413 batch0
+19 100026 443 batch0
 Reducer17 1.0 0.25 0.19 696
 Map18 5.0 0.24 0.33 1
 Reducer16 3.0 0.3 0.22 633
@@ -849,7 +849,7 @@ Reducer3 Reducer4 ata
 Map6 Reducer7 ata
 Reducer2 Reducer3 ata
 # 100027
-19 100027 435 batch0
+19 100027 465 batch0
 Reducer17 1.0 0.25 0.19 696
 Map18 5.0 0.24 0.33 1
 Reducer16 3.0 0.3 0.22 633
@@ -889,7 +889,7 @@ Reducer3 Reducer4 ata
 Map6 Reducer7 ata
 Reducer2 Reducer3 ata
 # 100028
-4 100028 445 batch0
+4 100028 481 batch0
 Map1 8.0 0.25 0.29 100
 Map4 4.0 0.23 0.33 1
 Reducer3 3.0 0.31 0.22 348
@@ -899,7 +899,7 @@ Map1 Reducer2 ata
 Map4 Reducer2 ata
 Reducer2 Reducer3 ata
 # 100029
-6 100029 460 batch0
+6 100029 496 batch0
 Map1 10.0 0.26 0.33 100
 Reducer4 3.0 0.28 0.22 696
 Reducer6 3.0 0.3 0.22 55
