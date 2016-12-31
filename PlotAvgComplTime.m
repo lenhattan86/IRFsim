@@ -1,36 +1,7 @@
 addpath('matlab_func');
 common_settings;
 
-if false
-    queues = {1,2,4,8,16,32};
-    drf_compl_files = {'DRF-output_1_1.csv';
-                      'DRF-output_1_2.csv';
-                      'DRF-output_1_4.csv';
-                      'DRF-output_1_8.csv';
-                      'DRF-output_1_16.csv';
-                      'DRF-output_1_32.csv'};
-
-    drfw_compl_files = { 'DRF-W-output_1_1.csv';
-                      'DRF-W-output_1_2.csv';
-                      'DRF-W-output_1_4.csv';
-                      'DRF-W-output_1_8.csv';
-                      'DRF-W-output_1_16.csv';
-                      'DRF-W-output_1_32.csv'};  
-
-    speedfair_compl_files = {'SpeedFair-output_1_1.csv';
-                      'SpeedFair-output_1_2.csv';
-                      'SpeedFair-output_1_4.csv';
-                      'SpeedFair-output_1_8.csv';
-                      'SpeedFair-output_1_16.csv';
-                      'SpeedFair-output_1_32.csv'};  
-
-    strict_priority_compl_files = {'Strict-output_1_1.csv';
-                      'Strict-output_1_2.csv';
-                      'Strict-output_1_4.csv';
-                      'Strict-output_1_8.csv';
-                      'Strict-output_1_16.csv';
-                      'Strict-output_1_32.csv'};  
-elseif true
+if true
     queues = {1,2,4,8,16,32,64};
     drf_compl_files = {'DRF-output_1_1.csv';
                       'DRF-output_1_2.csv';
@@ -63,27 +34,6 @@ elseif true
                       'Strict-output_1_16.csv';
                       'Strict-output_1_32.csv';
                       'Strict-output_1_64.csv'};  
-else       
-
-    drf_compl_files = {'DRF-output_1_1.csv';
-                      'DRF-output_2_1.csv';
-                      'DRF-output_3_1.csv';
-                      'DRF-output_4_1.csv'};
-
-    drfw_compl_files = {'DRF-w-output_1_1.csv';
-                      'DRF-w-output_2_1.csv';
-                      'DRF-w-output_3_1.csv';
-                      'DRF-w-output_4_1.csv'};  
-
-    speedfair_compl_files = {'SpeedFair-output_1_1.csv';
-                      'SpeedFair-output_2_1.csv';
-                      'SpeedFair-output_3_1.csv';
-                      'SpeedFair-output_4_1.csv'};  
-
-    strict_priority_compl_files = {'Strict-output_1_1.csv';
-                      'Strict-output_2_1.csv';
-                      'Strict-output_3_1.csv';
-                      'Strict-output_4_1.csv'};  
 end
 
 %%
@@ -95,9 +45,9 @@ end
 workload='BB';
 
 %%
-% result_folder= '';
+result_folder= '';
 % result_folder = '../0_run_simple/'; workload='simple';
-result_folder = '../0_run_BB/'; workload='BB';
+% result_folder = '../0_run_BB/'; workload='BB';
 % result_folder = '../0_run_BB2/'; workload='BB2';
 % result_folder = '../0_run_TPC-H/'; workload='TPC-H'; % weird
 % result_folder = '../0_run_TPC-DS/'; workload='TPC-DS'; % okay 
@@ -112,12 +62,12 @@ output_sufix = 'short/'; STEP_TIME = 1.0;
 % result_folder = ['result/20161023/' workload '/' output_sufix '/']; 
 fig_path = ['../EuroSys17/fig/' workload '-'];
 
-num_batch_queues = 4;
+num_batch_queues = 0;
 num_interactive_queue = 1;
 num_queues = num_batch_queues + num_interactive_queue;
 START_TIME = 0; END_TIME = 1000;
 is_printed = true;
-MAX_RESOURCE = 100;
+cluster_size = 100;
 
 %%
 output_folder = [result_folder 'output/'];
@@ -130,7 +80,7 @@ figIdx = 0;
 % batchJobRange = [1:10]
 
 queues_len = length(queues);
-plots  = [true, true];
+plots  = [false, false];
 improvements = zeros(queues_len, 4);
 if plots(1) 
 %    INTERACTIVE_QUEUE = 'interactive';
@@ -205,7 +155,7 @@ if plots(2)
 
 end
 %%
-plots = [false, false, false, true]; %DRF, DRF-W, Strict, SpeedFair
+plots = [false, false, true, true]; %DRF, DRF-W, Strict, SpeedFair
 logfolder = [result_folder 'log/'];
 
 start_time_step = START_TIME/STEP_TIME;
@@ -227,7 +177,7 @@ for i=1:num_batch_queues
 end
 
 % extraStr = '';
-extraStr = ['_' int2str(num_interactive_queue) '_' int2str(num_batch_queues)];
+extraStr = ['_' int2str(num_interactive_queue) '_' int2str(num_batch_queues) '_' int2str(cluster_size)];
    
 if plots(1)   
    logFile = [ logfolder 'DRF-output' extraStr  '.csv'];
@@ -248,7 +198,7 @@ if plots(1)
       shapeRes1 = flipud(reshape(resAll,num_queues,num_time_steps));
       bar(timeInSeconds,shapeRes1',barwidth,'stacked','EdgeColor','none');
       ylabel('CPUs');xlabel('seconds');
-      ylim([0 MAX_RESOURCE]);
+      ylim([0 cluster_size]);
       legend(lengendStr,'Location','northoutside','FontSize',fontLegend,'Orientation','horizontal');
       title('DRF - CPUs','fontsize',fontLegend);
       
@@ -264,7 +214,7 @@ if plots(1)
       shapeRes1 = flipud(reshape(resAll,num_queues,num_time_steps));
       bar(timeInSeconds,shapeRes1',barwidth,'stacked','EdgeColor','none');
       ylabel('GB');xlabel('seconds');
-      ylim([0 MAX_RESOURCE]);
+      ylim([0 cluster_size]);
       legend(lengendStr,'Location','northoutside','FontSize',fontLegend,'Orientation','horizontal');
       title('DRF - Memory','fontsize',fontLegend);
       
@@ -299,7 +249,7 @@ if plots(2)
       shapeRes1 = flipud(reshape(resAll,num_queues,num_time_steps));
       bar(timeInSeconds,shapeRes1',barwidth,'stacked','EdgeColor','none');
       ylabel('CPUs');xlabel('seconds');
-      ylim([0 MAX_RESOURCE]);
+      ylim([0 cluster_size]);
       legend(lengendStr,'Location','northoutside','FontSize',fontLegend,'Orientation','horizontal');
       title('DRF-W - CPUs','fontsize',fontLegend);
       
@@ -315,7 +265,7 @@ if plots(2)
       shapeRes1 = flipud(reshape(resAll,num_queues,num_time_steps));
       bar(timeInSeconds,shapeRes1',barwidth,'stacked','EdgeColor','none');
       ylabel('GB');xlabel('seconds');
-      ylim([0 MAX_RESOURCE]);
+      ylim([0 cluster_size]);
       legend(lengendStr,'Location','northoutside','FontSize',fontLegend,'Orientation','horizontal');
       title('DRF-W - Memory','fontsize',fontLegend);
       
@@ -350,7 +300,7 @@ if plots(3)
       shapeRes1 = flipud(reshape(resAll,num_queues,num_time_steps));
       bar(timeInSeconds,shapeRes1',barwidth,'stacked','EdgeColor','none');
       ylabel('CPUs');xlabel('seconds');
-      ylim([0 MAX_RESOURCE]);
+      ylim([0 cluster_size]);
       legend(lengendStr,'Location','northoutside','FontSize',fontLegend,'Orientation','horizontal');
       title('Strict Priority - CPUs','fontsize',fontLegend);
       
@@ -366,7 +316,7 @@ if plots(3)
       shapeRes1 = flipud(reshape(resAll,num_queues,num_time_steps));
       bar(timeInSeconds,shapeRes1',barwidth,'stacked','EdgeColor','none');
       ylabel('GB');xlabel('seconds');
-      ylim([0 MAX_RESOURCE]);
+      ylim([0 cluster_size]);
       legend(lengendStr,'Location','northoutside','FontSize',fontLegend,'Orientation','horizontal');
       title('Strict Priority - Memory','fontsize',fontLegend);
       
@@ -384,8 +334,8 @@ end
 if plots(4)   
    logFile = [ logfolder 'SpeedFair-output' extraStr '.csv'];
    [queueNames, res1, res2, flag] = importResUsageLog(logFile);
-   if (flag)
-       lengendStr = flipud(queueNames(1:num_queues));
+   if (flag)1.25
+      lengendStr = flipud(queueNames(1:num_queues));
       figure;
       subplot(2,1,1); 
       resAll = zeros(1,num_queues*num_time_steps);
@@ -399,9 +349,9 @@ if plots(4)
       shapeRes1 = flipud(reshape(resAll,num_queues,num_time_steps));
       bar(timeInSeconds,shapeRes1',barwidth,'stacked','EdgeColor','none');
       ylabel('CPUs');xlabel('seconds');
-      ylim([0 MAX_RESOURCE]);
+      ylim([0 cluster_size]);
       legend(lengendStr,'Location','northoutside','FontSize',fontLegend,'Orientation','horizontal');
-      title('SpeedFair - CPUs','fontsize',fontLegend);      
+      title('SpeedFair - CPUs','fontsize',fontLegend);
       
       subplot(2,1,2); 
       resAll = zeros(1,num_queues*num_time_steps);
@@ -415,7 +365,7 @@ if plots(4)
       shapeRes1 = flipud(reshape(resAll,num_queues,num_time_steps));
       bar(timeInSeconds,shapeRes1',barwidth,'stacked','EdgeColor','none');
       ylabel('GB');xlabel('seconds');
-      ylim([0 MAX_RESOURCE]);
+      ylim([0 cluster_size]);
       legend(lengendStr,'Location','northoutside','FontSize',fontLegend,'Orientation','horizontal');
       title('SpeedFair - Memory','fontsize',fontLegend);
       

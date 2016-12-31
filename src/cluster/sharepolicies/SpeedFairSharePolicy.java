@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 import cluster.datastructures.BaseDag;
+import cluster.datastructures.Resource;
 import cluster.datastructures.Resources;
 import cluster.simulator.Simulator;
 import cluster.utils.Output;
@@ -12,7 +13,7 @@ public class SpeedFairSharePolicy extends SharePolicy {
 
 	private static final boolean DEBUG = true;
 
-	Resources clusterTotCapacity = null;
+	Resource clusterTotCapacity = null;
 
 	public SpeedFairSharePolicy() {
 		super("SpeedFair");
@@ -28,7 +29,7 @@ public class SpeedFairSharePolicy extends SharePolicy {
 			return;
 		}
 
-		Resources clusterResQuotaAvail = Simulator.cluster.getClusterResQuotaAvail();
+		Resource clusterResQuotaAvail = Simulator.cluster.getClusterResQuotaAvail();
 
 		// TODO: sort the runningJobs
 
@@ -37,14 +38,14 @@ public class SpeedFairSharePolicy extends SharePolicy {
 		Queue<BaseDag> unhappyRunningJobs = new LinkedList<BaseDag>();
 		for (BaseDag job : Simulator.runningJobs) {
 			//TODO: change job.jobStartTime to job.jobStartRunningTime (dynamic for each job).
-			Resources guaranteedResource = job.serviceCurve.getMinReqService(Simulator.CURRENT_TIME-job.jobStartTime); 
-			Resources resToBeShared = Resources.subtractPositivie(guaranteedResource, job.receivedService);
+			Resource guaranteedResource = job.serviceCurve.getMinReqService(Simulator.CURRENT_TIME-job.jobStartTime); 
+			Resource resToBeShared = Resources.subtractPositivie(guaranteedResource, job.receivedService);
 			boolean fit = clusterResQuotaAvail.greater(resToBeShared);
 			if (fit) {
 				job.rsrcQuota = resToBeShared;
 				clusterResQuotaAvail = Resources.subtract(clusterResQuotaAvail, resToBeShared);
 			} else {
-				job.rsrcQuota = new Resources(0.0); // unable to allocate the resources
+				job.rsrcQuota = new Resource(0.0); // unable to allocate the resources
 				unhappyRunningJobs.add(job);
 			}
 		}
@@ -53,15 +54,15 @@ public class SpeedFairSharePolicy extends SharePolicy {
 		int numUnhappyJobs = unhappyRunningJobs.size();
 		if (numUnhappyJobs > 0) {
 			Output.debugln(DEBUG, "number of unhappy jobs: " + numUnhappyJobs);
-			if (clusterResQuotaAvail.greater(new Resources(0))) {
-				Resources quotaRsrcShare = Resources.divide(clusterResQuotaAvail, unhappyRunningJobs.size());
+			if (clusterResQuotaAvail.greater(new Resource(0))) {
+				Resource quotaRsrcShare = Resources.divide(clusterResQuotaAvail, unhappyRunningJobs.size());
 				for (BaseDag job : unhappyRunningJobs) {
 					job.rsrcQuota.addRes(quotaRsrcShare);
 				}
 			}
 		} else {
-			if (clusterResQuotaAvail.greater(new Resources(0))) {
-				Resources quotaRsrcShare = Resources.divide(clusterResQuotaAvail, numJobsRunning);
+			if (clusterResQuotaAvail.greater(new Resource(0))) {
+				Resource quotaRsrcShare = Resources.divide(clusterResQuotaAvail, numJobsRunning);
 				for (BaseDag job : Simulator.runningJobs) {
 					job.rsrcQuota.addRes(quotaRsrcShare);
 				}

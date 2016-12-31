@@ -11,6 +11,7 @@ import java.util.Queue;
 import jdk.nashorn.internal.objects.Global;
 import cluster.datastructures.BaseDag;
 import cluster.datastructures.JobQueue;
+import cluster.datastructures.Resource;
 import cluster.datastructures.Resources;
 import cluster.simulator.Simulator;
 import cluster.simulator.Main.Globals;
@@ -25,7 +26,7 @@ public class DRFScheduler implements Scheduler {
 	private String schedulePolicy;
 	// Map<String, Resources> resDemandsQueues = null;
 
-	Resources clusterTotCapacity = null;
+	Resource clusterTotCapacity = null;
 
 	// implementation idea:
 	// 1. for every queue, compute it's total resource demand vector
@@ -66,15 +67,15 @@ public class DRFScheduler implements Scheduler {
 		onlineDRFShare(clusterTotCapacity, Simulator.QUEUE_LIST.getRunningQueues());
 	}
 
-	public static void onlineDRFShare(Resources resCapacity, List<JobQueue> runningQueues) {
+	public static void onlineDRFShare(Resource resCapacity, List<JobQueue> runningQueues) {
 		// init
-		Resources consumedRes = new Resources();
+		Resource consumedRes = new Resource();
 		double[] userDominantShareArr = new double[runningQueues.size()];
 		// TODO: consider the allocated share (because of no preemption).
 		int i = 0;
 		double[] auxilaryShare = new double[runningQueues.size()];
 		for (JobQueue queue : runningQueues) {
-			Resources normalizedShare = Resources.divideVector(queue.getResourceUsage(),
+			Resource normalizedShare = Resources.divideVector(queue.getResourceUsage(),
 			    Simulator.cluster.getClusterMaxResAlloc());
 			if (queue.isInteractive && Globals.METHOD.equals(Method.Strict))
 				auxilaryShare[i] = -Double.MAX_VALUE;
@@ -101,10 +102,10 @@ public class DRFScheduler implements Scheduler {
 			}
 
 			int taskId = unallocJob.getCommingTaskId();
-			Resources allocRes = unallocJob.rsrcDemands(taskId);
+			Resource allocRes = unallocJob.rsrcDemands(taskId);
 			// Like Yarn, assign one single container for the task
 			// step 3: if fit, C+D_i <= R, allocate
-			Resources temp = Resources.sumRound(consumedRes, allocRes);
+			Resource temp = Resources.sumRound(consumedRes, allocRes);
 			if (resCapacity.greaterOrEqual(temp)) {
 				consumedRes = temp;
 				q.setRsrcQuota(Resources.sum(q.getRsrcQuota(), q.nextTaskRes()));
@@ -134,8 +135,8 @@ public class DRFScheduler implements Scheduler {
 		}
 	}
 
-	public void computeDRFShare(Resources flexibleResources, List<JobQueue> runningQueues) {
-		HashMap<String, Resources> resDemandsQueues = new HashMap<String, Resources>();
+	public void computeDRFShare(Resource flexibleResources, List<JobQueue> runningQueues) {
+		HashMap<String, Resource> resDemandsQueues = new HashMap<String, Resource>();
 		double factor = 0.0;
 		for (JobQueue q : runningQueues) {
 			factor += q.getWeight();
@@ -143,7 +144,7 @@ public class DRFScheduler implements Scheduler {
 
 		for (JobQueue q : runningQueues) {
 			// 1. compute it's avg. resource demand vector it not already computed
-			Resources avgResDemandDag = q.getMaxDemand();
+			Resource avgResDemandDag = q.getMaxDemand();
 			if (!Globals.METHOD.equals(Method.Strict)) // workaround for Strict
 				avgResDemandDag.divide(factor);
 
@@ -161,14 +162,14 @@ public class DRFScheduler implements Scheduler {
 
 			// avgResDemandDag.round(Globals.TOLERANT_ERROR);
 
-			Resources resDemand = Resources.piecewiseMin(q.getMaxDemand(), avgResDemandDag); // increase
+			Resource resDemand = Resources.piecewiseMin(q.getMaxDemand(), avgResDemandDag); // increase
 			                                                                                 // utilization.
 
 			resDemandsQueues.put(q.getQueueName(), resDemand);
 		}
 
 		// 4. sum it up across every dimension
-		Resources sumDemandsRunQueues = new Resources(0.0);
+		Resource sumDemandsRunQueues = new Resource(0.0);
 		for (JobQueue q : runningQueues) {
 			sumDemandsRunQueues.addWith(resDemandsQueues.get(q.getQueueName()));
 		}
@@ -178,7 +179,7 @@ public class DRFScheduler implements Scheduler {
 		double drfShare = flexibleResources.resource(maxIdx) / sumDemandsRunQueues.max();
 
 		for (JobQueue q : runningQueues) {
-			Resources drfQuota = Resources.clone(resDemandsQueues.get(q.getQueueName()));
+			Resource drfQuota = Resources.clone(resDemandsQueues.get(q.getQueueName()));
 			drfQuota.multiply(drfShare);
 			// drfQuota.round(Globals.TOLERANT_ERROR);
 			q.setRsrcQuota(drfQuota);
@@ -187,22 +188,22 @@ public class DRFScheduler implements Scheduler {
 		}
 	}
 
-	public void fairShareForJobs(JobQueue q, Resources availRes) {
+	public void fairShareForJobs(JobQueue q, Resource availRes) {
 		boolean fit = availRes.greaterOrEqual(q.getRsrcQuota());
 		if (!fit) {
-			Resources newQuota = Resources.piecewiseMin(availRes, q.getRsrcQuota());
+			Resource newQuota = Resources.piecewiseMin(availRes, q.getRsrcQuota());
 			q.setRsrcQuota(newQuota);
 		}
 		Output.debugln(DEBUG, "[DRFScheduler] drf share allocated to queue:" + q.getQueueName() + " "
 		    + q.getRsrcQuota());
 		q.receivedResourcesList.add(q.getRsrcQuota());
 
-		Resources remain = q.getRsrcQuota();
+		Resource remain = q.getRsrcQuota();
 		List<BaseDag> runningJobs = new LinkedList<BaseDag>(q.getRunningJobs());
 		Collections.sort(runningJobs, new JobArrivalComparator());
 
 		for (BaseDag job : runningJobs) {
-			Resources rsShare = Resources.divide(q.getRsrcQuota(), q.runningJobsSize());
+			Resource rsShare = Resources.divide(q.getRsrcQuota(), q.runningJobsSize());
 			// rsShare.floor();
 			job.rsrcQuota = rsShare;
 			remain.subtract(rsShare);
@@ -213,19 +214,19 @@ public class DRFScheduler implements Scheduler {
 		availRes = Resources.subtract(availRes, q.getRsrcQuota());
 	}
 
-	public void fifoShareForJobs(JobQueue q, Resources availRes) {
+	public void fifoShareForJobs(JobQueue q, Resource availRes) {
 		boolean fit = availRes.greaterOrEqual(q.getRsrcQuota());
 		if (!fit) {
-			Resources newQuota = Resources.piecewiseMin(availRes, q.getRsrcQuota());
+			Resource newQuota = Resources.piecewiseMin(availRes, q.getRsrcQuota());
 			q.setRsrcQuota(newQuota);
 		}
 		q.receivedResourcesList.add(q.getRsrcQuota());
 
-		Resources remain = q.getRsrcQuota();
+		Resource remain = q.getRsrcQuota();
 		List<BaseDag> runningJobs = new LinkedList<BaseDag>(q.getRunningJobs());
 		Collections.sort(runningJobs, new JobArrivalComparator());
 		for (BaseDag job : runningJobs) {
-			Resources rsShare = Resources.piecewiseMin(remain, job.getMaxDemand());
+			Resource rsShare = Resources.piecewiseMin(remain, job.getMaxDemand());
 			job.rsrcQuota = rsShare;
 			remain.subtract(rsShare);
 			Output.debugln(DEBUG,
@@ -238,14 +239,14 @@ public class DRFScheduler implements Scheduler {
 	public void fairShare() { // backup
 		Queue<JobQueue> nonAllocatedQueues = new LinkedList<JobQueue>(
 		    Simulator.QUEUE_LIST.getRunningQueues());
-		Resources availRes = Simulator.cluster.getClusterMaxResAlloc();
+		Resource availRes = Simulator.cluster.getClusterMaxResAlloc();
 		// update the resourceShareAllocated for every running job
 		for (JobQueue q : Simulator.QUEUE_LIST.getRunningQueues()) {
 			double factor = 0.0;
 			for (JobQueue qTemp : nonAllocatedQueues) {
 				factor += qTemp.getWeight();
 			}
-			Resources allocRes = Resources.divideNoRound(availRes, factor);
+			Resource allocRes = Resources.divideNoRound(availRes, factor);
 			allocRes = Resources.multiply(allocRes, q.getWeight());
 			allocRes.floor();
 			allocRes = Resources.piecewiseMin(allocRes, q.getMaxDemand());

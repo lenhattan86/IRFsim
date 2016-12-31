@@ -7,6 +7,7 @@ import java.util.Set;
 
 import cluster.carbyne.DagExecution;
 import cluster.cluster.Cluster;
+import cluster.datastructures.Resource;
 import cluster.datastructures.Resources;
 import cluster.datastructures.StageDag;
 import cluster.datastructures.Task;
@@ -54,7 +55,7 @@ public class CarbyneSchedPolicy extends SchedPolicy {
   }
 
   @Override
-  public double planSchedule(StageDag dag, Resources leftOverResources) {
+  public double planSchedule(StageDag dag, Resource leftOverResources) {
     if (dag.runnableTasks.isEmpty()) {
       return -1;
     }
@@ -112,7 +113,7 @@ public class CarbyneSchedPolicy extends SchedPolicy {
 
     StageDag adag = StageDag.clone(dag);
     for (int taskId : tasksToStartNow) {
-      Resources taskRsrcDem = Resources.clone(dag.rsrcDemands(taskId));
+      Resource taskRsrcDem = Resources.clone(dag.rsrcDemands(taskId));
       double taskDuration = dag.duration(taskId);
       //Output.debugln(DEBUG,"\ntaskId:"+taskId+" taskDuration:"+taskDuration+" taskRsrcDem:"+taskRsrcDem);
       for (int i = 2; i < Globals.NUM_DIMENSIONS; i++) {
@@ -150,7 +151,7 @@ public class CarbyneSchedPolicy extends SchedPolicy {
             break;
           }
 
-          Resources adjustedTaskDemand = Resources.clone(taskRsrcDem);
+          Resource adjustedTaskDemand = Resources.clone(taskRsrcDem);
           adjustedTaskDemand.resources[i] = newTaskResDemI;
           if (adag.adjustedTaskDemands == null) {
             adag.adjustedTaskDemands = new HashMap<Integer, Task>();
@@ -198,7 +199,7 @@ public class CarbyneSchedPolicy extends SchedPolicy {
     Output.debugln(DEBUG,"== adjustTasksFungibleRsrcsNew ==");
     StageDag adag = StageDag.clone(dag);
     for (int taskId : tasksToStartNow) {
-      Resources taskRsrcDem = dag.rsrcDemands(taskId);
+      Resource taskRsrcDem = dag.rsrcDemands(taskId);
       double taskDuration = dag.duration(taskId);
       Output.debugln(DEBUG,"Compute for task:"+taskId+" with taskRsrcDem:"+taskRsrcDem+" and dur:"+taskDuration);
       for (int i = 2; i < Globals.NUM_DIMENSIONS; i++) {
@@ -224,7 +225,7 @@ public class CarbyneSchedPolicy extends SchedPolicy {
           if (newTaskDuration == 0) {
             break;
           }
-          Resources adjustedTaskDemand = Resources.clone(taskRsrcDem);
+          Resource adjustedTaskDemand = Resources.clone(taskRsrcDem);
           adjustedTaskDemand.resources[i] = newTaskResDem;
           if (adag.adjustedTaskDemands == null) {
             adag.adjustedTaskDemands = new HashMap<Integer, Task>();
@@ -284,7 +285,7 @@ public class CarbyneSchedPolicy extends SchedPolicy {
 
     StageDag adag = StageDag.clone(dag);
     for (int taskId : tasksToStartNow) {
-      Resources taskRsrcDem = dag.rsrcDemands(taskId);
+      Resource taskRsrcDem = dag.rsrcDemands(taskId);
       double taskDuration = dag.duration(taskId);
 
       for (int i = 2; i < Globals.NUM_DIMENSIONS; i++) {
@@ -301,7 +302,7 @@ public class CarbyneSchedPolicy extends SchedPolicy {
             break;
           }
 
-          Resources adjustedTaskDemand = Resources.clone(taskRsrcDem);
+          Resource adjustedTaskDemand = Resources.clone(taskRsrcDem);
           adjustedTaskDemand.resources[i] = newTaskResDemI;
           if (adag.adjustedTaskDemands == null) {
             adag.adjustedTaskDemands = new HashMap<Integer, Task>();

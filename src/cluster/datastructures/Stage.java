@@ -16,7 +16,7 @@ public class Stage {
   public Interval vids;
 
   public double vDuration;
-  public Resources vDemands;
+  public Resource vDemands;
   public int arrivalTime =0; // relative Arrival Time
 
   public Map<String, Dependency> parents, children;
@@ -31,7 +31,7 @@ public class Stage {
     children = new HashMap<String, Dependency>();
 
     vDuration = duration;
-    vDemands = new Resources(resources);
+    vDemands = new Resource(resources);
   }
 
   public static Stage clone(Stage stage) {
@@ -65,19 +65,19 @@ public class Stage {
     return vDuration;
   }
 
-  public Resources rsrcDemands(int task) {
+  public Resource rsrcDemands(int task) {
     assert (task >= vids.begin && task <= vids.end);
     return vDemands;
   }
 
-  public Resources totalWork() {
-    Resources totalWork = Resources.clone(vDemands);
+  public Resource totalWork() {
+    Resource totalWork = Resources.clone(vDemands);
     totalWork.multiply(vids.end - vids.begin + 1);
     return totalWork;
   }
 
-  public Resources totalWorkInclDur() {
-    Resources totalWork = Resources.clone(vDemands);
+  public Resource totalWorkInclDur() {
+    Resource totalWork = Resources.clone(vDemands);
     totalWork.multiply((vids.end - vids.begin + 1) * vDuration);
     return totalWork;
   }
@@ -93,7 +93,7 @@ public class Stage {
     if (remTasksToSched == 0) {
       return 0;
     }
-    double l2Norm = Resources.l2Norm(vDemands);
+    double l2Norm = Resource.l2Norm(vDemands);
     return l2Norm * remTasksToSched * vDuration;
   }
 
@@ -108,4 +108,5 @@ public class Stage {
     return stageTasks.size();
   }
   // end task level convenience
+  
 }

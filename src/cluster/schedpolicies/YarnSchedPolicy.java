@@ -6,7 +6,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 
 import cluster.cluster.Cluster;
-import cluster.datastructures.Resources;
+import cluster.datastructures.Resource;
 import cluster.datastructures.StageDag;
 import cluster.simulator.Simulator;
 import cluster.utils.Output;
@@ -43,8 +43,8 @@ public class YarnSchedPolicy extends SchedPolicy {
 			int taskId = iter.next();
 
 			// discard tasks whose resource requirements are larger than total share
-			Resources currResShareAvail = dag.currResShareAvailable();
-			Resources taskDemand = dag.rsrcDemands(taskId);
+			Resource currResShareAvail = dag.currResShareAvailable();
+			Resource taskDemand = dag.rsrcDemands(taskId);
 			boolean fit = currResShareAvail.greaterOrEqual(taskDemand);
 			if (!fit) {
 				continue;
@@ -69,7 +69,7 @@ public class YarnSchedPolicy extends SchedPolicy {
 	}
 
 	@Override
-	public double planSchedule(StageDag dag, Resources leftOverResources) {
+	public double planSchedule(StageDag dag, Resource leftOverResources) {
 		return -1;
 	}
 

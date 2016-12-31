@@ -2,7 +2,7 @@ package cluster.schedpolicies;
 
 import cluster.cluster.Cluster;
 import cluster.cluster.Machine;
-import cluster.datastructures.Resources;
+import cluster.datastructures.Resource;
 import cluster.datastructures.StageDag;
 import cluster.utils.Pair;
 
@@ -58,15 +58,15 @@ public class TetrisSchedPolicy extends SchedPolicy {
 
       double maxScoreTask = Double.MIN_VALUE;
       int maxScoreTaskMachineId = -1;
-      Resources taskRes = dag.rsrcDemands(taskId);
+      Resource taskRes = dag.rsrcDemands(taskId);
       double taskDur = dag.duration(taskId);
       boolean fit = dag.currResShareAvailable().greaterOrEqual(taskRes);
       if (!fit)
         continue;
 
       for (Machine machine : cluster.getMachines()) {
-        Resources machineRes = machine.getTotalResAvail();
-        double scoreTaskMachine = Resources.dotProduct(taskRes, machineRes);
+        Resource machineRes = machine.getTotalResAvail();
+        double scoreTaskMachine = Resource.dotProduct(taskRes, machineRes);
         scoreTaskMachine = inclDurInCosineSim ? taskDur + scoreTaskMachine
             : scoreTaskMachine;
         if (maxScoreTask < scoreTaskMachine) {
@@ -85,7 +85,7 @@ public class TetrisSchedPolicy extends SchedPolicy {
   }
 
   @Override
-  public double planSchedule(StageDag dag, Resources leftOverResources) {
+  public double planSchedule(StageDag dag, Resource leftOverResources) {
     return -1;
   }
 }

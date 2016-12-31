@@ -20,7 +20,6 @@ import cluster.simulator.Simulator;
 import cluster.simulator.Main.Globals;
 import cluster.utils.Interval;
 import cluster.utils.Output;
-import cluster.utils.Randomness;
 
 public class StageDag extends BaseDag implements Cloneable {
 
@@ -215,6 +214,9 @@ public class StageDag extends BaseDag implements Cloneable {
 			str += "  Parents: ";
 			for (String parent : stage.parents.keySet())
 				str += parent + ", ";
+			str += "  Children: ";
+      for (String child : stage.children.keySet())
+        str += child + ", ";
 			str += "\n";
 		}
 
@@ -228,7 +230,6 @@ public class StageDag extends BaseDag implements Cloneable {
 	// read dags from file //
 	public static Queue<BaseDag> readDags(String filePathString) {
 
-		Randomness r = new Randomness();
 		Queue<BaseDag> dags = new LinkedList<BaseDag>();
 		File file = new File(filePathString);
 		assert (file.exists() && !file.isDirectory());
@@ -533,7 +534,7 @@ public class StageDag extends BaseDag implements Cloneable {
 	// end DAG traversals //
 
 	@Override
-	public Resources rsrcDemands(int taskId) {
+	public Resource rsrcDemands(int taskId) {
 		if (adjustedTaskDemands != null && adjustedTaskDemands.get(taskId) != null) {
 			return adjustedTaskDemands.get(taskId).resDemands;
 		}
@@ -605,16 +606,16 @@ public class StageDag extends BaseDag implements Cloneable {
 		return allTasks;
 	}
 
-	public Resources totalResourceDemand() {
-		Resources totalResDemand = new Resources(0.0);
+	public Resource totalResourceDemand() {
+		Resource totalResDemand = new Resource(0.0);
 		for (Stage stage : stages.values()) {
 			totalResDemand.addWith(stage.totalWork());
 		}
 		return totalResDemand;
 	}
 
-	public Resources totalWorkInclDur() {
-		Resources totalResDemand = new Resources(0.0);
+	public Resource totalWorkInclDur() {
+		Resource totalResDemand = new Resource(0.0);
 		for (Stage stage : stages.values()) {
 			totalResDemand.addWith(stage.totalWork());
 		}
@@ -716,11 +717,11 @@ public class StageDag extends BaseDag implements Cloneable {
 	}
 
 	// should decrease only the resources allocated in the current time quanta
-	public Resources currResShareAvailable() {
-		Resources totalShareAllocated = Resources.clone(this.rsrcQuota);
+	public Resource currResShareAvailable() {
+		Resource totalShareAllocated = Resources.clone(this.rsrcQuota);
 
 		for (int task : launchedTasksNow) {
-			Resources rsrcDemandsTask = rsrcDemands(task);
+			Resource rsrcDemandsTask = rsrcDemands(task);
 			totalShareAllocated.subtract(rsrcDemandsTask);
 		}
 		totalShareAllocated.normalize();

@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import cluster.datastructures.BaseDag;
+import cluster.datastructures.Resource;
 import cluster.datastructures.Resources;
 import cluster.datastructures.StageDag;
 import cluster.simulator.Simulator;
@@ -13,12 +14,12 @@ public class DRFSharePolicy extends SharePolicy {
 	
 	private static final boolean DEBUG = true;
 
-  Map<Integer, Resources> resDemandsDags = null;
-  Resources clusterTotCapacity = null;
+  Map<Integer, Resource> resDemandsDags = null;
+  Resource clusterTotCapacity = null;
 
   public DRFSharePolicy(String policyName) {
     super(policyName);
-    resDemandsDags = new HashMap<Integer, Resources>();
+    resDemandsDags = new HashMap<Integer, Resource>();
     clusterTotCapacity = Simulator.cluster.getClusterMaxResAlloc();
   }
 
@@ -42,7 +43,7 @@ public class DRFSharePolicy extends SharePolicy {
     for (BaseDag job : Simulator.runningJobs) {
       if (!resDemandsDags.containsKey(job.dagId)) {
         // 1. compute it's avg. resource demand vector it not already computed
-        Resources avgResDemandDag = ((StageDag) job).totalResourceDemand();
+        Resource avgResDemandDag = ((StageDag) job).totalResourceDemand();
         avgResDemandDag.divide(job.allTasks().size());
 
         // 2. normalize every dimension to the total capacity of the cluster
@@ -55,7 +56,7 @@ public class DRFSharePolicy extends SharePolicy {
     }
 
     // 4. sum it up across every dimension
-    Resources sumDemandsRunDags = new Resources(0.0);
+    Resource sumDemandsRunDags = new Resource(0.0);
     for (BaseDag job : Simulator.runningJobs) {
       sumDemandsRunDags.addWith(resDemandsDags.get(job.dagId));
     }
@@ -65,7 +66,7 @@ public class DRFSharePolicy extends SharePolicy {
 
     // 6. update the resource quota for every running job
     for (BaseDag job : Simulator.runningJobs) {
-      Resources jobDRFQuota = Resources.clone(resDemandsDags.get(job.dagId));
+      Resource jobDRFQuota = Resources.clone(resDemandsDags.get(job.dagId));
       jobDRFQuota.multiply(drfShare);
       job.rsrcQuota = jobDRFQuota;
       // Output.debugln(DEBUG,"Allocated to job:" + job.dagId + " share:"

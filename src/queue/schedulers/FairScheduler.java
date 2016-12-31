@@ -6,6 +6,7 @@ import java.util.Queue;
 
 import cluster.datastructures.BaseDag;
 import cluster.datastructures.JobQueue;
+import cluster.datastructures.Resource;
 import cluster.datastructures.Resources;
 import cluster.simulator.Simulator;
 import cluster.utils.Output;
@@ -14,9 +15,9 @@ public class FairScheduler implements Scheduler {
 	private static final boolean DEBUG = true;
 
 	private String schedulePolicy;
-	Map<String, Resources> resDemandsQueues = null;
+	Map<String, Resource> resDemandsQueues = null;
 
-	Resources clusterTotCapacity = null;
+	Resource clusterTotCapacity = null;
 	
 	public FairScheduler() {
 		clusterTotCapacity = Simulator.cluster.getClusterMaxResAlloc();
@@ -34,7 +35,7 @@ public class FairScheduler implements Scheduler {
 		}
 		
 		Queue<JobQueue> nonAllocatedQueues = new LinkedList<JobQueue>(Simulator.QUEUE_LIST.getRunningQueues());
-		Resources availRes = Simulator.cluster.getClusterMaxResAlloc();
+		Resource availRes = Simulator.cluster.getClusterMaxResAlloc();
 		// update the resourceShareAllocated for every running job
 		// TODO: Sort queue: large demand to -> low demand
 		for (JobQueue q : Simulator.QUEUE_LIST.getRunningQueues()) {
@@ -42,7 +43,7 @@ public class FairScheduler implements Scheduler {
 			for (JobQueue qTemp : nonAllocatedQueues) {
 				factor += qTemp.getWeight();
 			}
-			Resources allocRes = Resources.divideNoRound(availRes, factor);
+			Resource allocRes = Resources.divideNoRound(availRes, factor);
 			allocRes = Resources.multiply(allocRes, q.getWeight());
 //			allocRes.floor();
 			allocRes = Resources.piecewiseMin(allocRes, q.getMaxDemand());
@@ -59,16 +60,16 @@ public class FairScheduler implements Scheduler {
 		for (JobQueue q : Simulator.QUEUE_LIST.getRunningQueues()) {
 			boolean fit = availRes.greaterOrEqual(q.getRsrcQuota());
 			if (!fit) {
-				Resources newQuota = Resources.piecewiseMin(availRes, q.getRsrcQuota());
+				Resource newQuota = Resources.piecewiseMin(availRes, q.getRsrcQuota());
 				q.setRsrcQuota(newQuota);
 			}
 			Output.debugln(DEBUG, "[DRFScheduler] real share allocated to queue:" + q.getQueueName() + " " + q.getRsrcQuota());
 			q.receivedResourcesList.add(q.getRsrcQuota());
 
-			Resources remain = q.getRsrcQuota();
+			Resource remain = q.getRsrcQuota();
 			Queue<BaseDag> runningJobs = q.getRunningJobs();
 			for (BaseDag job : runningJobs) {
-				Resources rsShare = Resources.divide(q.getRsrcQuota(), q.runningJobsSize());
+				Resource rsShare = Resources.divide(q.getRsrcQuota(), q.runningJobsSize());
 //				rsShare.floor();
 				job.rsrcQuota = rsShare;
 				remain.subtract(rsShare);
@@ -79,7 +80,7 @@ public class FairScheduler implements Scheduler {
 		}
 	}
 	
-	private void shareRemainRes(JobQueue q, Resources remain){ // utilize more resource
+	private void shareRemainRes(JobQueue q, Resource remain){ // utilize more resource
 		Queue<BaseDag> runningJobs = q.cloneRunningJobs();
 		while (true) {
 			if (runningJobs.isEmpty() || remain.isEmpty()){
@@ -91,7 +92,7 @@ public class FairScheduler implements Scheduler {
 					break;
 				
 				if (job.getMaxDemand().greater(job.rsrcQuota)){
-					Resources tmp = Resources.piecewiseMin(new Resources(1.0), remain);
+					Resource tmp = Resources.piecewiseMin(new Resource(1.0), remain);
 					job.rsrcQuota.addWith(tmp);
 					remain.subtract(tmp);
 				}

@@ -68,5 +68,7 @@ queueNames = dataArray{:, 1};
 res1 = dataArray{:, 2};
 res2 = dataArray{:, 3};
 flag = true;
-
+if length(res1)<2
+  flag = false;
+end
 

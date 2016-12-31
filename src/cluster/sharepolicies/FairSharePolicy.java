@@ -1,6 +1,7 @@
 package cluster.sharepolicies;
 
 import cluster.datastructures.BaseDag;
+import cluster.datastructures.Resource;
 import cluster.datastructures.Resources;
 import cluster.simulator.Simulator;
 
@@ -8,7 +9,7 @@ public class FairSharePolicy extends SharePolicy {
 	
 	private static final boolean DEBUG = true;
 
-  Resources clusterTotCapacity = null;
+  Resource clusterTotCapacity = null;
 
   public FairSharePolicy(String policyName) {
     super(policyName);
@@ -24,7 +25,7 @@ public class FairSharePolicy extends SharePolicy {
       return;
     }
 
-    Resources quotaRsrcShare = Resources.divide(clusterTotCapacity,
+    Resource quotaRsrcShare = Resources.divide(clusterTotCapacity,
         numJobsRunning);
 
     // update the resourceShareAllocated for every running job

@@ -2,6 +2,7 @@ package cluster.speedfair;
 
 import java.util.ArrayList;
 
+import cluster.datastructures.Resource;
 import cluster.datastructures.Resources;
 import cluster.simulator.Main.Globals;
 
@@ -28,7 +29,7 @@ public class ServiceCurve {
 		return slopes.size();
 	}
 	
-	public Resources getMinReqService(double runTime){
+	public Resource getMinReqService(double runTime){
 		runTime = runTime + Globals.STEP_TIME;
 		double xDuration = 0;
 		double minVal = 0;
@@ -51,7 +52,7 @@ public class ServiceCurve {
 		
 //		Output.debugln(DEBUG, " Service Curve at " +runTime+ " is " + minVal);
 		// scale up the requirement.
-		Resources minService = Resources.initResources(false, minVal);
+		Resource minService = Resources.initResources(false, minVal);
 		return minService;
 	}
 	
@@ -64,9 +65,9 @@ public class ServiceCurve {
 	}
 	
 	// only need to satisfy the max resource.
-	public boolean isSatisfied(Resources receivedResources, double runTime){
+	public boolean isSatisfied(Resource receivedResources, double runTime){
 		int maxIdx = receivedResources.idOfMaxResource();
-		Resources minReq = getMinReqService(runTime);
+		Resource minReq = getMinReqService(runTime);
 		return minReq.resource(maxIdx)>=minReq.resource(maxIdx);
 	}
 }

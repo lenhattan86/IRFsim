@@ -7,7 +7,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import cluster.cluster.Cluster;
-import cluster.datastructures.Resources;
+import cluster.datastructures.Resource;
 import cluster.datastructures.StageDag;
 import cluster.schedpolicies.SchedPolicy;
 import cluster.schedpolicies.TetrisSchedPolicy;
@@ -33,7 +33,7 @@ public class DagExecution {
 
   public double complTime;
 
-  public DagExecution(StageDag _dag, Resources leftOverResources) {
+  public DagExecution(StageDag _dag, Resource leftOverResources) {
     dag = StageDag.clone(_dag);
     if (leftOverResources == null) {
       dag.rsrcQuota.subtract(dag.currResDemand());

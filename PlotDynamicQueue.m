@@ -4,16 +4,20 @@ common_settings;
 fig_path = '/home/tanle/Dropbox/proposals/NSF_predictions/simulations/fig/';
 % fig_path = 'figs/';
 
-
 %%
 % result_folder = '';
 % result_folder = '/home/tanle/projects/0_dynamic_q/';
-result_folder = '/home/tanle/projects/0_dynamic_q2/';
+% result_folder = '/home/tanle/projects/0_dynamic_q2/';
+% trace = '_fb'; dist='lognormal';
+% trace = '_cc_a';  dist='inversegaussian'; %dist='generalized extreme value'; 
+trace = '_cc_c'; dist='tlocationscale';
+result_folder = ['/home/tanle/projects/NSF_predicitons/' trace '/'];
 % extraName='_perfect';
 % extraName='_wrong';
 extraName='_static';
 % extraName='_good';
-trace = '_cc_c';
+methods = {'good','static','bad'};
+extraNames = {'_good','_static','_wrong'};
 
 workload='BB';
 user1_q_num = 1;
@@ -22,7 +26,7 @@ num_queues = user1_q_num + user2_q_num;
 START_TIME = 0; END_TIME = 4000;
 STEP_TIME = 1.0;
 is_printed = true;
-
+FIGURE_SIZE = [0.0 0 5.0 3.0];
 
 %%
 output_folder = [result_folder 'output/'];
@@ -35,7 +39,7 @@ figIdx = 0;
 % global batchJobRange
 % batchJobRange = [1:10]
 
-plots  = [false true false];
+plots  = [false false false false false true true];
 user1_queue = 'user1_';
 user2_queue = 'user2_';
 if plots(1) 
@@ -55,7 +59,7 @@ if plots(1)
 
     xLabels=queues;
     legend(legendStr,'Location','northoutside','FontSize',fontLegend,'Orientation','horizontal');
-    figSize = [0.0 0 5.0 3.0];
+    figSize = FIGURE_SIZE;
     set (gcf, 'Units', 'Inches', 'Position', figSize, 'PaperUnits', 'inches', 'PaperPosition', figSize);
     xlabel(xLabel,'FontSize',fontAxis);
     ylabel(yLabel,'FontSize',fontAxis);
@@ -68,7 +72,7 @@ if plots(1)
         print ('-depsc', epsFile);
    end
 end
-%%
+%% 
 user1_queue = 'user1_';
 if plots(2) 
    [ user1_compl_time ]  = queue_compl_time( output_folder, output_file, user1_queue);
@@ -119,6 +123,7 @@ end
 % else
    extraStr = ['u' int2str(user1_q_num) '_' 'u' int2str(user2_q_num)];
    
+%% plot resource usage   
 if plots(3)   
    logFile = [ logfolder 'DRF_output' extraStr extraName '.csv'];
    [queueNames, res1, res2, flag] = import_res_usage(logFile);
@@ -168,6 +173,149 @@ if plots(3)
         epsFile = [ LOCAL_FIG fileNames{figIdx} '.eps'];
         print ('-depsc', epsFile);
       end
+   end
+end
+
+%% plot PDF
+if plots(4) 
+    figure;
+    step = 0.1;
+    minVal=0;
+    maxVal=60;
+   for i=1:length(methods)
+       output_file = ['DRF_outputu1_u10'  extraNames{i} '.csv'];
+       [ user1_compl_time ]  = queue_compl_time( output_folder, output_file, user1_queue);       
+       h = histc(user1_compl_time,(minVal:step:maxVal));
+       h = h./sum(h);
+%        plot(h, 'linewidth', 2)
+%         histfit(user1_compl_time)
+        pd = fitdist(user1_compl_time,dist);
+        x_values = minVal:step:maxVal;
+        y = pdf(pd,x_values);
+        plot(x_values,y,'LineWidth',2)
+%         allfitdist(user1_compl_time,'PDF')
+       hold on;       
+   end
+   xLabel='secs';
+   yLabel='probability density';
+   legendStr=methods;
+   legend(legendStr,'Location','northeast','FontSize',fontLegend);
+    figSize = FIGURE_SIZE;
+    set (gcf, 'Units', 'Inches', 'Position', figSize, 'PaperUnits', 'inches', 'PaperPosition', figSize);
+    xlabel(xLabel,'FontSize',fontAxis);
+    ylabel(yLabel,'FontSize',fontAxis);
+    set(gca,'FontSize',fontAxis);
+   
+   if is_printed
+       figIdx=figIdx +1;
+      fileNames{figIdx} = ['pdf' trace];
+      epsFile = [ LOCAL_FIG fileNames{figIdx} '.eps'];
+        print ('-depsc', epsFile);
+   end
+end
+
+%% plot histogram
+if plots(5) 
+    figure;
+    step = 1;
+    minVal=0;
+    maxVal=60;
+   for i=1:length(methods)
+       output_file = ['DRF_outputu1_u10'  extraNames{i} '.csv'];
+       [ user1_compl_time ]  = queue_compl_time( output_folder, output_file, user1_queue);       
+       h = histc(user1_compl_time,(minVal:step:maxVal));
+       h = h./sum(h);
+     plot(h, 'linewidth', 2)
+
+       hold on;       
+   end
+   xLabel='secs';
+   yLabel='probability density';
+   legendStr=methods;
+   legend(legendStr,'Location','northeast','FontSize',fontLegend);
+    figSize = FIGURE_SIZE;
+    set (gcf, 'Units', 'Inches', 'Position', figSize, 'PaperUnits', 'inches', 'PaperPosition', figSize);
+    xlabel(xLabel,'FontSize',fontAxis);
+    ylabel(yLabel,'FontSize',fontAxis);
+    set(gca,'FontSize',fontAxis);
+   
+   if is_printed
+       figIdx=figIdx +1;
+      fileNames{figIdx} = ['hist' trace];
+      epsFile = [ LOCAL_FIG fileNames{figIdx} '.eps'];
+        print ('-depsc', epsFile);
+   end
+end
+
+%% plot CDF
+if plots(6) 
+    figure;
+    step = 0.1;
+    minVal=0;
+    maxVal=60;
+   for i=1:length(methods)
+       output_file = ['DRF_outputu1_u10'  extraNames{i} '.csv'];
+       [ user1_compl_time ]  = queue_compl_time( output_folder, output_file, user1_queue);     
+%        cdfplot(user1_compl_time)
+        [f,x]=ecdf(user1_compl_time);
+      plot(x,f,'LineWidth',2);
+
+%         set(F1,'LineWidth',2)
+%         set(gcf,'Name','off')
+       hold on;       
+   end
+   xLabel='Completion time (secs)';
+   yLabel='cdf';
+   legendStr=methods;
+   legend(legendStr,'Location','northeast','FontSize',fontLegend);
+    figSize = FIGURE_SIZE;
+    set (gcf, 'Units', 'Inches', 'Position', figSize, 'PaperUnits', 'inches', 'PaperPosition', figSize);
+    xlabel(xLabel,'FontSize',fontAxis);
+    ylabel(yLabel,'FontSize',fontAxis);
+    set(gca,'FontSize',fontAxis);
+   
+   if is_printed
+       figIdx=figIdx +1;
+      fileNames{figIdx} = ['cdf' trace];
+      epsFile = [ LOCAL_FIG fileNames{figIdx} '.eps'];
+        print ('-depsc', epsFile);
+   end
+end
+
+%% plot CDF
+if plots(7) 
+    figure;
+    step = 0.1;
+    minVal=0;
+    maxVal=60;
+   for i=1:length(methods)
+       output_file = ['DRF_outputu1_u10'  extraNames{i} '.csv'];
+       [ user1_compl_time ]  = queue_compl_time( output_folder, output_file, user1_queue);     
+
+        pd = fitdist(user1_compl_time,dist);
+        x_values = minVal:step:maxVal;
+        y = cdf(pd,x_values);
+        plot(x_values,y,'LineWidth',2)
+        
+%         set(F1,'LineWidth',2)
+%         set(gcf,'Name','off')
+       hold on;       
+   end
+   xLabel='Completion time (secs)';
+   yLabel='cdf';
+   legendStr=methods;
+   legend(legendStr,'Location','northeast','FontSize',fontLegend);
+    figSize = FIGURE_SIZE;
+    set (gcf, 'Units', 'Inches', 'Position', figSize, 'PaperUnits', 'inches', 'PaperPosition', figSize);
+    xlabel(xLabel,'FontSize',fontAxis);
+    ylabel(yLabel,'FontSize',fontAxis);
+    set(gca,'FontSize',fontAxis);
+   
+   if is_printed
+       figIdx=figIdx +1;
+      fileNames{figIdx} = ['fitcdf' trace];
+      epsFile = [ LOCAL_FIG fileNames{figIdx} '.eps'];
+        print ('-depsc', epsFile);
    end
 end
 

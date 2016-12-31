@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import cluster.datastructures.BaseDag;
+import cluster.datastructures.Resource;
 import cluster.datastructures.Resources;
 import cluster.datastructures.Task;
 import cluster.simulator.Simulator;
@@ -25,17 +26,17 @@ public class Machine {
 
   // max capacity of this machine
   // default is 1.0 across all dimensions
-  Resources maxResAlloc;
-  Resources totalResAlloc;
+  Resource maxResAlloc;
+  Resource totalResAlloc;
   // map: expected completion time -> Task context
   public Map<Task, Double> runningTasks;
 
-  public Machine(int machineId, Resources size, boolean execMode) {
+  public Machine(int machineId, Resource size, boolean execMode) {
     // LOG.info("Initialize machine: "+machineId+" size:"+size);
     this.machineId = machineId;
     this.execMode = execMode;
     this.currentTime = Simulator.CURRENT_TIME;
-    totalResAlloc = new Resources();
+    totalResAlloc = new Resource();
     assert size != null;
     maxResAlloc = Resources.clone(size);
     runningTasks = new HashMap<Task, Double>();
@@ -58,7 +59,7 @@ public class Machine {
   }
 
   public void assignTask(int dagId, int taskId, double taskDuration,
-      Resources taskResources) {
+      Resource taskResources) {
     // TODO - change 0.0 in case of self editing state thing
     currentTime = execMode ? Simulator.CURRENT_TIME : currentTime;
 
@@ -77,7 +78,7 @@ public class Machine {
    
   }
   
-  public Resources preemptTask(Task task) {
+  public Resource preemptTask(Task task) {
     // TODO - change 0.0 in case of self editing state thing
     currentTime = execMode ? Simulator.CURRENT_TIME : currentTime;
     
@@ -122,7 +123,7 @@ public class Machine {
     return tasksFinished;
   }
 
-  public Resources getTotalResAvail() {
+  public Resource getTotalResAvail() {
     return Resources.subtract(maxResAlloc, totalResAlloc);
   }
 

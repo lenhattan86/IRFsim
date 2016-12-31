@@ -1,6 +1,7 @@
 package cluster.sharepolicies;
 
 import cluster.datastructures.BaseDag;
+import cluster.datastructures.Resource;
 import cluster.datastructures.Resources;
 import cluster.datastructures.StageDag;
 import cluster.simulator.Simulator;
@@ -38,7 +39,7 @@ public class SJFSharePolicy extends SharePolicy {
         job.rsrcQuota = Resources.clone(Simulator.cluster
             .getClusterMaxResAlloc());
       } else {
-        job.rsrcQuota = new Resources(0.0);
+        job.rsrcQuota = new Resource(0.0);
       }
       // Output.debugln(DEBUG,"Allocated to job:" + job.dagId + " share:"
       // + job.rsrcQuota);

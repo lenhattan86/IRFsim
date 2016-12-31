@@ -6,21 +6,21 @@ public class Task implements Comparable<Task> {
   public int taskId;
   public int dagId;
   public double taskDuration;
-  public Resources resDemands;
+  public Resource resDemands;
 
   public Task(int dagId, int taskId) {
     this.dagId = dagId;
     this.taskId = taskId;
   }
 
-  public Task(int dagId, int taskId, double taskDuration, Resources resDemands) {
+  public Task(int dagId, int taskId, double taskDuration, Resource resDemands) {
     this.dagId = dagId;
     this.taskId = taskId;
     this.taskDuration = taskDuration;
     this.resDemands = resDemands;
   }
 
-  public Task(double taskDuration, Resources resDemands) {
+  public Task(double taskDuration, Resource resDemands) {
     this.taskDuration = taskDuration;
     this.resDemands = resDemands;
   }

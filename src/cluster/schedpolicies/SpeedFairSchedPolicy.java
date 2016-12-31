@@ -6,7 +6,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 
 import cluster.cluster.Cluster;
-import cluster.datastructures.Resources;
+import cluster.datastructures.Resource;
 import cluster.datastructures.StageDag;
 
 public class SpeedFairSchedPolicy extends SchedPolicy {
@@ -41,7 +41,7 @@ public class SpeedFairSchedPolicy extends SchedPolicy {
 			int taskId = iter.next();
 
 			// discard tasks whose resource requirements are larger than total share
-			Resources currResShareAvail = dag.currResShareAvailable();
+			Resource currResShareAvail = dag.currResShareAvailable();
 			boolean fit = currResShareAvail.greaterOrEqual(dag.rsrcDemands(taskId));
 			if (!fit)
 				continue;
@@ -60,7 +60,7 @@ public class SpeedFairSchedPolicy extends SchedPolicy {
 	}
 
 	@Override
-	public double planSchedule(StageDag dag, Resources leftOverResources) {
+	public double planSchedule(StageDag dag, Resource leftOverResources) {
 		return -1;
 	}
 

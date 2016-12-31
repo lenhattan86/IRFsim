@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import cluster.datastructures.BaseDag;
-import cluster.datastructures.Resources;
+import cluster.datastructures.Resource;
 import cluster.datastructures.StageDag;
 import cluster.simulator.Simulator;
 import cluster.utils.Output;
@@ -21,10 +21,10 @@ import cluster.utils.Output;
 public class LeftOverResAllocator {
 
 	private static final boolean DEBUG = true;
-  public Resources leftOverRes;
+  public Resource leftOverRes;
 
   public LeftOverResAllocator() {
-    leftOverRes = new Resources(0.0);
+    leftOverRes = new Resource(0.0);
   }
 
   private void takeStockOfLeftOverRsrcs() {
@@ -36,7 +36,7 @@ public class LeftOverResAllocator {
     takeStockOfLeftOverRsrcs();
 
     // if nothing is leftover -> nothing to do
-    if (!leftOverRes.greater(new Resources(0.0))) {
+    if (!leftOverRes.greater(new Resource(0.0))) {
       return;
     }
 
@@ -70,7 +70,7 @@ public class LeftOverResAllocator {
 
     for (int dagId : runningDagsIds) {
       // Output.debugln(DEBUG,"\tdag:" + dagId + " leftOverRes:" + leftOverRes);
-      if (!leftOverRes.greater(new Resources(0.0))) {
+      if (!leftOverRes.greater(new Resource(0.0))) {
         Output.debugln(DEBUG,"\tno more leftover res -> stop reallocating");
         break;
       }

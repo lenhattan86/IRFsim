@@ -1,6 +1,6 @@
 package cluster.schedulers;
 
-import cluster.datastructures.Resources;
+import cluster.datastructures.Resource;
 import cluster.datastructures.StageDag;
 import cluster.schedpolicies.BFSSchedPolicy;
 import cluster.schedpolicies.CPSchedPolicy;
@@ -59,7 +59,7 @@ public class IntraJobScheduler {
     resSchedPolicy.schedule(dag);
   }
 
-  public double planSchedule(StageDag dag, Resources leftOverResources) {
+  public double planSchedule(StageDag dag, Resource leftOverResources) {
     return resSchedPolicy.planSchedule(dag, leftOverResources);
   }
 }

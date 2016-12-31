@@ -2,13 +2,14 @@ package cluster.speedfair;
 
 import java.util.ArrayList;
 
+import cluster.datastructures.Resource;
 import cluster.datastructures.Resources;
 import cluster.simulator.Main.Globals;
 import cluster.simulator.Simulator;
 
 public class ServiceRate {
 	private final boolean DEBUG = true;
-	public ArrayList<Resources> slopes = new ArrayList<Resources>();
+	public ArrayList<Resource> slopes = new ArrayList<Resource>();
 	private ArrayList<Double> curveDurations = new ArrayList<Double>();
 
 	public enum Type {
@@ -21,13 +22,13 @@ public class ServiceRate {
 		type = Type.max;
 	}
 
-	public ServiceRate(ArrayList<Resources> slopes, ArrayList<Double> curveDurations) {
+	public ServiceRate(ArrayList<Resource> slopes, ArrayList<Double> curveDurations) {
 		this.slopes = slopes;
 		this.curveDurations = curveDurations;
 
 	}
 
-	public void addSlope(Resources slope, double duration) {
+	public void addSlope(Resource slope, double duration) {
 		this.curveDurations.add(duration);
 		this.slopes.add(slope);
 	}
@@ -36,12 +37,12 @@ public class ServiceRate {
 		return slopes.size();
 	}
 
-	public Resources getGuaranteedRate(double curTime, double startTime) {
+	public Resource getGuaranteedRate(double curTime, double startTime) {
 		if (startTime < 0)
 			return null;
 		double mCurrTime = curTime + Globals.STEP_TIME - startTime;
 		double xDuration = 0;
-		Resources rate = new Resources(0.0);
+		Resource rate = new Resource(0.0);
 		for (int iSlope = 0; iSlope < this.getNumOfSlopes(); iSlope++) {
 			double prevDuration = xDuration;
 			xDuration += this.curveDurations.get(iSlope);
@@ -62,13 +63,13 @@ public class ServiceRate {
 		return mCurrTime > xDuration;
 	}
 	
-	public Resources guaranteedResources(double curTime, double startTime) {
-    Resources rate = getGuaranteedRate(curTime, startTime);
-    Resources res = new Resources(0);
+	public Resource guaranteedResources(double curTime, double startTime) {
+    Resource rate = getGuaranteedRate(curTime, startTime);
+    Resource res = new Resource(0);
     if (rate.distinct(Resources.ZEROS))
-      res = new Resources(rate);
+      res = new Resource(rate);
     else if(this.slopes.size()>0){
-      res = new Resources();
+      res = new Resource();
       for (int i=0; i< Globals.NUM_DIMENSIONS; i++) {
         double C = Simulator.cluster.getClusterMaxResAlloc().resource(i);
         double ans = (C*Globals.PERIODIC_INTERVAL/(Simulator.QUEUE_LIST.getRunningQueues().size()));
@@ -82,10 +83,10 @@ public class ServiceRate {
     return res;
   }
 	
-	public Resources getAlpha(){
-	  Resources res = new Resources(0);
+	public Resource getAlpha(){
+	  Resource res = new Resource(0);
     if (this.slopes.size()>0)
-      res = new Resources(this.slopes.get(0));
+      res = new Resource(this.slopes.get(0));
     return res;
 	}
 

@@ -5,7 +5,7 @@ import java.util.Collections;
 import java.util.Iterator;
 
 import cluster.cluster.Cluster;
-import cluster.datastructures.Resources;
+import cluster.datastructures.Resource;
 import cluster.datastructures.StageDag;
 
 public class RandomSchedPolicy extends SchedPolicy {
@@ -53,7 +53,7 @@ public class RandomSchedPolicy extends SchedPolicy {
   }
 
   @Override
-  public double planSchedule(StageDag dag, Resources leftOverResources) {
+  public double planSchedule(StageDag dag, Resource leftOverResources) {
     return -1;
   }
 }

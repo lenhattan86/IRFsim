@@ -16,7 +16,7 @@ import cluster.data.QueueData;
 import cluster.datastructures.BaseDag;
 import cluster.datastructures.JobQueue;
 import cluster.datastructures.JobQueueList;
-import cluster.datastructures.Resources;
+import cluster.datastructures.Resource;
 import cluster.datastructures.Stage;
 import cluster.datastructures.StageDag;
 import cluster.resources.LeftOverResAllocator;
@@ -117,7 +117,7 @@ public class Simulator {
     // ((StageDag) dag).viewDag();
     // }
 
-    cluster = new Cluster(true, new Resources(Globals.MACHINE_MAX_RESOURCE));
+    cluster = new Cluster(true, new Resource(Globals.MACHINE_MAX_RESOURCE));
 
     if (Globals.COMPUTE_STATISTICS) {
       double[] area_makespan = new double[Globals.NUM_DIMENSIONS];
@@ -209,7 +209,7 @@ public class Simulator {
       QUEUE_LIST.updateRunningQueues();
 
       // if(false)
-      if (!jobCompleted && !newJobArrivals && finishedTasks.isEmpty() && Globals.ENABLE_PREEMPTION)
+      if (!jobCompleted && !newJobArrivals && finishedTasks.isEmpty())
         Output.debugln(DEBUG, "----- Do nothing ----");
       else {
         Output.debugln(DEBUG,
@@ -313,8 +313,11 @@ public class Simulator {
     // (completedJobs.size() == totalReplayedJobs));
     if (runningBatchJobs.isEmpty() && runnableJobs.isEmpty())
       System.err.println("You need to increase the number of bursty jobs");
-
-    return (runningBatchJobs.isEmpty());
+    
+    if ( Globals.numBatchQueues== 0)
+      return runningJobs.isEmpty();
+    else
+      return runningBatchJobs.isEmpty();
   }
 
   boolean updateJobsStatus(Map<Integer, List<Integer>> finishedTasks) {
@@ -365,8 +368,8 @@ public class Simulator {
           newlyStartedJobs.add(newJob);
           Simulator.QUEUE_LIST.addRunningJob2Queue(newJob, newJob.getQueueName());
           newJob.jobStartTime = Simulator.CURRENT_TIME;
+          Output.debugln(DEBUG, "Started job:" + newJob.dagId + " at time:" + Simulator.CURRENT_TIME);
         }
-        Output.debugln(DEBUG, "Started job:" + newJob.dagId + " at time:" + Simulator.CURRENT_TIME);
       }
       runnableJobs.removeAll(newlyStartedJobs);
       runningJobs.addAll(newlyStartedJobs);
@@ -486,7 +489,7 @@ public class Simulator {
 
     Output.debugln(DEBUG, "Print DAGs");
 
-    cluster = new Cluster(true, new Resources(Globals.MACHINE_MAX_RESOURCE));
+    cluster = new Cluster(true, new Resource(Globals.MACHINE_MAX_RESOURCE));
 
     totalReplayedJobs = user2RunableJobs.size() + user1RunableJobs.size();
     runningJobs = new LinkedList<BaseDag>();
@@ -544,7 +547,7 @@ public class Simulator {
       changeWeight4User1();
 
       // if(false)
-      if (!jobCompleted && !newJobArrivals && finishedTasks.isEmpty() && Globals.ENABLE_PREEMPTION)
+      if (!jobCompleted && !newJobArrivals && finishedTasks.isEmpty())
         Output.debugln(DEBUG, "----- Do nothing ----");
       else {
         Output.debugln(DEBUG,

@@ -9,7 +9,7 @@ import java.util.TreeMap;
 import java.util.logging.Logger;
 
 import cluster.datastructures.BaseDag;
-import cluster.datastructures.Resources;
+import cluster.datastructures.Resource;
 import cluster.datastructures.Task;
 import cluster.simulator.Simulator;
 import cluster.simulator.Main.Globals;
@@ -27,7 +27,7 @@ public class Cluster {
 
   private static Logger LOG = Logger.getLogger(Cluster.class.getName());
 
-  public Cluster(boolean state, Resources res) {
+  public Cluster(boolean state, Resource res) {
     execMode = state;
     machines = new TreeMap<Integer, Machine>();
     int numberMachines = execMode ? Globals.NUM_MACHINES : 1;
@@ -37,7 +37,7 @@ public class Cluster {
   }
 
   public boolean assignTask(int machineId, int dagId, int taskId,
-      double taskDuration, Resources taskResources) {
+      double taskDuration, Resource taskResources) {
     // LOG.info("assign task: "+taskId+" from dag:"+dagId+" on machine:"+machineId);
     Machine machine = machines.get(machineId);
     assert (machine != null);
@@ -52,7 +52,7 @@ public class Cluster {
 
   // checks for fitting in resShare should already be done
   public boolean assignTask(int dagId, int taskId, double taskDuration,
-      Resources taskResources) {
+      Resource taskResources) {
 
     // find the first machine where the task can fit
     // put it there
@@ -78,8 +78,8 @@ public class Cluster {
   }
   
 //checks for fitting in resShare should already be done
- public Resources preemptTask(String queueName) {
-	 Resources returnedRes = null;
+ public Resource preemptTask(String queueName) {
+	 Resource returnedRes = null;
 	 
    for (Machine machine : machines.values()) {
   	 Task task = machine.getLastRunningTask(queueName);
@@ -150,24 +150,24 @@ public class Cluster {
     return machines.values();
   }
 
-  public Resources getClusterMaxResAlloc() {
-    Resources maxClusterResAvail = new Resources();
+  public Resource getClusterMaxResAlloc() {
+    Resource maxClusterResAvail = new Resource();
     for (Machine machine : machines.values()) {
       maxClusterResAvail.addWith(machine.maxResAlloc);
     }
     return maxClusterResAvail;
   }
 
-  public Resources getClusterResAvail() {
-    Resources clusterResAvail = new Resources();
+  public Resource getClusterResAvail() {
+    Resource clusterResAvail = new Resource();
     for (Machine machine : machines.values()) {
       clusterResAvail.addWith(machine.getTotalResAvail());
     }
     return clusterResAvail;
   }
   
-  public Resources getClusterResQuotaAvail() {
-    Resources clusterResAvail = new Resources();
+  public Resource getClusterResQuotaAvail() {
+    Resource clusterResAvail = new Resource();
     for (Machine machine : machines.values()) {
       clusterResAvail.addWith(machine.getTotalResAvail());
     }

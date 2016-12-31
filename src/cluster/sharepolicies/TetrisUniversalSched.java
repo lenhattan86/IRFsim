@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 import cluster.cluster.Machine;
 import cluster.datastructures.BaseDag;
-import cluster.datastructures.Resources;
+import cluster.datastructures.Resource;
 import cluster.datastructures.Task;
 import cluster.simulator.Simulator;
 import cluster.utils.Pair;
@@ -12,7 +12,7 @@ import cluster.utils.Pair;
 public class TetrisUniversalSched extends SharePolicy {
 
 	private static final boolean DEBUG = true;
-  Resources clusterTotCapacity = null;
+  Resource clusterTotCapacity = null;
   ArrayList<Task> runnableTasks = null;
 
   boolean inclDurInCosineSim = false;
@@ -82,12 +82,12 @@ public class TetrisUniversalSched extends SharePolicy {
 
       double maxScoreTask = Double.MIN_VALUE;
       int maxScoreTaskMachineId = -1;
-      Resources taskRes = task.resDemands;
+      Resource taskRes = task.resDemands;
       double taskDur = task.taskDuration;
 
       for (Machine machine : Simulator.cluster.getMachines()) {
-        Resources machineRes = machine.getTotalResAvail();
-        double scoreTaskMachine = Resources.dotProduct(taskRes, machineRes);
+        Resource machineRes = machine.getTotalResAvail();
+        double scoreTaskMachine = Resource.dotProduct(taskRes, machineRes);
         scoreTaskMachine = inclDurInCosineSim ? taskDur + scoreTaskMachine
             : scoreTaskMachine;
         if (maxScoreTask < scoreTaskMachine) {

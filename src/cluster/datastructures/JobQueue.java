@@ -40,9 +40,9 @@ public class JobQueue {
 	
 	private ServiceRate serviceRate = new ServiceRate();
 
-	public List<Resources> receivedResourcesList = new LinkedList<Resources>();
+	public List<Resource> receivedResourcesList = new LinkedList<Resource>();
 
-	private Resources rsrcQuota = new Resources();
+	private Resource rsrcQuota = new Resource();
 
 	String queueName = "";
 
@@ -82,26 +82,26 @@ public class JobQueue {
 		runnableJobs.add(newArrivalJob);
 	}
 
-	public void setRsrcQuota(Resources rsrcQuota) {
-		this.rsrcQuota = new Resources(rsrcQuota);
+	public void setRsrcQuota(Resource rsrcQuota) {
+		this.rsrcQuota = new Resource(rsrcQuota);
 	}
 
-	public Resources getRsrcQuota() {
-		return new Resources(rsrcQuota);
+	public Resource getRsrcQuota() {
+		return new Resource(rsrcQuota);
 	}
 	
-	public Resources getJobsQuota() {
-		Resources res = new Resources();
+	public Resource getJobsQuota() {
+		Resource res = new Resource();
 		for (BaseDag job: runningJobs){
 			res.addWith(job.rsrcQuota);
 		}
 		return res;
 	}
 
-	public Resources getResRate(List<Resources> resList, double term) {
+	public Resource getResRate(List<Resource> resList, double term) {
 		int timeSteps = (int) Math.round(term / Globals.STEP_TIME);
-		Resources res = new Resources();
-		Iterator<Resources> iRes = resList.iterator();
+		Resource res = new Resource();
+		Iterator<Resource> iRes = resList.iterator();
 		int i = 0;
 		while (iRes.hasNext()) {
 			if (i++ > timeSteps)
@@ -111,9 +111,9 @@ public class JobQueue {
 		return Resources.divide(res, timeSteps);
 	}
 
-	public Resources getReceivedRes(double term) {
-		Resources res = new Resources();
-		Iterator<Resources> iRes = this.receivedResourcesList.iterator();
+	public Resource getReceivedRes(double term) {
+		Resource res = new Resource();
+		Iterator<Resource> iRes = this.receivedResourcesList.iterator();
 		int timeSteps = (int) Math.round(term / Globals.STEP_TIME);
 		int i = 0;
 		while (iRes.hasNext() && i++ < timeSteps) {
@@ -122,38 +122,38 @@ public class JobQueue {
 		return res;
 	}
 
-	public Resources getResRate(double term) {
+	public Resource getResRate(double term) {
 		return this.getResRate(this.receivedResourcesList, term);
 	}
 
 
-	public void addResourcesList(Resources res) {
+	public void addResourcesList(Resource res) {
 		this.receivedResourcesList.add(0, res);
 	}
 
 
-	public Resources computeShare(double term, Resources guartRate) {
-		Resources resQuota = new Resources();
-		Resources received = this.getReceivedRes(term - Globals.STEP_TIME);
-		Resources total = Resources.multiply(guartRate, (int) (Math.round(term / Globals.STEP_TIME)));
+	public Resource computeShare(double term, Resource guartRate) {
+		Resource resQuota = new Resource();
+		Resource received = this.getReceivedRes(term - Globals.STEP_TIME);
+		Resource total = Resources.multiply(guartRate, (int) (Math.round(term / Globals.STEP_TIME)));
 		resQuota = Resources.subtractPositivie(total, received);
-		Resources resDemand = new Resources();
+		Resource resDemand = new Resource();
 		for (BaseDag job : runningJobs) {
 			resDemand = Resources.sum(resDemand, job.getMaxDemand());
 		}
 		return Resources.piecewiseMin(resQuota, resDemand);
 	}
 	
-	public Resources getMaxDemand(){
-		Resources resDemand = new Resources();
+	public Resource getMaxDemand(){
+		Resource resDemand = new Resource();
 		for (BaseDag job : runningJobs) {
 			resDemand = Resources.sum(resDemand, job.getMaxDemand());
 		}
 		return resDemand;
 	}
 	
-	public Resources getResourceUsage(){
-		Resources res = new Resources();
+	public Resource getResourceUsage(){
+		Resource res = new Resource();
 		for (BaseDag job : this.runningJobs) {
 			res.addWith(job.getRsrcInUse());
 		}
@@ -202,16 +202,16 @@ public class JobQueue {
 			return 1.0; // make equal share to others.
 	}
 	
-	public Resources getGuaranteeRate(double currTime){
+	public Resource getGuaranteeRate(double currTime){
     return this.serviceRate.guaranteedResources(Simulator.CURRENT_TIME, this.startTimeOfNewJob);
   }
 	
-	public Resources getAlpha(){
+	public Resource getAlpha(){
     return this.serviceRate.getAlpha();
   }
 
 
-	public void addRate(Resources slope, double duration) {
+	public void addRate(Resource slope, double duration) {
 		this.serviceRate.addSlope(slope, duration);
 	}
 	
@@ -278,8 +278,8 @@ public class JobQueue {
 		return jobs;
 	}
 
-	public Resources nextTaskRes() {
-		Resources res = new Resources();
+	public Resource nextTaskRes() {
+		Resource res = new Resource();
 		
 	  return res;
   }
@@ -292,8 +292,8 @@ public class JobQueue {
 		return null;
   }
 
-	public Resources assign(Resources assignedRes) {
-		Resources remain = Resources.clone(assignedRes);
+	public Resource assign(Resource assignedRes) {
+		Resource remain = Resources.clone(assignedRes);
 		while (true){
 			BaseDag unallocJob = this.getUnallocRunningJob();
 			if (unallocJob == null) {
@@ -301,13 +301,11 @@ public class JobQueue {
 			}
 			//TODO: a job may have a variety of tasks having different resource demands.
 			int taskId = unallocJob.getCommingTaskId();
-			Resources allocRes = unallocJob.rsrcDemands(taskId);
+			Resource allocRes = unallocJob.rsrcDemands(taskId);
 			if (remain.greaterOrEqual(allocRes)) {
 				boolean assigned = Simulator.cluster.assignTask(unallocJob.dagId, taskId,
 				    unallocJob.duration(taskId), allocRes);
 				if (assigned) {
-//					unallocJob.runningTasks.add(taskId);
-//					unallocJob.runnableTasks.remove(taskId);
 					remain = Resources.subtract(remain, allocRes);
 					
 					if (unallocJob.jobStartRunningTime<0){
@@ -317,6 +315,7 @@ public class JobQueue {
 				} else {
 					Output.debugln(DEBUG,"[DRFScheduler] Cannot assign resource to the task" + taskId
 					    + " of Job " + unallocJob.dagId + " " + allocRes);
+					break; //TODO: Add the further process to utilize more resource.
 				}
 			} else {
 				// do not allocate to this queue any more
