@@ -72,8 +72,7 @@ public class GenInput {
 
   public static void genQueueInput(int numInteractiveQueues,
       int numBatchQueues) {
-    String file = GenInput.queueFile + "_" + numInteractiveQueues + "_"
-        + numBatchQueues + '_' + Globals.NUM_MACHINES + ".txt";
+    String file = Globals.PathToQueueInputFile;
     Output.write("", false, file);
 
     for (int i = 0; i < numInteractiveQueues; i++) {
@@ -298,10 +297,8 @@ public class GenInput {
       int numInteractiveJobsPerQueue, int numBatchQueues,
       int numBatchJobs, Queue<BaseDag> jobs) {
     
-    String extra = Globals.SCALE_UP_FACTOR>1? "_"+Globals.SCALE_UP_FACTOR+"x":""; 
-
-    String file = GenInput.jobFile + "_" + numInteractiveQueues + "_"
-        + numBatchQueues + '_' + Globals.NUM_MACHINES +  extra + ".txt";
+    String file = Globals.PathToInputFile;
+    
     Output.write("", false, file);
     // TODO: pick the short jobs for the bursty queue.
     Queue<BaseDag> shortJobs = getJobs(jobs, Globals.SMALL_JOB_DUR_THRESHOLD,

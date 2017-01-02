@@ -166,6 +166,14 @@ public class Cluster {
     return clusterResAvail;
   }
   
+  public Resource getClusterAllocatedRes() {
+    Resource clusterAllocatedRes = new Resource();
+    for (Machine machine : machines.values()) {
+      clusterAllocatedRes.addWith(machine.totalResAlloc);
+    }
+    return clusterAllocatedRes;
+  }
+  
   public Resource getClusterResQuotaAvail() {
     Resource clusterResAvail = new Resource();
     for (Machine machine : machines.values()) {

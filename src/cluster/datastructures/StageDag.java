@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -23,7 +24,7 @@ import cluster.utils.Output;
 
 public class StageDag extends BaseDag implements Cloneable {
 
-	private static final boolean DEBUG = true;
+	private static final boolean DEBUG = false;
 	public String dagName;
 
 	public Map<String, String> nextHopOnCriticalPath;
@@ -64,8 +65,10 @@ public class StageDag extends BaseDag implements Cloneable {
 		clonedDag.finishedTasks = new LinkedHashSet<Integer>(dag.finishedTasks);
 		clonedDag.chokePointsS.addAll(dag.chokePointsS);
 
-		clonedDag.CPlength = new HashMap<Integer, Double>(dag.CPlength);
-		clonedDag.BFSOrder = new HashMap<Integer, Double>(dag.BFSOrder);
+		if(dag.CPlength!=null){
+  		clonedDag.CPlength = new HashMap<Integer, Double>(dag.CPlength);
+  		clonedDag.BFSOrder = new HashMap<Integer, Double>(dag.BFSOrder);
+		}
 
 		for (Map.Entry<String, Stage> entry : dag.stages.entrySet()) {
 			String stageName = entry.getKey();
@@ -229,6 +232,7 @@ public class StageDag extends BaseDag implements Cloneable {
 
 	// read dags from file //
 	public static Queue<BaseDag> readDags(String filePathString) {
+	  Output.debugln(DEBUG,"[readDags] read "+ filePathString);
 
 		Queue<BaseDag> dags = new LinkedList<BaseDag>();
 		File file = new File(filePathString);
@@ -246,7 +250,7 @@ public class StageDag extends BaseDag implements Cloneable {
 				if (line.startsWith("#")) {
 					dag_name = line.split("#")[1];
 					dag_name = dag_name.trim();
-					// Output.debugln(DEBUG,"DAG name: " + dag_name);
+//					Output.debugln(DEBUG,"[readDags] DAG name: " + dag_name);
 					continue;
 				}
 
@@ -375,8 +379,8 @@ public class StageDag extends BaseDag implements Cloneable {
 				// }
 
 				// dag.scaleDag();
-				dag.setCriticalPaths();
-				dag.setBFSOrder();
+//				dag.setCriticalPaths();
+//				dag.setBFSOrder();
 				// add initial runnable tasks => all tasks with no parents
 				for (int taskId : dag.allTasks()) {
 					if (dag.getParents(taskId).isEmpty()) {
@@ -656,7 +660,7 @@ public class StageDag extends BaseDag implements Cloneable {
 	}
 
 	// return true or false -> based on if this job has finished or not
-	public boolean finishTasks(List<Integer> completedTasks, boolean reverse) {
+	public boolean finishTasks_old(List<Integer> completedTasks, boolean reverse) {
 
 		if (completedTasks.isEmpty())
 			return false;
@@ -665,9 +669,9 @@ public class StageDag extends BaseDag implements Cloneable {
 		assert (runningTasks.containsAll(completedTasks));
 		runningTasks.removeAll(completedTasks);
 		finishedTasks.addAll(completedTasks);
-		for (int i = 0; i < completedTasks.size(); i++) {
-			Integer taskToRemove = completedTasks.get(i);
-		}
+//		for (int i = 0; i < completedTasks.size(); i++) {
+//			Integer taskToRemove = completedTasks.get(i);
+//		}
 		/*
 		 * for (int fTask : completedTasks) { assert (runningTasks.contains(fTask));
 		 * runningTasks.remove((Integer) fTask); finishedTasks.add(fTask); }
@@ -714,6 +718,71 @@ public class StageDag extends BaseDag implements Cloneable {
 		 * if (candTaskReadyToSched) { runnableTasks.add(candTask); } }
 		 */
 		return false;
+	}
+	
+	public boolean finishTasks(List<Integer> completedTasks, boolean reverse) {
+
+    if (completedTasks.isEmpty())
+      return false;
+
+    // move finishedTasks from runningTasks into finishedTasks
+    assert (runningTasks.containsAll(completedTasks));
+    runningTasks.removeAll(completedTasks);
+    finishedTasks.addAll(completedTasks);
+    
+    if (finishedTasks.size() == allTasks().size()) {
+      jobEndTime = Simulator.CURRENT_TIME;
+      return true;
+    }
+
+    /*ArrayList<Integer> tasksToRun1 = new ArrayList<Integer>();
+   List<Integer> tasksRemToBeSched = new ArrayList<Integer>(allTasks());
+    tasksRemToBeSched.removeAll(runnableTasks);
+    tasksRemToBeSched.removeAll(runningTasks);
+    tasksRemToBeSched.removeAll(finishedTasks);
+    for (int candTask : tasksRemToBeSched) {
+      boolean candTaskReadyToSched = true;
+      List<Interval> depCandTasks = (!reverse) ? getParents(candTask) : getChildren(candTask);
+      for (Interval ival : depCandTasks) {
+        if (!finishedTasks.containsAll(ival.toList())) {
+          candTaskReadyToSched = false;
+          break;
+        }
+      }
+      if (candTaskReadyToSched) {
+        tasksToRun1.add(candTask);
+      }
+    }
+    Output.debugln(DEBUG, tasksToRun1.toString());*/
+    
+    ArrayList<Integer>  tasksToRun = new ArrayList<Integer>();
+    for (Stage stageToBeSched : stages.values()){
+      boolean stageReadyToSched = true;
+      
+      ArrayList<Integer> candTasks = stageToBeSched.getTasks(); 
+      for (String depStageString:stageToBeSched.parents.keySet()){
+        if (!finishedTasks.containsAll(this.stages.get(depStageString).getTasks())) {
+          stageReadyToSched = false;
+          break;
+        }
+      }
+      
+      if (stageReadyToSched) {
+        tasksToRun.addAll(candTasks);
+      }
+    }
+    tasksToRun.removeAll(runnableTasks);
+    tasksToRun.removeAll(runningTasks);
+    tasksToRun.removeAll(finishedTasks);
+    runnableTasks.addAll(tasksToRun);
+    
+    Output.debugln(DEBUG, tasksToRun.toString());
+
+    return false;
+  }
+	
+	public Stage[] allStages(){
+	  return (Stage[]) stages.values().toArray();
 	}
 
 	// should decrease only the resources allocated in the current time quanta

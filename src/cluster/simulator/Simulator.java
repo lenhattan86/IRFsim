@@ -178,10 +178,10 @@ public class Simulator {
       // for (Simulator.CURRENT_TIME = 0; Simulator.CURRENT_TIME <=
       // Globals.SIM_END_TIME; Simulator.CURRENT_TIME += Globals.STEP_TIME) {
 
-      if (Simulator.CURRENT_TIME >= Globals.DEBUG_START && Simulator.CURRENT_TIME <= Globals.DEBUG_END) {
-        DEBUG = true;
-      } else
-        DEBUG = false;
+//      if (Simulator.CURRENT_TIME >= Globals.DEBUG_START && Simulator.CURRENT_TIME <= Globals.DEBUG_END) {
+//        DEBUG = true;
+//      } else
+//        DEBUG = false;
 
       Output.debugln(DEBUG, "\n==== STEP_TIME:" + Simulator.CURRENT_TIME + " ====\n");
 
@@ -197,7 +197,7 @@ public class Simulator {
 
       // handle jobs completion and arrivals
       boolean newJobArrivals = handleNewJobArrival4MultiQueues();
-
+      
       // STOP condition
       if (stop()) {
         printReport();
@@ -208,7 +208,6 @@ public class Simulator {
 
       QUEUE_LIST.updateRunningQueues();
 
-      // if(false)
       if (!jobCompleted && !newJobArrivals && finishedTasks.isEmpty())
         Output.debugln(DEBUG, "----- Do nothing ----");
       else {
@@ -332,6 +331,8 @@ public class Simulator {
 
         Output.debugln(DEBUG, "DAG:" + crdag.dagId + ": " + finishedTasks.get(crdag.dagId).size()
             + " tasks finished at time:" + Simulator.CURRENT_TIME);
+
+//        boolean thisDagFinished = ((StageDag) crdag).finishTasks_old(finishedTasks.get(crdag.dagId), false);
         boolean thisDagFinished = ((StageDag) crdag).finishTasks(finishedTasks.get(crdag.dagId), false);
 
         if (thisDagFinished) {
@@ -355,9 +356,7 @@ public class Simulator {
     Output.debugln(DEBUG,
         "handleNewJobArrival; currentTime:" + Simulator.CURRENT_TIME + " nextTime:" + nextTimeToLaunchJob);
 
-    if (runnableJobs.isEmpty()) {
-      return false;
-    }
+    boolean existNewJob = false; 
 
     // for batch jobs.
     // start all batch jobs at time = 0
@@ -369,6 +368,7 @@ public class Simulator {
           Simulator.QUEUE_LIST.addRunningJob2Queue(newJob, newJob.getQueueName());
           newJob.jobStartTime = Simulator.CURRENT_TIME;
           Output.debugln(DEBUG, "Started job:" + newJob.dagId + " at time:" + Simulator.CURRENT_TIME);
+          existNewJob = true;
         }
       }
       runnableJobs.removeAll(newlyStartedJobs);
@@ -384,6 +384,7 @@ public class Simulator {
             newlyStartedJobs.add(dag);
             Simulator.QUEUE_LIST.addRunningJob2Queue(dag, dag.getQueueName());
             Output.debugln(DEBUG, "Started job:" + dag.dagId + " at time:" + Simulator.CURRENT_TIME);
+            existNewJob = true;
           }
         }
       }
@@ -409,6 +410,7 @@ public class Simulator {
             runnableJobs.add(reBurtyJob);
             Simulator.QUEUE_LIST.addRunningJob2Queue(dag, dag.getQueueName());
             Output.debugln(DEBUG, "Started job:" + dag.dagId + " at time:" + Simulator.CURRENT_TIME);
+            existNewJob = true;
           }
         }
         // clear the datastructures
@@ -429,6 +431,7 @@ public class Simulator {
             nextTimeToLaunchJob = Simulator.CURRENT_TIME + Globals.PERIODIC_INTERVAL;
             Output.debugln(DEBUG, "Started job:" + newJob.dagId + " at time:" + Simulator.CURRENT_TIME
                 + " next job arrives at time:" + nextTimeToLaunchJob);
+            existNewJob = true;
             break;
           }
         }
@@ -444,7 +447,7 @@ public class Simulator {
       System.err.println("BURSTY_JOBS_ARRIVAL_POLICY: " + Globals.BURSTY_JOBS_ARRIVAL_POLICY);
     }
 
-    return true;
+    return existNewJob;
   }
 
   boolean handleNewJobCompleted() {

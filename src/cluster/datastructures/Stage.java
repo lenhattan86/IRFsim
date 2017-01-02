@@ -1,5 +1,6 @@
 package cluster.datastructures;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -95,6 +96,14 @@ public class Stage {
     }
     double l2Norm = Resource.l2Norm(vDemands);
     return l2Norm * remTasksToSched * vDuration;
+  }
+  
+  public ArrayList<Integer> getTasks(){
+    ArrayList<Integer> stageTasks = new ArrayList<Integer>();
+    for (int task = vids.begin; task <= vids.end; task++) {
+      stageTasks.add(task);
+    }
+    return stageTasks;
   }
 
   // RG: not optimal at all

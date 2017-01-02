@@ -26,7 +26,7 @@ public class DRFScheduler implements Scheduler {
 	private String schedulePolicy;
 	// Map<String, Resources> resDemandsQueues = null;
 
-	Resource clusterTotCapacity = null;
+	static Resource clusterTotCapacity = null;
 
 	// implementation idea:
 	// 1. for every queue, compute it's total resource demand vector
@@ -66,6 +66,76 @@ public class DRFScheduler implements Scheduler {
 
 		onlineDRFShare(clusterTotCapacity, Simulator.QUEUE_LIST.getRunningQueues());
 	}
+	
+
+  public static void onlineDRFShare_new(Resource resCapacity, List<JobQueue> runningQueues) {
+    // init
+    Resource consumedRes = Simulator.cluster.getClusterAllocatedRes();
+    double[] userDominantShareArr = new double[runningQueues.size()];
+    // TODO: consider the allocated share (because of no preemption).
+    int i = 0;
+    double[] auxilaryShare = new double[runningQueues.size()];
+    for (JobQueue queue : runningQueues) {
+      Resource normalizedShare = Resources.divideVector(queue.getResourceUsage(),
+          clusterTotCapacity);
+      if (queue.isInteractive && Globals.METHOD.equals(Method.Strict))
+        auxilaryShare[i] = -Double.MAX_VALUE;
+      else
+        auxilaryShare[i] = 0.0;
+      userDominantShareArr[i] = Utils.round(normalizedShare.max() / queue.getWeight(), 2)
+          + auxilaryShare[i];
+      i++;
+    }
+    while (true) {
+      // step 1: pick user i with lowest s_i
+      int sMinIdx = Utils.getMinValIdx(userDominantShareArr);
+      if (sMinIdx < 0) {
+        // There are more resources than demand.
+        break;
+      }
+      // D_i demand for the next task
+      JobQueue q = runningQueues.get(sMinIdx);
+      BaseDag unallocJob = q.getUnallocRunningJob();
+      if (unallocJob == null) {
+        userDominantShareArr[sMinIdx] = Double.MAX_VALUE;
+        // do not allocate to this queue any more
+        continue;
+      }
+
+      int taskId = unallocJob.getCommingTaskId();
+      Resource allocRes = unallocJob.rsrcDemands(taskId);
+      // Like Yarn, assign one single container for the task
+      // step 3: if fit, C+D_i <= R, allocate
+      Resource temp = Resources.sumRound(consumedRes, allocRes);
+      if (resCapacity.greaterOrEqual(temp)) {
+        consumedRes = temp;
+        q.setRsrcQuota(Resources.sum(q.getRsrcQuota(), q.nextTaskRes()));
+        boolean assigned = Simulator.cluster.assignTask(unallocJob.dagId, taskId,
+            unallocJob.duration(taskId), allocRes);
+        if (assigned) {
+          // update userDominantShareArr
+          double maxRes = Resources.divideVector(q.getResourceUsage(),
+              clusterTotCapacity).max();
+          userDominantShareArr[sMinIdx] = Utils.round(maxRes / q.getWeight(), 2)
+              + auxilaryShare[sMinIdx];
+          
+          if (unallocJob.jobStartRunningTime<0){
+            unallocJob.jobStartRunningTime = Simulator.CURRENT_TIME;
+          }
+        } else {
+          Output.debugln(DEBUG, "[DRFScheduler] Cannot assign resource to the task" + taskId
+              + " of Job " + unallocJob.dagId + " " + allocRes);
+          userDominantShareArr[sMinIdx] = Double.MAX_VALUE;
+        }
+
+      } else {
+        userDominantShareArr[sMinIdx] = Double.MAX_VALUE;
+        // do not allocate to this queue any more
+        // break;
+      }
+    }
+  }
+
 
 	public static void onlineDRFShare(Resource resCapacity, List<JobQueue> runningQueues) {
 		// init
