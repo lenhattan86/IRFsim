@@ -464,7 +464,7 @@ public class Main {
     System.out.println("Started Simulation....");
     System.out.println("........"+now()+".....");
     
-    Globals.PERIODIC_INTERVAL = 800;
+    Globals.PERIODIC_INTERVAL = 1000;
     Globals.NUM_DIMENSIONS = 2;
     Globals.MACHINE_MAX_RESOURCE = 1000;
     Globals.numBatchJobs = 500;
@@ -493,18 +493,18 @@ public class Main {
 
     // Globals.runmode = Runmode.TrialRun;
      if (Globals.runmode.equals(Runmode.SingleRun)) {
-       Globals.SIM_END_TIME = 1000;
+       Globals.SIM_END_TIME = 30;
        // Globals.METHOD = Method.DRFW;
-       // Globals.METHOD = Method.Strict;
-        Globals.METHOD = Method.DRF;
-//       Globals.METHOD = Method.SpeedFair;
+//        Globals.METHOD = Method.Strict;
+//        Globals.METHOD = Method.DRF;
+       Globals.METHOD = Method.SpeedFair;
 //       Globals.SIM_END_TIME = 1000000;
        Globals.NUM_MACHINES = 1;
-       Globals.MACHINE_MAX_RESOURCE = 1000;
-       Globals.numBatchQueues = 2;
+       Globals.MACHINE_MAX_RESOURCE = 100;
+       Globals.numBatchQueues = 32;
        Globals.numBurstyQueues = 1;
        Globals.numBurstyJobPerQueue = 20;
-       Globals.numBatchJobs = 100;
+       Globals.numBatchJobs = 50;
 //       Globals.SCALE_UP_BATCH_JOB = 1;
        Globals.DEBUG_LOCAL = true;
        Globals.workload = Globals.WorkLoadType.BB;

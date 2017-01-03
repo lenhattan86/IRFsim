@@ -44,10 +44,10 @@ public class SpeedFairScheduler implements Scheduler {
 	}
 	
 	private void schedulev02(){
-    if(Simulator.CURRENT_TIME>=Globals.DEBUG_START && Simulator.CURRENT_TIME<=Globals.DEBUG_END){
-      DEBUG = false;
-    }else
-      DEBUG = false;
+//    if(Simulator.CURRENT_TIME>=Globals.DEBUG_START && Simulator.CURRENT_TIME<=Globals.DEBUG_END){
+//      DEBUG = false;
+//    }else
+//      DEBUG = false;
     // update queue status
 	  Output.debugln(DEBUG, "\n==== STEP_TIME:" + Simulator.CURRENT_TIME + " ====");
 	  
@@ -55,7 +55,7 @@ public class SpeedFairScheduler implements Scheduler {
     // add queues to the best effort queues    
     updateBestEfforQueue();
     // obtain the available resource
-    Resource avaiRes = Simulator.cluster.getClusterResAvail();
+//    Resource avaiRes = Simulator.cluster.getClusterResAvail();
     // admission control
     admit();
     // allocate resources to bursty and batch queues
@@ -161,6 +161,7 @@ public class SpeedFairScheduler implements Scheduler {
   private void admit() {
     Queue<JobQueue> newAdmittedQueues = new LinkedList<JobQueue>();
     for (JobQueue q: bestEffortQueues){
+      Output.debugln(DEBUG, "admit():"+q.getQueueName());
       if (q.isInteractive){
         boolean condition1 = resGuarateeCond(q);
         boolean condition2 = resFairnessCond(q);
