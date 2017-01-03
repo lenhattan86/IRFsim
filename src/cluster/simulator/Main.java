@@ -1,7 +1,13 @@
 package cluster.simulator;
 
+import java.lang.ref.WeakReference;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Queue;
 import java.util.logging.Logger;
+
+import javax.print.attribute.standard.DateTimeAtCompleted;
 
 import cluster.data.QueueData;
 import cluster.datastructures.BaseDag;
@@ -442,13 +448,25 @@ public class Main {
     System.out
         .print("========== " + (duration / (1000)) + " seconds ==========\n");
   }
+  
+  public static void freeMemory() {
+    Object obj = new Object();
+    WeakReference<Object> ref = new WeakReference<Object>(obj);
+    obj = null;
+    // wait for GC to run
+    while(ref.get() != null) {
+      System.gc();
+    }
+  }
 
   public static void main(String[] args) {
-
+    System.out.println("Started Simulation....");
+    System.out.println("........"+now()+".....");
+    
     Globals.PERIODIC_INTERVAL = 800;
     Globals.NUM_DIMENSIONS = 2;
     Globals.MACHINE_MAX_RESOURCE = 1000;
-    Globals.numBatchJobs = 100;
+    Globals.numBatchJobs = 500;
     Globals.DRFW_weight = 4.0;
 
     Globals.BATCH_JOBS_ARRIVAL_POLICY = JobsArrivalPolicy.All;
@@ -501,22 +519,17 @@ public class Main {
      }
      else if (Globals.runmode.equals(Runmode.MultipleBatchQueueRun)) {
       Globals.SetupMode mode = Globals.SetupMode.ShortInteractive;
-
+      Globals.MACHINE_MAX_RESOURCE = 100;
       Method[] methods = { Method.DRF, Method.DRFW, Method.Strict,
           Method.SpeedFair };
-//      Method[] methods = { Method.Strict,
-//          Method.SpeedFair };
       int[] batchQueueNums = { 1, 2, 4, 8, 16, 32 };
-//      int[] batchQueueNums = { 1};
-      // Method[] methods = {Method.SpeedFair};
-      // int[] batchQueueNums = {4};
-
       Globals.setupParameters(mode, 1);
 
       for (int j = 0; j < batchQueueNums.length; j++) {
         for (int i = 0; i < methods.length; i++) {
           // Trigger garbage collection to clean up memory.
-          System.gc();
+          System.out.println("[INFO] Wait for garbage collectors ...");
+          freeMemory();
           
           if (i == 0)
             Globals.IS_GEN = true;
@@ -629,5 +642,12 @@ public class Main {
 
     System.out.println("\n");
     System.out.println("........FINISHED ./.");
+    System.out.println("........"+now()+".....");
+  }
+  
+  public static String now(){
+    DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+    Calendar cal = Calendar.getInstance();
+    return dateFormat.format(cal);
   }
 }
