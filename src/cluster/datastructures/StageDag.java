@@ -341,8 +341,14 @@ public class StageDag extends BaseDag implements Cloneable {
 
 				dag.vertexToStage = new HashMap<Integer, String>();
 				for (Stage stage : dag.stages.values())
-					for (int i = stage.vids.begin; i <= stage.vids.end; i++)
-						dag.vertexToStage.put(i, stage.name);
+					for (int i = stage.vids.begin; i <= stage.vids.end; i++){
+					  try{
+					    dag.vertexToStage.put(i, stage.name);
+					  } catch(java.lang.OutOfMemoryError err){
+					    System.out.println(err);
+					    System.out.println("DagId: "+dag_name);
+					  }
+					}
 
 				int numEdgesBtwStages;
 				line = br.readLine();

@@ -519,7 +519,6 @@ public class Main {
      }
      else if (Globals.runmode.equals(Runmode.MultipleBatchQueueRun)) {
       Globals.SetupMode mode = Globals.SetupMode.ShortInteractive;
-      Globals.MACHINE_MAX_RESOURCE = 100;
       Method[] methods = { Method.DRF, Method.DRFW, Method.Strict,
           Method.SpeedFair };
       int[] batchQueueNums = { 1, 2, 4, 8, 16, 32 };
