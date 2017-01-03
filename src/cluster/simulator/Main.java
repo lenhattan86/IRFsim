@@ -66,6 +66,7 @@ public class Main {
     public static double DEBUG_END = -1;
 
     public static double SCALE_UP_BURSTY_JOB = 50;
+    public static double SCALE_UP_BURSTY_JOB_DEFAULT = 50;
     public static double SCALE_UP_BATCH_JOB = 1;
 
     public static double SMALL_JOB_DUR_THRESHOLD = 40.0;
@@ -210,7 +211,7 @@ public class Main {
         switch (setup) {
         case VeryShortInteractive:
           Globals.numBurstyJobPerQueue = 20;
-          Globals.SCALE_UP_BURSTY_JOB = 12.5;
+          Globals.SCALE_UP_BURSTY_JOB_DEFAULT = 12.5;
           Globals.SCALE_BURSTY_DURATION = 1 / 30.0;
           Globals.SCALE_BATCH_DURATION = 1 / 5.0;
           Globals.STEP_TIME = 0.1;
@@ -218,7 +219,7 @@ public class Main {
         case ShortInteractive:
           Globals.SMALL_JOB_DUR_THRESHOLD = 50.0;
           Globals.SMALL_JOB_TASK_NUM_THRESHOLD = 80;
-          Globals.SCALE_UP_BURSTY_JOB = 12.5;
+          Globals.SCALE_UP_BURSTY_JOB_DEFAULT = 12.5;
           Globals.SCALE_BURSTY_DURATION = 1;
           Globals.SCALE_UP_BATCH_JOB = 1;
           // we can improve performance by reduce batch duration
@@ -228,13 +229,13 @@ public class Main {
           Globals.SMALL_JOB_DUR_THRESHOLD = 30.0;
           Globals.SMALL_JOB_TASK_NUM_THRESHOLD = 80;
           // Globals.LARGE_JOB_TASK_NUM_THRESHOLD = 300;
-          Globals.SCALE_UP_BURSTY_JOB = (int) (12.5 * scaleUpBursty);
+          Globals.SCALE_UP_BURSTY_JOB_DEFAULT = (int) (12.5 * scaleUpBursty);
           Globals.SCALE_BURSTY_DURATION = 1 / 2.0;
           Globals.SCALE_UP_BATCH_JOB = 1;
           break;
         default:
           Globals.SCALE_UP_BATCH_JOB = 1;
-          Globals.SCALE_UP_BURSTY_JOB = 50;
+          Globals.SCALE_UP_BURSTY_JOB_DEFAULT = 50;
           Globals.SCALE_BURSTY_DURATION = 1 / 3.0;
           Globals.SMALL_JOB_TASK_NUM_THRESHOLD = 80;
           // Globals.LARGE_JOB_TASK_NUM_THRESHOLD = 300;
@@ -244,7 +245,7 @@ public class Main {
         Globals.TRACE_FILE = "workload/queries_tpcds_FB_distr_new.txt"; // TPC-DS
         switch (setup) {
         case ShortInteractive:
-          Globals.SCALE_UP_BURSTY_JOB = 20;
+          Globals.SCALE_UP_BURSTY_JOB_DEFAULT = 20;
           Globals.SMALL_JOB_DUR_THRESHOLD = 30.0;
           Globals.SMALL_JOB_TASK_NUM_THRESHOLD = 50;
           // Globals.SCALE_BURSTY_DURATION = 1 / 2.0;
@@ -258,7 +259,7 @@ public class Main {
         switch (setup) {
         case ShortInteractive:
           Globals.numBurstyJobPerQueue = 25;
-          Globals.SCALE_UP_BURSTY_JOB = 1.4;
+          Globals.SCALE_UP_BURSTY_JOB_DEFAULT = 1.4;
           Globals.SMALL_JOB_DUR_THRESHOLD = 50.0;
           Globals.SMALL_JOB_TASK_NUM_THRESHOLD = 250;
           Globals.SCALE_BURSTY_DURATION = 1 / 2.0;
@@ -297,9 +298,9 @@ public class Main {
     double scaleUp = (double) (Globals.NUM_MACHINES*Globals.MACHINE_MAX_RESOURCE)
         / (double) Globals.TRACE_CLUSTER_SIZE;
     Globals.SCALE_UP_BATCH_JOB = Math
-        .floor((double) Globals.SCALE_UP_BATCH_JOB * scaleUp);
+        .floor((double) 1 * scaleUp);
     Globals.SCALE_UP_BURSTY_JOB = Math
-        .floor((double) Globals.SCALE_UP_BURSTY_JOB * scaleUp);
+        .floor((double) Globals.SCALE_UP_BURSTY_JOB_DEFAULT * scaleUp);
 
     long tStart = System.currentTimeMillis();
     
