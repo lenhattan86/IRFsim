@@ -646,8 +646,7 @@ public class Main {
   }
   
   public static String now(){
-    DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
     Calendar cal = Calendar.getInstance();
-    return dateFormat.format(cal);
+    return cal.getTime().toString();
   }
 }
