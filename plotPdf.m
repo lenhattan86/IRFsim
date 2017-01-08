@@ -1,13 +1,14 @@
 clear; close all; clc;
 addpath('matlab_func');
+addpath('../ccra/results/');
 common_settings;
 is_printed = true;
 
 MAX_DUR = 350;
 
-inputFile = 'pdf/queries_bb_FB_distr.csv'; workload='BB';
+% inputFile = 'pdf/queries_bb_FB_distr.csv'; workload='BB';
 % inputFile = 'pdf/queries_tpch_FB_distr.csv'; workload='TPC-H';
-% inputFile = 'pdf/queries_tpcds_FB_distr_new.csv'; workload='TPC-DS';
+inputFile = 'pdf/queries_tpcds_FB_distr_new.csv'; workload='TPC-DS';
 [durations,num_tasks] = importAllTaskInfo(inputFile);
 
 fig_path = ['/home/tanle/projects/EuroSys17/fig/' workload '-'];
@@ -32,8 +33,7 @@ xLabel='task duration (secs)';
 yLabel='Number of tasks';
 
 
-figSize = [0.0 0 5.0 3.0];
-set (gcf, 'Units', 'Inches', 'Position', figSize, 'PaperUnits', 'inches', 'PaperPosition', figSize);
+set (gcf, 'Units', 'Inches', 'Position', figSizeTwothirdCol, 'PaperUnits', 'inches', 'PaperPosition', figSizeTwothirdCol);
 xlabel(xLabel,'FontSize',fontAxis);
 ylabel(yLabel,'FontSize',fontAxis);
 xlim([0 MAX_DUR]);
@@ -68,8 +68,7 @@ xLabel='task duration (secs)';
 yLabel='cdf';
 
 
-figSize = [0.0 0 5.0 3.0];
-set (gcf, 'Units', 'Inches', 'Position', figSize, 'PaperUnits', 'inches', 'PaperPosition', figSize);
+set (gcf, 'Units', 'Inches', 'Position', figSizeTwothirdCol, 'PaperUnits', 'inches', 'PaperPosition', figSizeTwothirdCol);
 xlabel(xLabel,'FontSize',fontAxis);
 ylabel(yLabel,'FontSize',fontAxis);
 xlim([0 MAX_DUR]);

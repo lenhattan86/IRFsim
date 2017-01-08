@@ -5,115 +5,115 @@ Reducer2 2.0 0.29 0.22 50
 1
 Map1 Reducer2 ata
 # 1
-2 1 800 bursty0
+2 1 1000 bursty0
 Map1 25.0 0.21 0.33 300
 Reducer2 2.0 0.29 0.22 50
 1
 Map1 Reducer2 ata
 # 2
-2 2 1600 bursty0
+2 2 2000 bursty0
 Map1 25.0 0.21 0.33 300
 Reducer2 2.0 0.29 0.22 50
 1
 Map1 Reducer2 ata
 # 3
-2 3 2400 bursty0
+2 3 3000 bursty0
 Map1 25.0 0.21 0.33 300
 Reducer2 2.0 0.29 0.22 50
 1
 Map1 Reducer2 ata
 # 4
-2 4 3200 bursty0
+2 4 4000 bursty0
 Map1 25.0 0.21 0.33 300
 Reducer2 2.0 0.29 0.22 50
 1
 Map1 Reducer2 ata
 # 5
-2 5 4000 bursty0
+2 5 5000 bursty0
 Map1 25.0 0.21 0.33 300
 Reducer2 2.0 0.29 0.22 50
 1
 Map1 Reducer2 ata
 # 6
-2 6 4800 bursty0
+2 6 6000 bursty0
 Map1 25.0 0.21 0.33 300
 Reducer2 2.0 0.29 0.22 50
 1
 Map1 Reducer2 ata
 # 7
-2 7 5600 bursty0
+2 7 7000 bursty0
 Map1 25.0 0.21 0.33 300
 Reducer2 2.0 0.29 0.22 50
 1
 Map1 Reducer2 ata
 # 8
-2 8 6400 bursty0
+2 8 8000 bursty0
 Map1 25.0 0.21 0.33 300
 Reducer2 2.0 0.29 0.22 50
 1
 Map1 Reducer2 ata
 # 9
-2 9 7200 bursty0
+2 9 9000 bursty0
 Map1 25.0 0.21 0.33 300
 Reducer2 2.0 0.29 0.22 50
 1
 Map1 Reducer2 ata
 # 10
-2 10 8000 bursty0
+2 10 10000 bursty0
 Map1 25.0 0.21 0.33 300
 Reducer2 2.0 0.29 0.22 50
 1
 Map1 Reducer2 ata
 # 11
-2 11 8800 bursty0
+2 11 11000 bursty0
 Map1 25.0 0.21 0.33 300
 Reducer2 2.0 0.29 0.22 50
 1
 Map1 Reducer2 ata
 # 12
-2 12 9600 bursty0
+2 12 12000 bursty0
 Map1 25.0 0.21 0.33 300
 Reducer2 2.0 0.29 0.22 50
 1
 Map1 Reducer2 ata
 # 13
-2 13 10400 bursty0
+2 13 13000 bursty0
 Map1 25.0 0.21 0.33 300
 Reducer2 2.0 0.29 0.22 50
 1
 Map1 Reducer2 ata
 # 14
-2 14 11200 bursty0
+2 14 14000 bursty0
 Map1 25.0 0.21 0.33 300
 Reducer2 2.0 0.29 0.22 50
 1
 Map1 Reducer2 ata
 # 15
-2 15 12000 bursty0
+2 15 15000 bursty0
 Map1 25.0 0.21 0.33 300
 Reducer2 2.0 0.29 0.22 50
 1
 Map1 Reducer2 ata
 # 16
-2 16 12800 bursty0
+2 16 16000 bursty0
 Map1 25.0 0.21 0.33 300
 Reducer2 2.0 0.29 0.22 50
 1
 Map1 Reducer2 ata
 # 17
-2 17 13600 bursty0
+2 17 17000 bursty0
 Map1 25.0 0.21 0.33 300
 Reducer2 2.0 0.29 0.22 50
 1
 Map1 Reducer2 ata
 # 18
-2 18 14400 bursty0
+2 18 18000 bursty0
 Map1 25.0 0.21 0.33 300
 Reducer2 2.0 0.29 0.22 50
 1
 Map1 Reducer2 ata
 # 19
-2 19 15200 bursty0
+2 19 19000 bursty0
 Map1 25.0 0.21 0.33 300
 Reducer2 2.0 0.29 0.22 50
 1

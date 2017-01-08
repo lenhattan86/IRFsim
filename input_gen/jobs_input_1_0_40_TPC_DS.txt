@@ -1,0 +1,700 @@
+# 0
+6 0 0 bursty0
+Map1 10.0 0.1 0.12 544
+Map4 2.0 0.2 0.21 32
+Map5 3.0 0.22 0.21 32
+Reducer3 2.0 0.26 0.12 32
+Map6 2.0 0.23 0.21 32
+Reducer2 2.0 0.3 0.12 32
+5
+Map1 Reducer2 ata
+Map4 Map1 ata
+Map5 Map1 ata
+Map6 Map1 ata
+Reducer2 Reducer3 ata
+# 1
+6 1 1000 bursty0
+Map1 10.0 0.1 0.12 544
+Map4 2.0 0.2 0.21 32
+Map5 3.0 0.22 0.21 32
+Reducer3 2.0 0.26 0.12 32
+Map6 2.0 0.23 0.21 32
+Reducer2 2.0 0.3 0.12 32
+5
+Map1 Reducer2 ata
+Map4 Map1 ata
+Map5 Map1 ata
+Map6 Map1 ata
+Reducer2 Reducer3 ata
+# 2
+6 2 2000 bursty0
+Map1 10.0 0.1 0.12 544
+Map4 2.0 0.2 0.21 32
+Map5 3.0 0.22 0.21 32
+Reducer3 2.0 0.26 0.12 32
+Map6 2.0 0.23 0.21 32
+Reducer2 2.0 0.3 0.12 32
+5
+Map1 Reducer2 ata
+Map4 Map1 ata
+Map5 Map1 ata
+Map6 Map1 ata
+Reducer2 Reducer3 ata
+# 3
+6 3 3000 bursty0
+Map1 10.0 0.1 0.12 544
+Map4 2.0 0.2 0.21 32
+Map5 3.0 0.22 0.21 32
+Reducer3 2.0 0.26 0.12 32
+Map6 2.0 0.23 0.21 32
+Reducer2 2.0 0.3 0.12 32
+5
+Map1 Reducer2 ata
+Map4 Map1 ata
+Map5 Map1 ata
+Map6 Map1 ata
+Reducer2 Reducer3 ata
+# 4
+6 4 4000 bursty0
+Map1 10.0 0.1 0.12 544
+Map4 2.0 0.2 0.21 32
+Map5 3.0 0.22 0.21 32
+Reducer3 2.0 0.26 0.12 32
+Map6 2.0 0.23 0.21 32
+Reducer2 2.0 0.3 0.12 32
+5
+Map1 Reducer2 ata
+Map4 Map1 ata
+Map5 Map1 ata
+Map6 Map1 ata
+Reducer2 Reducer3 ata
+# 5
+6 5 5000 bursty0
+Map1 10.0 0.1 0.12 544
+Map4 2.0 0.2 0.21 32
+Map5 3.0 0.22 0.21 32
+Reducer3 2.0 0.26 0.12 32
+Map6 2.0 0.23 0.21 32
+Reducer2 2.0 0.3 0.12 32
+5
+Map1 Reducer2 ata
+Map4 Map1 ata
+Map5 Map1 ata
+Map6 Map1 ata
+Reducer2 Reducer3 ata
+# 6
+6 6 6000 bursty0
+Map1 10.0 0.1 0.12 544
+Map4 2.0 0.2 0.21 32
+Map5 3.0 0.22 0.21 32
+Reducer3 2.0 0.26 0.12 32
+Map6 2.0 0.23 0.21 32
+Reducer2 2.0 0.3 0.12 32
+5
+Map1 Reducer2 ata
+Map4 Map1 ata
+Map5 Map1 ata
+Map6 Map1 ata
+Reducer2 Reducer3 ata
+# 7
+6 7 7000 bursty0
+Map1 10.0 0.1 0.12 544
+Map4 2.0 0.2 0.21 32
+Map5 3.0 0.22 0.21 32
+Reducer3 2.0 0.26 0.12 32
+Map6 2.0 0.23 0.21 32
+Reducer2 2.0 0.3 0.12 32
+5
+Map1 Reducer2 ata
+Map4 Map1 ata
+Map5 Map1 ata
+Map6 Map1 ata
+Reducer2 Reducer3 ata
+# 8
+6 8 8000 bursty0
+Map1 10.0 0.1 0.12 544
+Map4 2.0 0.2 0.21 32
+Map5 3.0 0.22 0.21 32
+Reducer3 2.0 0.26 0.12 32
+Map6 2.0 0.23 0.21 32
+Reducer2 2.0 0.3 0.12 32
+5
+Map1 Reducer2 ata
+Map4 Map1 ata
+Map5 Map1 ata
+Map6 Map1 ata
+Reducer2 Reducer3 ata
+# 9
+6 9 9000 bursty0
+Map1 10.0 0.1 0.12 544
+Map4 2.0 0.2 0.21 32
+Map5 3.0 0.22 0.21 32
+Reducer3 2.0 0.26 0.12 32
+Map6 2.0 0.23 0.21 32
+Reducer2 2.0 0.3 0.12 32
+5
+Map1 Reducer2 ata
+Map4 Map1 ata
+Map5 Map1 ata
+Map6 Map1 ata
+Reducer2 Reducer3 ata
+# 10
+6 10 10000 bursty0
+Map1 10.0 0.1 0.12 544
+Map4 2.0 0.2 0.21 32
+Map5 3.0 0.22 0.21 32
+Reducer3 2.0 0.26 0.12 32
+Map6 2.0 0.23 0.21 32
+Reducer2 2.0 0.3 0.12 32
+5
+Map1 Reducer2 ata
+Map4 Map1 ata
+Map5 Map1 ata
+Map6 Map1 ata
+Reducer2 Reducer3 ata
+# 11
+6 11 11000 bursty0
+Map1 10.0 0.1 0.12 544
+Map4 2.0 0.2 0.21 32
+Map5 3.0 0.22 0.21 32
+Reducer3 2.0 0.26 0.12 32
+Map6 2.0 0.23 0.21 32
+Reducer2 2.0 0.3 0.12 32
+5
+Map1 Reducer2 ata
+Map4 Map1 ata
+Map5 Map1 ata
+Map6 Map1 ata
+Reducer2 Reducer3 ata
+# 12
+6 12 12000 bursty0
+Map1 10.0 0.1 0.12 544
+Map4 2.0 0.2 0.21 32
+Map5 3.0 0.22 0.21 32
+Reducer3 2.0 0.26 0.12 32
+Map6 2.0 0.23 0.21 32
+Reducer2 2.0 0.3 0.12 32
+5
+Map1 Reducer2 ata
+Map4 Map1 ata
+Map5 Map1 ata
+Map6 Map1 ata
+Reducer2 Reducer3 ata
+# 13
+6 13 13000 bursty0
+Map1 10.0 0.1 0.12 544
+Map4 2.0 0.2 0.21 32
+Map5 3.0 0.22 0.21 32
+Reducer3 2.0 0.26 0.12 32
+Map6 2.0 0.23 0.21 32
+Reducer2 2.0 0.3 0.12 32
+5
+Map1 Reducer2 ata
+Map4 Map1 ata
+Map5 Map1 ata
+Map6 Map1 ata
+Reducer2 Reducer3 ata
+# 14
+6 14 14000 bursty0
+Map1 10.0 0.1 0.12 544
+Map4 2.0 0.2 0.21 32
+Map5 3.0 0.22 0.21 32
+Reducer3 2.0 0.26 0.12 32
+Map6 2.0 0.23 0.21 32
+Reducer2 2.0 0.3 0.12 32
+5
+Map1 Reducer2 ata
+Map4 Map1 ata
+Map5 Map1 ata
+Map6 Map1 ata
+Reducer2 Reducer3 ata
+# 15
+6 15 15000 bursty0
+Map1 10.0 0.1 0.12 544
+Map4 2.0 0.2 0.21 32
+Map5 3.0 0.22 0.21 32
+Reducer3 2.0 0.26 0.12 32
+Map6 2.0 0.23 0.21 32
+Reducer2 2.0 0.3 0.12 32
+5
+Map1 Reducer2 ata
+Map4 Map1 ata
+Map5 Map1 ata
+Map6 Map1 ata
+Reducer2 Reducer3 ata
+# 16
+6 16 16000 bursty0
+Map1 10.0 0.1 0.12 544
+Map4 2.0 0.2 0.21 32
+Map5 3.0 0.22 0.21 32
+Reducer3 2.0 0.26 0.12 32
+Map6 2.0 0.23 0.21 32
+Reducer2 2.0 0.3 0.12 32
+5
+Map1 Reducer2 ata
+Map4 Map1 ata
+Map5 Map1 ata
+Map6 Map1 ata
+Reducer2 Reducer3 ata
+# 17
+6 17 17000 bursty0
+Map1 10.0 0.1 0.12 544
+Map4 2.0 0.2 0.21 32
+Map5 3.0 0.22 0.21 32
+Reducer3 2.0 0.26 0.12 32
+Map6 2.0 0.23 0.21 32
+Reducer2 2.0 0.3 0.12 32
+5
+Map1 Reducer2 ata
+Map4 Map1 ata
+Map5 Map1 ata
+Map6 Map1 ata
+Reducer2 Reducer3 ata
+# 18
+6 18 18000 bursty0
+Map1 10.0 0.1 0.12 544
+Map4 2.0 0.2 0.21 32
+Map5 3.0 0.22 0.21 32
+Reducer3 2.0 0.26 0.12 32
+Map6 2.0 0.23 0.21 32
+Reducer2 2.0 0.3 0.12 32
+5
+Map1 Reducer2 ata
+Map4 Map1 ata
+Map5 Map1 ata
+Map6 Map1 ata
+Reducer2 Reducer3 ata
+# 19
+6 19 19000 bursty0
+Map1 10.0 0.1 0.12 544
+Map4 2.0 0.2 0.21 32
+Map5 3.0 0.22 0.21 32
+Reducer3 2.0 0.26 0.12 32
+Map6 2.0 0.23 0.21 32
+Reducer2 2.0 0.3 0.12 32
+5
+Map1 Reducer2 ata
+Map4 Map1 ata
+Map5 Map1 ata
+Map6 Map1 ata
+Reducer2 Reducer3 ata
+# 20
+6 20 20000 bursty0
+Map1 10.0 0.1 0.12 544
+Map4 2.0 0.2 0.21 32
+Map5 3.0 0.22 0.21 32
+Reducer3 2.0 0.26 0.12 32
+Map6 2.0 0.23 0.21 32
+Reducer2 2.0 0.3 0.12 32
+5
+Map1 Reducer2 ata
+Map4 Map1 ata
+Map5 Map1 ata
+Map6 Map1 ata
+Reducer2 Reducer3 ata
+# 21
+6 21 21000 bursty0
+Map1 10.0 0.1 0.12 544
+Map4 2.0 0.2 0.21 32
+Map5 3.0 0.22 0.21 32
+Reducer3 2.0 0.26 0.12 32
+Map6 2.0 0.23 0.21 32
+Reducer2 2.0 0.3 0.12 32
+5
+Map1 Reducer2 ata
+Map4 Map1 ata
+Map5 Map1 ata
+Map6 Map1 ata
+Reducer2 Reducer3 ata
+# 22
+6 22 22000 bursty0
+Map1 10.0 0.1 0.12 544
+Map4 2.0 0.2 0.21 32
+Map5 3.0 0.22 0.21 32
+Reducer3 2.0 0.26 0.12 32
+Map6 2.0 0.23 0.21 32
+Reducer2 2.0 0.3 0.12 32
+5
+Map1 Reducer2 ata
+Map4 Map1 ata
+Map5 Map1 ata
+Map6 Map1 ata
+Reducer2 Reducer3 ata
+# 23
+6 23 23000 bursty0
+Map1 10.0 0.1 0.12 544
+Map4 2.0 0.2 0.21 32
+Map5 3.0 0.22 0.21 32
+Reducer3 2.0 0.26 0.12 32
+Map6 2.0 0.23 0.21 32
+Reducer2 2.0 0.3 0.12 32
+5
+Map1 Reducer2 ata
+Map4 Map1 ata
+Map5 Map1 ata
+Map6 Map1 ata
+Reducer2 Reducer3 ata
+# 24
+6 24 24000 bursty0
+Map1 10.0 0.1 0.12 544
+Map4 2.0 0.2 0.21 32
+Map5 3.0 0.22 0.21 32
+Reducer3 2.0 0.26 0.12 32
+Map6 2.0 0.23 0.21 32
+Reducer2 2.0 0.3 0.12 32
+5
+Map1 Reducer2 ata
+Map4 Map1 ata
+Map5 Map1 ata
+Map6 Map1 ata
+Reducer2 Reducer3 ata
+# 25
+6 25 25000 bursty0
+Map1 10.0 0.1 0.12 544
+Map4 2.0 0.2 0.21 32
+Map5 3.0 0.22 0.21 32
+Reducer3 2.0 0.26 0.12 32
+Map6 2.0 0.23 0.21 32
+Reducer2 2.0 0.3 0.12 32
+5
+Map1 Reducer2 ata
+Map4 Map1 ata
+Map5 Map1 ata
+Map6 Map1 ata
+Reducer2 Reducer3 ata
+# 26
+6 26 26000 bursty0
+Map1 10.0 0.1 0.12 544
+Map4 2.0 0.2 0.21 32
+Map5 3.0 0.22 0.21 32
+Reducer3 2.0 0.26 0.12 32
+Map6 2.0 0.23 0.21 32
+Reducer2 2.0 0.3 0.12 32
+5
+Map1 Reducer2 ata
+Map4 Map1 ata
+Map5 Map1 ata
+Map6 Map1 ata
+Reducer2 Reducer3 ata
+# 27
+6 27 27000 bursty0
+Map1 10.0 0.1 0.12 544
+Map4 2.0 0.2 0.21 32
+Map5 3.0 0.22 0.21 32
+Reducer3 2.0 0.26 0.12 32
+Map6 2.0 0.23 0.21 32
+Reducer2 2.0 0.3 0.12 32
+5
+Map1 Reducer2 ata
+Map4 Map1 ata
+Map5 Map1 ata
+Map6 Map1 ata
+Reducer2 Reducer3 ata
+# 28
+6 28 28000 bursty0
+Map1 10.0 0.1 0.12 544
+Map4 2.0 0.2 0.21 32
+Map5 3.0 0.22 0.21 32
+Reducer3 2.0 0.26 0.12 32
+Map6 2.0 0.23 0.21 32
+Reducer2 2.0 0.3 0.12 32
+5
+Map1 Reducer2 ata
+Map4 Map1 ata
+Map5 Map1 ata
+Map6 Map1 ata
+Reducer2 Reducer3 ata
+# 29
+6 29 29000 bursty0
+Map1 10.0 0.1 0.12 544
+Map4 2.0 0.2 0.21 32
+Map5 3.0 0.22 0.21 32
+Reducer3 2.0 0.26 0.12 32
+Map6 2.0 0.23 0.21 32
+Reducer2 2.0 0.3 0.12 32
+5
+Map1 Reducer2 ata
+Map4 Map1 ata
+Map5 Map1 ata
+Map6 Map1 ata
+Reducer2 Reducer3 ata
+# 30
+6 30 30000 bursty0
+Map1 10.0 0.1 0.12 544
+Map4 2.0 0.2 0.21 32
+Map5 3.0 0.22 0.21 32
+Reducer3 2.0 0.26 0.12 32
+Map6 2.0 0.23 0.21 32
+Reducer2 2.0 0.3 0.12 32
+5
+Map1 Reducer2 ata
+Map4 Map1 ata
+Map5 Map1 ata
+Map6 Map1 ata
+Reducer2 Reducer3 ata
+# 31
+6 31 31000 bursty0
+Map1 10.0 0.1 0.12 544
+Map4 2.0 0.2 0.21 32
+Map5 3.0 0.22 0.21 32
+Reducer3 2.0 0.26 0.12 32
+Map6 2.0 0.23 0.21 32
+Reducer2 2.0 0.3 0.12 32
+5
+Map1 Reducer2 ata
+Map4 Map1 ata
+Map5 Map1 ata
+Map6 Map1 ata
+Reducer2 Reducer3 ata
+# 32
+6 32 32000 bursty0
+Map1 10.0 0.1 0.12 544
+Map4 2.0 0.2 0.21 32
+Map5 3.0 0.22 0.21 32
+Reducer3 2.0 0.26 0.12 32
+Map6 2.0 0.23 0.21 32
+Reducer2 2.0 0.3 0.12 32
+5
+Map1 Reducer2 ata
+Map4 Map1 ata
+Map5 Map1 ata
+Map6 Map1 ata
+Reducer2 Reducer3 ata
+# 33
+6 33 33000 bursty0
+Map1 10.0 0.1 0.12 544
+Map4 2.0 0.2 0.21 32
+Map5 3.0 0.22 0.21 32
+Reducer3 2.0 0.26 0.12 32
+Map6 2.0 0.23 0.21 32
+Reducer2 2.0 0.3 0.12 32
+5
+Map1 Reducer2 ata
+Map4 Map1 ata
+Map5 Map1 ata
+Map6 Map1 ata
+Reducer2 Reducer3 ata
+# 34
+6 34 34000 bursty0
+Map1 10.0 0.1 0.12 544
+Map4 2.0 0.2 0.21 32
+Map5 3.0 0.22 0.21 32
+Reducer3 2.0 0.26 0.12 32
+Map6 2.0 0.23 0.21 32
+Reducer2 2.0 0.3 0.12 32
+5
+Map1 Reducer2 ata
+Map4 Map1 ata
+Map5 Map1 ata
+Map6 Map1 ata
+Reducer2 Reducer3 ata
+# 35
+6 35 35000 bursty0
+Map1 10.0 0.1 0.12 544
+Map4 2.0 0.2 0.21 32
+Map5 3.0 0.22 0.21 32
+Reducer3 2.0 0.26 0.12 32
+Map6 2.0 0.23 0.21 32
+Reducer2 2.0 0.3 0.12 32
+5
+Map1 Reducer2 ata
+Map4 Map1 ata
+Map5 Map1 ata
+Map6 Map1 ata
+Reducer2 Reducer3 ata
+# 36
+6 36 36000 bursty0
+Map1 10.0 0.1 0.12 544
+Map4 2.0 0.2 0.21 32
+Map5 3.0 0.22 0.21 32
+Reducer3 2.0 0.26 0.12 32
+Map6 2.0 0.23 0.21 32
+Reducer2 2.0 0.3 0.12 32
+5
+Map1 Reducer2 ata
+Map4 Map1 ata
+Map5 Map1 ata
+Map6 Map1 ata
+Reducer2 Reducer3 ata
+# 37
+6 37 37000 bursty0
+Map1 10.0 0.1 0.12 544
+Map4 2.0 0.2 0.21 32
+Map5 3.0 0.22 0.21 32
+Reducer3 2.0 0.26 0.12 32
+Map6 2.0 0.23 0.21 32
+Reducer2 2.0 0.3 0.12 32
+5
+Map1 Reducer2 ata
+Map4 Map1 ata
+Map5 Map1 ata
+Map6 Map1 ata
+Reducer2 Reducer3 ata
+# 38
+6 38 38000 bursty0
+Map1 10.0 0.1 0.12 544
+Map4 2.0 0.2 0.21 32
+Map5 3.0 0.22 0.21 32
+Reducer3 2.0 0.26 0.12 32
+Map6 2.0 0.23 0.21 32
+Reducer2 2.0 0.3 0.12 32
+5
+Map1 Reducer2 ata
+Map4 Map1 ata
+Map5 Map1 ata
+Map6 Map1 ata
+Reducer2 Reducer3 ata
+# 39
+6 39 39000 bursty0
+Map1 10.0 0.1 0.12 544
+Map4 2.0 0.2 0.21 32
+Map5 3.0 0.22 0.21 32
+Reducer3 2.0 0.26 0.12 32
+Map6 2.0 0.23 0.21 32
+Reducer2 2.0 0.3 0.12 32
+5
+Map1 Reducer2 ata
+Map4 Map1 ata
+Map5 Map1 ata
+Map6 Map1 ata
+Reducer2 Reducer3 ata
+# 40
+6 40 40000 bursty0
+Map1 10.0 0.1 0.12 544
+Map4 2.0 0.2 0.21 32
+Map5 3.0 0.22 0.21 32
+Reducer3 2.0 0.26 0.12 32
+Map6 2.0 0.23 0.21 32
+Reducer2 2.0 0.3 0.12 32
+5
+Map1 Reducer2 ata
+Map4 Map1 ata
+Map5 Map1 ata
+Map6 Map1 ata
+Reducer2 Reducer3 ata
+# 41
+6 41 41000 bursty0
+Map1 10.0 0.1 0.12 544
+Map4 2.0 0.2 0.21 32
+Map5 3.0 0.22 0.21 32
+Reducer3 2.0 0.26 0.12 32
+Map6 2.0 0.23 0.21 32
+Reducer2 2.0 0.3 0.12 32
+5
+Map1 Reducer2 ata
+Map4 Map1 ata
+Map5 Map1 ata
+Map6 Map1 ata
+Reducer2 Reducer3 ata
+# 42
+6 42 42000 bursty0
+Map1 10.0 0.1 0.12 544
+Map4 2.0 0.2 0.21 32
+Map5 3.0 0.22 0.21 32
+Reducer3 2.0 0.26 0.12 32
+Map6 2.0 0.23 0.21 32
+Reducer2 2.0 0.3 0.12 32
+5
+Map1 Reducer2 ata
+Map4 Map1 ata
+Map5 Map1 ata
+Map6 Map1 ata
+Reducer2 Reducer3 ata
+# 43
+6 43 43000 bursty0
+Map1 10.0 0.1 0.12 544
+Map4 2.0 0.2 0.21 32
+Map5 3.0 0.22 0.21 32
+Reducer3 2.0 0.26 0.12 32
+Map6 2.0 0.23 0.21 32
+Reducer2 2.0 0.3 0.12 32
+5
+Map1 Reducer2 ata
+Map4 Map1 ata
+Map5 Map1 ata
+Map6 Map1 ata
+Reducer2 Reducer3 ata
+# 44
+6 44 44000 bursty0
+Map1 10.0 0.1 0.12 544
+Map4 2.0 0.2 0.21 32
+Map5 3.0 0.22 0.21 32
+Reducer3 2.0 0.26 0.12 32
+Map6 2.0 0.23 0.21 32
+Reducer2 2.0 0.3 0.12 32
+5
+Map1 Reducer2 ata
+Map4 Map1 ata
+Map5 Map1 ata
+Map6 Map1 ata
+Reducer2 Reducer3 ata
+# 45
+6 45 45000 bursty0
+Map1 10.0 0.1 0.12 544
+Map4 2.0 0.2 0.21 32
+Map5 3.0 0.22 0.21 32
+Reducer3 2.0 0.26 0.12 32
+Map6 2.0 0.23 0.21 32
+Reducer2 2.0 0.3 0.12 32
+5
+Map1 Reducer2 ata
+Map4 Map1 ata
+Map5 Map1 ata
+Map6 Map1 ata
+Reducer2 Reducer3 ata
+# 46
+6 46 46000 bursty0
+Map1 10.0 0.1 0.12 544
+Map4 2.0 0.2 0.21 32
+Map5 3.0 0.22 0.21 32
+Reducer3 2.0 0.26 0.12 32
+Map6 2.0 0.23 0.21 32
+Reducer2 2.0 0.3 0.12 32
+5
+Map1 Reducer2 ata
+Map4 Map1 ata
+Map5 Map1 ata
+Map6 Map1 ata
+Reducer2 Reducer3 ata
+# 47
+6 47 47000 bursty0
+Map1 10.0 0.1 0.12 544
+Map4 2.0 0.2 0.21 32
+Map5 3.0 0.22 0.21 32
+Reducer3 2.0 0.26 0.12 32
+Map6 2.0 0.23 0.21 32
+Reducer2 2.0 0.3 0.12 32
+5
+Map1 Reducer2 ata
+Map4 Map1 ata
+Map5 Map1 ata
+Map6 Map1 ata
+Reducer2 Reducer3 ata
+# 48
+6 48 48000 bursty0
+Map1 10.0 0.1 0.12 544
+Map4 2.0 0.2 0.21 32
+Map5 3.0 0.22 0.21 32
+Reducer3 2.0 0.26 0.12 32
+Map6 2.0 0.23 0.21 32
+Reducer2 2.0 0.3 0.12 32
+5
+Map1 Reducer2 ata
+Map4 Map1 ata
+Map5 Map1 ata
+Map6 Map1 ata
+Reducer2 Reducer3 ata
+# 49
+6 49 49000 bursty0
+Map1 10.0 0.1 0.12 544
+Map4 2.0 0.2 0.21 32
+Map5 3.0 0.22 0.21 32
+Reducer3 2.0 0.26 0.12 32
+Map6 2.0 0.23 0.21 32
+Reducer2 2.0 0.3 0.12 32
+5
+Map1 Reducer2 ata
+Map4 Map1 ata
+Map5 Map1 ata
+Map6 Map1 ata
+Reducer2 Reducer3 ata

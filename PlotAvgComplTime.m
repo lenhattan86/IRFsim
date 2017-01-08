@@ -1,40 +1,9 @@
 addpath('matlab_func');
 common_settings;
 
-if true
-    queues = {1,2,4,8,16,32,64};
-    drf_compl_files = {'DRF-output_1_1.csv';
-                      'DRF-output_1_2.csv';
-                      'DRF-output_1_4.csv';
-                      'DRF-output_1_8.csv';
-                      'DRF-output_1_16.csv';
-                      'DRF-output_1_32.csv';
-                      'DRF-output_1_64.csv'};
-
-    drfw_compl_files = {'DRF-W-output_1_1.csv';
-                      'DRF-W-output_1_2.csv';
-                      'DRF-W-output_1_4.csv';
-                      'DRF-W-output_1_8.csv';
-                      'DRF-W-output_1_16.csv';
-                      'DRF-W-output_1_32.csv';
-                      'DRF-output_1_64.csv'};  
-
-    speedfair_compl_files = {'SpeedFair-output_1_1.csv';
-                      'SpeedFair-output_1_2.csv';
-                      'SpeedFair-output_1_4.csv';
-                      'SpeedFair-output_1_8.csv';
-                      'SpeedFair-output_1_16.csv';
-                      'SpeedFair-output_1_32.csv';
-                      'SpeedFair-output_1_64.csv'};  
-
-    strict_priority_compl_files = { 'Strict-output_1_1.csv';
-                      'Strict-output_1_2.csv';
-                      'Strict-output_1_4.csv';
-                      'Strict-output_1_8.csv';
-                      'Strict-output_1_16.csv';
-                      'Strict-output_1_32.csv';
-                      'Strict-output_1_64.csv'};  
-end
+% workload='BB';
+% workload='TPCDS';
+workload='TPCH';
 
 %%
 
@@ -42,10 +11,12 @@ end
 % result_folder = 'result/20161008/short/'; STEP_TIME = 1.0; output_sufix = 'short-interactive/';
 % result_folder = 'result/20161008/long/';  STEP_TIME = 1.0; output_sufix = 'long-interactive/';
 % result_folder = 'result/20161008/short_m/'; STEP_TIME = 1.0; output_sufix = 'short_m/';
-workload='BB';
+
+result_folder = ['result/20170105/' workload '/']; STEP_TIME = 1.0; output_sufix = '';
+
 
 %%
-result_folder= '';
+% result_folder= '';
 % result_folder = '../0_run_simple/'; workload='simple';
 % result_folder = '../0_run_BB/'; workload='BB';
 % result_folder = '../0_run_BB2/'; workload='BB2';
@@ -60,7 +31,69 @@ result_folder= '';
 output_sufix = 'short/'; STEP_TIME = 1.0; 
 % output_sufix = 'long/'; STEP_TIME = 1.0; 
 % result_folder = ['result/20161023/' workload '/' output_sufix '/']; 
-fig_path = ['../EuroSys17/fig/' workload '-'];
+% fig_path = ['../EuroSys17/fig/' workload '-'];
+
+
+if true
+   queues = {1,2,4,8,16,32};
+  drf_compl_files = {'DRF-output_1_1_1000.csv';
+                    'DRF-output_1_2_1000.csv';
+                    'DRF-output_1_4_1000.csv';
+                    'DRF-output_1_8_1000.csv';
+                    'DRF-output_1_16_1000.csv';
+                    'DRF-output_1_32_1000.csv'};
+
+  drfw_compl_files = {'DRF-W-output_1_1_1000.csv';
+                    'DRF-W-output_1_2_1000.csv';
+                    'DRF-W-output_1_4_1000.csv';
+                    'DRF-W-output_1_8_1000.csv';
+                    'DRF-W-output_1_16_1000.csv';
+                    'DRF-W-output_1_32_1000.csv'};  
+
+  speedfair_compl_files = {'SpeedFair-output_1_1_1000.csv';
+                    'SpeedFair-output_1_2_1000.csv';
+                    'SpeedFair-output_1_4_1000.csv';
+                    'SpeedFair-output_1_8_1000.csv';
+                    'SpeedFair-output_1_16_1000.csv';
+                    'SpeedFair-output_1_32_1000.csv'};  
+
+  strict_priority_compl_files = { 'Strict-output_1_1_1000.csv';
+                    'Strict-output_1_2_1000.csv';
+                    'Strict-output_1_4_1000.csv';
+                    'Strict-output_1_8_1000.csv';
+                    'Strict-output_1_16_1000.csv';
+                    'Strict-output_1_32_1000.csv'};   
+else  
+  queues = {1,2,4,8,16,32};
+    drf_compl_files = {'DRF-output_1_1_1000.csv';
+                      'DRF-output_1_2_1000.csv';
+                      'DRF-output_1_4_1000.csv';
+                      'DRF-output_1_8_1000.csv';
+                      'DRF-output_1_16_1000.csv';
+                      'DRF-output_1_32_1000.csv'};
+
+    drfw_compl_files = {'DRF-W-output_1_1_1000.csv';
+                      'DRF-W-output_1_2_1000.csv';
+                      'DRF-W-output_1_4_1000.csv';
+                      'DRF-W-output_1_8_1000.csv';
+                      'DRF-W-output_1_16_1000.csv';
+                      'DRF-W-output_1_32_1000.csv'};  
+
+    speedfair_compl_files = {'SpeedFair-output_1_1_1000.csv';
+                      'SpeedFair-output_1_2_1000.csv';
+                      'SpeedFair-output_1_4_1000.csv';
+                      'SpeedFair-output_1_8_1000.csv';
+                      'SpeedFair-output_1_16_1000.csv';
+                      'SpeedFair-output_1_32_1000.csv'};  
+
+    strict_priority_compl_files = { 'Strict-output_1_1_1000.csv';
+                      'Strict-output_1_2_1000.csv';
+                      'Strict-output_1_4_1000.csv';
+                      'Strict-output_1_8_1000.csv';
+                      'Strict-output_1_16_1000.csv';
+                      'Strict-output_1_32_1000.csv'};  
+end
+
 
 num_batch_queues = 0;
 num_interactive_queue = 1;
@@ -80,7 +113,7 @@ figIdx = 0;
 % batchJobRange = [1:10]
 
 queues_len = length(queues);
-plots  = [false, false];
+plots  = [true, false];
 improvements = zeros(queues_len, 4);
 if plots(1) 
 %    INTERACTIVE_QUEUE = 'interactive';
@@ -120,6 +153,8 @@ if plots(1)
       epsFile = [ LOCAL_FIG fileNames{figIdx} '.eps'];
         print ('-depsc', epsFile);
    end
+   
+   latencySpeedUpFactors = drf_avg_compl_time./speedfair_avg_compl_time
 end
 if plots(2) 
    %%
@@ -155,7 +190,7 @@ if plots(2)
 
 end
 %%
-plots = [false, false, true, true]; %DRF, DRF-W, Strict, SpeedFair
+plots = [false, false, false, false]; %DRF, DRF-W, Strict, SpeedFair
 logfolder = [result_folder 'log/'];
 
 start_time_step = START_TIME/STEP_TIME;

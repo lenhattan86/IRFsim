@@ -18,8 +18,7 @@ import cluster.utils.Output;
 
 public class SpeedFairScheduler implements Scheduler {
 	private boolean DEBUG = false;
-	
-	private static boolean DIFF = false; // refer line 18 & 19 of algorithm 2.
+	private boolean SCHEDULING_OVERHEADS = true; 
 	
 	private Queue<JobQueue> admittedBurstyQueues = null;  
 	private Queue<JobQueue> admittedBatchQueues = null;
@@ -39,11 +38,10 @@ public class SpeedFairScheduler implements Scheduler {
 	
 	@Override
 	public void computeResShare() {
-		schedulev02();
-//	  schedulev01();
+		periodicSchedule();
 	}
 	
-	private void schedulev02(){
+	private void periodicSchedule(){
 //    if(Simulator.CURRENT_TIME>=Globals.DEBUG_START && Simulator.CURRENT_TIME<=Globals.DEBUG_END){
 //      DEBUG = false;
 //    }else
@@ -159,6 +157,7 @@ public class SpeedFairScheduler implements Scheduler {
   
 
   private void admit() {
+    long tStart = System.currentTimeMillis();
     Queue<JobQueue> newAdmittedQueues = new LinkedList<JobQueue>();
     for (JobQueue q: bestEffortQueues){
       Output.debugln(DEBUG, "admit():"+q.getQueueName());
@@ -184,6 +183,10 @@ public class SpeedFairScheduler implements Scheduler {
       }
     } 
     bestEffortQueues.removeAll(newAdmittedQueues);
+    long overheads = System.currentTimeMillis() - tStart;
+    
+    if(SCHEDULING_OVERHEADS)
+      System.out.println("Admit takes: "+overheads +" ms at "+Simulator.CURRENT_TIME);
   }
   
   private boolean condFairness4Batch(){

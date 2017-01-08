@@ -487,8 +487,8 @@ public class Main {
     }
 
     // Globals.runmode = Runmode.MultipleInteractiveQueueRun;
-     Globals.runmode = Runmode.MultipleBatchQueueRun;
-//     Globals.runmode = Runmode.SingleRun;
+//     Globals.runmode = Runmode.MultipleBatchQueueRun;
+     Globals.runmode = Runmode.SingleRun;
 //    Globals.runmode = Runmode.NONE;
 
     // Globals.runmode = Runmode.TrialRun;
@@ -501,7 +501,7 @@ public class Main {
 //       Globals.SIM_END_TIME = 1000000;
        Globals.NUM_MACHINES = 1;
        Globals.MACHINE_MAX_RESOURCE = 100;
-       Globals.numBatchQueues = 32;
+       Globals.numBatchQueues = 50000;
        Globals.numBurstyQueues = 1;
        Globals.numBurstyJobPerQueue = 20;
        Globals.numBatchJobs = 50;
@@ -631,10 +631,7 @@ public class Main {
       Globals.numBatchQueues = 8;
       Globals.numBurstyQueues = 1;
       Globals.numBatchJobs = 100;
-      Globals.numBurstyJobPerQueue = 4;
-
-      Globals.numInteractiveTask = 9 * 20;
-      Globals.numbatchTask = 9;
+      Globals.numBurstyJobPerQueue = 50;
 
       runSimulationScenario(true);
       System.out.println();
