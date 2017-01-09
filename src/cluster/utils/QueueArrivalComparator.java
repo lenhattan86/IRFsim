@@ -9,11 +9,11 @@ public class QueueArrivalComparator implements Comparator<JobQueue> {
   @Override
   public int compare(JobQueue queue1, JobQueue queue2) {
     int res = 0; 
-/*    if (queue1.getStartTime() > queue2.getStartTime()){
+    if (queue1.getCurrSessionStartTime() > queue2.getCurrSessionStartTime()){
       res = 1;
-    }else if (queue1.getStartTime() < queue2.getStartTime()){
+    }else if (queue1.getCurrSessionStartTime() < queue2.getCurrSessionStartTime()){
       res = -1;
-    }*/
+    }
     
     if (res != 0)
       return res;
@@ -24,7 +24,9 @@ public class QueueArrivalComparator implements Comparator<JobQueue> {
       res = -1;
     }
     
-    return res;
+    if (res!=0)
+    	return res;
+    return queue1.getQueueName().compareTo(queue2.getQueueName());
   }
 
 }

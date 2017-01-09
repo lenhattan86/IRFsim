@@ -57,7 +57,9 @@ public class JobQueue {
 	}
 	
 	public double getCurrSessionStartTime(){
-	  //TODO: fix this.
+	  Session s = this.getCurrSession(Simulator.CURRENT_TIME);
+	  if (s!=null)
+	  	return s.getStartTime();
 	  return 0.0;
 	}
 	
@@ -306,12 +308,17 @@ public class JobQueue {
 	}
 	
 	public boolean isActive(){
-	  if(!isLQ)
-	    return this.runningJobs.size()>0;
-	  else{
+		if (!isLQ && this.runningJobs.size()>0)
+			return true;
+		
+		if (!Globals.METHOD.equals(Globals.Method.SpeedFair) && this.runningJobs.size()>0)
+			return true;
+		
+	  if(isLQ && Globals.METHOD.equals(Globals.Method.SpeedFair)){
 	    Session session = getCurrSession(Simulator.CURRENT_TIME);
 	    return (session!=null);
 	  }
+	  return false;
 	}
 	
 	public Queue<BaseDag> getRunningJobs() {

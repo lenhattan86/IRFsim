@@ -148,16 +148,27 @@ public class DRFScheduler implements Scheduler {
 			Resource normalizedShare = Resources.divideVector(queue.getResourceUsage(),
 			    Simulator.cluster.getClusterMaxResAlloc());
 			if (queue.isLQ && Globals.METHOD.equals(Method.Strict))
-				auxilaryShare[i] = -Double.MAX_VALUE;
+				auxilaryShare[i] = -1.0;
 			else
 				auxilaryShare[i] = 0.0;
-			userDominantShareArr[i] = Utils.round(normalizedShare.max() / queue.getWeight(), 2)
-			    + auxilaryShare[i];
+			userDominantShareArr[i] = normalizedShare.max() / queue.getWeight();
 			i++;
 		}
 		while (true) {
 			// step 1: pick user i with lowest s_i
 			int sMinIdx = Utils.getMinValIdx(userDominantShareArr);
+			if(Globals.METHOD.equals(Method.Strict)){
+				double minVal = Double.MAX_VALUE;
+				int minIdx = -1;
+				for (int idx=0; idx<auxilaryShare.length; idx++){
+					if(auxilaryShare[idx]<0 && userDominantShareArr[idx]<minVal){
+						minVal = userDominantShareArr[idx];
+						minIdx = idx;
+					}
+				}
+				if (minIdx>=0)
+					sMinIdx = minIdx;
+			}
 			if (sMinIdx < 0) {
 				// There are more resources than demand.
 				break;
@@ -183,10 +194,8 @@ public class DRFScheduler implements Scheduler {
 				    unallocJob.duration(taskId), allocRes);
 				if (assigned) {
 					// update userDominantShareArr
-					double maxRes = Resources.divideVector(q.getResourceUsage(),
-					    Simulator.cluster.getClusterMaxResAlloc()).max();
-					userDominantShareArr[sMinIdx] = Utils.round(maxRes / q.getWeight(), 2)
-					    + auxilaryShare[sMinIdx];
+					double maxRes = q.getResourceUsage().max()/Globals.CAPACITY;
+					userDominantShareArr[sMinIdx] = maxRes / q.getWeight();
 					
 					if (unallocJob.jobStartRunningTime<0){
 					  unallocJob.jobStartRunningTime = Simulator.CURRENT_TIME;

@@ -178,10 +178,10 @@ public class Simulator {
       // for (Simulator.CURRENT_TIME = 0; Simulator.CURRENT_TIME <=
       // Globals.SIM_END_TIME; Simulator.CURRENT_TIME += Globals.STEP_TIME) {
 
-//      if (Simulator.CURRENT_TIME >= Globals.DEBUG_START && Simulator.CURRENT_TIME <= Globals.DEBUG_END) {
-//        DEBUG = true;
-//      } else
-//        DEBUG = false;
+      if (Simulator.CURRENT_TIME >= Globals.DEBUG_START && Simulator.CURRENT_TIME <= Globals.DEBUG_END) {
+        DEBUG = true;
+      } else
+        DEBUG = false;
 
       Output.debugln(DEBUG, "\n==== STEP_TIME:" + Simulator.CURRENT_TIME + " ====\n");
 

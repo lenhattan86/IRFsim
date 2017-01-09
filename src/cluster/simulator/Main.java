@@ -59,8 +59,8 @@ public class Main {
 
     public static final double User2QueueInterval = 200.0;
 
-    public static double DEBUG_START = 0;
-    public static double DEBUG_END = -1;
+    public static double DEBUG_START = 0.0;
+    public static double DEBUG_END = -1.0;
 
     public static double SCALE_UP_BURSTY_JOB = 50;
     public static double SCALE_UP_BURSTY_JOB_DEFAULT = 50;
@@ -483,14 +483,14 @@ public class Main {
 
     // Globals.runmode = Runmode.TrialRun;
      if (Globals.runmode.equals(Runmode.SingleRun)) {
-       Globals.SIM_END_TIME = 50000.0;
+       Globals.SIM_END_TIME = 800.0;
 //        Globals.METHOD = Method.DRFW;
 //        Globals.METHOD = Method.Strict;
 //        Globals.METHOD = Method.DRF;
        Globals.METHOD = Method.SpeedFair;
 //       Globals.SIM_END_TIME = 1000000;
        Globals.NUM_MACHINES = 1;
-       Globals.MACHINE_MAX_RESOURCE = 100;
+       Globals.MACHINE_MAX_RESOURCE = 1000;
        Globals.numBatchQueues = 1;
        Globals.numBurstyQueues = 3;
        Globals.numBatchJobs = 100;
