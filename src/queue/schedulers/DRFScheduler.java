@@ -78,7 +78,7 @@ public class DRFScheduler implements Scheduler {
     for (JobQueue queue : runningQueues) {
       Resource normalizedShare = Resources.divideVector(queue.getResourceUsage(),
           clusterTotCapacity);
-      if (queue.isInteractive && Globals.METHOD.equals(Method.Strict))
+      if (queue.isLQ && Globals.METHOD.equals(Method.Strict))
         auxilaryShare[i] = -Double.MAX_VALUE;
       else
         auxilaryShare[i] = 0.0;
@@ -147,7 +147,7 @@ public class DRFScheduler implements Scheduler {
 		for (JobQueue queue : runningQueues) {
 			Resource normalizedShare = Resources.divideVector(queue.getResourceUsage(),
 			    Simulator.cluster.getClusterMaxResAlloc());
-			if (queue.isInteractive && Globals.METHOD.equals(Method.Strict))
+			if (queue.isLQ && Globals.METHOD.equals(Method.Strict))
 				auxilaryShare[i] = -Double.MAX_VALUE;
 			else
 				auxilaryShare[i] = 0.0;

@@ -1,13 +1,10 @@
 package cluster.simulator;
 
 import java.lang.ref.WeakReference;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Queue;
 import java.util.logging.Logger;
 
-import javax.print.attribute.standard.DateTimeAtCompleted;
 
 import cluster.data.QueueData;
 import cluster.datastructures.BaseDag;
@@ -131,7 +128,6 @@ public class Main {
     public static double DRFW_weight = 4.0;
     public static double STRICT_WEIGHT = (Double.MAX_VALUE / 100.0);
     // public static double STRICT_WEIGHT = 100000.00;
-    public static int PERIODIC_INTERVAL = 100;
 
     public static int TOLERANT_ERROR = 1; // 10^(-TOLERANT_ERROR)
 
@@ -174,10 +170,6 @@ public class Main {
     public static String User1Input = DataFolder + "/" + FileInput;
     public static String User2Input = DataFolder + "/" + FileInput;
 
-    public static double[][] SPEEDUP_RATES = {
-        { 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 } };;
-    public static double[] SPEEDUP_DURATIONS = { 0 };
-    public static double SpeedFair_WEIGHT = 1.0; // not use anymore
 
     public static int numBurstyQueues = 1, numBurstyJobPerQueue = 25,
         numInteractiveTask = 0;
@@ -201,6 +193,10 @@ public class Main {
     public static int USER1_START_IDX = 0;
     public static int USER2_START_IDX = 100000;
     public static int[] user2_q_nums = null;
+
+    public static double CAPACITY = 1.0;
+    
+    public static int PERIODIC_INTERVAL = 100;
 
     public static void setupParameters(SetupMode setup, double scaleUpBursty) {
       COMPUTE_STATISTICS = false;
@@ -286,14 +282,8 @@ public class Main {
   }
 
   public static void runSimulationScenario(boolean genInputOnly) {
-
-    double rateVal = Globals.MACHINE_MAX_RESOURCE * Globals.NUM_MACHINES
-        / Globals.numBurstyQueues;
-    double[][] rates = {
-        { rateVal, rateVal, rateVal, rateVal, rateVal, rateVal } };
-    double[] durations = { 25 };
-    Globals.SPEEDUP_RATES = rates;
-    Globals.SPEEDUP_DURATIONS = durations;
+    
+    Globals.CAPACITY = Globals.MACHINE_MAX_RESOURCE * Globals.NUM_MACHINES;
 
     double scaleUp = (double) (Globals.NUM_MACHINES*Globals.MACHINE_MAX_RESOURCE)
         / (double) Globals.TRACE_CLUSTER_SIZE;
@@ -369,6 +359,7 @@ public class Main {
     // System.out.println("Speedup Durations = " + Globals.SPEEDUP_DURATIONS);
     // System.out.println("Speedup Rates = " + Globals.SPEEDUP_RATES);
     System.out.println("PathToInputFile     = " + Globals.PathToInputFile);
+    System.out.println("PathToQueueInputFile     = " + Globals.PathToQueueInputFile);
     System.out.println("PathToOutputFile     = " + Globals.PathToOutputFile);
     System.out.println("SIMULATION_END_TIME = " + Globals.SIM_END_TIME);
     System.out.println("STEP_TIME           = " + Globals.STEP_TIME);
@@ -464,14 +455,13 @@ public class Main {
     System.out.println("Started Simulation....");
     System.out.println("........"+now()+".....");
     
-    Globals.PERIODIC_INTERVAL = 1000;
     Globals.NUM_DIMENSIONS = 2;
     Globals.MACHINE_MAX_RESOURCE = 1000;
     Globals.numBatchJobs = 500;
     Globals.DRFW_weight = 4.0;
 
     Globals.BATCH_JOBS_ARRIVAL_POLICY = JobsArrivalPolicy.All;
-    Globals.BURSTY_JOBS_ARRIVAL_POLICY = JobsArrivalPolicy.Period;
+    Globals.BURSTY_JOBS_ARRIVAL_POLICY = JobsArrivalPolicy.Trace;
 
     Globals.workload = Globals.WorkLoadType.BB;
 
@@ -486,25 +476,24 @@ public class Main {
       }
     }
 
-    // Globals.runmode = Runmode.MultipleInteractiveQueueRun;
+//     Globals.runmode = Runmode.MultipleInteractiveQueueRun;
 //     Globals.runmode = Runmode.MultipleBatchQueueRun;
      Globals.runmode = Runmode.SingleRun;
 //    Globals.runmode = Runmode.NONE;
 
     // Globals.runmode = Runmode.TrialRun;
      if (Globals.runmode.equals(Runmode.SingleRun)) {
-       Globals.SIM_END_TIME = 30;
-       // Globals.METHOD = Method.DRFW;
+       Globals.SIM_END_TIME = 50000.0;
+//        Globals.METHOD = Method.DRFW;
 //        Globals.METHOD = Method.Strict;
 //        Globals.METHOD = Method.DRF;
        Globals.METHOD = Method.SpeedFair;
 //       Globals.SIM_END_TIME = 1000000;
        Globals.NUM_MACHINES = 1;
        Globals.MACHINE_MAX_RESOURCE = 100;
-       Globals.numBatchQueues = 50000;
-       Globals.numBurstyQueues = 1;
-       Globals.numBurstyJobPerQueue = 20;
-       Globals.numBatchJobs = 50;
+       Globals.numBatchQueues = 1;
+       Globals.numBurstyQueues = 3;
+       Globals.numBatchJobs = 100;
 //       Globals.SCALE_UP_BATCH_JOB = 1;
        Globals.DEBUG_LOCAL = true;
        Globals.workload = Globals.WorkLoadType.BB;
@@ -587,12 +576,11 @@ public class Main {
       // Globals.SIM_END_TIME = 300;
       Globals.USER1_MAX_Q_NUM = 1;
       Globals.USER2_MAX_Q_NUM = 10;
-      Globals.PERIODIC_INTERVAL = 100;
       Globals.SIM_END_TIME = 10000;
       Globals.user2_q_nums = QueueData.QUEUE_NUM_FB;
-
+      
       Globals.JOB_NUM_PER_QUEUE_CHANGE = (int) (10 * Globals.User2QueueInterval
-          / Globals.PERIODIC_INTERVAL);
+          / 100);
       Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.DRF;
       Globals.PredMode[] predModes = { PredMode.PerfectPrediction,
           PredMode.GoodPrediction, PredMode.WrongPrediction,
@@ -613,12 +601,12 @@ public class Main {
             "==================================================================");
       }
     } else {
-      int numberOfServers = 40;
+      int numberOfServers = 1;
       Globals.NUM_MACHINES = 1;
       Globals.MACHINE_MAX_RESOURCE = numberOfServers;
-//      Globals.workload = Globals.WorkLoadType.BB;
+      Globals.workload = Globals.WorkLoadType.BB;
 //      Globals.workload = Globals.WorkLoadType.TPC_DS;
-      Globals.workload = Globals.WorkLoadType.TPC_H;
+//      Globals.workload = Globals.WorkLoadType.TPC_H;
 
       Globals.SCALE_UP_FACTOR = 1;
       Globals.NUM_DIMENSIONS = 2;      

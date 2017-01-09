@@ -263,6 +263,7 @@ public class StageDag extends BaseDag implements Cloneable {
 
 				dagsReadSoFar += 1;
 				String queueName = "default";
+				int sId = -1;
 				if (args.length >= 2) {
 					numStages = Integer.parseInt(args[0]);
 					ddagId = Integer.parseInt(args[1]);
@@ -272,6 +273,9 @@ public class StageDag extends BaseDag implements Cloneable {
 					if (args.length >= 4) {
 						queueName = args[3].trim();
 					}
+					if (args.length >= 5) {
+					  sId = Integer.parseInt(args[4].trim());
+          }
 					assert (numStages > 0);
 					assert (ddagId >= 0);
 				} else if (args.length == 1) {
@@ -285,6 +289,7 @@ public class StageDag extends BaseDag implements Cloneable {
 				dag.numStages = numStages;
 				dag.dagName = dag_name;
 				dag.setQueueName(queueName);
+				dag.sessionId = sId;
 				if (Simulator.QUEUE_LIST != null)
 					Simulator.QUEUE_LIST.addJobQueue(queueName);
 				else

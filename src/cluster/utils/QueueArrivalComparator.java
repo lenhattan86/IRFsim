@@ -9,18 +9,18 @@ public class QueueArrivalComparator implements Comparator<JobQueue> {
   @Override
   public int compare(JobQueue queue1, JobQueue queue2) {
     int res = 0; 
-    if (queue1.getStartTime() > queue2.getStartTime()){
+/*    if (queue1.getStartTime() > queue2.getStartTime()){
       res = 1;
     }else if (queue1.getStartTime() < queue2.getStartTime()){
       res = -1;
-    }
+    }*/
     
     if (res != 0)
       return res;
     
-    if (queue1.isInteractive && !queue2.isInteractive){
+    if (queue1.isLQ && !queue2.isLQ){
       res = 1;
-    }else if (!queue1.isInteractive && queue2.isInteractive){
+    }else if (!queue1.isLQ && queue2.isLQ){
       res = -1;
     }
     

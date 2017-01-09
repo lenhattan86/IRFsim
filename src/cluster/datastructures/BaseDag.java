@@ -26,6 +26,8 @@ public abstract class BaseDag implements Cloneable {
   public String getQueueName() {
     return this.queueName;
   }
+  
+  public int sessionId = -1;
 
   public int dagId;
   public int arrivalTime; // arrival time from the input

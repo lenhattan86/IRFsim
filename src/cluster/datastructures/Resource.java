@@ -22,10 +22,10 @@ public class Resource implements Comparable {
 		resources = new double[Globals.NUM_DIMENSIONS];
 	}
 
-	public Resource(double size) {
+	public Resource(double res) {
 		resources = new double[Globals.NUM_DIMENSIONS];
 		for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
-			resources[i] = Utils.round(size, 2);
+			resources[i] = Utils.round(res, 2);
 		}
 	}
 

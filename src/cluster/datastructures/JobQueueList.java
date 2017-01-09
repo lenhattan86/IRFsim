@@ -64,15 +64,15 @@ public class JobQueueList {
     Collections.sort((List<JobQueue>) this.runningQueues, new QueueArrivalComparator());
   }
 
-	public void addRunnableJob2Queue(BaseDag newJob, String queueName) {
+/*	public void addRunnableJob2Queue(BaseDag newJob, String queueName) {
 		JobQueue queue = getJobQueue(queueName);
 		queue.addRunnableJob(newJob);
-	}
+	}*/
 	
 	public void addRunningJob2Queue(BaseDag newJob, String queueName) {
 		JobQueue queue = getJobQueue(queueName);
 		queue.addRunningJob(newJob);
-		queue.removeRunnableJob(newJob);
+//		queue.removeRunnableJob(newJob);
 	}
 	
 	public void addCompletionJob2Queue(BaseDag newJob, String queueName) {
@@ -82,7 +82,7 @@ public class JobQueueList {
 	}
 	
 	public void addRunningQueue(JobQueue runningQueue){
-		if (runningQueue.isInteractive)
+		if (runningQueue.isLQ)
 			this.runningQueues.add(0,runningQueue);
 		else
 			this.runningQueues.add(runningQueue);
@@ -127,14 +127,14 @@ public class JobQueueList {
 	public Queue<JobQueue> getRunningInteractiveQueues(){
 		Queue<JobQueue> intQueues = new LinkedList<JobQueue>();
 		for (JobQueue q: this.runningQueues)
-			if (q.isInteractive)
+			if (q.isLQ)
 				intQueues.add(q);
 		return intQueues;
 	}
 	
 	public void printQueueInfo(){
 		for (JobQueue q: this.jobQueues)
-			System.out.println(q.getQueueName() + " weight: " + q.getWeight() + " rate: " + q.getServiceRate().slopes);
+			System.out.println(q.getQueueName() + " weight: " + q.getWeight() + " isLQ: " + q.isLQ);
 	}
 	
 	public void readQueue(String filePathString){
@@ -152,48 +152,50 @@ public class JobQueueList {
         }
         
         args = line.split(" ");
-        assert (args.length < 4) : 
-          "queueName DRFweight startTime period";
+        if (args.length != 2) 
+          System.err.println("[ERROR] queueName queueType");
+        
         queueName = args[0];        
       	queueName = queueName.trim();
       	JobQueue queue = new JobQueue(queueName);
-//      	queue.setSpeedFairWeight(Double.parseDouble(args[1]));
-      	queue.setWeight(Double.parseDouble(args[1]));
-      	queue.setStartTime(Double.parseDouble(args[2]));
-      	queue.setPeriod(Double.parseDouble(args[3]));
+      	int queueType = Integer.parseInt(args[1]);
+      	if (queueType==0) {
       	//TODO: hard-code the high weight for interactive queues for DRF-W
-      	if (Globals.METHOD.equals(Method.DRFW) && queueName.startsWith("interactive")) {
-      		queue.setWeight(Globals.DRFW_weight);
+      	  double weight = Double.parseDouble(br.readLine().trim());
+      	  queue.setWeight(weight);
+      	  queue.isLQ = false;
+      	} else if(queueType==1) {
+      	  queue.isLQ = true;
+      	  int numOfSessions = Integer.parseInt(br.readLine().trim());
+      	  if (Globals.METHOD.equals(Method.DRFW)) {
+            queue.setWeight(Globals.DRFW_weight);
+          } else if(Globals.METHOD.equals(Method.Strict)){
+            queue.setWeight(Globals.STRICT_WEIGHT);
+          }
+      	  for(int i=0; i<numOfSessions; i++){
+      	    args = br.readLine().split(" ");
+      	    if(args.length!=(4+Globals.NUM_DIMENSIONS))
+      	        System.err.println("startTime numOfJobs alphaDuration Period [resources...]");
+      	    double startTime = Double.parseDouble(args[0]);
+      	    int numOfJobs = Integer.parseInt(args[1]);
+      	    double alphaDuration = Double.parseDouble(args[2]);
+      	    double period = Double.parseDouble(args[3]);
+      	    boolean isPeriodic = period>0.0?true:false;
+      	    
+      	    Resource alpha = new Resource();
+      	    for(int r =0; r<Globals.NUM_DIMENSIONS; r++)
+      	      alpha.resources[r] = Double.parseDouble(args[4+r])*Globals.CAPACITY;
+      	    
+      	    Session s = new Session(numOfJobs, alpha, alphaDuration, startTime, period, isPeriodic);
+      	    queue.sessions.toList().add(s);
+      	  }
       	}
-      	
         Simulator.QUEUE_LIST.addJobQueue(queue);
-
-        int numOfSlopes;
-        line = br.readLine();
-        numOfSlopes = Integer.parseInt(line.trim());
-        assert (numOfSlopes >= 0);
-        
-        if (numOfSlopes>0){
-        	queue.isInteractive = true;
-        }else
-        	queue.isInteractive = false;
-        
-        for (int i = 0; i < numOfSlopes; ++i) {
-        	args = br.readLine().split(" ");
-          assert (args.length < numOfSlopes) : 
-            "Incorrect entry for guaranteed service rates";
-
-          double duration = Double.parseDouble(args[0]);
-          Resource slope = new Resource(Double.parseDouble(args[1]));
-//          if(i==numOfSlopes-1) duration = Double.MAX_VALUE;
-//          queue.serviceCurve.addSlope(slope, duration);
-          queue.addRate(slope, duration);
-        }
       }
       br.close();
       sortJobQueues();
     } catch (Exception e) {
-      System.err.println("Catch exception: " + e);
+      e.printStackTrace();
     }
 	}
 	

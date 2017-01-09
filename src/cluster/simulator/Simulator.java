@@ -96,7 +96,7 @@ public class Simulator {
       newDag.dagId = newDagId;
       newDag.dagName = "" + newDagId;
       dags.add(newDag);
-      Simulator.QUEUE_LIST.addRunnableJob2Queue(newDag, newDag.getQueueName());
+//      Simulator.QUEUE_LIST.addRunnableJob2Queue(newDag, newDag.getQueueName());
     } catch (CloneNotSupportedException e) {
       e.printStackTrace();
     }
@@ -363,7 +363,7 @@ public class Simulator {
     if (Globals.BATCH_JOBS_ARRIVAL_POLICY == JobsArrivalPolicy.All) {
       Set<BaseDag> newlyStartedJobs = new HashSet<BaseDag>();
       for (BaseDag newJob : runnableJobs) {
-        if (!newJob.getQueue().isInteractive) {
+        if (!newJob.getQueue().isLQ) {
           newlyStartedJobs.add(newJob);
           Simulator.QUEUE_LIST.addRunningJob2Queue(newJob, newJob.getQueueName());
           newJob.jobStartTime = Simulator.CURRENT_TIME;
@@ -377,7 +377,7 @@ public class Simulator {
     } else if (Globals.BATCH_JOBS_ARRIVAL_POLICY == JobsArrivalPolicy.Trace) {
       Set<BaseDag> newlyStartedJobs = new HashSet<BaseDag>();
       for (BaseDag dag : runnableJobs) {
-        if (!dag.getQueue().isInteractive) {
+        if (!dag.getQueue().isLQ) {
           if (dag.arrivalTime == Simulator.CURRENT_TIME) {
             dag.jobStartTime = Simulator.CURRENT_TIME;
             // dag.jobStartRunningTime = dag.jobStartTime;
@@ -400,28 +400,27 @@ public class Simulator {
     if (Globals.BURSTY_JOBS_ARRIVAL_POLICY == JobsArrivalPolicy.Trace) {
       Set<BaseDag> newlyStartedJobs = new HashSet<BaseDag>();
       for (BaseDag dag : runnableJobs) {
-        if (dag.getQueue().isInteractive) {
+        if (dag.getQueue().isLQ) {
           if (dag.arrivalTime == Simulator.CURRENT_TIME) {
             dag.jobStartTime = Simulator.CURRENT_TIME;
             // dag.jobStartRunningTime = dag.jobStartTime;
             newlyStartedJobs.add(dag);
             StageDag reBurtyJob = StageDag.clone((StageDag) dag);
             reBurtyJob.dagId = burstyJobIdx++;
-            runnableJobs.add(reBurtyJob);
             Simulator.QUEUE_LIST.addRunningJob2Queue(dag, dag.getQueueName());
             Output.debugln(DEBUG, "Started job:" + dag.dagId + " at time:" + Simulator.CURRENT_TIME);
             existNewJob = true;
           }
         }
-        // clear the datastructures
-        runnableJobs.removeAll(newlyStartedJobs);
-        runningJobs.addAll(newlyStartedJobs);
       }
+   // clear the datastructures
+      runnableJobs.removeAll(newlyStartedJobs);
+      runningJobs.addAll(newlyStartedJobs);
     } else if (Globals.BURSTY_JOBS_ARRIVAL_POLICY == JobsArrivalPolicy.Period) {
       if (nextTimeToLaunchJob == Simulator.CURRENT_TIME) {
         BaseDag burstJob = null;
         for (BaseDag newJob : runnableJobs) {
-          if (newJob.getQueue().isInteractive) {
+          if (newJob.getQueue().isLQ) {
             assert newJob != null;
             newJob.jobStartTime = Simulator.CURRENT_TIME;
             // newJob.jobStartRunningTime = newJob.jobStartTime;
@@ -465,6 +464,7 @@ public class Simulator {
         return (StageDag) dag;
       }
     }
+    System.err.println("\nThere is no job "+dagId);
     return null;
   }
 

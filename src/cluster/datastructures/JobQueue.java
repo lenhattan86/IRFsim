@@ -1,5 +1,6 @@
 package cluster.datastructures;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -8,7 +9,6 @@ import java.util.Queue;
 import cluster.simulator.Main.Globals;
 import cluster.simulator.Main.Globals.Method;
 import cluster.simulator.Simulator;
-import cluster.speedfair.ServiceCurve;
 import cluster.speedfair.ServiceRate;
 import cluster.utils.Output;
 
@@ -16,29 +16,31 @@ public class JobQueue {
 	
 	private final static boolean DEBUG=false;
 	
-	private Queue<BaseDag> runnableJobs; // Jobs are in the queue
+//	private Queue<BaseDag> runnableJobs; // Jobs are in the queue
 	private Queue<BaseDag> runningJobs;
 	public Queue<BaseDag> completedJobs;
 	
-	public boolean isInteractive = false;
+	public Sessions sessions;
+	
+	public boolean isLQ = false;
 	
 	private double weight = 1.0;
 	
-	public double getStartTime() {
+/*	public double getStartTime() {
 		return startTime;
 	}
 
 	public void setStartTime(double startTime) {
 		this.startTime = startTime;
 	}
-
-	private double startTime = 0.0;
+*/
+//	private double startTime = 0.0;
 	
 	private double speedFairWeight = 1.0;
 
 	private double startTimeOfNewJob = -1.0;
 	
-	private ServiceRate serviceRate = new ServiceRate();
+//	private ServiceRate serviceRate = new ServiceRate();
 
 	public List<Resource> receivedResourcesList = new LinkedList<Resource>();
 
@@ -46,15 +48,19 @@ public class JobQueue {
 
 	String queueName = "";
 
-	private double period;
-
 	public JobQueue(String queueName) {
 		this.queueName = queueName;
-		runnableJobs = new LinkedList<BaseDag>();
+//		runnableJobs = new LinkedList<BaseDag>();
 		runningJobs = new LinkedList<BaseDag>();
 		completedJobs = new LinkedList<BaseDag>();
+		sessions = new Sessions();
 	}
-
+	
+	public double getCurrSessionStartTime(){
+	  //TODO: fix this.
+	  return 0.0;
+	}
+	
 	public String getQueueName() {
 		return this.queueName;
 	}
@@ -78,9 +84,9 @@ public class JobQueue {
 		return avgTime;
 	}
 
-	public void admitJobs(BaseDag newArrivalJob) {
+	/*public void admitJobs(BaseDag newArrivalJob) {
 		runnableJobs.add(newArrivalJob);
-	}
+	}*/
 
 	public void setRsrcQuota(Resource rsrcQuota) {
 		this.rsrcQuota = new Resource(rsrcQuota);
@@ -170,9 +176,9 @@ public class JobQueue {
 	// getters & setters
 	public double getWeight() {
 		double res = weight;
-		if (isInteractive && Globals.METHOD.equals(Method.Strict))
+		if (isLQ && Globals.METHOD.equals(Method.Strict))
 			res = Globals.STRICT_WEIGHT;
-		else if (isInteractive && Globals.METHOD.equals(Method.DRFW))
+		else if (isLQ && Globals.METHOD.equals(Method.DRFW))
 			res = Globals.DRFW_weight;
 //		else if(isInteractive && Globals.METHOD.equals(Method.SpeedFair))
 //			res = this.getSpeedFairWeight();
@@ -183,52 +189,113 @@ public class JobQueue {
 		this.weight = weight;
 	}
 	
-	public void setPeriod(double period){
-		this.period = period;
-	}
-	
-	public double getPeriod(){
-		return this.period;
-	}
-	
 	public void setSpeedFairWeight(double weight) {
 		this.speedFairWeight = weight;
 	}
 	
-	public double getSpeedFairWeight() {
+/*	public double getSpeedFairWeight() {
 		if (this.serviceRate.isBeyondGuaranteedDuration(Simulator.CURRENT_TIME, this.startTimeOfNewJob)) //add 1 condition for batch queues
 			return this.speedFairWeight;
 		else
 			return 1.0; // make equal share to others.
-	}
+	}*/
 	
 	public Resource getGuaranteeRate(double currTime){
-    return this.serviceRate.guaranteedResources(Simulator.CURRENT_TIME, this.startTimeOfNewJob);
+	  Resource zero = new Resource();
+	  for (Session s: sessions.toList()){
+	    double period = 0.0;
+	    if (s.isPeriodic()){
+	      period = s.getPeriod();
+	    }else {
+	      period = s.getAlphaDuration();
+	    }
+	    double endTime = s.getStartTime()+s.getNumOfJobs()*period;
+	    
+	    if(currTime>= s.getStartTime() && currTime< endTime){
+	      double virtualCurrTime = currTime-s.getStartTime();
+	      if(virtualCurrTime % period < s.getAlphaDuration())
+	        return s.getAlpha();
+	      else
+	        return zero;
+	    }
+	  }
+	  return zero;
   }
 	
-	public Resource getAlpha(){
-    return this.serviceRate.getAlpha();
+	public Session getCurrSession(double currTime){
+	  
+	  for (Session s: sessions.toList()){
+	    double period = 0.0;
+      if (s.isPeriodic()){
+        period = s.getPeriod();
+      }else {
+        period = s.getAlphaDuration();
+      }
+      double endTime = s.getStartTime()+s.getNumOfJobs()*period;
+      
+      if(currTime>= s.getStartTime() && currTime< endTime && !s.isReject()){
+        return s; 
+      }
+    }
+    return null;
+	}
+	
+	public int getCurrSessionIdx(double currTime){
+	  int i = 0;
+    for (Session s: sessions.toList()){
+      double period = 0.0;
+      if (s.isPeriodic()){
+        period = s.getPeriod();
+      }else {
+        period = s.getAlphaDuration();
+      }
+      double endTime = s.getStartTime()+s.getNumOfJobs()*period;
+      
+      if(currTime>= s.getStartTime() && currTime< endTime && !s.isReject()){
+        return i; 
+      }
+      i++;
+    }
+    return -1;
   }
-
-
-	public void addRate(Resource slope, double duration) {
-		this.serviceRate.addSlope(slope, duration);
-	}
 	
-	public ServiceRate getServiceRate(){
-	  return this.serviceRate;
-	}
-	
-	public double getStage1Duration(){
-	  double res = 0;
-	  if (this.serviceRate.getCurveDurations().get(0)!=null)
-	    res = this.serviceRate.getCurveDurations().get(0);
-	  return res;
-	}
+	/*public Resource getAlpha(double currTime){
+    for (Session s: sessions.toList()){
+      double period = 0.0;
+      if (s.isPeriodic()){
+        period = s.getPeriod();
+      }else {
+        period = s.getAlphaDuration();
+      }
+      double endTime = s.getStartTime()+s.getNumOfJobs()*period;
+      //TODO: getGuaranteeRate may NOT be correct.
+      if(currTime>=s.getStartTime()&& currTime< endTime)
+        return s.getAlpha();
+    }
+    return new Resource(Resources.ZEROS);
+  }*/
 
-	public void addRunnableJob(BaseDag newJob) {
+
+	/*
+	public double getStage1Duration(double currTime){
+	  for (Session s: sessions.toList()){
+	    double period = 0.0;
+      if (s.isPeriodic()){
+        period = s.getPeriod();
+      }else {
+        period = s.getAlphaDuration();
+      }
+      double endTime = s.getStartTime()+s.getNumOfJobs()*period;
+      
+      if(currTime>=s.getStartTime()&& currTime<=endTime)
+        return s.getAlphaDuration();
+    }
+	  return 0.0;
+	}*/
+
+/*	public void addRunnableJob(BaseDag newJob) {
 		this.runnableJobs.add(newJob);
-	}
+	}*/
 
 	public void removeRunningJob(BaseDag newJob) {
 		this.runningJobs.remove(newJob);
@@ -239,13 +306,14 @@ public class JobQueue {
 	}
 	
 	public boolean isActive(){
-		return this.runningJobs.size()>0;
+	  if(!isLQ)
+	    return this.runningJobs.size()>0;
+	  else{
+	    Session session = getCurrSession(Simulator.CURRENT_TIME);
+	    return (session!=null);
+	  }
 	}
 	
-	public boolean isDeactived(){
-    return false; //TODO: need to add this property
-  }
-
 	public Queue<BaseDag> getRunningJobs() {
 		return this.runningJobs;
 	}
@@ -260,9 +328,9 @@ public class JobQueue {
 		this.runningJobs.add(newJob);		
 	}
 
-	public void removeRunnableJob(BaseDag oldJob) {
+/*	public void removeRunnableJob(BaseDag oldJob) {
 		this.runnableJobs.remove(oldJob);
-	}
+	}*/
 	public double getStartTimeOfNewJob() {
 		return startTimeOfNewJob;
 	}
