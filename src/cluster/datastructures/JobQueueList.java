@@ -134,7 +134,7 @@ public class JobQueueList {
 	
 	public void printQueueInfo(){
 		for (JobQueue q: this.jobQueues)
-			System.out.println(q.getQueueName() + " weight: " + q.getWeight() + " isLQ: " + q.isLQ);
+			System.out.println(q.getQueueName() + " weight: " + q.getWeight() + " isLQ: " + q.isLQ + " startTime:"+q.getCurrSessionStartTime());
 	}
 	
 	public void readQueue(String filePathString){

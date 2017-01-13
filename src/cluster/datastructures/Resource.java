@@ -44,6 +44,14 @@ public class Resource implements Comparable {
 			resources[i] = Utils.round(res[i], 2);
 		}
 	}
+	
+	public boolean fitsIn(Resource res){
+    for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
+      if(this.resources[i] > res.resource(i))
+        return false;
+    }
+    return true;
+	}
 
 	public static double aggrResources(Resource res) {
 		double aggr = 0;

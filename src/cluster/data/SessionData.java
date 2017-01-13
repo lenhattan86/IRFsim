@@ -1,39 +1,60 @@
 package cluster.data;
 
 import cluster.datastructures.Sessions;
+import cluster.simulator.Main.Globals;
 
 public class SessionData {
-  public Sessions[] sessionsArray = new Sessions[3];
+  public Sessions[] sessionsArray = new Sessions[8];
   public static double scaleFactor = 1.0;
-  
+
   // static data
-  // single periodic session
-  public static double[] singleStartTimes = {0.0};
-  public static double[] singleAlphaDurations = {20.0}; 
-  public static double[] singlePeriods  = {200.0};
-  public static int[] singleJobNums = {10};
-//  public static double[] singleAlphas = {1.0};
-  public static double[] singleAlphas = {1.0*scaleFactor};
-  
-  // multiple periodic sessions
-  public static double[] m2pleStartTimes = {0.0, 220.0};
-  public static double[] m2pleAlphaDurations = {20.0, 20.0}; 
-  public static double[] m2plePeriods  = {100.0, 200.0};
-  public static int[] m2pleJobNums = {2, 2};
-  public static double[] m2pleAlphas = {1.0*scaleFactor, 1.0*scaleFactor};
-  
-  // aperiodic sessions
-  public static double[] a3StartTimes = {30, 90.0, 250.0, };
-  public static double[] a3AlphaDurations = {20.0, 20.0, 20.0}; 
-  public static double[] a3Periods  = {0, 0, 0}; // not important
-  public static int[]    a3JobNums  = {1, 1, 1}; // always one
-  public static double[] a3Alphas   = {1.0*scaleFactor, 1.0*scaleFactor, 1.0*scaleFactor}; // capacity = 1.0;
-  
-  public SessionData(){
-    sessionsArray[0] = new Sessions(singleStartTimes, singleAlphaDurations, singlePeriods, singleJobNums, singleAlphas);
-    sessionsArray[1] = new Sessions(m2pleStartTimes, m2pleAlphaDurations, m2plePeriods, m2pleJobNums, m2pleAlphas);
-    sessionsArray[2] = new Sessions(a3StartTimes, a3AlphaDurations, a3Periods, a3JobNums, a3Alphas);
+  // LQ-0
+  public static double[] LQ0StartTimes = { 50.0 };
+  public static double[] LQ0AlphaDurations = { 27.0 };
+  public static double[] LQ0Periods = { 200.0 };
+  public static int[] LQ0JobNums = { 50 };
+  // public static double[] LQ0Alphas = {1.0};
+  public static double[] LQ0Alphas = { 1.0 * scaleFactor };
+
+  // LQ-1
+  public static double[] LQ1StartTimes = { 100.0 };
+  public static double[] LQ1AlphaDurations = { 27.0 };
+  public static double[] LQ1Periods = { 150.0 };
+  public static int[] LQ1JobNums = { 50 };
+  public static double[] LQ1Alphas = { 1.0 * scaleFactor };
+
+  // LQ-2
+  public static double[] LQ2StartTimes = { 150.0 };
+  public static double[] LQ2AlphaDurations = { 27.0 };
+  public static double[] LQ2Periods = { 60.0 }; // not important
+  public static int[] LQ2JobNums = { 50 }; // always one
+  public static double[] LQ2Alphas = { 1.0 * scaleFactor }; // capacity = 1.0;
+
+  // single LQ
+  public static double[] LQStartTimes = { 100.0 };
+  public static double[] LQAlphaDurations = { 25.0 };
+  public static double[] LQPeriods = { 800.0 };
+  public static int[] LQJobNums = { 50 };
+  // public static double[] LQ0Alphas = {1.0};
+  public static double[] LQAlphas = { 1.0 * scaleFactor };
+
+  public SessionData() {
+    if (Globals.runmode.equals(Globals.Runmode.MultipleBurstyQueues)) {
+      sessionsArray[0] = new Sessions(LQ0StartTimes, LQ0AlphaDurations,
+          LQ0Periods, LQ0JobNums, LQ0Alphas);
+      sessionsArray[1] = new Sessions(LQ1StartTimes, LQ1AlphaDurations,
+          LQ1Periods, LQ1JobNums, LQ1Alphas);
+      sessionsArray[2] = new Sessions(LQ2StartTimes, LQ2AlphaDurations,
+          LQ2Periods, LQ2JobNums, LQ2Alphas);
+    } else if (Globals.runmode.equals(Globals.Runmode.MultipleBatchQueueRun)) {
+      sessionsArray[0] = new Sessions(LQStartTimes, LQAlphaDurations, LQPeriods,
+          LQJobNums, LQAlphas);
+    } else {
+      sessionsArray[0] = new Sessions(LQStartTimes, LQAlphaDurations, LQPeriods,
+          LQJobNums, LQAlphas);
+    }
+
   }
-  
+
   public static SessionData SESSION_DATA = new SessionData();
 }

@@ -242,6 +242,10 @@ public class JobQueue {
     return null;
 	}
 	
+	public Session getCurrSession(){
+    return getCurrSession(Simulator.CURRENT_TIME);
+  }
+	
 	public int getCurrSessionIdx(double currTime){
 	  int i = 0;
     for (Session s: sessions.toList()){
@@ -321,12 +325,44 @@ public class JobQueue {
 	  return false;
 	}
 	
+	public boolean hasRunningJobs()
+	{
+	  return this.runningJobs.size()>0;
+	}
+	
+	public boolean isActive(double currTime){
+    if (this.runningJobs.size()>0)
+      return true;
+    
+    if(isLQ && Globals.METHOD.equals(Globals.Method.SpeedFair)){
+      Session session = getCurrSession(currTime);
+      return (session!=null) && isInStage1(currTime);
+    }
+    return false;
+  }
+	
 	public Queue<BaseDag> getRunningJobs() {
 		return this.runningJobs;
 	}
 
 	public int runningJobsSize() {
 		return this.runningJobs.size();
+	}
+	
+	public boolean isInStage1(double currTime){
+	  Session s = this.getCurrSession(currTime);
+    double lasting = (currTime - this.getCurrSessionStartTime())
+        % s.getPeriod();
+    boolean inStage1 = lasting <= s.getAlphaDuration();
+    return inStage1;
+  }
+	
+	public Resource getInStage1Alpha(double currTime){
+	  Session s = this.getCurrSession(currTime);
+	  Resource res = new Resource(Resources.ZEROS);
+	  if (isInStage1(currTime))
+	    return s.getAlpha();
+	  return res;
 	}
 
 	public void addRunningJob(BaseDag newJob) {

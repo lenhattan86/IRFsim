@@ -67,7 +67,7 @@ public class DRFScheduler implements Scheduler {
 		onlineDRFShare(clusterTotCapacity, Simulator.QUEUE_LIST.getRunningQueues());
 	}
 	
-
+	//TODO: onlineDRFShare_new is incomplete
   public static void onlineDRFShare_new(Resource resCapacity, List<JobQueue> runningQueues) {
     // init
     Resource consumedRes = Simulator.cluster.getClusterAllocatedRes();

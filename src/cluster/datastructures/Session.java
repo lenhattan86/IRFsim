@@ -1,5 +1,7 @@
 package cluster.datastructures;
 
+import cluster.simulator.Simulator;
+
 public class Session {
   public static double MAX_SESSION_TIME = 10000.0; // in seconds. 
   private int numOfJobs = 0;
@@ -28,7 +30,7 @@ public class Session {
   public Resource getAlpha() {
     return alpha;
   }
-
+  
   public double getStartTime() {
     return startTime;
   }

@@ -103,9 +103,13 @@ public class Simulator {
   }
 
   public Simulator() {
+    CURRENT_TIME = 0;
+    
     QUEUE_LIST = new JobQueueList();
 
     QUEUE_LIST.readQueue(Globals.PathToQueueInputFile);
+    
+    QUEUE_LIST.sortJobQueues();
 
     QUEUE_LIST.printQueueInfo();
 
@@ -313,10 +317,10 @@ public class Simulator {
     if (runningBatchJobs.isEmpty() && runnableJobs.isEmpty())
       System.err.println("You need to increase the number of bursty jobs");
     
-    if ( Globals.numBatchQueues== 0)
-      return runningJobs.isEmpty();
-    else
+    if ( Globals.numBatchQueues != 0)
       return runningBatchJobs.isEmpty();
+    
+    return false;
   }
 
   boolean updateJobsStatus(Map<Integer, List<Integer>> finishedTasks) {
