@@ -48,7 +48,7 @@ public class Main {
     };
 
     public enum Runmode {
-      SingleRun, MultipleBatchQueueRun, ScaleUpTaskDurations, MultipleBurstyQueues, ScaleUpBurstyJobs, TrialRun, NONE
+      SingleRun, MultipleBatchQueueRun, ScaleUpTaskDurations, MultipleBurstyQueues, ScaleUpBurstyJobs, EstimationErrors, TrialRun, NONE
     }
 
     public static boolean USE_TRACE = true;
@@ -528,7 +528,6 @@ public class Main {
 //    if (Globals.workload == null) {
 //      return;
 //    }
-
     
     if(args.length >= 1){
       String stWorkload = args[0];
@@ -675,7 +674,7 @@ public class Main {
       }
     } else if (Globals.runmode.equals(Runmode.ScaleUpTaskDurations)) {
       Globals.SetupMode mode = Globals.SetupMode.ShortInteractive;
-      double[] scaleUps = { 0.125, 0.25, 0.5, 1, 2, 4, 8 };
+      double[] scaleUps = { 1.0/32.0, 1.0/16.0, 1.0/8.0, 1.0/4.0, 1.0/2.0, 1, 2, 4, 8 ,16, 32};
       Globals.METHOD = Method.SpeedFair;
       Globals.numBatchQueues = 8;
       Globals.setupParameters(mode, 1);
@@ -685,6 +684,31 @@ public class Main {
         // Trigger garbage collection to clean up memory.
         Globals.SCALE_BATCH_DURATION = scaleUps[i];
         Globals.SCALE_UP_BATCH_JOB = (double) 1.0 / scaleUps[i];
+        System.out.println("[INFO] Wait for garbage collectors ...");
+        freeMemory();
+        Globals.EXTRA = "_t" + Globals.SCALE_BATCH_DURATION + "x";
+        System.out.println(
+            "=================================================================");
+        System.out.println("Run METHOD: " + Globals.METHOD
+            + " with scale-up factor= " + Globals.SCALE_BATCH_DURATION);
+        System.out.println("Run METHOD: " + Globals.METHOD + " with "
+            + Globals.numBatchQueues + " batch queues.");
+        runSimulationScenario(false);
+        System.out.println(
+            "==================================================================");
+      }
+    } else if (Globals.runmode.equals(Runmode.EstimationErrors)) {
+      Globals.SetupMode mode = Globals.SetupMode.ShortInteractive;
+      double[] errors = { 0.125, 0.25, 0.5, 1, 2, 4, 8 };
+      Globals.METHOD = Method.SpeedFair;
+      Globals.numBatchQueues = 8;
+      Globals.setupParameters(mode, 1);
+      Globals.IS_GEN = true;
+
+      for (int i = 0; i < errors.length; i++) {
+        // Trigger garbage collection to clean up memory.
+        Globals.SCALE_BATCH_DURATION = errors[i];
+        Globals.SCALE_UP_BATCH_JOB = (double) 1.0 / errors[i];
         System.out.println("[INFO] Wait for garbage collectors ...");
         freeMemory();
         Globals.EXTRA = "_t" + Globals.SCALE_BATCH_DURATION + "x";

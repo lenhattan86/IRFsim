@@ -9,8 +9,10 @@ workload='BB';
 
 
 %%
-% result_folder= ['result/20170105/' workload '/'];
 result_folder= '';
+% result_folder= ['result/20170105/' workload '/'];
+result_folder= ['result/20170113/' workload '/'];
+
 
 if true
     scaleUps = [0.125, 0.25, 0.5, 1, 2, 4, 8];
@@ -41,12 +43,6 @@ if plots(1)
    
    [ speedfair_avg_compl_time ] = obtain_compl_time( output_folder, speedfair_compl_files, INTERACTIVE_QUEUE);
    
-   speedfair_avg_compl_time(1) = 27; 
-   speedfair_avg_compl_time(2) = 40;
-   speedfair_avg_compl_time(3) = 50;
-   speedfair_avg_compl_time(6) = 68;
-   speedfair_avg_compl_time(7) = 79;
-
    figure;
    scrsz = get(groot,'ScreenSize');   
    plot(scaleUps, speedfair_avg_compl_time, 'LineWidth',LineWidth);
