@@ -47,4 +47,6 @@ Temporary Items
 .apdisk
 
 # eclipse
-
+log/
+output/
+result/
