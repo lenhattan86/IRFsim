@@ -48,7 +48,7 @@ public class Main {
     };
 
     public enum Runmode {
-      SingleRun, MultipleBatchQueueRun, ScaleUpTaskDurations, MultipleBurstyQueues, ScaleUpBurstyJobs, EstimationErrors, TrialRun, NONE
+      SingleRun, MultipleBatchQueueRun, AvgTaskDuration, ScaleBatchTaskDuration, MultipleBurstyQueues, ScaleUpBurstyJobs, EstimationErrors, TrialRun, NONE
     }
 
     public static boolean USE_TRACE = true;
@@ -65,6 +65,7 @@ public class Main {
     public static double SCALE_UP_BURSTY_JOB = 50;
     public static double SCALE_UP_BURSTY_JOB_DEFAULT = 50;
     public static double SCALE_UP_BATCH_JOB = 1;
+    public static double AVG_TASK_DURATION = -1.0;
 
     public static double SMALL_JOB_DUR_THRESHOLD = 40.0;
     public static double LARGE_JOB_MAX_DURATION = 0.0;
@@ -199,8 +200,16 @@ public class Main {
 
     public static String EXTRA = "";
 
-    public static void setupParameters(SetupMode setup, double scaleUpBursty) {
+    public static void setupDefaultParameters(SetupMode setup, double scaleUpBursty) {
       COMPUTE_STATISTICS = false;
+      
+      SCALE_BURSTY_DURATION = 1.0;
+      SCALE_BATCH_DURATION = 1.0;
+      
+      SCALE_UP_BURSTY_JOB = 50;
+      SCALE_UP_BURSTY_JOB_DEFAULT = 50;
+      SCALE_UP_BATCH_JOB = 1;
+      AVG_TASK_DURATION = -1.0;
 
       switch (workload) {
       case BB:
@@ -297,7 +306,7 @@ public class Main {
     if (Globals.runmode == Runmode.ScaleUpBurstyJobs) {
       extraName = "_s" + Globals.SCALE_UP_BURSTY_JOB / 50;
 
-    } else if (Globals.runmode == Runmode.ScaleUpTaskDurations) {
+    } else if (Globals.runmode == Runmode.ScaleBatchTaskDuration) {
       extraName = Globals.EXTRA;
     } else
       extraName = "_" + Globals.numBurstyQueues + "_" + Globals.numBatchQueues
@@ -545,14 +554,14 @@ public class Main {
         Globals.runmode = Runmode.MultipleBurstyQueues;
       } else if (stRunmode.equals("MultipleBatchQueueRun")) {
         Globals.runmode = Runmode.MultipleBatchQueueRun;
-      } else if (stRunmode.equals("ScaleUpTaskDurations")) {
-        Globals.runmode = Runmode.ScaleUpTaskDurations;
+      } else if (stRunmode.equals("ScaleBatchTaskDuration")) {
+        Globals.runmode = Runmode.ScaleBatchTaskDuration;
       } else if (stRunmode.equals("ScaleUpBurstyJobs")) {
         Globals.runmode = Runmode.ScaleUpBurstyJobs;
       }
     }
 
-    Globals.runmode = Runmode.ScaleUpTaskDurations;
+    Globals.runmode = Runmode.AvgTaskDuration;
 
     // Globals.runmode = Runmode.TrialRun;
     if (Globals.runmode.equals(Runmode.SingleRun)) {
@@ -571,7 +580,7 @@ public class Main {
       Globals.DEBUG_LOCAL = true;
       Globals.workload = Globals.WorkLoadType.BB;
 
-      Globals.setupParameters(Globals.SetupMode.ShortInteractive, 1);
+      Globals.setupDefaultParameters(Globals.SetupMode.ShortInteractive, 1);
 
       System.out.println(
           "=================================================================");
@@ -593,7 +602,7 @@ public class Main {
       Globals.DEBUG_LOCAL = true;
       Globals.workload = Globals.WorkLoadType.BB;
 
-      Globals.setupParameters(Globals.SetupMode.ShortInteractive, 1);
+      Globals.setupDefaultParameters(Globals.SetupMode.ShortInteractive, 1);
 
       for (int i = 0; i < methods.length; i++) {
         // Trigger garbage collection to clean up memory.
@@ -620,7 +629,8 @@ public class Main {
       Method[] methods = { Method.DRF, Method.DRFW, Method.Strict,
           Method.SpeedFair };
       int[] batchQueueNums = { 1, 2, 4, 8, 16, 32 };
-      Globals.setupParameters(mode, 1);
+      
+      Globals.setupDefaultParameters(mode, 1);
 
       for (int j = 0; j < batchQueueNums.length; j++) {
         for (int i = 0; i < methods.length; i++) {
@@ -654,7 +664,7 @@ public class Main {
 
       for (int j = 0; j < scaleFactors.length; j++) {
 
-        Globals.setupParameters(mode, scaleFactors[j]);
+        Globals.setupDefaultParameters(mode, scaleFactors[j]);
 
         for (int i = 0; i < methods.length; i++) {
           if (i == 0)
@@ -672,12 +682,37 @@ public class Main {
               "==================================================================");
         }
       }
-    } else if (Globals.runmode.equals(Runmode.ScaleUpTaskDurations)) {
+    } else if (Globals.runmode.equals(Runmode.AvgTaskDuration)) {
+      Globals.SetupMode mode = Globals.SetupMode.ShortInteractive;
+      double[] avgTaskDurations = { 1.0, 2.0, 4.0, 6.0, 8.0, 10.0, 15.0, 20.0, 30.0, 40.0, 60.0, 80.0, 100.0};
+      Globals.METHOD = Method.SpeedFair;
+      Globals.numBatchQueues = 8;
+      
+      Globals.setupDefaultParameters(mode, 1);
+      Globals.IS_GEN = true;
+
+      for (int i = 0; i < avgTaskDurations.length; i++) {
+        // Trigger garbage collection to clean up memory.
+        Globals.AVG_TASK_DURATION = avgTaskDurations[i];
+        System.out.println("[INFO] Wait for garbage collectors ...");
+        freeMemory();
+        Globals.EXTRA = "_avg" + Globals.AVG_TASK_DURATION + "";
+        System.out.println(
+            "=================================================================");
+        System.out.println("Run METHOD: " + Globals.METHOD
+            + " with avg task duration= " + Globals.AVG_TASK_DURATION);
+        System.out.println("Run METHOD: " + Globals.METHOD + " with "
+            + Globals.numBatchQueues + " batch queues.");
+        runSimulationScenario(false);
+        System.out.println(
+            "==================================================================");
+      }
+    } else if (Globals.runmode.equals(Runmode.ScaleBatchTaskDuration)) {
       Globals.SetupMode mode = Globals.SetupMode.ShortInteractive;
       double[] scaleUps = { 1.0/32.0, 1.0/16.0, 1.0/8.0, 1.0/4.0, 1.0/2.0, 1, 2, 4, 8 ,16, 32};
       Globals.METHOD = Method.SpeedFair;
       Globals.numBatchQueues = 8;
-      Globals.setupParameters(mode, 1);
+      Globals.setupDefaultParameters(mode, 1);
       Globals.IS_GEN = true;
 
       for (int i = 0; i < scaleUps.length; i++) {
@@ -702,7 +737,7 @@ public class Main {
       double[] errors = { 0.125, 0.25, 0.5, 1, 2, 4, 8 };
       Globals.METHOD = Method.SpeedFair;
       Globals.numBatchQueues = 8;
-      Globals.setupParameters(mode, 1);
+      Globals.setupDefaultParameters(mode, 1);
       Globals.IS_GEN = true;
 
       for (int i = 0; i < errors.length; i++) {
@@ -749,7 +784,7 @@ public class Main {
       for (int i = 0; i < predModes.length; i++) {
         Globals.PRED_MODE = predModes[i];
         Globals.IS_GEN = true;
-        Globals.setupParameters(SetupMode.others, 1);
+        Globals.setupDefaultParameters(SetupMode.others, 1);
         System.out.println(
             "=================================================================");
         System.out.println("Run Queue Scheduler: " + Globals.QUEUE_SCHEDULER);
@@ -769,7 +804,7 @@ public class Main {
       Globals.SCALE_UP_FACTOR = 1;
       Globals.NUM_DIMENSIONS = 2;
 
-      Globals.setupParameters(Globals.SetupMode.ShortInteractive, 1);
+      Globals.setupDefaultParameters(Globals.SetupMode.ShortInteractive, 1);
 
       Globals.SCALE_UP_BURSTY_JOB = Globals.SCALE_UP_FACTOR
           * Globals.SCALE_UP_BURSTY_JOB;

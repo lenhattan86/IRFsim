@@ -285,6 +285,13 @@ public class GenInput {
     
     Queue<BaseDag> longJobs = getJobs(jobs, Globals.LARGE_JOB_MAX_DURATION,
         Globals.LARGE_JOB_TASK_NUM_THRESHOLD, false);
+    
+    if(Globals.AVG_TASK_DURATION>0){
+      double avgTaskDuration = avgTaskDuration(longJobs);
+      Globals.SCALE_BATCH_DURATION = Globals.AVG_TASK_DURATION/avgTaskDuration;
+      Globals.SCALE_UP_BATCH_JOB = 1.0/Globals.SCALE_BATCH_DURATION*Globals.SCALE_UP_BATCH_JOB;
+    }
+    
     Iterator<BaseDag> jobIter2 = longJobs.iterator();
     int batchStartId = Globals.BATCH_START_ID;
     int[] arrivalTimes = readRandomProcess(Globals.DIST_FILE);
@@ -318,7 +325,7 @@ public class GenInput {
       }
     }
   }
-
+  
   public static int[] readRandomProcess(String filePathStr) {
     int row = 0; // only first line
     int[] res = null;
@@ -388,6 +395,21 @@ public class GenInput {
       // TODO Auto-generated catch block
       e.printStackTrace();
     }
+  }
+  
+  public static double avgTaskDuration(Queue<BaseDag> jobs){
+    double avgDuration = 0.0;
+    double numOfTasks = 0.0;
+    for (BaseDag job : jobs) {
+      for (Map.Entry<String, Stage> entry : job.stages.entrySet()) {
+        Stage stage = entry.getValue();
+        double duration = stage.vDuration;
+        avgDuration += duration*stage.vids.length();
+        numOfTasks += stage.vids.length();
+      }
+    }
+    avgDuration /= numOfTasks;
+    return avgDuration;
   }
 
   public static void genInput(int numInteractiveQueues,
