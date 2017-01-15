@@ -6,6 +6,8 @@ import java.util.Queue;
 import java.util.Scanner;
 import java.util.logging.Logger;
 
+import com.sun.corba.se.impl.javax.rmi.CORBA.Util;
+
 import cluster.data.QueueData;
 import cluster.datastructures.BaseDag;
 import cluster.simulator.Main.Globals.JobsArrivalPolicy;
@@ -15,6 +17,7 @@ import cluster.simulator.Main.Globals.Runmode;
 import cluster.simulator.Main.Globals.SetupMode;
 import cluster.simulator.Main.Globals.WorkLoadType;
 import cluster.utils.GenInput;
+import cluster.utils.Utils;
 
 public class Main {
 
@@ -520,6 +523,9 @@ public class Main {
   }
 
   public static void main(String[] args) {
+    Utils.createUserDir("log");
+    Utils.createUserDir("output");
+    
     System.out.println("Started Simulation....");
     System.out.println("........" + now() + ".....");
 
@@ -558,6 +564,8 @@ public class Main {
         Globals.runmode = Runmode.ScaleBatchTaskDuration;
       } else if (stRunmode.equals("ScaleUpBurstyJobs")) {
         Globals.runmode = Runmode.ScaleUpBurstyJobs;
+      } else if (stRunmode.equals("AvgTaskDuration")) {
+        Globals.runmode = Runmode.AvgTaskDuration;
       }
     }
 

@@ -149,4 +149,11 @@ public class Utils {
   	}
   	return idx;
   }
+  
+  public static void createUserDir(final String dirName){
+    final File dir = new File(dirName);
+    if (!dir.exists() && !dir.mkdirs()) {
+      System.err.println("cannot mkdir "+dirName);
+    }
+}
 }
