@@ -6,12 +6,12 @@ workload='BB';
 % workload='TPCDS';
 % workload='TPCH';
 
-num_batch_queues = 8;
+num_batch_queues = 4;
 num_interactive_queue = 1;
 num_queues = num_batch_queues + num_interactive_queue;
-START_TIME = 0; END_TIME = 800;
+START_TIME = 0; END_TIME = 4000;
 is_printed = true;
-cluster_size = 1000;
+cluster_size = 100;
 
 % barColors = colorb1i3(1:num_queues);
 barColors = colorb8i1(1:num_queues);
@@ -66,11 +66,12 @@ end
 for i=1:num_batch_queues
     lengendStr{i+num_interactive_queue} = ['TQ-' int2str(i-1)];
 end
-
+%%
 % extraStr = '';
 % extraStr = ['_' int2str(num_interactive_queue) '_' int2str(num_batch_queues) '_' int2str(cluster_size)];
 extraStr = ['_avg2.0'];
-   
+
+   %%
 if plots(1)   
    logFile = [ logfolder 'DRF-output' extraStr  '.csv'];
    [queueNames, res1, res2, flag] = importResUsageLog(logFile);   

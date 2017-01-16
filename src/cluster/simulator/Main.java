@@ -607,7 +607,7 @@ public class Main {
       // Globals.DEBUG_END = 250.0;
       Globals.SIM_END_TIME = 800.0;
 
-      Method[] methods = { Method.Strict,Method.SpeedFair};
+      Method[] methods = {Method.DRF, Method.Strict, Method.SpeedFair};
 //      Method[] methods = { Method.SpeedFair};
       Globals.NUM_MACHINES = 1;
       Globals.MACHINE_MAX_RESOURCE = 1000;
@@ -698,9 +698,18 @@ public class Main {
         }
       }
     } else if (Globals.runmode.equals(Runmode.AvgTaskDuration)) {
-      Globals.STEP_TIME = 0.5;
+      Globals.STEP_TIME = 1.0;
+//      Globals.SIM_END_TIME = 5000;
       Globals.SetupMode mode = Globals.SetupMode.ShortInteractive;
-      double[] avgTaskDurations = { 2.0, 4.0, 6.0, 8.0, 10.0, 15.0, 20.0, 30.0, 40.0, 60.0, 80.0, 100.0};
+//      double[] avgTaskDurations = { 2.0, 4.0, 6.0, 8.0, 10.0, 15.0, 20.0, 30.0, 40.0, 60.0, 80.0, 100.0};
+      double[] avgTaskDurations = { 2.0, 6.0, 10.0, 15.0, 100.0};
+//    double[] avgTaskDurations = { 4.0, 8.0, 20, 30, 40, 60, 80, 100.0};
+//      double[] avgTaskDurations = {2.0};
+      
+//      Globals.SCALE_BURSTY_DURATION = 1.0/20;
+//      Globals.SCALE_UP_BURSTY_JOB = 50*20;
+      
+      Globals.MACHINE_MAX_RESOURCE = 1000;
       Globals.METHOD = Method.SpeedFair;
       Globals.setupDefaultParameters(mode, 1);
       Globals.numBatchQueues = 4;
@@ -715,7 +724,7 @@ public class Main {
 //        Globals.numBatchJobs = (int) (numberOfBatchJobs*temp);
         System.out.println("[INFO] Wait for garbage collectors ...");
         freeMemory();
-        Globals.EXTRA = "_avg" + Globals.AVG_TASK_DURATION + "";
+        Globals.EXTRA = "_avg" + avgTaskDurations[i] + "";
         System.out.println(
             "=================================================================");
         System.out.println("Run METHOD: " + Globals.METHOD

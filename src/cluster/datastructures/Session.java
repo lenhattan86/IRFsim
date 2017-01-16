@@ -34,6 +34,12 @@ public class Session {
   public double getStartTime() {
     return startTime;
   }
+  
+  public double getStartPeriodTime(double currTime){
+    double periodIdx = (currTime - startTime)/period;
+    int pIdx = (int) periodIdx;
+    return pIdx*period + this.startTime;
+  }
 
   public double getPeriod(int numAdmittedQueues) {
     if (isPeriodic)

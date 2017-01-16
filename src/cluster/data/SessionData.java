@@ -39,7 +39,7 @@ public class SessionData {
   
   public static double[] simpleLQStartTimes = { 200.0 };
   public static double[] simpleLQAlphaDurations = { 27.0 };
-  public static double[] simpleLQPeriods = { 250.0 }; // for 8 TQs
+  public static double[] simpleLQPeriods = { 200.0 }; // for 8 TQs
   public static int[] simpleLQJobNums = { 150 };
   public static double[] simpleLQAlphas = { 1.0 * scaleFactor };
 

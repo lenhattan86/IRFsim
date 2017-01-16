@@ -1,17 +1,19 @@
 addpath('matlab_func');
 common_settings;
 
-workload='BB';
-% workload='TPCDS';
-% workload='TPCH';
+workloads = {'BB', 'TPC-DS','TPC-H'};
+worloadFolders = {'BB', 'TPCDS', 'TPCH'};
+% workloads = {'BB'};
+% worloadFolders = {''};
 
 %%
 
 
 %%
-result_folder= '';
-% result_folder= ['result/20170105/' workload '/'];
-result_folder= ['result/20170116/' workload '/'];
+% result_folder= '.';
+% result_folder= ['result/20170105/' ];
+% result_folder= ['result/20170113/' ];
+result_folder= ['result/20170116/' ];
 
 
 if false
@@ -41,11 +43,21 @@ elseif true
                       'SpeedFair-output_avg80.0.csv';
                       'SpeedFair-output_avg100.0.csv'};
   xVals = avgDuration;
+elseif false
+  avgDuration = [2.0, 6.0, 10.0, 15.0, 100.0];
+    speedfair_compl_files = {
+                      'SpeedFair-output_avg2.0.csv';
+                      'SpeedFair-output_avg6.0.csv';
+                      'SpeedFair-output_avg10.0.csv';
+                      'SpeedFair-output_avg15.0.csv';
+                      'SpeedFair-output_avg100.0.csv'
+                      };
+  xVals = avgDuration;
 end
 
 
 %%
-output_folder = [result_folder  'output/'];
+
 
 figIdx = 0;
 
@@ -58,17 +70,21 @@ plots  = [true, false];
 if plots(1) 
     INTERACTIVE_QUEUE = 'bursty';
    
-   [ speedfair_avg_compl_time ] = obtain_compl_time( output_folder, speedfair_compl_files, INTERACTIVE_QUEUE);
-   
-   figure;
+    figure;
    scrsz = get(groot,'ScreenSize');   
+   
+  for i=1:length(workloads)
+   output_folder = [result_folder worloadFolders{i} '/output/'];
+   
+   [ speedfair_avg_compl_time ] = obtain_compl_time( output_folder, speedfair_compl_files, INTERACTIVE_QUEUE);  
+   
    plot(xVals, speedfair_avg_compl_time, 'LineWidth',LineWidth);
-   %title('Average completion time of interactive jobs','fontsize',fontLegend);
-%    xLabel='task duration scale factor';
+   hold on;
+  end
   xLabel='average task duration';
-   ylim([0 100]);
+  ylim([0 100]);
   yLabel='time (seconds)';
-  legendStr={workload};
+  legendStr=workloads;
 
   legend(legendStr,'Location','northoutside','FontSize',fontLegend,'Orientation','horizontal');
   set (gcf, 'Units', 'Inches', 'Position', figSizeOneCol, 'PaperUnits', 'inches', 'PaperPosition', figSizeOneCol);
@@ -86,13 +102,14 @@ if plots(1)
 end
 
 %%
+fileNames
 return;
 %%
 
 for i=1:length(fileNames)
     fileName = fileNames{i};
     epsFile = [ LOCAL_FIG fileName '.eps'];
-    pdfFile = [ LOCAL_FIG fileName '_' workload '.pdf'];    
+    pdfFile = [ LOCAL_FIG fileName '.pdf'];    
     cmd = sprintf(PS_CMD_FORMAT, epsFile, pdfFile);
     status = system(cmd);
 end

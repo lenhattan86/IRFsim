@@ -74,6 +74,8 @@ public class SpeedFairScheduler implements Scheduler {
   }
 
   private void allocate() {
+//    if (Simulator.CURRENT_TIME == 964.0)
+//      DEBUG = true;
     
     Resource avaiRes = Simulator.cluster.getClusterResAvail();
     
@@ -211,15 +213,18 @@ public class SpeedFairScheduler implements Scheduler {
   }
   
   private boolean resShortGuaranteeCond(JobQueue newQueue) {
+    if(Simulator.CURRENT_TIME>=750.0)
+      DEBUG = true;
     Session currSession = newQueue.getCurrSession(Simulator.CURRENT_TIME);
     if (currSession == null)
       System.err.println(newQueue.getQueueName());
-    double currTime = currSession.getStartTime();
+//    double currTime = currSession.getStartTime();
+    double startPeriodTime = currSession.getStartPeriodTime(Simulator.CURRENT_TIME);
     Resource alpha = currSession.getAlpha();
     Queue<JobQueue> admittedQueues = new LinkedList<JobQueue>();
     admittedQueues.addAll(admittedBurstyQueues);
     admittedQueues.addAll(bestEffortQueues);
-    for (double t = currTime; t < currTime
+    for (double t = startPeriodTime; t < startPeriodTime
         + currSession.getAlphaDuration(); t += Globals.STEP_TIME) {
       Resource burstyRes = new Resource(Resources.ZEROS);
       for (JobQueue q : admittedQueues) {
@@ -299,7 +304,7 @@ public class SpeedFairScheduler implements Scheduler {
   }
 
   private void admit() {
-//    if(Simulator.CURRENT_TIME==1.0)
+//    if(Simulator.CURRENT_TIME==250.0)
 //      DEBUG = true;
     
     long tStart = System.currentTimeMillis();
