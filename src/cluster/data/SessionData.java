@@ -20,27 +20,27 @@ public class SessionData {
   public static double[] LQ1StartTimes = { 100.0 };
   public static double[] LQ1AlphaDurations = { 27.0 };
   public static double[] LQ1Periods = { 150.0 };
-  public static int[] LQ1JobNums = { 50 };
+  public static int[] LQ1JobNums = { 150 };
   public static double[] LQ1Alphas = { 1.0 * scaleFactor };
 
   // LQ-2
   public static double[] LQ2StartTimes = { 150.0 };
   public static double[] LQ2AlphaDurations = { 27.0 };
   public static double[] LQ2Periods = { 60.0 }; // not important
-  public static int[] LQ2JobNums = { 50 }; // always one
+  public static int[] LQ2JobNums = { 150 }; // always one
   public static double[] LQ2Alphas = { 1.0 * scaleFactor }; // capacity = 1.0;
 
   // single LQ
   public static double[] LQStartTimes = { 100.0 };
   public static double[] LQAlphaDurations = { 25.0 };
   public static double[] LQPeriods = { 800.0 };
-  public static int[] LQJobNums = { 50 };
+  public static int[] LQJobNums = { 150 };
   public static double[] LQAlphas = { 1.0 * scaleFactor };
   
   public static double[] simpleLQStartTimes = { 100.0 };
-  public static double[] simpleLQAlphaDurations = { 25.0 };
-  public static double[] simpleLQPeriods = { 200.0 }; // for 8 TQs
-  public static int[] simpleLQJobNums = { 50 };
+  public static double[] simpleLQAlphaDurations = { 27.0 };
+  public static double[] simpleLQPeriods = { 250.0 }; // for 8 TQs
+  public static int[] simpleLQJobNums = { 150 };
   public static double[] simpleLQAlphas = { 1.0 * scaleFactor };
 
   public SessionData() {

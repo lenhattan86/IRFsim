@@ -5,295 +5,295 @@ Reducer2 2.0 0.29 0.22 500
 1
 Map1 Reducer2 ata
 # 1
-2 1 300 bursty0 0
+2 1 350 bursty0 0
 Map1 25.0 0.21 0.33 3000
 Reducer2 2.0 0.29 0.22 500
 1
 Map1 Reducer2 ata
 # 2
-2 2 500 bursty0 0
+2 2 600 bursty0 0
 Map1 25.0 0.21 0.33 3000
 Reducer2 2.0 0.29 0.22 500
 1
 Map1 Reducer2 ata
 # 3
-2 3 700 bursty0 0
+2 3 850 bursty0 0
 Map1 25.0 0.21 0.33 3000
 Reducer2 2.0 0.29 0.22 500
 1
 Map1 Reducer2 ata
 # 4
-2 4 900 bursty0 0
+2 4 1100 bursty0 0
 Map1 25.0 0.21 0.33 3000
 Reducer2 2.0 0.29 0.22 500
 1
 Map1 Reducer2 ata
 # 5
-2 5 1100 bursty0 0
+2 5 1350 bursty0 0
 Map1 25.0 0.21 0.33 3000
 Reducer2 2.0 0.29 0.22 500
 1
 Map1 Reducer2 ata
 # 6
-2 6 1300 bursty0 0
+2 6 1600 bursty0 0
 Map1 25.0 0.21 0.33 3000
 Reducer2 2.0 0.29 0.22 500
 1
 Map1 Reducer2 ata
 # 7
-2 7 1500 bursty0 0
+2 7 1850 bursty0 0
 Map1 25.0 0.21 0.33 3000
 Reducer2 2.0 0.29 0.22 500
 1
 Map1 Reducer2 ata
 # 8
-2 8 1700 bursty0 0
+2 8 2100 bursty0 0
 Map1 25.0 0.21 0.33 3000
 Reducer2 2.0 0.29 0.22 500
 1
 Map1 Reducer2 ata
 # 9
-2 9 1900 bursty0 0
+2 9 2350 bursty0 0
 Map1 25.0 0.21 0.33 3000
 Reducer2 2.0 0.29 0.22 500
 1
 Map1 Reducer2 ata
 # 10
-2 10 2100 bursty0 0
+2 10 2600 bursty0 0
 Map1 25.0 0.21 0.33 3000
 Reducer2 2.0 0.29 0.22 500
 1
 Map1 Reducer2 ata
 # 11
-2 11 2300 bursty0 0
+2 11 2850 bursty0 0
 Map1 25.0 0.21 0.33 3000
 Reducer2 2.0 0.29 0.22 500
 1
 Map1 Reducer2 ata
 # 12
-2 12 2500 bursty0 0
+2 12 3100 bursty0 0
 Map1 25.0 0.21 0.33 3000
 Reducer2 2.0 0.29 0.22 500
 1
 Map1 Reducer2 ata
 # 13
-2 13 2700 bursty0 0
+2 13 3350 bursty0 0
 Map1 25.0 0.21 0.33 3000
 Reducer2 2.0 0.29 0.22 500
 1
 Map1 Reducer2 ata
 # 14
-2 14 2900 bursty0 0
+2 14 3600 bursty0 0
 Map1 25.0 0.21 0.33 3000
 Reducer2 2.0 0.29 0.22 500
 1
 Map1 Reducer2 ata
 # 15
-2 15 3100 bursty0 0
+2 15 3850 bursty0 0
 Map1 25.0 0.21 0.33 3000
 Reducer2 2.0 0.29 0.22 500
 1
 Map1 Reducer2 ata
 # 16
-2 16 3300 bursty0 0
+2 16 4100 bursty0 0
 Map1 25.0 0.21 0.33 3000
 Reducer2 2.0 0.29 0.22 500
 1
 Map1 Reducer2 ata
 # 17
-2 17 3500 bursty0 0
+2 17 4350 bursty0 0
 Map1 25.0 0.21 0.33 3000
 Reducer2 2.0 0.29 0.22 500
 1
 Map1 Reducer2 ata
 # 18
-2 18 3700 bursty0 0
+2 18 4600 bursty0 0
 Map1 25.0 0.21 0.33 3000
 Reducer2 2.0 0.29 0.22 500
 1
 Map1 Reducer2 ata
 # 19
-2 19 3900 bursty0 0
+2 19 4850 bursty0 0
 Map1 25.0 0.21 0.33 3000
 Reducer2 2.0 0.29 0.22 500
 1
 Map1 Reducer2 ata
 # 20
-2 20 4100 bursty0 0
+2 20 5100 bursty0 0
 Map1 25.0 0.21 0.33 3000
 Reducer2 2.0 0.29 0.22 500
 1
 Map1 Reducer2 ata
 # 21
-2 21 4300 bursty0 0
+2 21 5350 bursty0 0
 Map1 25.0 0.21 0.33 3000
 Reducer2 2.0 0.29 0.22 500
 1
 Map1 Reducer2 ata
 # 22
-2 22 4500 bursty0 0
+2 22 5600 bursty0 0
 Map1 25.0 0.21 0.33 3000
 Reducer2 2.0 0.29 0.22 500
 1
 Map1 Reducer2 ata
 # 23
-2 23 4700 bursty0 0
+2 23 5850 bursty0 0
 Map1 25.0 0.21 0.33 3000
 Reducer2 2.0 0.29 0.22 500
 1
 Map1 Reducer2 ata
 # 24
-2 24 4900 bursty0 0
+2 24 6100 bursty0 0
 Map1 25.0 0.21 0.33 3000
 Reducer2 2.0 0.29 0.22 500
 1
 Map1 Reducer2 ata
 # 25
-2 25 5100 bursty0 0
+2 25 6350 bursty0 0
 Map1 25.0 0.21 0.33 3000
 Reducer2 2.0 0.29 0.22 500
 1
 Map1 Reducer2 ata
 # 26
-2 26 5300 bursty0 0
+2 26 6600 bursty0 0
 Map1 25.0 0.21 0.33 3000
 Reducer2 2.0 0.29 0.22 500
 1
 Map1 Reducer2 ata
 # 27
-2 27 5500 bursty0 0
+2 27 6850 bursty0 0
 Map1 25.0 0.21 0.33 3000
 Reducer2 2.0 0.29 0.22 500
 1
 Map1 Reducer2 ata
 # 28
-2 28 5700 bursty0 0
+2 28 7100 bursty0 0
 Map1 25.0 0.21 0.33 3000
 Reducer2 2.0 0.29 0.22 500
 1
 Map1 Reducer2 ata
 # 29
-2 29 5900 bursty0 0
+2 29 7350 bursty0 0
 Map1 25.0 0.21 0.33 3000
 Reducer2 2.0 0.29 0.22 500
 1
 Map1 Reducer2 ata
 # 30
-2 30 6100 bursty0 0
+2 30 7600 bursty0 0
 Map1 25.0 0.21 0.33 3000
 Reducer2 2.0 0.29 0.22 500
 1
 Map1 Reducer2 ata
 # 31
-2 31 6300 bursty0 0
+2 31 7850 bursty0 0
 Map1 25.0 0.21 0.33 3000
 Reducer2 2.0 0.29 0.22 500
 1
 Map1 Reducer2 ata
 # 32
-2 32 6500 bursty0 0
+2 32 8100 bursty0 0
 Map1 25.0 0.21 0.33 3000
 Reducer2 2.0 0.29 0.22 500
 1
 Map1 Reducer2 ata
 # 33
-2 33 6700 bursty0 0
+2 33 8350 bursty0 0
 Map1 25.0 0.21 0.33 3000
 Reducer2 2.0 0.29 0.22 500
 1
 Map1 Reducer2 ata
 # 34
-2 34 6900 bursty0 0
+2 34 8600 bursty0 0
 Map1 25.0 0.21 0.33 3000
 Reducer2 2.0 0.29 0.22 500
 1
 Map1 Reducer2 ata
 # 35
-2 35 7100 bursty0 0
+2 35 8850 bursty0 0
 Map1 25.0 0.21 0.33 3000
 Reducer2 2.0 0.29 0.22 500
 1
 Map1 Reducer2 ata
 # 36
-2 36 7300 bursty0 0
+2 36 9100 bursty0 0
 Map1 25.0 0.21 0.33 3000
 Reducer2 2.0 0.29 0.22 500
 1
 Map1 Reducer2 ata
 # 37
-2 37 7500 bursty0 0
+2 37 9350 bursty0 0
 Map1 25.0 0.21 0.33 3000
 Reducer2 2.0 0.29 0.22 500
 1
 Map1 Reducer2 ata
 # 38
-2 38 7700 bursty0 0
+2 38 9600 bursty0 0
 Map1 25.0 0.21 0.33 3000
 Reducer2 2.0 0.29 0.22 500
 1
 Map1 Reducer2 ata
 # 39
-2 39 7900 bursty0 0
+2 39 9850 bursty0 0
 Map1 25.0 0.21 0.33 3000
 Reducer2 2.0 0.29 0.22 500
 1
 Map1 Reducer2 ata
 # 40
-2 40 8100 bursty0 0
+2 40 10100 bursty0 0
 Map1 25.0 0.21 0.33 3000
 Reducer2 2.0 0.29 0.22 500
 1
 Map1 Reducer2 ata
 # 41
-2 41 8300 bursty0 0
+2 41 10350 bursty0 0
 Map1 25.0 0.21 0.33 3000
 Reducer2 2.0 0.29 0.22 500
 1
 Map1 Reducer2 ata
 # 42
-2 42 8500 bursty0 0
+2 42 10600 bursty0 0
 Map1 25.0 0.21 0.33 3000
 Reducer2 2.0 0.29 0.22 500
 1
 Map1 Reducer2 ata
 # 43
-2 43 8700 bursty0 0
+2 43 10850 bursty0 0
 Map1 25.0 0.21 0.33 3000
 Reducer2 2.0 0.29 0.22 500
 1
 Map1 Reducer2 ata
 # 44
-2 44 8900 bursty0 0
+2 44 11100 bursty0 0
 Map1 25.0 0.21 0.33 3000
 Reducer2 2.0 0.29 0.22 500
 1
 Map1 Reducer2 ata
 # 45
-2 45 9100 bursty0 0
+2 45 11350 bursty0 0
 Map1 25.0 0.21 0.33 3000
 Reducer2 2.0 0.29 0.22 500
 1
 Map1 Reducer2 ata
 # 46
-2 46 9300 bursty0 0
+2 46 11600 bursty0 0
 Map1 25.0 0.21 0.33 3000
 Reducer2 2.0 0.29 0.22 500
 1
 Map1 Reducer2 ata
 # 47
-2 47 9500 bursty0 0
+2 47 11850 bursty0 0
 Map1 25.0 0.21 0.33 3000
 Reducer2 2.0 0.29 0.22 500
 1
 Map1 Reducer2 ata
 # 48
-2 48 9700 bursty0 0
+2 48 12100 bursty0 0
 Map1 25.0 0.21 0.33 3000
 Reducer2 2.0 0.29 0.22 500
 1
 Map1 Reducer2 ata
 # 49
-2 49 9900 bursty0 0
+2 49 12350 bursty0 0
 Map1 25.0 0.21 0.33 3000
 Reducer2 2.0 0.29 0.22 500
 1

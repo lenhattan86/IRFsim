@@ -107,7 +107,7 @@ public class SpeedFairScheduler implements Scheduler {
         System.err.println("queue "+q.getQueueName() + " is not TQ.");
       }
       
-      Resource gRes = getBurstyGuarantee(q, enableCompensation);
+      Resource gRes = getBurstyGuarantee(q, true);
       
       if(gRes.fitsIn(maxResource)){
         Resource moreRes = Resources.subtractPositivie(gRes, q.getResourceUsage());
@@ -301,15 +301,16 @@ public class SpeedFairScheduler implements Scheduler {
   }
 
   private void admit() {
-    DEBUG = true;
+//    if(Simulator.CURRENT_TIME==1.0)
+//      DEBUG = true;
+    
     long tStart = System.currentTimeMillis();
     Queue<JobQueue> newAdmittedQueues = new LinkedList<JobQueue>();
     for (JobQueue q : elasticQueues) {
       if (q.isLQ && q.hasRunningJobs()) {
         boolean condition1 = resGuarateeCond(q);
         boolean condition2 = resLongTermFairnessCond(q);
-        boolean condition3 = resShortGuaranteeCond(q);
-        boolean condition4 = resShortTermFairness(q);
+
         int sId = q.getCurrSessionIdx(Simulator.CURRENT_TIME);
         if (condition1 && condition2) {
           admittedBurstyQueues.add(q);
@@ -317,6 +318,8 @@ public class SpeedFairScheduler implements Scheduler {
           Output.debugln(DEBUG, "[SpeedFairScheduler] admitted session " + sId
               + " of " + q.getQueueName() + " to hardGuaranteeQueues at " + Simulator.CURRENT_TIME);
         } else {
+          boolean condition3 = resShortGuaranteeCond(q);
+          boolean condition4 = resShortTermFairness(q);
 //          if(condition2){
           if(condition3 & condition4){
             bestEffortQueues.add(q);

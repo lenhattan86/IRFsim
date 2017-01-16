@@ -559,6 +559,9 @@ public class Main {
         Globals.workload = Globals.WorkLoadType.TPC_DS;
       }
     }
+    
+    Globals.runmode = Runmode.AvgTaskDuration;
+    
     if(args.length>=2) {
       String stRunmode = args[0];
       if (stRunmode.equals("MultipleBurstyQueues")) {
@@ -573,8 +576,6 @@ public class Main {
         Globals.runmode = Runmode.AvgTaskDuration;
       }
     }
-
-    Globals.runmode = Runmode.AvgTaskDuration;
 
     // Globals.runmode = Runmode.TrialRun;
     if (Globals.runmode.equals(Runmode.SingleRun)) {
@@ -606,8 +607,8 @@ public class Main {
       // Globals.DEBUG_END = 250.0;
       Globals.SIM_END_TIME = 800.0;
 
-//      Method[] methods = { Method.SpeedFair, Method.Strict };
-      Method[] methods = { Method.SpeedFair};
+      Method[] methods = { Method.Strict,Method.SpeedFair};
+//      Method[] methods = { Method.SpeedFair};
       Globals.NUM_MACHINES = 1;
       Globals.MACHINE_MAX_RESOURCE = 1000;
       Globals.numBatchQueues = 1;
@@ -699,10 +700,8 @@ public class Main {
     } else if (Globals.runmode.equals(Runmode.AvgTaskDuration)) {
       Globals.SetupMode mode = Globals.SetupMode.ShortInteractive;
       double[] avgTaskDurations = { 2.0, 4.0, 6.0, 8.0, 10.0, 15.0, 20.0, 30.0, 40.0, 60.0, 80.0, 100.0};
-//      double[] avgTaskDurations = { 2.0, 100.0};
       Globals.METHOD = Method.SpeedFair;
       Globals.setupDefaultParameters(mode, 1);
-//      Globals.SIM_END_TIME = 10;
       Globals.numBatchQueues = 8;
       
       Globals.IS_GEN = true;

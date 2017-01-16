@@ -11,7 +11,7 @@ workload='BB';
 %%
 result_folder= '';
 % result_folder= ['result/20170105/' workload '/'];
-result_folder= ['result/20170113/' workload '/'];
+result_folder= ['result/20170116/' workload '/'];
 
 
 if false
@@ -24,16 +24,23 @@ if false
                       'SpeedFair-output_t2.0x.csv';
                       'SpeedFair-output_t4.0x.csv';
                       'SpeedFair-output_t8.0x.csv'};  
+    xVals = scaleUps;
 elseif true
   avgDuration = [2.0, 4.0, 6.0, 8.0, 10.0, 15.0, 20.0, 30.0, 40.0, 60.0, 80.0, 100.0];
     speedfair_compl_files = {
-                      'SpeedFair-output_t0.125x.csv';
-                      'SpeedFair-output_t0.25x.csv';
-                      'SpeedFair-output_t0.5x.csv';
-                      'SpeedFair-output_t1.0x.csv';
-                      'SpeedFair-output_t2.0x.csv';
-                      'SpeedFair-output_t4.0x.csv';
-                      'SpeedFair-output_t8.0x.csv'};
+                      'SpeedFair-output_avg2.0.csv';
+                      'SpeedFair-output_avg4.0.csv';
+                      'SpeedFair-output_avg6.0.csv';
+                      'SpeedFair-output_avg8.0.csv';
+                      'SpeedFair-output_avg10.0.csv';
+                      'SpeedFair-output_avg15.0.csv';
+                      'SpeedFair-output_avg20.0.csv';
+                      'SpeedFair-output_avg30.0.csv';
+                      'SpeedFair-output_avg40.0.csv';
+                      'SpeedFair-output_avg60.0.csv';
+                      'SpeedFair-output_avg80.0.csv';
+                      'SpeedFair-output_avg100.0.csv'};
+  xVals = avgDuration;
 end
 
 
@@ -55,10 +62,11 @@ if plots(1)
    
    figure;
    scrsz = get(groot,'ScreenSize');   
-   plot(scaleUps, speedfair_avg_compl_time, 'LineWidth',LineWidth);
+   plot(xVals, speedfair_avg_compl_time, 'LineWidth',LineWidth);
    %title('Average completion time of interactive jobs','fontsize',fontLegend);
-   xLabel='task duration scale factor';
-   ylim([0 100]);
+%    xLabel='task duration scale factor';
+  xLabel='average task duration';
+   ylim([0 200]);
   yLabel='time (seconds)';
   legendStr={'BB', 'TPC-DS', 'TPC-H'};
 
