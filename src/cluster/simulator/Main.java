@@ -314,7 +314,7 @@ public class Main {
     if (Globals.runmode == Runmode.ScaleUpBurstyJobs) {
       extraName = "_s" + Globals.SCALE_UP_BURSTY_JOB / 50;
 
-    } else if (Globals.runmode == Runmode.ScaleBatchTaskDuration) {
+    } else if (Globals.runmode == Runmode.ScaleBatchTaskDuration || Globals.runmode == Runmode.AvgTaskDuration) {
       extraName = Globals.EXTRA;
     } else
       extraName = "_" + Globals.numBurstyQueues + "_" + Globals.numBatchQueues
@@ -542,7 +542,7 @@ public class Main {
     Globals.BATCH_JOBS_ARRIVAL_POLICY = JobsArrivalPolicy.All;
     Globals.BURSTY_JOBS_ARRIVAL_POLICY = JobsArrivalPolicy.Trace;
 
-    Globals.workload = Globals.WorkLoadType.TPC_H;
+    Globals.workload = Globals.WorkLoadType.BB;
 
 //    Globals.workload = workloadMenu();
 //    if (Globals.workload == null) {
@@ -606,7 +606,8 @@ public class Main {
       // Globals.DEBUG_END = 250.0;
       Globals.SIM_END_TIME = 800.0;
 
-      Method[] methods = { Method.SpeedFair, Method.Strict };
+//      Method[] methods = { Method.SpeedFair, Method.Strict };
+      Method[] methods = { Method.SpeedFair};
       Globals.NUM_MACHINES = 1;
       Globals.MACHINE_MAX_RESOURCE = 1000;
       Globals.numBatchQueues = 1;

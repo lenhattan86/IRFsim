@@ -14,7 +14,7 @@ result_folder= '';
 result_folder= ['result/20170113/' workload '/'];
 
 
-if true
+if false
     scaleUps = [0.125, 0.25, 0.5, 1, 2, 4, 8];
     speedfair_compl_files = {
                       'SpeedFair-output_t0.125x.csv';
@@ -24,6 +24,16 @@ if true
                       'SpeedFair-output_t2.0x.csv';
                       'SpeedFair-output_t4.0x.csv';
                       'SpeedFair-output_t8.0x.csv'};  
+elseif true
+  avgDuration = [2.0, 4.0, 6.0, 8.0, 10.0, 15.0, 20.0, 30.0, 40.0, 60.0, 80.0, 100.0];
+    speedfair_compl_files = {
+                      'SpeedFair-output_t0.125x.csv';
+                      'SpeedFair-output_t0.25x.csv';
+                      'SpeedFair-output_t0.5x.csv';
+                      'SpeedFair-output_t1.0x.csv';
+                      'SpeedFair-output_t2.0x.csv';
+                      'SpeedFair-output_t4.0x.csv';
+                      'SpeedFair-output_t8.0x.csv'};
 end
 
 

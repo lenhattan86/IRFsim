@@ -1,3 +1,4 @@
+clear; close all;
 addpath('matlab_func');
 common_settings;
 
@@ -43,7 +44,7 @@ output_sufix = 'short/'; STEP_TIME = 1.0;
 % fig_path = ['../EuroSys17/fig/' workload '-'];
 
 %%
-plots = [false, false, true, true]; %DRF, DRF-W, Strict, SpeedFair
+plots = [false, false, false, true]; %DRF, DRF-W, Strict, SpeedFair
 logfolder = [result_folder 'log/'];
 
 start_time_step = START_TIME/STEP_TIME;
