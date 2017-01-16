@@ -6,14 +6,15 @@ workload='BB';
 % workload='TPCDS';
 % workload='TPCH';
 
-num_batch_queues = 1;
-num_interactive_queue = 3;
+num_batch_queues = 8;
+num_interactive_queue = 1;
 num_queues = num_batch_queues + num_interactive_queue;
 START_TIME = 0; END_TIME = 800;
 is_printed = true;
 cluster_size = 1000;
 
-barColors = colorb1i3(1:num_queues);
+% barColors = colorb1i3(1:num_queues);
+barColors = colorb8i1(1:num_queues);
 
 %%
 
@@ -67,7 +68,8 @@ for i=1:num_batch_queues
 end
 
 % extraStr = '';
-extraStr = ['_' int2str(num_interactive_queue) '_' int2str(num_batch_queues) '_' int2str(cluster_size)];
+% extraStr = ['_' int2str(num_interactive_queue) '_' int2str(num_batch_queues) '_' int2str(cluster_size)];
+extraStr = ['_avg2.0'];
    
 if plots(1)   
    logFile = [ logfolder 'DRF-output' extraStr  '.csv'];

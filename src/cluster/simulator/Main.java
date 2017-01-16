@@ -698,11 +698,12 @@ public class Main {
         }
       }
     } else if (Globals.runmode.equals(Runmode.AvgTaskDuration)) {
+      Globals.STEP_TIME = 0.5;
       Globals.SetupMode mode = Globals.SetupMode.ShortInteractive;
       double[] avgTaskDurations = { 2.0, 4.0, 6.0, 8.0, 10.0, 15.0, 20.0, 30.0, 40.0, 60.0, 80.0, 100.0};
       Globals.METHOD = Method.SpeedFair;
       Globals.setupDefaultParameters(mode, 1);
-      Globals.numBatchQueues = 8;
+      Globals.numBatchQueues = 4;
       
       Globals.IS_GEN = true;
       Globals.numBatchJobs = 100;

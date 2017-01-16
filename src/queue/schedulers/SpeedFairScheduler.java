@@ -60,8 +60,6 @@ public class SpeedFairScheduler implements Scheduler {
     
     allocate();
 
-    allocateSpareResources();
-
     // update resources
     for (JobQueue q : Simulator.QUEUE_LIST.getJobQueues()) {
       q.addResourcesList(q.getResourceUsage());

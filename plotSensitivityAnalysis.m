@@ -66,9 +66,9 @@ if plots(1)
    %title('Average completion time of interactive jobs','fontsize',fontLegend);
 %    xLabel='task duration scale factor';
   xLabel='average task duration';
-   ylim([0 200]);
+   ylim([0 100]);
   yLabel='time (seconds)';
-  legendStr={'BB', 'TPC-DS', 'TPC-H'};
+  legendStr={workload};
 
   legend(legendStr,'Location','northoutside','FontSize',fontLegend,'Orientation','horizontal');
   set (gcf, 'Units', 'Inches', 'Position', figSizeOneCol, 'PaperUnits', 'inches', 'PaperPosition', figSizeOneCol);

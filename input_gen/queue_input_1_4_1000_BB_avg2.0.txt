@@ -14,15 +14,3 @@ batch2 0
 # 4
 batch3 0 
 1.0
-# 5
-batch4 0 
-1.0
-# 6
-batch5 0 
-1.0
-# 7
-batch6 0 
-1.0
-# 8
-batch7 0 
-1.0
