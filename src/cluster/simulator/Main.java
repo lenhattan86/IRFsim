@@ -69,6 +69,8 @@ public class Main {
     public static double SCALE_UP_BURSTY_JOB_DEFAULT = 50;
     public static double SCALE_UP_BATCH_JOB = 1;
     public static double AVG_TASK_DURATION = -1.0;
+    
+    public static double WORKLOAD_AVG_TASK_DURATION = -1.0; // computed separately from the traces.
 
     public static double SMALL_JOB_DUR_THRESHOLD = 40.0;
     public static double LARGE_JOB_MAX_DURATION = 0.0;
@@ -216,6 +218,7 @@ public class Main {
 
       switch (workload) {
       case BB:
+        Globals.WORKLOAD_AVG_TASK_DURATION = 7.796763659404396;
         Globals.TRACE_FILE = "workload/queries_bb_FB_distr.txt"; // BigBench
         switch (setup) {
         case VeryShortInteractive:
@@ -248,6 +251,7 @@ public class Main {
         }
         break;
       case TPC_DS:
+        Globals.WORKLOAD_AVG_TASK_DURATION = 31.60574050691386;
         Globals.TRACE_FILE = "workload/queries_tpcds_FB_distr_new.txt"; // TPC-DS
         switch (setup) {
         case ShortInteractive:
@@ -261,6 +265,7 @@ public class Main {
         }
         break;
       case TPC_H:
+        Globals.WORKLOAD_AVG_TASK_DURATION = 39.5366249014282;
         Globals.TRACE_FILE = "workload/queries_tpch_FB_distr.txt"; // TPC-H -->
         switch (setup) {
         case ShortInteractive:
@@ -537,7 +542,7 @@ public class Main {
     Globals.BATCH_JOBS_ARRIVAL_POLICY = JobsArrivalPolicy.All;
     Globals.BURSTY_JOBS_ARRIVAL_POLICY = JobsArrivalPolicy.Trace;
 
-    Globals.workload = Globals.WorkLoadType.BB;
+    Globals.workload = Globals.WorkLoadType.TPC_H;
 
 //    Globals.workload = workloadMenu();
 //    if (Globals.workload == null) {
@@ -692,16 +697,21 @@ public class Main {
       }
     } else if (Globals.runmode.equals(Runmode.AvgTaskDuration)) {
       Globals.SetupMode mode = Globals.SetupMode.ShortInteractive;
-      double[] avgTaskDurations = { 1.0, 2.0, 4.0, 6.0, 8.0, 10.0, 15.0, 20.0, 30.0, 40.0, 60.0, 80.0, 100.0};
+      double[] avgTaskDurations = { 2.0, 4.0, 6.0, 8.0, 10.0, 15.0, 20.0, 30.0, 40.0, 60.0, 80.0, 100.0};
+//      double[] avgTaskDurations = { 2.0, 100.0};
       Globals.METHOD = Method.SpeedFair;
+      Globals.setupDefaultParameters(mode, 1);
+      Globals.SIM_END_TIME = 10;
       Globals.numBatchQueues = 8;
       
-      Globals.setupDefaultParameters(mode, 1);
       Globals.IS_GEN = true;
-
+      Globals.numBatchJobs = 100;
+      
       for (int i = 0; i < avgTaskDurations.length; i++) {
         // Trigger garbage collection to clean up memory.
         Globals.AVG_TASK_DURATION = avgTaskDurations[i];
+//        double temp = (Globals.WORKLOAD_AVG_TASK_DURATION/Globals.AVG_TASK_DURATION);
+//        Globals.numBatchJobs = (int) (numberOfBatchJobs*temp);
         System.out.println("[INFO] Wait for garbage collectors ...");
         freeMemory();
         Globals.EXTRA = "_avg" + Globals.AVG_TASK_DURATION + "";

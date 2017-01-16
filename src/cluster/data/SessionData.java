@@ -35,8 +35,13 @@ public class SessionData {
   public static double[] LQAlphaDurations = { 25.0 };
   public static double[] LQPeriods = { 800.0 };
   public static int[] LQJobNums = { 50 };
-  // public static double[] LQ0Alphas = {1.0};
   public static double[] LQAlphas = { 1.0 * scaleFactor };
+  
+  public static double[] simpleLQStartTimes = { 100.0 };
+  public static double[] simpleLQAlphaDurations = { 25.0 };
+  public static double[] simpleLQPeriods = { 200.0 }; // for 8 TQs
+  public static int[] simpleLQJobNums = { 50 };
+  public static double[] simpleLQAlphas = { 1.0 * scaleFactor };
 
   public SessionData() {
     if (Globals.runmode.equals(Globals.Runmode.MultipleBurstyQueues)) {
@@ -49,6 +54,9 @@ public class SessionData {
     } else if (Globals.runmode.equals(Globals.Runmode.MultipleBatchQueueRun)) {
       sessionsArray[0] = new Sessions(LQStartTimes, LQAlphaDurations, LQPeriods,
           LQJobNums, LQAlphas);
+    } else if (Globals.runmode.equals(Globals.Runmode.AvgTaskDuration)) {
+      sessionsArray[0] = new Sessions(simpleLQStartTimes, simpleLQAlphaDurations, simpleLQPeriods,
+          simpleLQJobNums, simpleLQAlphas);
     } else {
       sessionsArray[0] = new Sessions(LQStartTimes, LQAlphaDurations, LQPeriods,
           LQJobNums, LQAlphas);

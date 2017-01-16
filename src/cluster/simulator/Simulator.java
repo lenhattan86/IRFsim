@@ -112,8 +112,13 @@ public class Simulator {
     QUEUE_LIST.sortJobQueues();
 
     QUEUE_LIST.printQueueInfo();
+    
+    System.out.println("start reading Dags from " + Globals.PathToInputFile);
 
     runnableJobs = StageDag.readDags(Globals.PathToInputFile);
+    
+    System.out.println("done reading Dags from " + Globals.PathToInputFile);
+    
     runningBatchJobs = new LinkedList<BaseDag>();
 
     Output.debugln(DEBUG, "Print DAGs");
@@ -314,8 +319,8 @@ public class Simulator {
       return true;
     // return (runnableJobs.isEmpty() && runningJobs.isEmpty() &&
     // (completedJobs.size() == totalReplayedJobs));
-    if (runningBatchJobs.isEmpty() && runnableJobs.isEmpty())
-      System.err.println("You need to increase the number of bursty jobs");
+//    if (runningBatchJobs.isEmpty() && runnableJobs.isEmpty())
+//      System.err.println("You need to increase the number of bursty jobs");
     
     if ( Globals.numBatchQueues != 0)
       return runningBatchJobs.isEmpty();
