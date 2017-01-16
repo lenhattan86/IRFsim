@@ -701,7 +701,7 @@ public class Main {
 //      double[] avgTaskDurations = { 2.0, 100.0};
       Globals.METHOD = Method.SpeedFair;
       Globals.setupDefaultParameters(mode, 1);
-      Globals.SIM_END_TIME = 10;
+//      Globals.SIM_END_TIME = 10;
       Globals.numBatchQueues = 8;
       
       Globals.IS_GEN = true;
