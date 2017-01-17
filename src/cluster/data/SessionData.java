@@ -2,9 +2,10 @@ package cluster.data;
 
 import cluster.datastructures.Sessions;
 import cluster.simulator.Main.Globals;
+import cluster.simulator.Simulator;
 
 public class SessionData {
-  public Sessions[] sessionsArray = new Sessions[8];
+  public Sessions[] sessionsArray = new Sessions[1000];
   public static double scaleFactor = 1.0;
 
   // static data
@@ -57,12 +58,17 @@ public class SessionData {
     } else if (Globals.runmode.equals(Globals.Runmode.AvgTaskDuration)) {
       sessionsArray[0] = new Sessions(simpleLQStartTimes, simpleLQAlphaDurations, simpleLQPeriods,
           simpleLQJobNums, simpleLQAlphas);
-    } else {
+    } else if (Globals.runmode.equals(Globals.Runmode.EstimationErrors)) {
+      double[] newLQAlphaDurations = new double[simpleLQAlphaDurations.length];
+      for (int i = 0; i<simpleLQAlphaDurations.length; i++){
+        double temp = simpleLQAlphaDurations[i] + simpleLQAlphaDurations[i]*Globals.ESTIMASION_ERRORS;
+        newLQAlphaDurations[i] = Math.round(temp/Globals.STEP_TIME)*Globals.STEP_TIME;
+      }
+      sessionsArray[0] = new Sessions(simpleLQStartTimes, newLQAlphaDurations, simpleLQPeriods,
+          simpleLQJobNums, simpleLQAlphas);
+    } else  {
       sessionsArray[0] = new Sessions(LQStartTimes, LQAlphaDurations, LQPeriods,
           LQJobNums, LQAlphas);
     }
-
   }
-
-  public static SessionData SESSION_DATA = new SessionData();
 }

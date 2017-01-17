@@ -64,7 +64,7 @@ public class GenInput {
     for (int i = 0; i < numInteractiveQueues; i++) {
       int queueId = i;
       String toWrite = GenInput.genSingleQueueInfo(queueId, "bursty" + queueId,
-          weight, true, SessionData.SESSION_DATA.sessionsArray[i]);
+          weight, true, Globals.SESSION_DATA.sessionsArray[i]);
       Output.writeln(toWrite, true, file);
     }
 
@@ -256,7 +256,7 @@ public class GenInput {
       return;
     } else
       for (int i = 0; i < numInteractiveQueues; i++) {
-        Sessions ss = SessionData.SESSION_DATA.sessionsArray[i];
+        Sessions ss = Globals.SESSION_DATA.sessionsArray[i];
         int numberSessions = ss.toList().size();
         for (int sIdx = 0; sIdx <numberSessions; sIdx++){
           
