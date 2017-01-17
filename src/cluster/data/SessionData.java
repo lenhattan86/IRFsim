@@ -33,7 +33,7 @@ public class SessionData {
 
   // single LQ
   public static double[] LQStartTimes = { 100.0 };
-  public static double[] LQAlphaDurations = { 25.0 };
+  public static double[] LQAlphaDurations = { 27.0 };
   public static double[] LQPeriods = { 800.0 };
   public static int[] LQJobNums = { 150 };
   public static double[] LQAlphas = { 1.0 * scaleFactor };
@@ -45,7 +45,7 @@ public class SessionData {
   public static double[] simpleLQAlphas = { 1.0 * scaleFactor };
 
   public static double[] errLQStartTimes = { 200.0 };
-  public static double[] errLQAlphaDurations = { 25.0 };
+  public static double[] errLQAlphaDurations = { 27.0 };
   public static double[] errLQPeriods = { 250.0 }; // for 8 TQs
   public static int[] errLQJobNums = { 150 };
   public static double[] errLQAlphas = { 1.0 * scaleFactor };
@@ -66,17 +66,17 @@ public class SessionData {
           simpleLQAlphaDurations, simpleLQPeriods, simpleLQJobNums,
           simpleLQAlphas);
     } else if (Globals.runmode.equals(Globals.Runmode.EstimationErrors)) {
-      double[] newLQAlphaDurations = new double[errLQAlphaDurations.length];
+//      double[] newLQAlphaDurations = new double[errLQAlphaDurations.length];
       double duration = 0;
       switch (Globals.workload) {
       case BB:
         duration = 27;
         break;
       case TPC_DS:
-        duration = 22.4733;
+        duration = 27;
         break;
       case TPC_H:
-        duration = 22.4733;
+        duration = 27;
         break;
       default:
         duration = 25;

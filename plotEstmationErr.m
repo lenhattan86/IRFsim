@@ -16,9 +16,10 @@ result_folder= '.';
 % result_folder= ['result/20170113/' ];
 % result_folder= ['result/20170116/' ];
 
-if false
-  avgDuration = [-0.5,-0.4, -0.3, -0.2, -0.1, 0.0, 0.1, 0.2, 0.3, 0.4, 0.5];
+if true
+  avgDuration = [-0.9, -0.5,-0.4, -0.3, -0.2, -0.1, 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.9];
     speedfair_compl_files = {
+      'SpeedFair-output_err-0.9.csv';
       'SpeedFair-output_err-0.5.csv';
       'SpeedFair-output_err-0.4.csv';
       'SpeedFair-output_err-0.3.csv';
@@ -30,10 +31,11 @@ if false
       'SpeedFair-output_err0.3.csv';
       'SpeedFair-output_err0.4.csv';
       'SpeedFair-output_err0.5.csv';
+      'SpeedFair-output_err0.9.csv';
       'SpeedFair-output_err_base.csv';
       };
   xVals = avgDuration;
-elseif true
+elseif false
   avgDuration = [-0.5, -0.2, 0.0, 0.2, 0.5];
     speedfair_compl_files = {
       'SpeedFair-output_err-0.5.csv';
@@ -72,8 +74,9 @@ if plots(1)
    
     figure;
    scrsz = get(groot,'ScreenSize');   
-   
+   Y_MAX = -9999;
   for i=1:length(workloads)
+    
    output_folder = [result_folder worloadFolders{i} '/output/'];
    
    [ speedfair_avg_compl_time ] = obtain_compl_time( output_folder, speedfair_compl_files, INTERACTIVE_QUEUE);     
@@ -83,6 +86,9 @@ if plots(1)
    performance_factors = speedfair_avg_compl_time(1:len-1)/baseline;
    plot(xVals, performance_factors, 'LineWidth',LineWidth);
    hold on;
+   if max(performance_factors) > Y_MAX
+     Y_MAX = max(performance_factors);
+   end
   end
   xLabel=strEstimationErr;
   yLabel=strPerformaceFactor;
@@ -92,6 +98,7 @@ if plots(1)
   set (gcf, 'Units', 'Inches', 'Position', figSizeOneCol, 'PaperUnits', 'inches', 'PaperPosition', figSizeOneCol);
   xlabel(xLabel,'FontSize',fontAxis);
   ylabel(yLabel,'FontSize',fontAxis);
+  ylim([0 ceil(Y_MAX)]);
   set(gca,'FontSize',fontAxis);
    
    if is_printed

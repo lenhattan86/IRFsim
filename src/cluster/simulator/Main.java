@@ -6,8 +6,6 @@ import java.util.Queue;
 import java.util.Scanner;
 import java.util.logging.Logger;
 
-import com.sun.corba.se.impl.javax.rmi.CORBA.Util;
-
 import cluster.data.QueueData;
 import cluster.data.SessionData;
 import cluster.datastructures.BaseDag;
@@ -276,8 +274,8 @@ public class Main {
         switch (setup) {
         case ShortInteractive:
           Globals.numBurstyJobPerQueue = 25;
-//          Globals.SCALE_UP_BURSTY_JOB_DEFAULT = 1.4; // from 1.4 to 2.0
-          Globals.SCALE_UP_BURSTY_JOB_DEFAULT = 1.8;
+//          Globals.SCALE_UP_BURSTY_JOB_DEFAULT = 1.4; // from 1.4 to 1.48
+          Globals.SCALE_UP_BURSTY_JOB_DEFAULT = 1.5;
           Globals.SMALL_JOB_DUR_THRESHOLD = 50.0;
           Globals.SMALL_JOB_TASK_NUM_THRESHOLD = 250;
           Globals.SCALE_BURSTY_DURATION = 1 / 2.0;
@@ -309,8 +307,7 @@ public class Main {
       
       Globals.SCALE_UP_BATCH_JOB = Math.floor((double) 1 * scaleUp);
       
-      Globals.SCALE_UP_BURSTY_JOB = Math
-          .floor((double) Globals.SCALE_UP_BURSTY_JOB_DEFAULT * scaleUp * (1+Globals.ESTIMASION_ERRORS));
+      Globals.SCALE_UP_BURSTY_JOB = Globals.SCALE_UP_BURSTY_JOB_DEFAULT * scaleUp * (1+Globals.ESTIMASION_ERRORS);
     }
     
   }
@@ -724,7 +721,7 @@ public class Main {
       Globals.SetupMode mode = Globals.SetupMode.ShortInteractive;
       // double[] avgTaskDurations = { 2.0, 4.0, 6.0, 8.0, 10.0, 15.0, 20.0,
       // 30.0, 40.0, 60.0, 80.0, 100.0};
-      double[] avgTaskDurations = { 2.0, 6.0, 10.0, 15.0, 100.0 };
+      double[] avgTaskDurations = {2.0, 6.0, 10.0, 15.0, 100.0};
       // double[] avgTaskDurations = { 4.0, 8.0, 20, 30, 40, 60, 80, 100.0};
       // double[] avgTaskDurations = {2.0};
 
@@ -789,26 +786,26 @@ public class Main {
       }
     } else if (Globals.runmode.equals(Runmode.EstimationErrors)) {
       Globals.SetupMode mode = Globals.SetupMode.ShortInteractive;
-      // double[] errors = { -0.5, -0.4, -0.3, -0.2, -0.1, 0.0, 0.1, 0.2, 0.3,
-      // 0.4, 0.5};
-      double[] errors = { -0.5, -0.2, 0.0, 0.2 , 0.5};
+       double[] errors = { -0.9, -0.8, -0.7,  -0.6,-0.5, -0.4, -0.3, -0.2, -0.1, 0.0, 0.1, 0.2, 0.3,
+       0.4, 0.5, 0.5, 0.6, 0.7, 0.8, 0.9};
       
-      Globals.workload = Globals.WorkLoadType.TPC_H;
+//      double[] errors = { -0.9, 0 -0.2, 0.0, 0.2 , 0.9};
+//      Globals.numBatchJobs = 100; Globals.MACHINE_MAX_RESOURCE = 100;     
+//      Globals.workload = Globals.WorkLoadType.TPC_H;
       
       Globals.METHOD = Method.SpeedFair;
       Globals.numBatchQueues = 8;
-      Globals.MACHINE_MAX_RESOURCE = 100;
       
       Globals.IS_GEN = true;
-      Globals.numBatchJobs = 100;
 
-      for (int i = 0; i < errors.length; i++) {
+      for (int i = 0; i <= errors.length; i++) {
         // Trigger garbage collection to clean up memory.
         if (i<errors.length){
           Globals.ESTIMASION_ERRORS = errors[i];
           Globals.EXTRA = "_err" + errors[i];
         }
         else {
+          Globals.ESTIMASION_ERRORS = 0.0;
           Globals.numBatchQueues = 0;
           Globals.EXTRA = "_err_base";
         }
