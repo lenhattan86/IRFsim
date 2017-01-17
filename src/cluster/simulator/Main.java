@@ -561,7 +561,7 @@ public class Main {
     // if (Globals.workload == null) {
     // return;
     // }
-
+    
     if (args.length >= 1) {
       String stWorkload = args[0];
       if (stWorkload.equals("BB")) {
@@ -570,13 +570,16 @@ public class Main {
         Globals.workload = Globals.WorkLoadType.TPC_H;
       } else if (stWorkload.equals("TPC-DS")) {
         Globals.workload = Globals.WorkLoadType.TPC_DS;
+      } else {
+        System.err.println("usage [workload]");
+        return;
       }
     }
 
     Globals.runmode = Runmode.EstimationErrors;
 
     if (args.length >= 2) {
-      String stRunmode = args[0];
+      String stRunmode = args[1];
       if (stRunmode.equals("MultipleBurstyQueues")) {
         Globals.runmode = Runmode.MultipleBurstyQueues;
       } else if (stRunmode.equals("MultipleBatchQueueRun")) {
