@@ -6,7 +6,7 @@ workload='BB';
 % workload='TPCDS';
 % workload='TPCH';
 
-num_batch_queues = 4;
+num_batch_queues = 0;
 num_interactive_queue = 1;
 num_queues = num_batch_queues + num_interactive_queue;
 START_TIME = 0; END_TIME = 4000;
@@ -69,7 +69,8 @@ end
 %%
 % extraStr = '';
 % extraStr = ['_' int2str(num_interactive_queue) '_' int2str(num_batch_queues) '_' int2str(cluster_size)];
-extraStr = ['_avg2.0'];
+% extraStr = ['_avg2.0'];
+extraStr = ['_err_base'];
 
    %%
 if plots(1)   

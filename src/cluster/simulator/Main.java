@@ -212,15 +212,13 @@ public class Main {
 
     public static String EXTRA = "";
 
-    public static void setupDefaultParameters(SetupMode setup,
+    public static void setupParameters(SetupMode setup,
         double scaleUpBursty) {
       COMPUTE_STATISTICS = false;
 
       SCALE_BURSTY_DURATION = 1.0;
       SCALE_BATCH_DURATION = 1.0;
 
-      SCALE_UP_BURSTY_JOB = 50;
-      SCALE_UP_BURSTY_JOB_DEFAULT = 50;
       SCALE_UP_BATCH_JOB = 1;
       AVG_TASK_DURATION = -1.0;
 
@@ -278,7 +276,8 @@ public class Main {
         switch (setup) {
         case ShortInteractive:
           Globals.numBurstyJobPerQueue = 25;
-          Globals.SCALE_UP_BURSTY_JOB_DEFAULT = 1.4;
+//          Globals.SCALE_UP_BURSTY_JOB_DEFAULT = 1.4; // from 1.4 to 2.0
+          Globals.SCALE_UP_BURSTY_JOB_DEFAULT = 1.8;
           Globals.SMALL_JOB_DUR_THRESHOLD = 50.0;
           Globals.SMALL_JOB_TASK_NUM_THRESHOLD = 250;
           Globals.SCALE_BURSTY_DURATION = 1 / 2.0;
@@ -301,20 +300,24 @@ public class Main {
         Globals.numBatchJobs = 30;
         Globals.numInteractiveTask = 2000;
       }
+      
+
+      Globals.CAPACITY = Globals.MACHINE_MAX_RESOURCE * Globals.NUM_MACHINES;
+
+      double scaleUp = (double) (Globals.NUM_MACHINES
+          * Globals.MACHINE_MAX_RESOURCE) / (double) Globals.TRACE_CLUSTER_SIZE;
+      
+      Globals.SCALE_UP_BATCH_JOB = Math.floor((double) 1 * scaleUp);
+      
+      Globals.SCALE_UP_BURSTY_JOB = Math
+          .floor((double) Globals.SCALE_UP_BURSTY_JOB_DEFAULT * scaleUp * (1+Globals.ESTIMASION_ERRORS));
     }
+    
   }
 
   public static void runSimulationScenario(boolean genInputOnly) {
 
     Globals.SESSION_DATA = new SessionData();
-
-    Globals.CAPACITY = Globals.MACHINE_MAX_RESOURCE * Globals.NUM_MACHINES;
-
-    double scaleUp = (double) (Globals.NUM_MACHINES
-        * Globals.MACHINE_MAX_RESOURCE) / (double) Globals.TRACE_CLUSTER_SIZE;
-    Globals.SCALE_UP_BATCH_JOB = Math.floor((double) 1 * scaleUp);
-    Globals.SCALE_UP_BURSTY_JOB = Math
-        .floor((double) Globals.SCALE_UP_BURSTY_JOB_DEFAULT * scaleUp);
 
     long tStart = System.currentTimeMillis();
     String extraName = "";
@@ -542,6 +545,7 @@ public class Main {
   public static void main(String[] args) {
     Utils.createUserDir("log");
     Utils.createUserDir("output");
+    Utils.createUserDir("input_gen");
 
     System.out.println("Started Simulation....");
     System.out.println("........" + now() + ".....");
@@ -611,7 +615,7 @@ public class Main {
       Globals.DEBUG_LOCAL = true;
       Globals.workload = Globals.WorkLoadType.BB;
 
-      Globals.setupDefaultParameters(Globals.SetupMode.ShortInteractive, 1);
+      Globals.setupParameters(Globals.SetupMode.ShortInteractive, 1);
 
       System.out.println(
           "=================================================================");
@@ -634,7 +638,7 @@ public class Main {
       Globals.DEBUG_LOCAL = true;
       Globals.workload = Globals.WorkLoadType.BB;
 
-      Globals.setupDefaultParameters(Globals.SetupMode.ShortInteractive, 1);
+      Globals.setupParameters(Globals.SetupMode.ShortInteractive, 1);
 
       for (int i = 0; i < methods.length; i++) {
         // Trigger garbage collection to clean up memory.
@@ -662,7 +666,7 @@ public class Main {
           Method.SpeedFair };
       int[] batchQueueNums = { 1, 2, 4, 8, 16, 32 };
 
-      Globals.setupDefaultParameters(mode, 1);
+      Globals.setupParameters(mode, 1);
 
       for (int j = 0; j < batchQueueNums.length; j++) {
         for (int i = 0; i < methods.length; i++) {
@@ -696,7 +700,7 @@ public class Main {
 
       for (int j = 0; j < scaleFactors.length; j++) {
 
-        Globals.setupDefaultParameters(mode, scaleFactors[j]);
+        Globals.setupParameters(mode, scaleFactors[j]);
 
         for (int i = 0; i < methods.length; i++) {
           if (i == 0)
@@ -729,7 +733,7 @@ public class Main {
 
       Globals.MACHINE_MAX_RESOURCE = 1000;
       Globals.METHOD = Method.SpeedFair;
-      Globals.setupDefaultParameters(mode, 1);
+      Globals.setupParameters(mode, 1);
       Globals.numBatchQueues = 4;
 
       Globals.IS_GEN = true;
@@ -760,8 +764,11 @@ public class Main {
           1.0 / 2.0, 1, 2, 4, 8, 16, 32 };
       Globals.METHOD = Method.SpeedFair;
       Globals.numBatchQueues = 8;
-      Globals.setupDefaultParameters(mode, 1);
+      Globals.setupParameters(mode, 1);
       Globals.IS_GEN = true;
+      
+//       Globals.SCALE_BURSTY_DURATION = 1.0/20;
+//       Globals.SCALE_UP_BURSTY_JOB = 50*20;
 
       for (int i = 0; i < scaleUps.length; i++) {
         // Trigger garbage collection to clean up memory.
@@ -784,27 +791,37 @@ public class Main {
       Globals.SetupMode mode = Globals.SetupMode.ShortInteractive;
       // double[] errors = { -0.5, -0.4, -0.3, -0.2, -0.1, 0.0, 0.1, 0.2, 0.3,
       // 0.4, 0.5};
-      double[] errors = { -0.5, -0.2, 0.0, 0.2, 0.5 };
-
-      Globals.METHOD = Method.SpeedFair;
-      Globals.numBatchQueues = 4;
-      Globals.setupDefaultParameters(mode, 1);
-      Globals.IS_GEN = true;
+      double[] errors = { -0.5, -0.2, 0.0, 0.2 , 0.5};
       
+      Globals.workload = Globals.WorkLoadType.TPC_H;
+      
+      Globals.METHOD = Method.SpeedFair;
+      Globals.numBatchQueues = 8;
       Globals.MACHINE_MAX_RESOURCE = 100;
+      
+      Globals.IS_GEN = true;
       Globals.numBatchJobs = 100;
 
       for (int i = 0; i < errors.length; i++) {
         // Trigger garbage collection to clean up memory.
-        Globals.ESTIMASION_ERRORS = errors[i];
-
+        if (i<errors.length){
+          Globals.ESTIMASION_ERRORS = errors[i];
+          Globals.EXTRA = "_err" + errors[i];
+        }
+        else {
+          Globals.numBatchQueues = 0;
+          Globals.EXTRA = "_err_base";
+        }
+          
+        Globals.setupParameters(mode, 1);
+        
         System.out.println("[INFO] Wait for garbage collectors ...");
         freeMemory();
-        Globals.EXTRA = "_err" + Globals.ESTIMASION_ERRORS;
+        
         System.out.println(
             "=================================================================");
         System.out.println("Run METHOD: " + Globals.METHOD
-            + " with EstimationErrors= " + Globals.ESTIMASION_ERRORS);
+            + " with EstimationErrors= " + Globals.EXTRA);
         System.out.println("Run METHOD: " + Globals.METHOD + " with "
             + Globals.numBatchQueues + " batch queues.");
         runSimulationScenario(false);
@@ -838,7 +855,7 @@ public class Main {
       for (int i = 0; i < predModes.length; i++) {
         Globals.PRED_MODE = predModes[i];
         Globals.IS_GEN = true;
-        Globals.setupDefaultParameters(SetupMode.others, 1);
+        Globals.setupParameters(SetupMode.others, 1);
         System.out.println(
             "=================================================================");
         System.out.println("Run Queue Scheduler: " + Globals.QUEUE_SCHEDULER);
@@ -858,7 +875,7 @@ public class Main {
       Globals.SCALE_UP_FACTOR = 1;
       Globals.NUM_DIMENSIONS = 2;
 
-      Globals.setupDefaultParameters(Globals.SetupMode.ShortInteractive, 1);
+      Globals.setupParameters(Globals.SetupMode.ShortInteractive, 1);
 
       Globals.SCALE_UP_BURSTY_JOB = Globals.SCALE_UP_FACTOR
           * Globals.SCALE_UP_BURSTY_JOB;

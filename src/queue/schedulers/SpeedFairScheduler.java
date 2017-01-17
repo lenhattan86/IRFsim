@@ -213,8 +213,6 @@ public class SpeedFairScheduler implements Scheduler {
   }
   
   private boolean resShortGuaranteeCond(JobQueue newQueue) {
-    if(Simulator.CURRENT_TIME>=750.0)
-      DEBUG = true;
     Session currSession = newQueue.getCurrSession(Simulator.CURRENT_TIME);
     if (currSession == null)
       System.err.println(newQueue.getQueueName());

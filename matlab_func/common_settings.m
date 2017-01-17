@@ -46,6 +46,9 @@ strDRFW = 'DRF-W';
 strStrict = 'Strict';
 strProposed = 'SpeedFair';
 
+strEstimationErr = 'estimation errors';
+strPerformaceFactor = 'performance factor';
+
 %% line specs
 lineProposed = '-';
 lineStrict = '+:';

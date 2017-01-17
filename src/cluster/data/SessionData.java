@@ -37,12 +37,18 @@ public class SessionData {
   public static double[] LQPeriods = { 800.0 };
   public static int[] LQJobNums = { 150 };
   public static double[] LQAlphas = { 1.0 * scaleFactor };
-  
+
   public static double[] simpleLQStartTimes = { 200.0 };
   public static double[] simpleLQAlphaDurations = { 27.0 };
   public static double[] simpleLQPeriods = { 200.0 }; // for 8 TQs
   public static int[] simpleLQJobNums = { 150 };
   public static double[] simpleLQAlphas = { 1.0 * scaleFactor };
+
+  public static double[] errLQStartTimes = { 200.0 };
+  public static double[] errLQAlphaDurations = { 25.0 };
+  public static double[] errLQPeriods = { 250.0 }; // for 8 TQs
+  public static int[] errLQJobNums = { 150 };
+  public static double[] errLQAlphas = { 1.0 * scaleFactor };
 
   public SessionData() {
     if (Globals.runmode.equals(Globals.Runmode.MultipleBurstyQueues)) {
@@ -56,17 +62,32 @@ public class SessionData {
       sessionsArray[0] = new Sessions(LQStartTimes, LQAlphaDurations, LQPeriods,
           LQJobNums, LQAlphas);
     } else if (Globals.runmode.equals(Globals.Runmode.AvgTaskDuration)) {
-      sessionsArray[0] = new Sessions(simpleLQStartTimes, simpleLQAlphaDurations, simpleLQPeriods,
-          simpleLQJobNums, simpleLQAlphas);
+      sessionsArray[0] = new Sessions(simpleLQStartTimes,
+          simpleLQAlphaDurations, simpleLQPeriods, simpleLQJobNums,
+          simpleLQAlphas);
     } else if (Globals.runmode.equals(Globals.Runmode.EstimationErrors)) {
-      double[] newLQAlphaDurations = new double[simpleLQAlphaDurations.length];
-      for (int i = 0; i<simpleLQAlphaDurations.length; i++){
-        double temp = simpleLQAlphaDurations[i] + simpleLQAlphaDurations[i]*Globals.ESTIMASION_ERRORS;
-        newLQAlphaDurations[i] = Math.round(temp/Globals.STEP_TIME)*Globals.STEP_TIME;
+      double[] newLQAlphaDurations = new double[errLQAlphaDurations.length];
+      double duration = 0;
+      switch (Globals.workload) {
+      case BB:
+        duration = 27;
+        break;
+      case TPC_DS:
+        duration = 22.4733;
+        break;
+      case TPC_H:
+        duration = 22.4733;
+        break;
+      default:
+        duration = 25;
+        break;
       }
-      sessionsArray[0] = new Sessions(simpleLQStartTimes, newLQAlphaDurations, simpleLQPeriods,
-          simpleLQJobNums, simpleLQAlphas);
-    } else  {
+      for (int i = 0; i<errLQAlphaDurations.length; i++)
+        errLQAlphaDurations[i] = duration;
+      
+      sessionsArray[0] = new Sessions(errLQStartTimes, errLQAlphaDurations,
+          errLQPeriods, errLQJobNums, errLQAlphas);
+    } else {
       sessionsArray[0] = new Sessions(LQStartTimes, LQAlphaDurations, LQPeriods,
           LQJobNums, LQAlphas);
     }

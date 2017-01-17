@@ -152,6 +152,8 @@ public class GenInput {
       duration = Utils.round(duration, 0) * Globals.STEP_TIME;
       duration = Utils.round(duration, 2);
       duration = Math.max(duration, Globals.STEP_TIME);
+      if(durScale==0)
+        duration = Globals.STEP_TIME;
       // TODO: hardcode
       // duration = 5.0;
       str += stage.name + " " + duration;

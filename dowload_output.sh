@@ -73,8 +73,9 @@ host TPCH
   IdentityFile ~/Dropbox/Papers/System/Flink/cloudlab/cloudlab.pem 
 
 rm -rf log/*; rm -rf output/*
-; rm -rf input_gen/*
-rm -rf bin; cp -a ../SpeedFairSim/bin ./
-java -Xmx4096m -classpath bin/ cluster.simulator.Main BB AvgTaskDuration > execution.log
+rm -rf input_gen/*
 java -Xmx16384m -classpath bin/ cluster.simulator.Main BB AvgTaskDuration > execution.log
+java -Xmx16384m -classpath bin/ cluster.simulator.Main BB EstimationErrors > execution.log
+
+rm -rf bin; cp -a ../SpeedFairSim/bin ./
 "
