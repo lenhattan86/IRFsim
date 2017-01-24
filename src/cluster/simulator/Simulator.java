@@ -41,6 +41,8 @@ public class Simulator {
   public static Queue<BaseDag> runningJobs = null;
   public static Queue<BaseDag> runningBatchJobs = null;
   public static Queue<BaseDag> completedJobs = null;
+  
+  public static boolean STOP_CMD = false;
 
   private int burstyJobIdx = Globals.numBurstyJobPerQueue * Globals.numBurstyQueues;
 
@@ -105,6 +107,7 @@ public class Simulator {
 
   public Simulator() {
     CURRENT_TIME = 0;
+    STOP_CMD = false;
     
     QUEUE_LIST = new JobQueueList();
 
@@ -364,7 +367,7 @@ public class Simulator {
     if ( Globals.numBatchQueues != 0)
       return runningBatchJobs.isEmpty();
     
-    return false;
+    return STOP_CMD;
   }
 
   boolean updateJobsStatus(Map<Integer, List<Integer>> finishedTasks) {
@@ -483,10 +486,12 @@ public class Simulator {
           }
         }
         if (burstJob != null) {
-          runnableJobs.remove(burstJob);
+          /*runnableJobs.remove(burstJob);
           StageDag reBurtyJob = StageDag.clone((StageDag) burstJob);
           reBurtyJob.dagId = burstyJobIdx++;
-          runnableJobs.add(reBurtyJob);
+          runnableJobs.add(reBurtyJob);*/
+          System.err.println("Run out of bursty jobs at " + Simulator.CURRENT_TIME);
+          STOP_CMD = true;
         }
       }
 
