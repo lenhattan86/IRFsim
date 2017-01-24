@@ -11,55 +11,21 @@ worloadFolders = {'BB', 'TPCDS', 'TPCH'};
 
 %%
 % result_folder= '.';
-result_folder= ['result/20170117_err/' ];
+result_folder= ['result/20170124_err/' ];
 
 if true
-  avgDuration = -0.9:0.1:0.9;
-    speedfair_compl_files = {
-      'SpeedFair-output_err-0.9.csv';
-      'SpeedFair-output_err-0.8.csv';
-      'SpeedFair-output_err-0.7.csv';
-      'SpeedFair-output_err-0.6.csv';
-      'SpeedFair-output_err-0.5.csv';
-      'SpeedFair-output_err-0.4.csv';
-      'SpeedFair-output_err-0.3.csv';
-      'SpeedFair-output_err-0.2.csv';
-      'SpeedFair-output_err-0.1.csv';
+  errRate = 0.0:0.1:0.5;
+    speedfair_compl_files = {     
       'SpeedFair-output_err0.0.csv';
       'SpeedFair-output_err0.1.csv';
       'SpeedFair-output_err0.2.csv';
       'SpeedFair-output_err0.3.csv';
       'SpeedFair-output_err0.4.csv';
-      'SpeedFair-output_err0.5.csv';
-      'SpeedFair-output_err0.6.csv';
-      'SpeedFair-output_err0.7.csv';
-      'SpeedFair-output_err0.8.csv';
-      'SpeedFair-output_err0.9.csv';
-      'SpeedFair-output_err_base.csv';
+      'SpeedFair-output_err0.5.csv';      
       };
-  xVals = avgDuration;
-elseif false
-  avgDuration = [-0.5, -0.2, 0.0, 0.2, 0.5];
-    speedfair_compl_files = {
-      'SpeedFair-output_err-0.5.csv';
-      'SpeedFair-output_err-0.2.csv';
-      'SpeedFair-output_err0.0.csv';
-      'SpeedFair-output_err0.2.csv';
-      'SpeedFair-output_err0.5.csv';
-      'SpeedFair-output_err_base.csv';
-      };
-  xVals = avgDuration;
-elseif false
-    avgDuration = [-0.2, 0.0, 0.2];
-    speedfair_compl_files = {
-      'SpeedFair-output_err-0.2.csv';
-      'SpeedFair-output_err0.0.csv';
-      'SpeedFair-output_err0.2.csv';
-      'SpeedFair-output_err_base.csv';
-      };
-  xVals = avgDuration;
+  xVals = errRate;
 end
-
+Y_MAX = 1.25;
 
 %%
 
@@ -77,31 +43,30 @@ if plots(1)
    
     figure;
    scrsz = get(groot,'ScreenSize');   
-   Y_MAX = -9999;
+   
   for i=1:length(workloads)
     
    output_folder = [result_folder worloadFolders{i} '/output/'];
    
-   [ speedfair_avg_compl_time ] = obtain_compl_time( output_folder, speedfair_compl_files, INTERACTIVE_QUEUE);     
-   len = length(speedfair_avg_compl_time);
-   baseline = speedfair_avg_compl_time(len/2);
-   optimal = speedfair_avg_compl_time(len);
-   performance_factors = speedfair_avg_compl_time(1:len-1)/baseline;
-   plot(xVals*100, performance_factors, workloadLineStyles{i}, 'LineWidth',LineWidth);
+   [ speedfair_avg_compl_time ] = obtain_compl_time( output_folder, speedfair_compl_files, INTERACTIVE_QUEUE);        
+   baseline = speedfair_avg_compl_time(1);
+    yVals = speedfair_avg_compl_time/baseline;
+ 
+   plot(xVals*100,yVals , workloadLineStyles{i}, 'LineWidth',LineWidth);
    hold on;
-   if max(performance_factors) > Y_MAX
-     Y_MAX = max(performance_factors);
+   if max(yVals) > Y_MAX
+     Y_MAX = max(yVals);
    end
   end
   xLabel=strEstimationErr;
   yLabel=strPerformaceFactor;
   legendStr=workloads;
 
-  legend(legendStr,'Location','northoutside','FontSize',fontLegend,'Orientation','horizontal');
+  legend(legendStr,'Location','south','FontSize',fontLegend,'Orientation','horizontal');
   set (gcf, 'Units', 'Inches', 'Position', figSizeOneCol, 'PaperUnits', 'inches', 'PaperPosition', figSizeOneCol);
   xlabel(xLabel,'FontSize',fontAxis);
   ylabel(yLabel,'FontSize',fontAxis);
-  ylim([0 ceil(Y_MAX)]);
+  ylim([0 Y_MAX]);
   set(gca,'FontSize',fontAxis);
    
    if is_printed
