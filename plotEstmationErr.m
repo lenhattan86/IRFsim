@@ -67,7 +67,7 @@ if plots(1)
   xlabel(xLabel,'FontSize',fontAxis);
   ylabel(yLabel,'FontSize',fontAxis);
   ylim([0 Y_MAX]);
-  set(gca,'FontSize',fontAxis);
+  set(gca,'FontSize', fontAxis);
    
    if is_printed
        figIdx=figIdx +1;

@@ -148,11 +148,19 @@ public class GenInput {
         + queueName + "\n";
     for (Map.Entry<String, Stage> entry : job.stages.entrySet()) {
       Stage stage = entry.getValue();
-      double duration = stage.vDuration * durScale / Globals.STEP_TIME;
+      
+      double uncertainDur = 0.0;
+      if(isUncertain){
+        int len = SessionData.DUR_ERROR_10.length;
+        uncertainDur = stage.vDuration*SessionData.DUR_ERROR_10[stageIter%len]*Globals.ESTIMASION_ERRORS/0.1;
+        uncertainDur = Utils.round(uncertainDur, 2);
+      }
+      
+      double duration = (stage.vDuration+uncertainDur) * durScale / Globals.STEP_TIME;
       duration = Utils.round(duration, 0) * Globals.STEP_TIME;
       duration = Utils.round(duration, 2);
       duration = Math.max(duration, Globals.STEP_TIME);
-      if(durScale==0)
+      if(durScale<=0)
         duration = Globals.STEP_TIME;
       // TODO: hardcode
       // duration = 5.0;
@@ -168,8 +176,8 @@ public class GenInput {
         else {
           double uncertainRes = 0.0;
           if(isUncertain){
-            int len = SessionData.ERROR_10.length;
-            uncertainRes = stage.vDemands.resource(i)*SessionData.ERROR_10[stageIter%len][i]*Globals.ESTIMASION_ERRORS/0.1;
+            int len = SessionData.RES_ERROR_10.length;
+            uncertainRes = stage.vDemands.resource(i)*SessionData.RES_ERROR_10[stageIter%len][i]*Globals.ESTIMASION_ERRORS/0.1;
             uncertainRes = Utils.round(uncertainRes, 2);
           }
           str += " " + Utils.round(stage.vDemands.resource(i) + uncertainRes, 2);
@@ -179,6 +187,7 @@ public class GenInput {
       if (taskNum == 0)
         taskNum = 1;
       str += " " + taskNum + "\n";
+      stageIter++;
     }
     str += job.numEdgesBtwStages;
     for (Map.Entry<String, Stage> entry : job.stages.entrySet()) {

@@ -75,9 +75,6 @@ public class SpeedFairScheduler implements Scheduler {
   }
 
   private void allocate() {
-    if (Simulator.CURRENT_TIME == 450)
-      DEBUG = true;
-
     Resource avaiRes = Simulator.cluster.getClusterResAvail();
 
     Resource maxResource = Simulator.cluster.getClusterMaxResAlloc();

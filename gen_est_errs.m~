@@ -30,7 +30,7 @@ fid=fopen('err.txt','w');
 
 fprintf(fid, errors);
 
-fprintf(fid, '\n');
+fprintf(fid, '');
 
 %%
 
@@ -43,7 +43,6 @@ errors = '{';
 for i=1:numOfStages
   errors = [errors num2str(y(i)) ',']; 
 end
-errors = [errors '}'];
 
 fid=fopen('err.txt','a');
 fprintf(fid, errors);

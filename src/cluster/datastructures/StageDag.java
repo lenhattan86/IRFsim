@@ -316,7 +316,7 @@ public class StageDag extends BaseDag implements Cloneable {
 						resources[j] = res;
 					}
 
-					if (Globals.ERROR != 0) {
+					/*if (Globals.ERROR != 0) {
 						double durMax = (1 + Globals.ERROR) * durV;
 						double minDurVPossible = Math.min(durMax, durV);
 						double maxDurVPossible = Math.max(durMax, durV);
@@ -326,7 +326,7 @@ public class StageDag extends BaseDag implements Cloneable {
 						for (int j = 0; j < Globals.NUM_DIMENSIONS; j++) {
 							resources[j] = Math.max((1 + Globals.ERROR) * resources[j], 0.001);
 						}
-					}
+					}*/
 
 					numVertices = Integer.parseInt(args[args.length - 1]);
 					assert (numVertices >= 0);
