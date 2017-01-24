@@ -16,6 +16,7 @@ import cluster.simulator.Simulator;
 import cluster.simulator.Main.Globals;
 import cluster.utils.JobArrivalComparator;
 import cluster.utils.Output;
+import jdk.nashorn.internal.ir.CatchNode;
 
 public class SpeedFairScheduler implements Scheduler {
   private boolean DEBUG = false;
@@ -74,8 +75,8 @@ public class SpeedFairScheduler implements Scheduler {
   }
 
   private void allocate() {
-    // if (Simulator.CURRENT_TIME == 964.0)
-    // DEBUG = true;
+    if (Simulator.CURRENT_TIME == 450)
+      DEBUG = true;
 
     Resource avaiRes = Simulator.cluster.getClusterResAvail();
 
@@ -150,6 +151,10 @@ public class SpeedFairScheduler implements Scheduler {
       System.err.println(q.getQueueName());
 
     Resource alpha = s.getAlpha(Simulator.CURRENT_TIME);
+
+    if (alpha.fitsIn(Resources.ZEROS))
+      return new Resource(0.0);
+
     Resource guaranteedRes = Resources.multiply(alpha,
         s.getAlphaDuration(Simulator.CURRENT_TIME));
     double lasting = (Simulator.CURRENT_TIME
@@ -198,7 +203,7 @@ public class SpeedFairScheduler implements Scheduler {
           .getAlphaDuration(Simulator.CURRENT_TIME); t += Globals.STEP_TIME) {
         Resource burstyRes = new Resource(Resources.ZEROS);
         for (JobQueue q : admittedBurstyQueues) {
-          try{
+          try {
             burstyRes.addWith(q.getGuaranteeRate(t));
           } catch (Exception e) {
             burstyRes.addWith(q.getGuaranteeRate(t));

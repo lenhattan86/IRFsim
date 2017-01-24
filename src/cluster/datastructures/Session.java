@@ -111,6 +111,13 @@ public class Session {
     return -1.0;
   }
   
+  public double getEndTime(){
+    double endPeriodTime = this.startTime;
+    for (int i=0; i<numOfJobs; i++)
+      endPeriodTime = endPeriodTime + this.periods[i];
+    return endPeriodTime;
+  }
+  
   public double getStartPeriodTime(int jobId){
     double startPeriodTime = this.startTime;
     for (int i=0; i<jobId; i++)
@@ -118,13 +125,6 @@ public class Session {
     return startPeriodTime;
   }
 
-/*  public double getPeriod(int numAdmittedQueues) {
-    if (isPeriodic)
-      return period;
-    else
-      return alphaDuration*(numAdmittedQueues+1);
-  }
-*/
   public double getPeriod(double currTime) {
     return this.periods[this.getPeriodIdx(currTime)];
   }

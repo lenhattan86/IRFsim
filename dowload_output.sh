@@ -72,8 +72,7 @@ host TPCH
   User tanle 
   IdentityFile ~/Dropbox/Papers/System/Flink/cloudlab/cloudlab.pem 
 
-rm -rf log/*; rm -rf output/*
-rm -rf input_gen/*
+rm -rf log/*; rm -rf output/*; rm -rf input_gen/*
 java -Xmx16384m -classpath bin/ cluster.simulator.Main BB AvgTaskDuration > execution.log
 java -Xmx16384m -classpath bin/ cluster.simulator.Main BB EstimationErrors > execution.log
 

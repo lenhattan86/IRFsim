@@ -738,11 +738,7 @@ public class SessionData {
       sessionsArray[0] = new Session(simpleLQnumOfJobs, alphas, alphaDurations,
           simpleLQStartTime, simpleLQPeriod);
     } else if (Globals.runmode.equals(Globals.Runmode.EstimationErrors)) {
-      /*
-       * for (int i=0; i< alphas.length; i++){ for (int j=0; j<alphas[0].length;
-       * j++){ alphas[i][j] = alphas[i][j] +
-       * Globals.ESTIMASION_ERRORS*(ERROR_10[i][j]/(0.1))*alphas[i][j]; } }
-       */
+      errLQnumOfJobs = 1;
       sessionsArray[0] = new Session(errLQnumOfJobs, alphas, alphaDurations,
           errLQStartTime, errLQPeriod);
     } else {
