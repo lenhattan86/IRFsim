@@ -806,9 +806,9 @@ public class Main {
       }
     } else if (Globals.runmode.equals(Runmode.EstimationErrors)) {
       Globals.SetupMode mode = Globals.SetupMode.ShortInteractive;
-//      double[] errors = { 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7};
-       double[] errors = { 0.1, 0.5};
-       Globals.numBatchJobs = 100; Globals.MACHINE_MAX_RESOURCE = 100;
+      double[] errors = { 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7};
+//       double[] errors = { 0.1, 0.5};
+//       Globals.numBatchJobs = 100; Globals.MACHINE_MAX_RESOURCE = 100;
 //       Globals.workload = Globals.WorkLoadType.TPC_H;
       Globals.METHOD = Method.SpeedFair;
       Globals.numBatchQueues = 8;
