@@ -690,9 +690,9 @@ public class Main {
       }
     } else if (Globals.runmode.equals(Runmode.EstimateDemand)) {
       Globals.SetupMode mode = Globals.SetupMode.ShortInteractive;
-      Globals.workload = WorkLoadType.TPC_DS;
+      Globals.workload = WorkLoadType.TPC_H;
       Globals.setupParameters(mode, 1);
-      Globals.SIM_END_TIME = 20000.0;
+//      Globals.SIM_END_TIME = 20000.0;
       // Trigger garbage collection to clean up memory.
       System.out.println("[INFO] Wait for garbage collectors ...");
       freeMemory();
@@ -808,8 +808,8 @@ public class Main {
       Globals.SetupMode mode = Globals.SetupMode.ShortInteractive;
       double[] errors = { 0.0, 0.1, 0.2, 0.3, 0.4, 0.5 };
       // double[] errors = { -0.9, 0 -0.2, 0.0, 0.2 , 0.9};
-//       Globals.numBatchJobs = 100; Globals.MACHINE_MAX_RESOURCE = 100;
-      // Globals.workload = Globals.WorkLoadType.TPC_H;
+//       Globals.numBatchJobs = 2000; Globals.MACHINE_MAX_RESOURCE = 100;
+//       Globals.workload = Globals.WorkLoadType.TPC_DS;
       Globals.METHOD = Method.SpeedFair;
       Globals.numBatchQueues = 8;
 

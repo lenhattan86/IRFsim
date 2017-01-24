@@ -78,4 +78,10 @@ java -Xmx16384m -classpath bin/ cluster.simulator.Main BB AvgTaskDuration > exec
 java -Xmx16384m -classpath bin/ cluster.simulator.Main BB EstimationErrors > execution.log
 
 rm -rf bin; cp -a ../SpeedFairSim/bin ./
+
+git reset --hard origin/master
+git pull
+
+git config --global credential.helper cache
+git config --global credential.helper 'cache --timeout=2592000'
 "

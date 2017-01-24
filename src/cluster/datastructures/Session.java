@@ -53,6 +53,20 @@ public class Session {
     this.startTime = startTime;
   }
   
+  public Session (int numOfJobs, double[][] alphaVals, double[] alphaDurations, double startTime, double period){
+    this.numOfJobs = numOfJobs;
+    this.alphas = new Resource[numOfJobs];
+    this.periods = new double[numOfJobs]; 
+    this.alphaDurations =new double[numOfJobs]; 
+    for (int i=0; i<numOfJobs; i++){
+      int idx = numOfJobs % alphaVals.length;
+      this.alphas[i] = new Resource(alphaVals[idx]);
+      this.periods[i] = period;
+      this.alphaDurations[i] = alphaDurations[idx];
+    }
+    this.startTime = startTime;
+  }
+  
   public int getNumOfJobs() {
     return numOfJobs;
   }

@@ -141,10 +141,6 @@ public class SpeedFairScheduler implements Scheduler {
       DRFScheduler.onlineDRFShare(remainingResources, (List) elasticQueues);
   }
 
-  private Resource getBurstyGuarantee(JobQueue q) {
-    return getBurstyGuarantee(q, true);
-  }
-
   private Resource getBurstyGuarantee(JobQueue q, boolean enableCompensation) {
     int numQueues = elasticQueues.size() + admittedBurstyQueues.size()
         + bestEffortQueues.size();
