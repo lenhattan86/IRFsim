@@ -1,14 +1,16 @@
 clear; close all; clc;
 
-fontSize=12;
+fontSize=10;
 
-fontAxis = 12;
-fontTitle = 12;
-fontLegend = 12;
-LineWidth = 2;
-FontSize = 12;
+fontAxis = fontSize;
+fontTitle = fontSize;
+fontLegend = fontSize;
+LineWidth = 1.5;
+FontSize = fontSize;
 is_printed = true;
 axisWidth = 1.5;
+
+%%
 
 legendSize = [0.0 0 5 0.3];
 figSizeOneCol = [0.0 0 5 3];
@@ -18,8 +20,12 @@ figSizeOneThirdCol = 1/3*figSizeOneCol;
 figSizeHalfCol = 1/2*figSizeOneCol;
 figSizeTwothirdCol = 2/3*figSizeOneCol;
 
+%%
 
 barLineWidth=0;
+groupBarSize = 0.9;
+
+%%
 
 figIdx=0;
 
@@ -43,17 +49,22 @@ strUnalloc = 'unallocated';
 
 strDRF = 'DRF';
 strDRFW = 'DRF-W';
-strStrict = 'Strict';
-strProposed = 'SpeedFair';
+strStrict = 'SP';
+strProposed = 'BPF';
 
-strEstimationErr = 'estimation errors';
+strEstimationErr = 'estimation errors [%]';
 strPerformaceFactor = 'performance factor';
 
 %% line specs
 lineProposed = '-';
 lineStrict = '+:';
-lineDRF = '--';
-lineDRFW = '-.';
+lineDRF = '-.';
+lineDRFW = '--';
+
+lineBB = '-c';
+lineTPCDS = '--b';
+lineTPCH = '-.r';
+workloadLineStyles = {lineBB, lineTPCDS, lineTPCH};
 
 %%
 

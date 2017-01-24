@@ -55,19 +55,19 @@ exit;
 
 echo "
 host BB 
-  Hostname 128.110.153.218 
+  Hostname 128.110.152.31 
   Port 22 
   User tanle 
   IdentityFile ~/Dropbox/Papers/System/Flink/cloudlab/cloudlab.pem 
 
 host TPCDS
-  Hostname 128.110.153.235
+  Hostname 128.110.152.32
   Port 22 
   User tanle 
   IdentityFile ~/Dropbox/Papers/System/Flink/cloudlab/cloudlab.pem 
 
 host TPCH
-  Hostname 128.110.153.200 
+  Hostname 128.110.152.28 
   Port 22 
   User tanle 
   IdentityFile ~/Dropbox/Papers/System/Flink/cloudlab/cloudlab.pem 

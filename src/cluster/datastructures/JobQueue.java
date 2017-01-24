@@ -14,13 +14,13 @@ import cluster.utils.Output;
 
 public class JobQueue {
 	
-	private final static boolean DEBUG=false;
+	private static boolean DEBUG=false;
 	
 //	private Queue<BaseDag> runnableJobs; // Jobs are in the queue
 	private Queue<BaseDag> runningJobs;
 	public Queue<BaseDag> completedJobs;
 	
-	public Sessions sessions;
+	public Session session =  null;
 	
 	public boolean isLQ = false;
 	
@@ -53,15 +53,15 @@ public class JobQueue {
 //		runnableJobs = new LinkedList<BaseDag>();
 		runningJobs = new LinkedList<BaseDag>();
 		completedJobs = new LinkedList<BaseDag>();
-		sessions = new Sessions();
 	}
 	
-	public double getCurrSessionStartTime(){
-	  Session s = this.getCurrSession(Simulator.CURRENT_TIME);
-	  if (s!=null)
-	  	return s.getStartTime();
-	  return 0.0;
-	}
+	public JobQueue(String queueName, Session session) {
+    this.queueName = queueName;
+//    runnableJobs = new LinkedList<BaseDag>();
+    runningJobs = new LinkedList<BaseDag>();
+    completedJobs = new LinkedList<BaseDag>();
+    this.session = session;
+  }
 	
 	public String getQueueName() {
 		return this.queueName;
@@ -204,65 +204,15 @@ public class JobQueue {
 	
 	public Resource getGuaranteeRate(double currTime){
 	  Resource zero = new Resource();
-	  for (Session s: sessions.toList()){
-	    double period = 0.0;
-	    if (s.isPeriodic()){
-	      period = s.getPeriod();
-	    }else {
-	      period = s.getAlphaDuration();
-	    }
-	    double endTime = s.getStartTime()+s.getNumOfJobs()*period;
-	    
-	    if(currTime>= s.getStartTime() && currTime< endTime){
-	      double virtualCurrTime = currTime-s.getStartTime();
-	      if(virtualCurrTime % period < s.getAlphaDuration())
-	        return s.getAlpha();
-	      else
-	        return zero;
-	    }
-	  }
-	  return zero;
+    if(isInStage1(currTime))
+      return session.getAlpha(currTime);
+    else
+      return zero;
   }
 	
-	public Session getCurrSession(double currTime){
-	  
-	  for (Session s: sessions.toList()){
-	    double period = 0.0;
-      if (s.isPeriodic()){
-        period = s.getPeriod();
-      }else {
-        period = s.getAlphaDuration();
-      }
-      double endTime = s.getStartTime()+s.getNumOfJobs()*period;
-      
-      if(currTime>= s.getStartTime() && currTime< endTime && !s.isReject()){
-        return s; 
-      }
-    }
-    return null;
-	}
 	
-	public Session getCurrSession(){
-    return getCurrSession(Simulator.CURRENT_TIME);
-  }
-	
-	public int getCurrSessionIdx(double currTime){
-	  int i = 0;
-    for (Session s: sessions.toList()){
-      double period = 0.0;
-      if (s.isPeriodic()){
-        period = s.getPeriod();
-      }else {
-        period = s.getAlphaDuration();
-      }
-      double endTime = s.getStartTime()+s.getNumOfJobs()*period;
-      
-      if(currTime>= s.getStartTime() && currTime< endTime && !s.isReject()){
-        return i; 
-      }
-      i++;
-    }
-    return -1;
+	public Session getSession(){
+    return this.session;
   }
 	
 	/*public Resource getAlpha(double currTime){
@@ -319,9 +269,9 @@ public class JobQueue {
 			return true;
 		
 	  if(isLQ && Globals.METHOD.equals(Globals.Method.SpeedFair)){
-	    Session session = getCurrSession(Simulator.CURRENT_TIME);
-	    return (session!=null);
+	    return this.getStartTime()<=Simulator.CURRENT_TIME;
 	  }
+	  
 	  return false;
 	}
 	
@@ -335,8 +285,8 @@ public class JobQueue {
       return true;
     
     if(isLQ && Globals.METHOD.equals(Globals.Method.SpeedFair)){
-      Session session = getCurrSession(currTime);
-      return (session!=null) && isInStage1(currTime);
+//      return (session!=null) && isInStage1(currTime);
+      return this.getStartTime()<= currTime;
     }
     return false;
   }
@@ -350,18 +300,20 @@ public class JobQueue {
 	}
 	
 	public boolean isInStage1(double currTime){
-	  Session s = this.getCurrSession(currTime);
-    double lasting = (currTime - this.getCurrSessionStartTime())
-        % s.getPeriod();
-    boolean inStage1 = lasting <= s.getAlphaDuration();
-    return inStage1;
+	  double startTime = session.getStartPeriodTime(currTime);
+    
+    double virtualCurrTime = currTime-startTime;
+    if(virtualCurrTime < session.getAlphaDuration(currTime))
+      return true;
+    else
+      return false;
+    
   }
 	
 	public Resource getInStage1Alpha(double currTime){
-	  Session s = this.getCurrSession(currTime);
 	  Resource res = new Resource(Resources.ZEROS);
 	  if (isInStage1(currTime))
-	    return s.getAlpha();
+	    return session.getAlpha(currTime);
 	  return res;
 	}
 
@@ -434,5 +386,11 @@ public class JobQueue {
 			}
 		}
 	  return remain;
+  }
+
+  public double getStartTime() {
+    if (session !=null)
+      return session.getStartTime();
+    return 0.0;
   }
 }

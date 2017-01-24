@@ -17,6 +17,7 @@ import cluster.datastructures.BaseDag;
 import cluster.datastructures.JobQueue;
 import cluster.datastructures.JobQueueList;
 import cluster.datastructures.Resource;
+import cluster.datastructures.Resources;
 import cluster.datastructures.Stage;
 import cluster.datastructures.StageDag;
 import cluster.resources.LeftOverResAllocator;
@@ -211,6 +212,8 @@ public class Simulator {
       if (stop()) {
         printReport();
         writeReport();
+        if (Globals.runmode.equals(Globals.Runmode.EstimateDemand))
+          writeResUsage();
         // EXIT the loop
         break;
       }
@@ -225,6 +228,12 @@ public class Simulator {
         queueSched.schedule();
         Output.debugln(DEBUG,
             "[Simulator]: END work conserving; clusterAvail:" + Simulator.cluster.getClusterResAvail());
+      }
+      
+      for (BaseDag dag : Simulator.runningJobs) {
+        dag.receivedService.addUsage(dag.getRsrcInUse());
+        Resource usage = new Resource(dag.getRsrcInUse());
+        dag.usedReses.add(usage);
       }
 
       Simulator.printUsedResources();
@@ -283,6 +292,33 @@ public class Simulator {
       Output.writeln(dag.dagId + "," + dag.jobStartRunningTime + "," + dag.jobEndTime + "," + dagDuration + ","
           + dag.getQueueName());
     }
+  }
+  
+  private void writeResUsage() {
+    System.out.println("==== Resource Usage in details ====");
+    System.out.print("jobs = ");
+    for (BaseDag dag : completedJobs) {
+      System.out.print(dag.dagId+",");
+    }
+    System.out.println("");
+    
+    System.out.print("normalizeRes = {");
+    for (BaseDag dag : completedJobs) {
+      Resource maxRes = new Resource();
+      for (Resource res: dag.usedReses)
+        maxRes  = Resources.piecewiseMax(maxRes, res);
+      System.out.print(""+maxRes.toStringList()+",");
+    }
+    System.out.println("};");
+    
+    System.out.print("durs = {");
+    for (BaseDag dag : completedJobs) {
+      double dagDuration = (dag.jobEndTime - dag.jobStartRunningTime);
+      System.out.print(dagDuration+",");
+    }
+    System.out.println("};");
+    
+    
   }
 
   public static void printUsedResources() {
@@ -574,6 +610,8 @@ public class Simulator {
 
       for (BaseDag dag : Simulator.runningJobs) {
         dag.receivedService.addUsage(dag.getRsrcInUse());
+        Resource usage = new Resource(dag.getRsrcInUse());
+        dag.usedReses.add(usage);
       }
 
       Simulator.printUsedResources();

@@ -134,7 +134,7 @@ public class JobQueueList {
 	
 	public void printQueueInfo(){
 		for (JobQueue q: this.jobQueues)
-			System.out.println(q.getQueueName() + " weight: " + q.getWeight() + " isLQ: " + q.isLQ + " startTime:"+q.getCurrSessionStartTime());
+			System.out.println(q.getQueueName() + " weight: " + q.getWeight() + " isLQ: " + q.isLQ + " startTime:"+q.getStartTime());
 	}
 	
 	public void readQueue(String filePathString){
@@ -152,13 +152,14 @@ public class JobQueueList {
         }
         
         args = line.split(" ");
-        if (args.length != 2) 
-          System.err.println("[ERROR] queueName queueType");
+        if (args.length != 3) 
+          System.err.println("[ERROR] queueName queueTypestart time");
         
         queueName = args[0];        
       	queueName = queueName.trim();
       	JobQueue queue = new JobQueue(queueName);
       	int queueType = Integer.parseInt(args[1]);
+      	double startTime = Double.parseDouble(args[2]);
       	if (queueType==0) {
       	//TODO: hard-code the high weight for interactive queues for DRF-W
       	  double weight = Double.parseDouble(br.readLine().trim());
@@ -166,29 +167,27 @@ public class JobQueueList {
       	  queue.isLQ = false;
       	} else if(queueType==1) {
       	  queue.isLQ = true;
-      	  int numOfSessions = Integer.parseInt(br.readLine().trim());
+      	  int numOfJobs = Integer.parseInt(br.readLine().trim());
+      	  double[] alphaDurations =  new double[numOfJobs];
+      	  double[] periods =  new double[numOfJobs];
+      	  Resource[] alphas =  new Resource[numOfJobs];
+      	  
       	  if (Globals.METHOD.equals(Method.DRFW)) {
             queue.setWeight(Globals.DRFW_weight);
           } else if(Globals.METHOD.equals(Method.Strict)){
             queue.setWeight(Globals.STRICT_WEIGHT);
           }
-      	  for(int i=0; i<numOfSessions; i++){
+      	  for(int i=0; i<numOfJobs; i++){
       	    args = br.readLine().split(" ");
-      	    if(args.length!=(4+Globals.NUM_DIMENSIONS))
-      	        System.err.println("startTime numOfJobs alphaDuration Period [resources...]");
-      	    double startTime = Double.parseDouble(args[0]);
-      	    int numOfJobs = Integer.parseInt(args[1]);
-      	    double alphaDuration = Double.parseDouble(args[2]);
-      	    double period = Double.parseDouble(args[3]);
-      	    boolean isPeriodic = period>0.0?true:false;
-      	    
-      	    Resource alpha = new Resource();
+      	    if(args.length!=(2+Globals.NUM_DIMENSIONS))
+      	        System.err.println("alphaPeriod Period [resources...]");
+      	    alphaDurations[i] = Double.parseDouble(args[0]);
+      	    periods[i] = Double.parseDouble(args[1]);
+      	    alphas[i] = new Resource();
       	    for(int r =0; r<Globals.NUM_DIMENSIONS; r++)
-      	      alpha.resources[r] = Double.parseDouble(args[4+r])*Globals.CAPACITY;
-      	    
-      	    Session s = new Session(numOfJobs, alpha, alphaDuration, startTime, period, isPeriodic);
-      	    queue.sessions.toList().add(s);
+      	      alphas[i].resources[r] = Double.parseDouble(args[2+r])*Globals.CAPACITY;
       	  }
+      	  queue.session = new Session(numOfJobs, alphas, alphaDurations, startTime, periods);
       	}
         Simulator.QUEUE_LIST.addJobQueue(queue);
       }

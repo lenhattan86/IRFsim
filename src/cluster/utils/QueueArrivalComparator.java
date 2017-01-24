@@ -11,9 +11,9 @@ public class QueueArrivalComparator implements Comparator<JobQueue> {
     
     int res = 0; 
     
-    if (queue1.getCurrSessionStartTime() > queue2.getCurrSessionStartTime()){
+    if (queue1.getStartTime() > queue2.getStartTime()){
       res = 1;
-    }else if (queue1.getCurrSessionStartTime() < queue2.getCurrSessionStartTime()){
+    }else if (queue1.getStartTime() < queue2.getStartTime()){
       res = -1;
     }
     

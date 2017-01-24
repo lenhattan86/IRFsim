@@ -942,6 +942,10 @@ public class StageDag extends BaseDag implements Cloneable {
 			descendants.put(i, d);
 		}
 	}
+	
+	public void changeResDemand(double[][] errors){
+	  
+	}
 
 	public Object clone() throws CloneNotSupportedException {
 		return super.clone();

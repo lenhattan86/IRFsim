@@ -6,15 +6,19 @@ workload='BB';
 % workload='TPCDS';
 % workload='TPCH';
 
-num_batch_queues = 0;
-num_interactive_queue = 1;
+num_batch_queues = 1;
+num_interactive_queue = 3;
 num_queues = num_batch_queues + num_interactive_queue;
-START_TIME = 0; END_TIME = 4000;
+START_TIME = 0; END_TIME = 800;
 is_printed = true;
-cluster_size = 100;
+cluster_size = 1000;
 
-% barColors = colorb1i3(1:num_queues);
-barColors = colorb8i1(1:num_queues);
+figureSize = [1 1 2/3 2/3].* figSizeOneCol;
+
+enableSeparateLegend = true;
+
+barColors = colorb1i3(1:num_queues);
+% barColors = colorb8i1(1:num_queues);
 
 %%
 
@@ -45,7 +49,7 @@ output_sufix = 'short/'; STEP_TIME = 1.0;
 % fig_path = ['../EuroSys17/fig/' workload '-'];
 
 %%
-plots = [false, false, false, true]; %DRF, DRF-W, Strict, SpeedFair
+plots = [true, false, true, true]; %DRF, DRF-W, Strict, SpeedFair
 logfolder = [result_folder 'log/'];
 
 start_time_step = START_TIME/STEP_TIME;
@@ -68,9 +72,9 @@ for i=1:num_batch_queues
 end
 %%
 % extraStr = '';
-% extraStr = ['_' int2str(num_interactive_queue) '_' int2str(num_batch_queues) '_' int2str(cluster_size)];
+extraStr = ['_' int2str(num_interactive_queue) '_' int2str(num_batch_queues) '_' int2str(cluster_size)];
 % extraStr = ['_avg2.0'];
-extraStr = ['_err_base'];
+% extraStr = ['_err_base'];
 
    %%
 if plots(1)   
@@ -88,15 +92,15 @@ if plots(1)
          resAll = res(1:num_queues*num_time_steps);
       end
 %       resCutOff = res1(startIdx:endIdx);
-%       shapeRes1 = flipud(reshape(resAll,num_queues,num_time_steps));
-      shapeRes1 = reshape(resAll,num_queues,num_time_steps);
+      shapeRes1 = flipud(reshape(resAll,num_queues,num_time_steps));
+%       shapeRes1 = reshape(resAll,num_queues,num_time_steps);
       hBar = bar(timeInSeconds,shapeRes1',barwidth,'stacked','EdgeColor','none');
       set(hBar,{'FaceColor'},barColors);   
       ylabel('CPUs');xlabel('seconds');
       ylim([0 cluster_size]);
       xlim([0 max(timeInSeconds)]);
-      legend(lengendStr,'Location','northoutside','FontSize',fontLegend,'Orientation','horizontal');
-      title('DRF - CPUs','fontsize',fontLegend);
+      %legend(lengendStr,'Location','northoutside','FontSize',fontLegend,'Orientation','horizontal');
+      %title('DRF - CPUs','fontsize',fontLegend);
       
       subplot(2,1,2);
       resAll = zeros(1,num_queues*num_time_steps);
@@ -107,17 +111,17 @@ if plots(1)
          resAll = res(1:num_queues*num_time_steps);
       end
 %       resCutOff = res2(startIdx:endIdx);
-%       shapeRes1 = flipud(reshape(resAll,num_queues,num_time_steps));
-      shapeRes1 = reshape(resAll,num_queues,num_time_steps);
+      shapeRes1 = flipud(reshape(resAll,num_queues,num_time_steps));
+%       shapeRes1 = reshape(resAll,num_queues,num_time_steps);
       hBar = bar(timeInSeconds,shapeRes1',barwidth,'stacked','EdgeColor','none');
       set(hBar,{'FaceColor'},barColors);   
       ylabel('GB');xlabel('seconds');
       ylim([0 cluster_size]);
       xlim([0 max(timeInSeconds)]);
-      legend(lengendStr,'Location','northoutside','FontSize',fontLegend,'Orientation','horizontal');
-      title('DRF - Memory','fontsize',fontLegend);
+      %legend(lengendStr,'Location','northoutside','FontSize',fontLegend,'Orientation','horizontal');
+      %title('DRF - Memory','fontsize',fontLegend);
       
-      set (gcf, 'Units', 'Inches', 'Position', figSizeTwoCol, 'PaperUnits', 'inches', 'PaperPosition', figSizeTwoCol);
+      set (gcf, 'Units', 'Inches', 'Position', figureSize, 'PaperUnits', 'inches', 'PaperPosition', figureSize);
       if is_printed         
           figIdx=figIdx +1;
         fileNames{figIdx} = ['b' int2str(num_batch_queues)  'i' int2str(num_interactive_queue) '_res_usage_drf'];         
@@ -142,15 +146,15 @@ if plots(2)
          resAll = res(1:num_queues*num_time_steps);
       end
 %       resCutOff = res1(startIdx:endIdx);
-%       shapeRes1 = flipud(reshape(resAll,num_queues,num_time_steps));
-      shapeRes1 = reshape(resAll,num_queues,num_time_steps);
+      shapeRes1 = flipud(reshape(resAll,num_queues,num_time_steps));
+%       shapeRes1 = reshape(resAll,num_queues,num_time_steps);
       hBar = bar(timeInSeconds,shapeRes1',barwidth,'stacked','EdgeColor','none');
       set(hBar,{'FaceColor'},barColors);   
       ylabel('CPUs');xlabel('seconds');
       ylim([0 cluster_size]);
       xlim([0 max(timeInSeconds)]);
-      legend(lengendStr,'Location','northoutside','FontSize',fontLegend,'Orientation','horizontal');
-      title('DRF-W - CPUs','fontsize',fontLegend);
+      %legend(lengendStr,'Location','northoutside','FontSize',fontLegend,'Orientation','horizontal');
+      %title('DRF-W - CPUs','fontsize',fontLegend);
       
       subplot(2,1,2);
       resAll = zeros(1,num_queues*num_time_steps);
@@ -161,17 +165,17 @@ if plots(2)
          resAll = res(1:num_queues*num_time_steps);
       end
 %       resCutOff = res2(startIdx:endIdx);
-%       shapeRes1 = flipud(reshape(resAll,num_queues,num_time_steps));
-      shapeRes1 = reshape(resAll,num_queues,num_time_steps);
+      shapeRes1 = flipud(reshape(resAll,num_queues,num_time_steps));
+%       shapeRes1 = reshape(resAll,num_queues,num_time_steps);
       hBar = bar(timeInSeconds,shapeRes1',barwidth,'stacked','EdgeColor','none');
       set(hBar,{'FaceColor'},barColors);   
       ylabel('GB');xlabel('seconds');
       ylim([0 cluster_size]);
       xlim([0 max(timeInSeconds)]);
-      legend(lengendStr,'Location','northoutside','FontSize',fontLegend,'Orientation','horizontal');
-      title('DRF-W - Memory','fontsize',fontLegend);
+      %legend(lengendStr,'Location','northoutside','FontSize',fontLegend,'Orientation','horizontal');
+      %title('DRF-W - Memory','fontsize',fontLegend);
       
-      set (gcf, 'Units', 'Inches', 'Position', figSizeTwoCol, 'PaperUnits', 'inches', 'PaperPosition', figSizeTwoCol);
+      set (gcf, 'Units', 'Inches', 'Position', figureSize, 'PaperUnits', 'inches', 'PaperPosition', figureSize);
       if is_printed  
           figIdx=figIdx +1;
         fileNames{figIdx} = ['b' int2str(num_batch_queues)  'i' int2str(num_interactive_queue) '_res_usage_drf-w'];        
@@ -197,15 +201,15 @@ if plots(3)
          resAll = res(1:num_queues*num_time_steps);
       end
 %       resCutOff = res1(startIdx:endIdx);
-%       shapeRes1 = flipud(reshape(resAll,num_queues,num_time_steps));
-      shapeRes1 = reshape(resAll,num_queues,num_time_steps);
+      shapeRes1 = flipud(reshape(resAll,num_queues,num_time_steps));
+%       shapeRes1 = reshape(resAll,num_queues,num_time_steps);
       hBar = bar(timeInSeconds,shapeRes1',barwidth,'stacked','EdgeColor','none');
       set(hBar,{'FaceColor'},barColors);   
       ylabel('CPUs');xlabel('seconds');
       ylim([0 cluster_size]);
       xlim([0 max(timeInSeconds)]);
-      legend(lengendStr,'Location','northoutside','FontSize',fontLegend,'Orientation','horizontal');
-      title('Strict Priority - CPUs','fontsize',fontLegend);
+      %legend(lengendStr,'Location','northoutside','FontSize',fontLegend,'Orientation','horizontal');
+      %title('Strict Priority - CPUs','fontsize',fontLegend);
       
       subplot(2,1,2);
       resAll = zeros(1,num_queues*num_time_steps);
@@ -216,17 +220,17 @@ if plots(3)
          resAll = res(1:num_queues*num_time_steps);
       end
 %       resCutOff = res2(startIdx:endIdx);
-%       shapeRes1 = flipud(reshape(resAll,num_queues,num_time_steps));
-      shapeRes1 = reshape(resAll,num_queues,num_time_steps);
+      shapeRes1 = flipud(reshape(resAll,num_queues,num_time_steps));
+%       shapeRes1 = reshape(resAll,num_queues,num_time_steps);
       hBar = bar(timeInSeconds,shapeRes1',barwidth,'stacked','EdgeColor','none');
       set(hBar,{'FaceColor'},barColors);   
       ylabel('GB');xlabel('seconds');
       ylim([0 cluster_size]);
       xlim([0 max(timeInSeconds)]);
-      legend(lengendStr,'Location','northoutside','FontSize',fontLegend,'Orientation','horizontal');
-      title('Strict Priority - Memory','fontsize',fontLegend);
+      %legend(lengendStr,'Location','northoutside','FontSize',fontLegend,'Orientation','horizontal');
+      %title('Strict Priority - Memory','fontsize',fontLegend);
       
-      set (gcf, 'Units', 'Inches', 'Position', figSizeTwoCol, 'PaperUnits', 'inches', 'PaperPosition', figSizeTwoCol);
+      set (gcf, 'Units', 'Inches', 'Position', figureSize, 'PaperUnits', 'inches', 'PaperPosition', figureSize);
       if is_printed     
           figIdx=figIdx +1;
         fileNames{figIdx} = ['b' int2str(num_batch_queues) 'i' int2str(num_interactive_queue) '_res_usage_strict'];       
@@ -251,16 +255,16 @@ if plots(4)
       end
 %       resCutOff = res1(startIdx:endIdx);
 
-%       shapeRes1 = flipud(reshape(resAll,num_queues,num_time_steps));
-      shapeRes1 = reshape(resAll,num_queues,num_time_steps);
+      shapeRes1 = flipud(reshape(resAll,num_queues,num_time_steps));
+%       shapeRes1 = reshape(resAll,num_queues,num_time_steps);
       hBar = bar(timeInSeconds,shapeRes1',barwidth,'stacked','EdgeColor','none');
       set(hBar,{'FaceColor'},barColors);       
       
       ylabel('CPUs');xlabel('seconds');
       ylim([0 cluster_size]);
       xlim([0 max(timeInSeconds)]);
-      legend(lengendStr,'Location','northoutside','FontSize',fontLegend,'Orientation','horizontal');
-      title('SpeedFair - CPUs','fontsize',fontLegend);
+      %%legend(lengendStr,'Location','northoutside','FontSize',fontLegend,'Orientation','horizontal');
+      %title('SpeedFair - CPUs','fontsize',fontLegend);
       
       subplot(2,1,2); 
       resAll = zeros(1,num_queues*num_time_steps);
@@ -271,18 +275,18 @@ if plots(4)
          resAll = res(1:num_queues*num_time_steps);
       end
 %       resCutOff = res2(startIdx:endIdx);
-%       shapeRes1 = flipud(reshape(resAll,num_queues,num_time_steps));
-      shapeRes1 = reshape(resAll,num_queues,num_time_steps);
+      shapeRes1 = flipud(reshape(resAll,num_queues,num_time_steps));
+%       shapeRes1 = reshape(resAll,num_queues,num_time_steps);
       hBar = bar(timeInSeconds,shapeRes1',barwidth,'stacked','EdgeColor','none');
       set(hBar,{'FaceColor'},barColors);  
       
       ylabel('GB');xlabel('seconds');
       ylim([0 cluster_size]);
       xlim([0 max(timeInSeconds)]);
-      legend(lengendStr,'Location','northoutside','FontSize',fontLegend,'Orientation','horizontal');
-      title('SpeedFair - Memory','fontsize',fontLegend);
+      %%legend(lengendStr,'Location','northoutside','FontSize',fontLegend,'Orientation','horizontal');
+      %title('SpeedFair - Memory','fontsize',fontLegend);
       
-      set (gcf, 'Units', 'Inches', 'Position', figSizeTwoCol, 'PaperUnits', 'inches', 'PaperPosition', figSizeTwoCol);     
+      set (gcf, 'Units', 'Inches', 'Position', figureSize, 'PaperUnits', 'inches', 'PaperPosition', figureSize);     
       if is_printed   
           figIdx=figIdx +1;
         fileNames{figIdx} = ['b' int2str(num_batch_queues) 'i' int2str(num_interactive_queue) '_res_usage_speedfair'];        
@@ -291,6 +295,27 @@ if plots(4)
       end
    end
 end
+
+%% create dummy graph with legends
+if enableSeparateLegend
+  figure
+  hBar = bar(timeInSeconds,shapeRes1',barwidth,'stacked','EdgeColor','none');
+  set(hBar,{'FaceColor'},barColors);
+  legend(lengendStr,'Location','southoutside','FontSize',fontLegend,'Orientation','horizontal');
+  set(gca,'FontSize',fontSize);
+  axis([20000,20001,20000,20001]) %move dummy points out of view
+  axis off %hide axis  
+  set(gca,'YColor','none');      
+  set (gcf, 'Units', 'Inches', 'Position', legendSize, 'PaperUnits', 'inches', 'PaperPosition', legendSize);    
+
+  if is_printed   
+      figIdx=figIdx +1;
+    fileNames{figIdx} = ['b' int2str(num_batch_queues) 'i' int2str(num_interactive_queue)  '_res_usage_legend'];        
+    epsFile = [ LOCAL_FIG fileNames{figIdx} '.eps'];
+    print ('-depsc', epsFile);
+  end
+end
+
 
 % if is_printed
 %    pause(30);

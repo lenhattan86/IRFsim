@@ -22,7 +22,7 @@ import cluster.datastructures.StageDag;
 import cluster.simulator.Main.Globals;
 
 public class GenInput {
-
+  private static int stageIter = 0;
   public static double[] NaN_1 = {};
   public static double[][] NaN_2 = {};
   public static double weight = 1.0;
@@ -31,7 +31,7 @@ public class GenInput {
 
   public static Randomness rand = new Randomness();
 
-  // test geninput
+/*  // test geninput
   public static void main(String[] args) {
 
     writeTaskDurationStatistics("workload/queries_bb_FB_distr.txt",
@@ -54,7 +54,7 @@ public class GenInput {
     genInputFromWorkload(numInteractiveQueues, numInteractiveJobsPerQueue,
         numInteractiveTask, numBatchQueues, numBatchJobsPerQueue, subJobs);
 
-  }
+  }*/
 
   public static void genQueueInput(int numInteractiveQueues,
       int numBatchQueues) {
@@ -140,12 +140,12 @@ public class GenInput {
   }
 
   public static String genSingleJobInfo(int jobId, String queueName,
-      StageDag job, int arrivalTime, double taskNumScale, double durScale, int sIdx) {
+      StageDag job, int arrivalTime, double taskNumScale, double durScale, boolean isUncertain) {
     String str = "";
     str += "# " + jobId + "\n";
     // TODO: customize the job arrival time
     str += "" + job.numStages + " " + jobId + " " + arrivalTime + " "
-        + queueName + " " +sIdx + "\n";
+        + queueName + "\n";
     for (Map.Entry<String, Stage> entry : job.stages.entrySet()) {
       Stage stage = entry.getValue();
       double duration = stage.vDuration * durScale / Globals.STEP_TIME;
@@ -165,8 +165,15 @@ public class GenInput {
       for (int i = 0; i < dim; i++) {
         if (i >= Globals.NUM_DIMENSIONS)
           str += " " + (float) 0.0;
-        else
-          str += " " + stage.vDemands.resource(i);
+        else {
+          double uncertainRes = 0.0;
+          if(isUncertain){
+            int len = SessionData.ERROR_10.length;
+            uncertainRes = stage.vDemands.resource(i)*SessionData.ERROR_10[stageIter%len][i]*Globals.ESTIMASION_ERRORS/0.1;
+            uncertainRes = Utils.round(uncertainRes, 2);
+          }
+          str += " " + Utils.round(stage.vDemands.resource(i) + uncertainRes, 2);
+        }
       }
       int taskNum = (int) (stage.vids.length() * taskNumScale);
       if (taskNum == 0)
@@ -196,28 +203,24 @@ public class GenInput {
    */
 
   public static String genSingleQueueInfo(int queueId, String queueName,
-      double weight, boolean isLQ, Sessions sessions) {
+      double weight, boolean isLQ, Session s) {
     String str = "";
     str += "# " + queueId + "\n";
     if (!isLQ) {
-      str += "" + queueName + " 0 \n";
+      str += "" + queueName + " 0 0.0 \n";
       str += "" + weight;
     } else {
-      str += "" + queueName + " 1 \n";
-      int numSession = sessions.toList().size();
-      str += "" + numSession;
-      if (numSession > 0)
-        str += "\n";
-      for (int i = 0; i < numSession; i++) {
-        Session s = sessions.toList().get(i);
+      str += "" + queueName + " 1 " + s.getStartTime()+" \n";
+      int numOfJobs = s.getNumOfJobs();
+      str += "" + numOfJobs  +"\n";
+      
+      for (int i = 0; i < numOfJobs; i++) {
+        str += "" + s.getAlphaDurations()[i];
+        str += " " + s.getPeriods()[i];
+        for (int k = 0; k < Globals.NUM_DIMENSIONS; k++)
+          str += " " + s.getAlphas()[i].resource(k);
         
-        str += "" + s.getStartTime();
-        str += " " + s.getNumOfJobs();
-        str += " " + s.getAlphaDuration();
-        str += " " + s.getPeriod();
-        for (int j = 0; j < Globals.NUM_DIMENSIONS; j++)
-          str += " " + s.getAlpha().resource(j);
-        if (i < numSession - 1)
+        if (i < numOfJobs - 1)
           str += "\n";
       }
     }
@@ -245,7 +248,6 @@ public class GenInput {
 
   private static void customizeJobs(int numInteractiveQueues, int numBatchQueues, int numBatchJobs,
       Queue<BaseDag> jobs) {
-
     String file = Globals.PathToInputFile;
     Output.write("", false, file);
     // TODO: pick the short jobs for the bursty queue.
@@ -258,29 +260,24 @@ public class GenInput {
       return;
     } else
       for (int i = 0; i < numInteractiveQueues; i++) {
-        Sessions ss = Globals.SESSION_DATA.sessionsArray[i];
-        int numberSessions = ss.toList().size();
-        for (int sIdx = 0; sIdx <numberSessions; sIdx++){
-          
-          Session s = ss.toList().get(sIdx);
-          int numInteractiveJobsPersession = s.getNumOfJobs();
-          
-          for (int j = 0; j < numInteractiveJobsPersession; j++) {
-            if (jobIter1.hasNext()) {
-              StageDag job = (StageDag) jobIter1.next();
-              int arrivalTime = (int)s.getStartTime() + j * (int) s.getPeriod();
-              String toWrite = genSingleJobInfo(newJobId, "bursty" + (i), job,
-                  arrivalTime, Globals.SCALE_UP_BURSTY_JOB,
-                  Globals.SCALE_BURSTY_DURATION, sIdx);
-              Output.writeln(toWrite, true, file);
-              
-              newJobId++;
-            } else {
-              System.err.println("[GenInput] lack of the number of small jobs at "
-                  + shortJobs.size());
-              jobIter1 = shortJobs.iterator();
-              j--;
-            }
+        Session s = Globals.SESSION_DATA.sessionsArray[i];
+        for (int j = 0; j <s.getNumOfJobs(); j++){
+          if (jobIter1.hasNext()) {
+            StageDag job = (StageDag) jobIter1.next();
+            int arrivalTime = (int) s.getStartPeriodTime(j);
+            
+            String toWrite = genSingleJobInfo(newJobId, "bursty" + (i), job,
+                arrivalTime, Globals.SCALE_UP_BURSTY_JOB,
+                Globals.SCALE_BURSTY_DURATION, true);
+            
+            Output.writeln(toWrite, true, file);
+            
+            newJobId++;
+          } else {
+            System.err.println("[GenInput] lack of the number of small jobs at "
+                + shortJobs.size());
+            jobIter1 = shortJobs.iterator();
+            j--;
           }
         }
       }
@@ -313,13 +310,13 @@ public class GenInput {
         String toWrite = "";
         if (!Globals.GEN_JOB_ARRIVAL)
           toWrite = genSingleJobInfo(jobIdx, "batch" + (batchQueueIdx), job,
-              job.arrivalTime, 1, Globals.SCALE_BATCH_DURATION, 0);
+              job.arrivalTime, 1, Globals.SCALE_BATCH_DURATION, false);
         else {
           if (arrivalIdx >= arrivalTimes.length)
             arrivalIdx = 0;
           toWrite = genSingleJobInfo(jobIdx, "batch" + (batchQueueIdx), job,
               arrivalTimes[arrivalIdx++], Globals.SCALE_UP_BATCH_JOB,
-              Globals.SCALE_BATCH_DURATION, 0);
+              Globals.SCALE_BATCH_DURATION, false);
         }
         Output.writeln(toWrite, true, file);
       } else {

@@ -1,25 +1,25 @@
 addpath('matlab_func');
 common_settings;
 
-% workloads = {'BB', 'TPC-DS','TPC-H'};
-% worloadFolders = {'BB', 'TPCDS', 'TPCH'};
-workloads = {'BB'};
-% workloads = {'TPCDS'};
-worloadFolders = {''};
+workloads = {'BB', 'TPC-DS','TPC-H'};
+worloadFolders = {'BB', 'TPCDS', 'TPCH'};
+% workloads = {'BB'};
+% worloadFolders = {''};
 
 %%
 
 
 %%
-result_folder= '.';
-% result_folder= ['result/20170105/' ];
-% result_folder= ['result/20170113/' ];
-% result_folder= ['result/20170116/' ];
+% result_folder= '.';
+result_folder= ['result/20170117_err/' ];
 
 if true
-  avgDuration = [-0.9, -0.5,-0.4, -0.3, -0.2, -0.1, 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.9];
+  avgDuration = -0.9:0.1:0.9;
     speedfair_compl_files = {
       'SpeedFair-output_err-0.9.csv';
+      'SpeedFair-output_err-0.8.csv';
+      'SpeedFair-output_err-0.7.csv';
+      'SpeedFair-output_err-0.6.csv';
       'SpeedFair-output_err-0.5.csv';
       'SpeedFair-output_err-0.4.csv';
       'SpeedFair-output_err-0.3.csv';
@@ -31,6 +31,9 @@ if true
       'SpeedFair-output_err0.3.csv';
       'SpeedFair-output_err0.4.csv';
       'SpeedFair-output_err0.5.csv';
+      'SpeedFair-output_err0.6.csv';
+      'SpeedFair-output_err0.7.csv';
+      'SpeedFair-output_err0.8.csv';
       'SpeedFair-output_err0.9.csv';
       'SpeedFair-output_err_base.csv';
       };
@@ -82,9 +85,9 @@ if plots(1)
    [ speedfair_avg_compl_time ] = obtain_compl_time( output_folder, speedfair_compl_files, INTERACTIVE_QUEUE);     
    len = length(speedfair_avg_compl_time);
    baseline = speedfair_avg_compl_time(len/2);
-   optimal = speedfair_avg_compl_time(len)
+   optimal = speedfair_avg_compl_time(len);
    performance_factors = speedfair_avg_compl_time(1:len-1)/baseline;
-   plot(xVals, performance_factors, 'LineWidth',LineWidth);
+   plot(xVals*100, performance_factors, workloadLineStyles{i}, 'LineWidth',LineWidth);
    hold on;
    if max(performance_factors) > Y_MAX
      Y_MAX = max(performance_factors);
@@ -103,7 +106,7 @@ if plots(1)
    
    if is_printed
        figIdx=figIdx +1;
-      fileNames{figIdx} = 'sen_analysis_task_duration';
+      fileNames{figIdx} = 'sen_analysis_est_err';
       epsFile = [ LOCAL_FIG fileNames{figIdx} '.eps'];
         print ('-depsc', epsFile);
    end

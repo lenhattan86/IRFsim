@@ -41,7 +41,8 @@ public class Resource implements Comparable {
 	public Resource(double[] res) {
 		resources = new double[Globals.NUM_DIMENSIONS];
 		for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
-			resources[i] = Utils.round(res[i], 2);
+		  int idx = i%res.length;
+			resources[i] = Utils.round(res[idx], 2);
 		}
 	}
 	
@@ -317,6 +318,17 @@ public class Resource implements Comparable {
 		output += "]";
 		return output;
 	}
+	
+	public String toStringList() {
+    String output = "{";
+    for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
+      output += Utils.round(resources[i]/Globals.CAPACITY, 4);
+      if (i<Globals.NUM_DIMENSIONS-1)
+        output +=  ",";      
+    }
+    output += "}";
+    return output;
+  }
 
 	public static Resource minRes(Resource left, Resource right) {
 		Resource minResources = new Resource();

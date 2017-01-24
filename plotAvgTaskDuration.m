@@ -3,6 +3,7 @@ common_settings;
 
 workloads = {'BB', 'TPC-DS','TPC-H'};
 worloadFolders = {'BB', 'TPCDS', 'TPCH'};
+
 % workloads = {'BB'};
 % worloadFolders = {''};
 
@@ -13,8 +14,9 @@ worloadFolders = {'BB', 'TPCDS', 'TPCH'};
 % result_folder= '.';
 % result_folder= ['result/20170105/' ];
 % result_folder= ['result/20170113/' ];
-result_folder= ['result/20170116/' ];
+result_folder= ['result/20170116_avg/' ];
 
+baseline = 27;
 
 if false
     scaleUps = [0.125, 0.25, 0.5, 1, 2, 4, 8];
@@ -68,9 +70,9 @@ figIdx = 0;
 plots  = [true, false];
 
 if plots(1) 
-    INTERACTIVE_QUEUE = 'bursty';
+   INTERACTIVE_QUEUE = 'bursty';
    
-    figure;
+   figure;
    scrsz = get(groot,'ScreenSize');   
    
   for i=1:length(workloads)
@@ -78,7 +80,7 @@ if plots(1)
    
    [ speedfair_avg_compl_time ] = obtain_compl_time( output_folder, speedfair_compl_files, INTERACTIVE_QUEUE);  
    
-   plot(xVals, speedfair_avg_compl_time, 'LineWidth',LineWidth);
+   plot(xVals, speedfair_avg_compl_time,  workloadLineStyles{i}, 'LineWidth',LineWidth);
    hold on;
   end
   xLabel='average task duration';

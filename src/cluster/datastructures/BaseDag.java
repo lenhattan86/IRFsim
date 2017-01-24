@@ -18,6 +18,8 @@ public abstract class BaseDag implements Cloneable {
 
   protected String queueName = "";
   private boolean fullyAllocated = false;
+  
+  public ArrayList<Resource> usedReses = new ArrayList<Resource>();
 
   public void setQueueName(String queueName) {
     this.queueName = queueName;
@@ -55,6 +57,7 @@ public abstract class BaseDag implements Cloneable {
                                                      // a certain time step
 
   public ServiceCurve serviceCurve = new ServiceCurve();
+  
   public Resource receivedService = new Resource();
 
   public abstract double duration(int task_id); // duration of a task
