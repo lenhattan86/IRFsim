@@ -150,11 +150,13 @@ public class GenInput {
       Stage stage = entry.getValue();
       
       double uncertainDur = 0.0;
-   /*   if(isUncertain){
+      if(isUncertain){
         int len = SessionData.DUR_ERROR_10.length;
-        uncertainDur = stage.vDuration*SessionData.DUR_ERROR_10[stageIter%len]*Globals.ESTIMASION_ERRORS/0.1;
+        double error = SessionData.DUR_ERROR_10[stageIter%len]*Globals.ESTIMASION_ERRORS/0.1;
+        error = Math.min(Math.max(error, -1), 1);
+        uncertainDur = stage.vDuration*error;
         uncertainDur = Utils.round(uncertainDur, 2);
-      }*/
+      }
       
       double duration = (stage.vDuration+uncertainDur) * durScale / Globals.STEP_TIME;
       duration = Utils.round(duration, 0) * Globals.STEP_TIME;
@@ -177,7 +179,10 @@ public class GenInput {
           double uncertainRes = 0.0;
           if(isUncertain){
             int len = SessionData.RES_ERROR_10.length;
-            uncertainRes = stage.vDemands.resource(i)*SessionData.RES_ERROR_10[stageIter%len][i]*Globals.ESTIMASION_ERRORS/0.1;
+//            System.out.println("val:"+SessionData.RES_ERROR_10[stageIter%len][i]);
+            double error = SessionData.RES_ERROR_10[stageIter%len][i]*Globals.ESTIMASION_ERRORS/0.1;
+            error = Math.min(Math.max(error, -1), 1);
+            uncertainRes = stage.vDemands.resource(i)*error;
             uncertainRes = Utils.round(uncertainRes, 2);
           }
           str += " " + Utils.round(stage.vDemands.resource(i) + uncertainRes, 2);
@@ -228,8 +233,9 @@ public class GenInput {
         str += " " + s.getPeriods()[i];
         for (int k = 0; k < Globals.NUM_DIMENSIONS; k++)
           str += " " + s.getAlphas()[i].resource(k);
-        
-        if (i < numOfJobs - 1)
+/*        if (i<=2)
+          System.out.println(s.getAlphas()[i]);
+*/        if (i < numOfJobs - 1)
           str += "\n";
       }
     }
@@ -257,6 +263,7 @@ public class GenInput {
 
   private static void customizeJobs(int numInteractiveQueues, int numBatchQueues, int numBatchJobs,
       Queue<BaseDag> jobs) {
+    stageIter = 0;
     String file = Globals.PathToInputFile;
     Output.write("", false, file);
     // TODO: pick the short jobs for the bursty queue.

@@ -237,6 +237,7 @@ public class Simulator {
         dag.receivedService.addUsage(dag.getRsrcInUse());
         Resource usage = new Resource(dag.getRsrcInUse());
         dag.usedReses.add(usage);
+//        System.out.println(usage);
       }
 
       Simulator.printUsedResources();

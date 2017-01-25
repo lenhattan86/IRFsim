@@ -15,6 +15,9 @@ y = stdev.*randn(numOfStages, numDimemsion) + meanVal;
 y = max(y,minVal);
 y = min(y,maxVal);
 
+mean(y)
+std(y)
+
 errors = '{';
 for i=1:numOfStages
   jobDemand = '{';
@@ -38,6 +41,9 @@ y = stdev.*randn(numOfStages, 1) + meanVal;
 
 y = max(y,minVal);
 y = min(y,maxVal);
+
+mean(y)
+std(y)
 
 errors = '{';
 for i=1:numOfStages

@@ -17,7 +17,7 @@ public class Session {
     this.alphaDurations =new double[numOfJobs]; 
     
     for (int i=0; i<numOfJobs; i++){
-      int idx = numOfJobs % alphaDurations.length;
+      int idx = i % alphaDurations.length;
       this.alphas[i] = new Resource(alphas[idx]);
       this.periods[i] = periods[idx];
       this.alphaDurations[i] = alphaDurations[idx];
@@ -31,7 +31,7 @@ public class Session {
     this.periods = new double[numOfJobs]; 
     this.alphaDurations =new double[numOfJobs]; 
     for (int i=0; i<numOfJobs; i++){
-      int idx = numOfJobs % alphaVals.length;
+      int idx = i % alphaVals.length;
       this.alphas[i] = new Resource(alphaVals[idx]);
       this.periods[i] = periods[idx];
       this.alphaDurations[i] = alphaDurations[idx];
@@ -45,7 +45,7 @@ public class Session {
     this.periods = new double[numOfJobs]; 
     this.alphaDurations =new double[numOfJobs]; 
     for (int i=0; i<numOfJobs; i++){
-      int idx = numOfJobs % alphaVals.length;
+      int idx = i % alphaVals.length;
       this.alphas[i] = new Resource(alphaVals[idx]);
       this.periods[i] = periods[idx];
       this.alphaDurations[i] = alphaDurations[idx];
@@ -59,7 +59,7 @@ public class Session {
     this.periods = new double[numOfJobs]; 
     this.alphaDurations =new double[numOfJobs]; 
     for (int i=0; i<numOfJobs; i++){
-      int idx = numOfJobs % alphaVals.length;
+      int idx = i % alphaVals.length;
       this.alphas[i] = new Resource(alphaVals[idx]);
       this.periods[i] = period;
       this.alphaDurations[i] = alphaDurations[idx];

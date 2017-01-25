@@ -309,6 +309,7 @@ public class SpeedFairScheduler implements Scheduler {
   }
 
   private void admit() {
+    DEBUG = true;
     long tStart = System.currentTimeMillis();
     Queue<JobQueue> newAdmittedQueues = new LinkedList<JobQueue>();
     for (JobQueue q : elasticQueues) {

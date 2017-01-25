@@ -1,4 +1,3 @@
-clear;
 addpath('matlab_func');
 common_settings;
 
@@ -12,9 +11,8 @@ worloadFolders = {'BB', 'TPCDS', 'TPCH'};
 %%
 result_folder= '.'; workloads = {'BB'}; worloadFolders = {''};
 % result_folder= ['result/20170124_err/' ];
-isOfficial = false;
 
-if isOfficial
+if true
   errRate = 0.0:0.1:0.7;
     speedfair_compl_files = {     
       'SpeedFair-output_err0.0.csv';
@@ -25,15 +23,6 @@ if isOfficial
       'SpeedFair-output_err0.5.csv';
       'SpeedFair-output_err0.6.csv';
       'SpeedFair-output_err0.7.csv'; 
-      };
-  xVals = errRate;
-else
-  errRate = 0.0:0.2:0.6;
-    speedfair_compl_files = {     
-      'SpeedFair-output_err0.0.csv';
-      'SpeedFair-output_err0.2.csv';
-      'SpeedFair-output_err0.4.csv';
-      'SpeedFair-output_err0.6.csv';
       };
   xVals = errRate;
 end
@@ -62,8 +51,8 @@ if plots(1)
    
    [ speedfair_avg_compl_time ] = obtain_compl_time( output_folder, speedfair_compl_files, INTERACTIVE_QUEUE);        
    baseline = speedfair_avg_compl_time(1);
-%     yVals = max(speedfair_avg_compl_time-baseline,0)/baseline*100;
-   yVals = speedfair_avg_compl_time;
+    yVals = max(speedfair_avg_compl_time-baseline,0)/baseline*100;
+ 
    plot(xVals*100,yVals , workloadLineStyles{i}, 'LineWidth',LineWidth);
    hold on;
    if max(yVals) > Y_MAX

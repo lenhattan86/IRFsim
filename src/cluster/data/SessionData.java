@@ -547,7 +547,7 @@ public class SessionData {
 
   static int errLQnumOfJobs = 150;
   public static double errLQStartTime = 200.0;
-  static double errLQPeriod = 300.0;
+  public static double errLQPeriod = 350.0;
   public static double[] errLQPeriods = { errLQPeriod, errLQPeriod, errLQPeriod,
       errLQPeriod, errLQPeriod };
 
