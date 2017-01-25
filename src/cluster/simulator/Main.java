@@ -807,23 +807,23 @@ public class Main {
             "==================================================================");
       }
     } else if (Globals.runmode.equals(Runmode.EstimationErrors)) {
+//    Globals.DEBUG_START = 200+2*SessionData.errLQPeriod;
+//    Globals.DEBUG_END = Globals.DEBUG_START+1;
+      
       Globals.SetupMode mode = Globals.SetupMode.ShortInteractive;
       double[] errors = { 0.0, 0.1 , 0.2, 0.3 , 0.4, 0.5, 0.6 };
+      
 //      double[] errors = { 0.0, 0.2, 0.4, 0.6 };
-//      double[] errors = { 0.0 };
-//       double[] errors = { 0.0, 0.1, 0.3, 0.5};
+//       double[] errors = { 0.0, 0.1, 0.3, 0.5};      
 //      Globals.numBatchJobs = 100;
-//      Globals.SIM_END_TIME = 5000;
 //      Globals.MACHINE_MAX_RESOURCE = 100;
-//      Globals.DEBUG_START = 200+2*SessionData.errLQPeriod;
-//      Globals.DEBUG_END = Globals.DEBUG_START+1;
-//      Globals.workload = Globals.WorkLoadType.TPC_DS;
+//      Globals.workload = Globals.WorkLoadType.BB;
       
       Method[] methods = { Method.DRF, Method.SpeedFair };
 //      Method[] methods = { Method.SpeedFair };
 //      Method[] methods = { Method.Strict };
       
-      Globals.numBatchQueues = 1;
+      Globals.numBatchQueues = 8;
       for (int i = 0; i < errors.length; i++) {
         // Trigger garbage collection to clean up memory.
         if (i < errors.length) {

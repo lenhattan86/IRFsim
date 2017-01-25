@@ -54,7 +54,7 @@ strProposed = 'BPF';
 
 strEstimationErr = 'estimation errors [%]';
 strFactorImprove = 'factor of improvement';
-strAvgComplTime = 'avg. compl. (secs)';
+strAv = 'avg. compl. time';
 
 %% line specs
 lineProposed = '-';
