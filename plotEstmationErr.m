@@ -14,7 +14,7 @@ worloadFolders = {'BB', 'TPCDS', 'TPCH'};
 result_folder= ['result/20170124_err/' ];
 
 if true
-  errRate = 0.0:0.1:0.5;
+  errRate = 0.0:0.1:0.7;
     speedfair_compl_files = {     
       'SpeedFair-output_err0.0.csv';
       'SpeedFair-output_err0.1.csv';
@@ -22,6 +22,8 @@ if true
       'SpeedFair-output_err0.3.csv';
       'SpeedFair-output_err0.4.csv';
       'SpeedFair-output_err0.5.csv';      
+      'SpeedFair-output_err0.6.csv'; 
+      'SpeedFair-output_err0.7.csv'; 
       };
   xVals = errRate;
 end
@@ -50,7 +52,7 @@ if plots(1)
    
    [ speedfair_avg_compl_time ] = obtain_compl_time( output_folder, speedfair_compl_files, INTERACTIVE_QUEUE);        
    baseline = speedfair_avg_compl_time(1);
-    yVals = speedfair_avg_compl_time/baseline;
+    yVals = max(speedfair_avg_compl_time-baseline,0)/baseline*100;
  
    plot(xVals*100,yVals , workloadLineStyles{i}, 'LineWidth',LineWidth);
    hold on;
@@ -62,7 +64,7 @@ if plots(1)
   yLabel=strPerformaceFactor;
   legendStr=workloads;
 
-  legend(legendStr,'Location','south','FontSize',fontLegend,'Orientation','horizontal');
+  legend(legendStr,'Location','north','FontSize',fontLegend,'Orientation','horizontal');
   set (gcf, 'Units', 'Inches', 'Position', figSizeOneCol, 'PaperUnits', 'inches', 'PaperPosition', figSizeOneCol);
   xlabel(xLabel,'FontSize',fontAxis);
   ylabel(yLabel,'FontSize',fontAxis);

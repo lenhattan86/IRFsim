@@ -535,7 +535,7 @@ public class SessionData {
   // single LQ
   static int LQnumOfJobs = 150;
   public static double LQStartTime = 100.0;
-  static double LQPeriod = 800.0;
+  static double LQPeriod = 1000.0;
   public static double[] LQPeriods = { LQPeriod, LQPeriod, LQPeriod, LQPeriod,
       LQPeriod };
 
@@ -547,7 +547,7 @@ public class SessionData {
 
   static int errLQnumOfJobs = 150;
   public static double errLQStartTime = 200.0;
-  static double errLQPeriod = 250.0;
+  static double errLQPeriod = 300.0;
   public static double[] errLQPeriods = { errLQPeriod, errLQPeriod, errLQPeriod,
       errLQPeriod, errLQPeriod };
 

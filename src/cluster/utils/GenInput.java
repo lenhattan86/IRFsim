@@ -150,11 +150,11 @@ public class GenInput {
       Stage stage = entry.getValue();
       
       double uncertainDur = 0.0;
-      if(isUncertain){
+   /*   if(isUncertain){
         int len = SessionData.DUR_ERROR_10.length;
         uncertainDur = stage.vDuration*SessionData.DUR_ERROR_10[stageIter%len]*Globals.ESTIMASION_ERRORS/0.1;
         uncertainDur = Utils.round(uncertainDur, 2);
-      }
+      }*/
       
       double duration = (stage.vDuration+uncertainDur) * durScale / Globals.STEP_TIME;
       duration = Utils.round(duration, 0) * Globals.STEP_TIME;
