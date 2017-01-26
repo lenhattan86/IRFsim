@@ -13,7 +13,8 @@ START_TIME = 0; END_TIME = 800;
 is_printed = true;
 cluster_size = 1000;
 
-figureSize = [1 1 2/3 2/3].* figSizeOneCol;
+% figureSize = [1 1 2/3 2/3].* figSizeOneCol;
+figureSize = [1 1 4/5 4/5].* figSizeOneCol;
 
 enableSeparateLegend = true;
 
@@ -52,8 +53,10 @@ output_sufix = 'short/'; STEP_TIME = 1.0;
 % fig_path = ['../EuroSys17/fig/' workload '-'];
 
 %%
-plots = [true, false, true, true]; %DRF, DRF-W, Strict, SpeedFair
-% plots = [false, false, false, true]; %DRF, DRF-W, Strict, SpeedFair
+%DRF,DRF-W, Strict,SpeedFair,hard, DRF_reject, Strict Reject,
+%SpeedFair_drf, hard_drf
+plots=[true, false, true, true, true, true, true, true, true]; 
+% plots=[false, false, false, true, true]; %DRF, DRF-W,Strict,SpeedFair,hard
 logfolder = [result_folder 'log/'];
 
 start_time_step = START_TIME/STEP_TIME;
@@ -77,6 +80,7 @@ end
 %%
 % extraStr = '';
 extraStr = ['_' int2str(num_interactive_queue) '_' int2str(num_batch_queues) '_' int2str(cluster_size)];
+extraStrReject = ['_' int2str(num_interactive_queue-1) '_' int2str(num_batch_queues) '_' int2str(cluster_size)];
 % extraStr = ['_avg2.0'];
 % extraStr = ['_err_base'];
 
@@ -196,7 +200,7 @@ if plots(2)
       end
    end
 end
-
+%%
 if plots(3)  
    logFile = [ logfolder 'Strict-output' extraStr '.csv']
    [queueNames, res1, res2, flag] = importResUsageLog(logFile);
@@ -310,6 +314,310 @@ if plots(4)
       if is_printed   
           figIdx=figIdx +1;
         fileNames{figIdx} = ['b' int2str(num_batch_queues) 'i' int2str(num_interactive_queue) '_res_usage_speedfair'];        
+        epsFile = [ LOCAL_FIG fileNames{figIdx} '.eps'];
+        print ('-depsc', epsFile);
+      end
+   end
+end
+
+%%
+if plots(4)   
+   logFile = [ logfolder 'SpeedFair-output' extraStr '.csv']
+   [queueNames, res1, res2, flag] = importResUsageLog(logFile);
+   if (flag)    
+      figure;
+      subplot(2,1,1); 
+      resAll = zeros(1,num_queues*num_time_steps);
+      res = res1(startIdx:length(res1));
+      if(length(resAll)>length(res))
+         resAll(1:length(res)) = res;
+      else
+         resAll = res(1:num_queues*num_time_steps);
+      end
+%       resCutOff = res1(startIdx:endIdx);
+
+%       shapeRes1 = flipud(reshape(resAll,num_queues,num_time_steps));
+      shapeRes1 = reshape(resAll,num_queues,num_time_steps); 
+      shapeRes1 = fipQueues( shapeRes1, num_interactive_queue, num_batch_queues);
+      
+      hBar = bar(timeInSeconds,shapeRes1',barwidth,'stacked','EdgeColor','none');
+      set(hBar,{'FaceColor'},barColors);       
+      
+      ylabel('CPU');xlabel('seconds');
+      ylim([0 cluster_size]);
+      xlim([0 max(timeInSeconds)]);
+      %%legend(lengendStr,'Location','northoutside','FontSize',fontLegend,'Orientation','horizontal');
+      %title('SpeedFair - CPU','fontsize',fontLegend);
+      
+      subplot(2,1,2); 
+      resAll = zeros(1,num_queues*num_time_steps);
+      res = res2(startIdx:length(res2));
+      if(length(resAll)>length(res))
+         resAll(1:length(res)) = res;
+      else
+         resAll = res(1:num_queues*num_time_steps);
+      end
+%       resCutOff = res2(startIdx:endIdx);
+%       shapeRes1 = flipud(reshape(resAll,num_queues,num_time_steps));
+      shapeRes1 = reshape(resAll,num_queues,num_time_steps);
+      shapeRes1 = fipQueues( shapeRes1, num_interactive_queue, num_batch_queues);
+      
+      hBar = bar(timeInSeconds,shapeRes1',barwidth,'stacked','EdgeColor','none');
+      set(hBar,{'FaceColor'},barColors);  
+      
+      ylabel('memory');xlabel('seconds');
+      ylim([0 cluster_size]);
+      xlim([0 max(timeInSeconds)]);
+      %%legend(lengendStr,'Location','northoutside','FontSize',fontLegend,'Orientation','horizontal');
+      %title('SpeedFair - Memory','fontsize',fontLegend);
+      
+      set (gcf, 'Units', 'Inches', 'Position', figureSize, 'PaperUnits', 'inches', 'PaperPosition', figureSize);     
+      if is_printed   
+          figIdx=figIdx +1;
+        fileNames{figIdx} = ['b' int2str(num_batch_queues) 'i' int2str(num_interactive_queue) '_res_usage_speedfair'];        
+        epsFile = [ LOCAL_FIG fileNames{figIdx} '.eps'];
+        print ('-depsc', epsFile);
+      end
+   end
+end
+
+%%
+if plots(5)   
+   logFile = [ logfolder 'DRF_Reject-output' extraStr '.csv'];
+   [queueNames, res1, res2, flag] = importResUsageLog(logFile);
+   if (flag)    
+      figure;
+      subplot(2,1,1); 
+      resAll = zeros(1,num_queues*num_time_steps);
+      res = res1(startIdx:length(res1));
+      if(length(resAll)>length(res))
+         resAll(1:length(res)) = res;
+      else
+         resAll = res(1:num_queues*num_time_steps);
+      end
+%       resCutOff = res1(startIdx:endIdx);
+
+%       shapeRes1 = flipud(reshape(resAll,num_queues,num_time_steps));
+      shapeRes1 = reshape(resAll,num_queues,num_time_steps); 
+      shapeRes1 = fipQueues( shapeRes1, num_interactive_queue, num_batch_queues);
+      
+      hBar = bar(timeInSeconds,shapeRes1',barwidth,'stacked','EdgeColor','none');
+      set(hBar,{'FaceColor'},barColors);       
+      
+      ylabel('CPU');xlabel('seconds');
+      ylim([0 cluster_size]);
+      xlim([0 max(timeInSeconds)]);
+      %%legend(lengendStr,'Location','northoutside','FontSize',fontLegend,'Orientation','horizontal');
+      %title('SpeedFair - CPU','fontsize',fontLegend);
+      
+      subplot(2,1,2); 
+      resAll = zeros(1,num_queues*num_time_steps);
+      res = res2(startIdx:length(res2));
+      if(length(resAll)>length(res))
+         resAll(1:length(res)) = res;
+      else
+         resAll = res(1:num_queues*num_time_steps);
+      end
+%       resCutOff = res2(startIdx:endIdx);
+%       shapeRes1 = flipud(reshape(resAll,num_queues,num_time_steps));
+      shapeRes1 = reshape(resAll,num_queues,num_time_steps);
+      shapeRes1 = fipQueues( shapeRes1, num_interactive_queue, num_batch_queues);
+      
+      hBar = bar(timeInSeconds,shapeRes1',barwidth,'stacked','EdgeColor','none');
+      set(hBar,{'FaceColor'},barColors);  
+      
+      ylabel('memory');xlabel('seconds');
+      ylim([0 cluster_size]);
+      xlim([0 max(timeInSeconds)]);
+      %%legend(lengendStr,'Location','northoutside','FontSize',fontLegend,'Orientation','horizontal');
+      %title('SpeedFair - Memory','fontsize',fontLegend);
+      
+      set (gcf, 'Units', 'Inches', 'Position', figureSize, 'PaperUnits', 'inches', 'PaperPosition', figureSize);     
+      if is_printed   
+          figIdx=figIdx +1;
+        fileNames{figIdx} = ['b' int2str(num_batch_queues) 'i' int2str(num_interactive_queue) '_res_usage_DRF_Reject'];        
+        epsFile = [ LOCAL_FIG fileNames{figIdx} '.eps'];
+        print ('-depsc', epsFile);
+      end
+   end
+end
+
+%%
+if plots(6)   
+   logFile = [ logfolder 'Strict_Reject-output' extraStr '.csv'];
+   [queueNames, res1, res2, flag] = importResUsageLog(logFile);
+   if (flag)    
+      figure;
+      subplot(2,1,1); 
+      resAll = zeros(1,num_queues*num_time_steps);
+      res = res1(startIdx:length(res1));
+      if(length(resAll)>length(res))
+         resAll(1:length(res)) = res;
+      else
+         resAll = res(1:num_queues*num_time_steps);
+      end
+%       resCutOff = res1(startIdx:endIdx);
+
+%       shapeRes1 = flipud(reshape(resAll,num_queues,num_time_steps));
+      shapeRes1 = reshape(resAll,num_queues,num_time_steps); 
+      shapeRes1 = fipQueues( shapeRes1, num_interactive_queue, num_batch_queues);
+      
+      hBar = bar(timeInSeconds,shapeRes1',barwidth,'stacked','EdgeColor','none');
+      set(hBar,{'FaceColor'},barColors);       
+      
+      ylabel('CPU');xlabel('seconds');
+      ylim([0 cluster_size]);
+      xlim([0 max(timeInSeconds)]);
+      %%legend(lengendStr,'Location','northoutside','FontSize',fontLegend,'Orientation','horizontal');
+      %title('SpeedFair - CPU','fontsize',fontLegend);
+      
+      subplot(2,1,2); 
+      resAll = zeros(1,num_queues*num_time_steps);
+      res = res2(startIdx:length(res2));
+      if(length(resAll)>length(res))
+         resAll(1:length(res)) = res;
+      else
+         resAll = res(1:num_queues*num_time_steps);
+      end
+%       resCutOff = res2(startIdx:endIdx);
+%       shapeRes1 = flipud(reshape(resAll,num_queues,num_time_steps));
+      shapeRes1 = reshape(resAll,num_queues,num_time_steps);
+      shapeRes1 = fipQueues( shapeRes1, num_interactive_queue, num_batch_queues);
+      
+      hBar = bar(timeInSeconds,shapeRes1',barwidth,'stacked','EdgeColor','none');
+      set(hBar,{'FaceColor'},barColors);  
+      
+      ylabel('memory');xlabel('seconds');
+      ylim([0 cluster_size]);
+      xlim([0 max(timeInSeconds)]);
+      %%legend(lengendStr,'Location','northoutside','FontSize',fontLegend,'Orientation','horizontal');
+      %title('SpeedFair - Memory','fontsize',fontLegend);
+      
+      set (gcf, 'Units', 'Inches', 'Position', figureSize, 'PaperUnits', 'inches', 'PaperPosition', figureSize);     
+      if is_printed   
+          figIdx=figIdx +1;
+        fileNames{figIdx} = ['b' int2str(num_batch_queues) 'i' int2str(num_interactive_queue) '_res_usage_Strict_Reject'];        
+        epsFile = [ LOCAL_FIG fileNames{figIdx} '.eps'];
+        print ('-depsc', epsFile);
+      end
+   end
+end
+%%
+if plots(7)   
+   logFile = [ logfolder 'SpeedFair_drf-output' extraStr '.csv'];
+   [queueNames, res1, res2, flag] = importResUsageLog(logFile);
+   if (flag)    
+      figure;
+      subplot(2,1,1); 
+      resAll = zeros(1,num_queues*num_time_steps);
+      res = res1(startIdx:length(res1));
+      if(length(resAll)>length(res))
+         resAll(1:length(res)) = res;
+      else
+         resAll = res(1:num_queues*num_time_steps);
+      end
+%       resCutOff = res1(startIdx:endIdx);
+
+%       shapeRes1 = flipud(reshape(resAll,num_queues,num_time_steps));
+      shapeRes1 = reshape(resAll,num_queues,num_time_steps); 
+      shapeRes1 = fipQueues( shapeRes1, num_interactive_queue, num_batch_queues);
+      
+      hBar = bar(timeInSeconds,shapeRes1',barwidth,'stacked','EdgeColor','none');
+      set(hBar,{'FaceColor'},barColors);       
+      
+      ylabel('CPU');xlabel('seconds');
+      ylim([0 cluster_size]);
+      xlim([0 max(timeInSeconds)]);
+      %%legend(lengendStr,'Location','northoutside','FontSize',fontLegend,'Orientation','horizontal');
+      %title('SpeedFair - CPU','fontsize',fontLegend);
+      
+      subplot(2,1,2); 
+      resAll = zeros(1,num_queues*num_time_steps);
+      res = res2(startIdx:length(res2));
+      if(length(resAll)>length(res))
+         resAll(1:length(res)) = res;
+      else
+         resAll = res(1:num_queues*num_time_steps);
+      end
+%       resCutOff = res2(startIdx:endIdx);
+%       shapeRes1 = flipud(reshape(resAll,num_queues,num_time_steps));
+      shapeRes1 = reshape(resAll,num_queues,num_time_steps);
+      shapeRes1 = fipQueues( shapeRes1, num_interactive_queue, num_batch_queues);
+      
+      hBar = bar(timeInSeconds,shapeRes1',barwidth,'stacked','EdgeColor','none');
+      set(hBar,{'FaceColor'},barColors);  
+      
+      ylabel('memory');xlabel('seconds');
+      ylim([0 cluster_size]);
+      xlim([0 max(timeInSeconds)]);
+      %%legend(lengendStr,'Location','northoutside','FontSize',fontLegend,'Orientation','horizontal');
+      %title('SpeedFair - Memory','fontsize',fontLegend);
+      
+      set (gcf, 'Units', 'Inches', 'Position', figureSize, 'PaperUnits', 'inches', 'PaperPosition', figureSize);     
+      if is_printed   
+          figIdx=figIdx +1;
+        fileNames{figIdx} = ['b' int2str(num_batch_queues) 'i' int2str(num_interactive_queue) '_res_usage_SpeedFair_drf'];        
+        epsFile = [ LOCAL_FIG fileNames{figIdx} '.eps'];
+        print ('-depsc', epsFile);
+      end
+   end
+end
+
+%%
+if plots(8)   
+   logFile = [ logfolder 'Hard_drf-output' extraStr '.csv'];
+   [queueNames, res1, res2, flag] = importResUsageLog(logFile);
+   if (flag)    
+      figure;
+      subplot(2,1,1); 
+      resAll = zeros(1,num_queues*num_time_steps);
+      res = res1(startIdx:length(res1));
+      if(length(resAll)>length(res))
+         resAll(1:length(res)) = res;
+      else
+         resAll = res(1:num_queues*num_time_steps);
+      end
+%       resCutOff = res1(startIdx:endIdx);
+
+%       shapeRes1 = flipud(reshape(resAll,num_queues,num_time_steps));
+      shapeRes1 = reshape(resAll,num_queues,num_time_steps); 
+      shapeRes1 = fipQueues( shapeRes1, num_interactive_queue, num_batch_queues);
+      
+      hBar = bar(timeInSeconds,shapeRes1',barwidth,'stacked','EdgeColor','none');
+      set(hBar,{'FaceColor'},barColors);       
+      
+      ylabel('CPU');xlabel('seconds');
+      ylim([0 cluster_size]);
+      xlim([0 max(timeInSeconds)]);
+      %%legend(lengendStr,'Location','northoutside','FontSize',fontLegend,'Orientation','horizontal');
+      %title('SpeedFair - CPU','fontsize',fontLegend);
+      
+      subplot(2,1,2); 
+      resAll = zeros(1,num_queues*num_time_steps);
+      res = res2(startIdx:length(res2));
+      if(length(resAll)>length(res))
+         resAll(1:length(res)) = res;
+      else
+         resAll = res(1:num_queues*num_time_steps);
+      end
+%       resCutOff = res2(startIdx:endIdx);
+%       shapeRes1 = flipud(reshape(resAll,num_queues,num_time_steps));
+      shapeRes1 = reshape(resAll,num_queues,num_time_steps);
+      shapeRes1 = fipQueues( shapeRes1, num_interactive_queue, num_batch_queues);
+      
+      hBar = bar(timeInSeconds,shapeRes1',barwidth,'stacked','EdgeColor','none');
+      set(hBar,{'FaceColor'},barColors);  
+      
+      ylabel('memory');xlabel('seconds');
+      ylim([0 cluster_size]);
+      xlim([0 max(timeInSeconds)]);
+      %%legend(lengendStr,'Location','northoutside','FontSize',fontLegend,'Orientation','horizontal');
+      %title('SpeedFair - Memory','fontsize',fontLegend);
+      
+      set (gcf, 'Units', 'Inches', 'Position', figureSize, 'PaperUnits', 'inches', 'PaperPosition', figureSize);     
+      if is_printed   
+          figIdx=figIdx +1;
+        fileNames{figIdx} = ['b' int2str(num_batch_queues) 'i' int2str(num_interactive_queue) '_res_usage_Hard_drf'];        
         epsFile = [ LOCAL_FIG fileNames{figIdx} '.eps'];
         print ('-depsc', epsFile);
       end

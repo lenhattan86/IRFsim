@@ -176,7 +176,7 @@ public class JobQueue {
   // getters & setters
   public double getWeight() {
     double res = weight;
-    if (isLQ && Globals.METHOD.equals(Method.Strict))
+    if (isLQ && (Globals.METHOD.equals(Method.Strict) || Globals.METHOD.equals(Method.Strict_Reject)))
       res = Globals.STRICT_WEIGHT;
     else if (isLQ && Globals.METHOD.equals(Method.DRFW))
       res = Globals.DRFW_weight;
@@ -245,7 +245,8 @@ public class JobQueue {
   }
 
   public boolean isActive() {
-    if (!isLQ && this.runningJobs.size() > 0)
+//    if (!isLQ && this.runningJobs.size() > 0)
+    if(!isLQ)
       return true;
 
     if (!Globals.METHOD.equals(Globals.Method.SpeedFair)

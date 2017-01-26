@@ -297,8 +297,6 @@ public class GenInput {
 
             newJobId++;
           } else {
-            System.err.println("[GenInput] lack of the number of small jobs at "
-                + shortJobs.size());
             jobIter1 = shortJobs.iterator();
             j--;
           }

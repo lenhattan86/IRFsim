@@ -1,5 +1,7 @@
 package cluster.datastructures;
 
+import cluster.simulator.Simulator;
+
 public class Session {
   public static double MAX_SESSION_TIME = 10000.0; // in seconds. 
   private int numOfJobs = 0;
@@ -80,11 +82,14 @@ public class Session {
         return i;
       startPeriodTime = endPeriodTime;
     }
-    System.err.println("[Sesssion] Increase the number of jobs");
+    System.err.println("[Sesssion] Increase the number of jobs, "+this.numOfJobs + " at " + Simulator.CURRENT_TIME);
     return idx;
   }
   
   public Resource getAlpha(double currTime){
+    int idx = this.getPeriodIdx(currTime);
+    if(idx<=0)
+      return new Resource(0.0);
     return this.alphas[this.getPeriodIdx(currTime)];
   }
   

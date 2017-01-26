@@ -508,7 +508,7 @@ public class SessionData {
       31.0, };
   // static data
   // LQ-0
-  static int LQ0numOfJobs = 150;
+  static int LQ0numOfJobs = 1500;
   public static double LQ0StartTime = 50.0;
   public static double[] LQ0AlphaDurations = { 27.0, 27.0, 27.0, 27.0, 27.0,
       27.0, 27.0, 27.0, 27.0, 27.0 };
@@ -517,7 +517,7 @@ public class SessionData {
       LQ0Period, LQ0Period };
 
   // LQ-1
-  static int LQ1numOfJobs = 150;
+  static int LQ1numOfJobs = 1500;
   public static double LQ1StartTime = 100.0;
   static double LQ1Period = 100.0;
   public static double[] LQ1Periods = { LQ1Period, LQ1Period, LQ1Period,
@@ -525,7 +525,7 @@ public class SessionData {
       LQ1Period, };
 
   // LQ-2
-  static int LQ2numOfJobs = 150;
+  static int LQ2numOfJobs = 1500;
   public static double LQ2StartTime = 150.0;
   static double LQ2Period = 60.0;
   public static double[] LQ2Periods = { LQ2Period, LQ2Period, LQ2Period,

@@ -40,7 +40,6 @@ public class DRFScheduler implements Scheduler {
 	// ResourceDemandVector * 1 / max_sum
 
 	public DRFScheduler() {
-
 		clusterTotCapacity = Simulator.cluster.getClusterMaxResAlloc();
 		this.schedulePolicy = "DRF";
 	}
@@ -63,6 +62,10 @@ public class DRFScheduler implements Scheduler {
 		for (JobQueue q : Simulator.QUEUE_LIST.getRunningQueues()) {
 			Collections.sort((List<BaseDag>) q.getRunningJobs(), new JobArrivalComparator());
 		}
+		
+		if (Globals.METHOD.equals(Method.DRF_Reject)
+        || Globals.METHOD.equals(Method.Strict_Reject))
+		  Simulator.QUEUE_LIST.removeRunningQueue("bursty2");
 
 		onlineDRFShare(clusterTotCapacity, Simulator.QUEUE_LIST.getRunningQueues());
 	}

@@ -89,7 +89,7 @@ public class Main {
     public static int SCALE_UP_FACTOR = 1;
 
     public static enum Method {
-      DRF, DRFW, SpeedFair, Strict
+      DRF, DRF_Reject, DRFW, SpeedFair, SpeedFair_drf, Hard, Hard_drf, Strict, Strict_Reject
     }
 
     public static enum QueueSchedulerPolicy {
@@ -341,15 +341,30 @@ public class Main {
     if (Globals.METHOD.equals(Method.DRF)) {
       Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.DRF;
       Globals.FileOutput = "DRF-output" + extraName + ".csv";
+    } else if (Globals.METHOD.equals(Method.DRF_Reject)) {
+      Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.DRF;
+      Globals.FileOutput = "DRF_Reject-output" + extraName + ".csv";
     } else if (Globals.METHOD.equals(Method.SpeedFair)) {
       Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.SpeedFair;
       Globals.FileOutput = "SpeedFair-output" + extraName + ".csv";
+    } else if (Globals.METHOD.equals(Method.SpeedFair_drf)) {
+      Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.SpeedFair;
+      Globals.FileOutput = "SpeedFair_drf-output" + extraName + ".csv";
     } else if (Globals.METHOD.equals(Method.DRFW)) {
       Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.DRF;
       Globals.FileOutput = "DRF-W-output" + extraName + ".csv";
     } else if (Globals.METHOD.equals(Method.Strict)) {
       Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.DRF;
       Globals.FileOutput = "Strict-output" + extraName + ".csv";
+    } else if (Globals.METHOD.equals(Method.Strict_Reject)) {
+      Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.DRF;
+      Globals.FileOutput = "Strict_Reject-output" + extraName + ".csv";
+    } else if (Globals.METHOD.equals(Method.Hard)) {
+      Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.SpeedFair;
+      Globals.FileOutput = "Hard-output" + extraName + ".csv";
+    } else if (Globals.METHOD.equals(Method.Hard_drf)) {
+      Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.SpeedFair;
+      Globals.FileOutput = "Hard_drf-output" + extraName + ".csv";
     } else {
       System.err.println("Error! test case");
       return;
@@ -574,7 +589,7 @@ public class Main {
       }
     }
 
-    Globals.runmode = Runmode.MultipleBatchQueueRun;
+    Globals.runmode = Runmode.MultipleBurstyQueues;
 
     if (args.length >= 2) {
       String stRunmode = args[1];
@@ -625,32 +640,43 @@ public class Main {
     } else if (Globals.runmode.equals(Runmode.MultipleBurstyQueues)) {
       // Globals.DEBUG_START = 100.0;
       // Globals.DEBUG_END = 250.0;
-      Globals.SIM_END_TIME = 800.0;
-//      Globals.LONG_DURATION_TASK_TOBE_REMOVED = 20;
+//      Globals.SIM_END_TIME = 4000.0;
+      // Globals.LONG_DURATION_TASK_TOBE_REMOVED = 50;
 
-      Method[] methods = { Method.DRF, Method.Strict, Method.SpeedFair };
-//       Method[] methods = { Method.SpeedFair};
+      Method[] methods = { Method.DRF, Method.DRF_Reject, Method.Strict,
+          Method.Strict_Reject, Method.SpeedFair, Method.SpeedFair_drf,
+          Method.Hard, Method.Hard_drf };
+//      Method[] methods = { Method.SpeedFair, Method.SpeedFair_drf,
+//          Method.Hard, Method.Hard_drf };
+      // Method[] methods = { Method.SpeedFair,Method.HardGuarantee};
+      // Method[] methods = { Method.HardGuarantee};
+      // Method[] methods = { Method.SpeedFair};
+//      Method[] methods = { Method.Hard_drf};
       Globals.NUM_MACHINES = 1;
       Globals.MACHINE_MAX_RESOURCE = 1000;
       Globals.numBatchQueues = 1;
       Globals.numBurstyQueues = 3;
       Globals.numBatchJobs = 100;
-      Globals.DEBUG_LOCAL = true;
-      Globals.workload = Globals.WorkLoadType.BB;
-
-      Globals.setupParameters(Globals.SetupMode.ShortInteractive, 1);
+//      Globals.DEBUG_LOCAL = true;
+//      Globals.workload = Globals.WorkLoadType.BB;
 
       for (int i = 0; i < methods.length; i++) {
         // Trigger garbage collection to clean up memory.
         System.out.println("[INFO] Wait for garbage collectors ...");
         freeMemory();
 
+        Globals.METHOD = methods[i];
+
+        /*if (Globals.METHOD.equals(Method.DRF_Reject)
+            || Globals.METHOD.equals(Method.Strict_Reject))
+          Globals.numBurstyQueues = 2;*/
+
+        Globals.setupParameters(Globals.SetupMode.ShortInteractive, 1);
+
         if (i == 0)
           Globals.IS_GEN = true;
         else
           Globals.IS_GEN = false;
-
-        Globals.METHOD = methods[i];
 
         System.out.println(
             "=================================================================");
@@ -661,11 +687,12 @@ public class Main {
       }
 
     } else if (Globals.runmode.equals(Runmode.MultipleBatchQueueRun)) {
-      
-/*      Globals.NUM_DIMENSIONS = 2;
-      Globals.workload = Globals.WorkLoadType.TPC_H;
-      Globals.MACHINE_MAX_RESOURCE = 40;*/
-      
+
+      /*
+       * Globals.NUM_DIMENSIONS = 2; Globals.workload =
+       * Globals.WorkLoadType.TPC_H; Globals.MACHINE_MAX_RESOURCE = 40;
+       */
+
       Globals.SetupMode mode = Globals.SetupMode.ShortInteractive;
       Method[] methods = { Method.DRF, Method.DRFW, Method.Strict,
           Method.SpeedFair };
@@ -699,9 +726,9 @@ public class Main {
       Globals.SetupMode mode = Globals.SetupMode.ShortInteractive;
       Globals.workload = WorkLoadType.TPC_H;
       Globals.setupParameters(mode, 1);
-//      Globals.DEBUG_START = 100;
-//      Globals.DEBUG_END = 150;
-//       Globals.SIM_END_TIME = 500.0;
+      // Globals.DEBUG_START = 100;
+      // Globals.DEBUG_END = 150;
+      // Globals.SIM_END_TIME = 500.0;
       // Trigger garbage collection to clean up memory.
       System.out.println("[INFO] Wait for garbage collectors ...");
       freeMemory();
@@ -815,25 +842,25 @@ public class Main {
             "==================================================================");
       }
     } else if (Globals.runmode.equals(Runmode.EstimationErrors)) {
-//    Globals.DEBUG_START = 200+2*SessionData.errLQPeriod;
-//    Globals.DEBUG_END = Globals.DEBUG_START+1;
-      
+      // Globals.DEBUG_START = 200+2*SessionData.errLQPeriod;
+      // Globals.DEBUG_END = Globals.DEBUG_START+1;
+
       Globals.SetupMode mode = Globals.SetupMode.ShortInteractive;
-      double[] errors = { 0.0, 0.1 , 0.2, 0.3 , 0.4, 0.5, 0.6 };
-      
-      if(Globals.workload.equals(WorkLoadType.BB))
+      double[] errors = { 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6 };
+
+      if (Globals.workload.equals(WorkLoadType.BB))
         Globals.numBatchJobs = 200;
-      
-//      double[] errors = { 0.0, 0.2, 0.4, 0.6 };
-//       double[] errors = { 0.0, 0.1, 0.3, 0.5};      
-//      Globals.numBatchJobs = 100;
-//      Globals.MACHINE_MAX_RESOURCE = 100;
-//      Globals.workload = Globals.WorkLoadType.BB;
-      
+
+      // double[] errors = { 0.0, 0.2, 0.4, 0.6 };
+      // double[] errors = { 0.0, 0.1, 0.3, 0.5};
+      // Globals.numBatchJobs = 100;
+      // Globals.MACHINE_MAX_RESOURCE = 100;
+      // Globals.workload = Globals.WorkLoadType.BB;
+
       Method[] methods = { Method.DRF, Method.SpeedFair };
-//      Method[] methods = { Method.SpeedFair };
-//      Method[] methods = { Method.Strict };
-      
+      // Method[] methods = { Method.SpeedFair };
+      // Method[] methods = { Method.Strict };
+
       Globals.numBatchQueues = 8;
       for (int i = 0; i < errors.length; i++) {
         // Trigger garbage collection to clean up memory.
@@ -843,7 +870,7 @@ public class Main {
         }
 
         Globals.setupParameters(mode, 1);
-        
+
         for (int j = 0; j < methods.length; j++) {
           Globals.METHOD = methods[j];
           if (j == 0)
@@ -851,18 +878,18 @@ public class Main {
           else
             Globals.IS_GEN = false;
 
-        System.out.println("[INFO] Wait for garbage collectors ...");
-        freeMemory();
+          System.out.println("[INFO] Wait for garbage collectors ...");
+          freeMemory();
 
-        System.out.println(
-            "=================================================================");
-        System.out.println("Run METHOD: " + Globals.METHOD
-            + " with EstimationErrors= " + Globals.EXTRA);
-        System.out.println("Run METHOD: " + Globals.METHOD + " with "
-            + Globals.numBatchQueues + " batch queues.");
-        runSimulationScenario(false);
-        System.out.println(
-            "==================================================================");
+          System.out.println(
+              "=================================================================");
+          System.out.println("Run METHOD: " + Globals.METHOD
+              + " with EstimationErrors= " + Globals.EXTRA);
+          System.out.println("Run METHOD: " + Globals.METHOD + " with "
+              + Globals.numBatchQueues + " batch queues.");
+          runSimulationScenario(false);
+          System.out.println(
+              "==================================================================");
         }
       }
     } else if (Globals.runmode.equals(Runmode.TrialRun)) {
