@@ -55,7 +55,7 @@ output_sufix = 'short/'; STEP_TIME = 1.0;
 %%
 %DRF,DRF-W, Strict,SpeedFair,hard, DRF_reject, Strict Reject,
 %SpeedFair_drf, hard_drf
-plots=[true, false, true, true, true, true, true, true, true]; 
+plots=[true, false, false, true, false, false, false, false, false]; 
 % plots=[false, false, false, true, true]; %DRF, DRF-W,Strict,SpeedFair,hard
 logfolder = [result_folder 'log/'];
 
@@ -321,8 +321,8 @@ if plots(4)
 end
 
 %%
-if plots(4)   
-   logFile = [ logfolder 'SpeedFair-output' extraStr '.csv']
+if plots(5)   
+   logFile = [ logfolder 'Hard-output' extraStr '.csv']
    [queueNames, res1, res2, flag] = importResUsageLog(logFile);
    if (flag)    
       figure;
@@ -374,7 +374,7 @@ if plots(4)
       set (gcf, 'Units', 'Inches', 'Position', figureSize, 'PaperUnits', 'inches', 'PaperPosition', figureSize);     
       if is_printed   
           figIdx=figIdx +1;
-        fileNames{figIdx} = ['b' int2str(num_batch_queues) 'i' int2str(num_interactive_queue) '_res_usage_speedfair'];        
+        fileNames{figIdx} = ['b' int2str(num_batch_queues) 'i' int2str(num_interactive_queue) '_res_usage_Hard'];        
         epsFile = [ LOCAL_FIG fileNames{figIdx} '.eps'];
         print ('-depsc', epsFile);
       end
@@ -382,7 +382,7 @@ if plots(4)
 end
 
 %%
-if plots(5)   
+if plots(6)   
    logFile = [ logfolder 'DRF_Reject-output' extraStr '.csv'];
    [queueNames, res1, res2, flag] = importResUsageLog(logFile);
    if (flag)    
@@ -443,7 +443,7 @@ if plots(5)
 end
 
 %%
-if plots(6)   
+if plots(7)   
    logFile = [ logfolder 'Strict_Reject-output' extraStr '.csv'];
    [queueNames, res1, res2, flag] = importResUsageLog(logFile);
    if (flag)    
@@ -503,7 +503,7 @@ if plots(6)
    end
 end
 %%
-if plots(7)   
+if plots(8)   
    logFile = [ logfolder 'SpeedFair_drf-output' extraStr '.csv'];
    [queueNames, res1, res2, flag] = importResUsageLog(logFile);
    if (flag)    
@@ -564,7 +564,7 @@ if plots(7)
 end
 
 %%
-if plots(8)   
+if plots(9)   
    logFile = [ logfolder 'Hard_drf-output' extraStr '.csv'];
    [queueNames, res1, res2, flag] = importResUsageLog(logFile);
    if (flag)    

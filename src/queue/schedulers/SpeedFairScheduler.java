@@ -27,6 +27,7 @@ public class SpeedFairScheduler implements Scheduler {
   // private Queue<JobQueue> admittedBatchQueues = null;
   private Queue<JobQueue> bestEffortQueues = null;
   private Queue<JobQueue> elasticQueues = null;
+  private Queue<JobQueue> rejectedQueues = null;
 
   private String schedulePolicy;
 
@@ -54,6 +55,7 @@ public class SpeedFairScheduler implements Scheduler {
     // admittedBatchQueues = new LinkedList<JobQueue>();
     bestEffortQueues = new LinkedList<JobQueue>();
     elasticQueues = new LinkedList<JobQueue>();
+    rejectedQueues = new LinkedList<JobQueue>();;
   }
 
   @Override
@@ -334,7 +336,7 @@ public class SpeedFairScheduler implements Scheduler {
 
   private void admit(Queue<JobQueue> newQueues) {
 //     if (Simulator.CURRENT_TIME == 150.0)
-//     DEBUG = true;
+     DEBUG = true;
     long tStart = System.currentTimeMillis();
     for (JobQueue q : newQueues) {
       if (q.isLQ) {
@@ -366,6 +368,7 @@ public class SpeedFairScheduler implements Scheduler {
             Output.debugln(DEBUG, "[SpeedFairScheduler] admit " + q.getQueueName()
                 + "  to elasticQueues at " + Simulator.CURRENT_TIME);
           } else {
+            rejectedQueues.add(q);
             Output.debugln(DEBUG,
                 "[SpeedFairScheduler] reject " + q.getQueueName()
                     + " at " + Simulator.CURRENT_TIME);
@@ -377,15 +380,17 @@ public class SpeedFairScheduler implements Scheduler {
           elasticQueues.add(q);
           Output.debugln(DEBUG, "[SpeedFairScheduler] admit " + q.getQueueName()
               + "  to elasticQueues at " + Simulator.CURRENT_TIME);
-        } else
+        } else{
+          rejectedQueues.add(q);
           Output.debugln(DEBUG,
               "[SpeedFairScheduler] reject " + q.getQueueName()
                   + "  to elasticQueues at " + Simulator.CURRENT_TIME);
+        }
 
       }
     }
     long overheads = System.currentTimeMillis() - tStart;
-    // DEBUG = false;
+     DEBUG = false;
     if (SCHEDULING_OVERHEADS)
       System.out.println(
           "Admit takes: " + overheads + " ms at " + Simulator.CURRENT_TIME);
@@ -395,7 +400,7 @@ public class SpeedFairScheduler implements Scheduler {
     Queue<JobQueue> newQueues = new LinkedList<JobQueue>();
     for (JobQueue q : Simulator.QUEUE_LIST.getRunningQueues()) {
       if (admittedBurstyQueues.contains(q) || bestEffortQueues.contains(q)
-          || elasticQueues.contains(q)) {
+          || elasticQueues.contains(q) || rejectedQueues.contains(q)) {
         // do nothing
       } else {
         newQueues.add(q);

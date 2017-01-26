@@ -640,7 +640,7 @@ public class Main {
     } else if (Globals.runmode.equals(Runmode.MultipleBurstyQueues)) {
       // Globals.DEBUG_START = 100.0;
       // Globals.DEBUG_END = 250.0;
-//      Globals.SIM_END_TIME = 4000.0;
+      Globals.SIM_END_TIME = 800.0;
       // Globals.LONG_DURATION_TASK_TOBE_REMOVED = 50;
 
       Method[] methods = { Method.DRF, Method.DRF_Reject, Method.Strict,
@@ -650,8 +650,8 @@ public class Main {
 //          Method.Hard, Method.Hard_drf };
       // Method[] methods = { Method.SpeedFair,Method.HardGuarantee};
       // Method[] methods = { Method.HardGuarantee};
-      // Method[] methods = { Method.SpeedFair};
-//      Method[] methods = { Method.Hard_drf};
+//       Method[] methods = { Method.DRF, Method.SpeedFair};
+//      Method[] methods = { Method.SpeedFair};
       Globals.NUM_MACHINES = 1;
       Globals.MACHINE_MAX_RESOURCE = 1000;
       Globals.numBatchQueues = 1;

@@ -88,8 +88,9 @@ public class Session {
   
   public Resource getAlpha(double currTime){
     int idx = this.getPeriodIdx(currTime);
-    if(idx<=0)
+    if(idx<0)
       return new Resource(0.0);
+    
     return this.alphas[this.getPeriodIdx(currTime)];
   }
   

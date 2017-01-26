@@ -14,10 +14,13 @@ result_folder = '';
 
 
 %%
+% xlabels = {'LQ-0', 'LQ-1','LQ-2','TQ-0'}; 
+% queues = {'bursty0','bursty1','bursty2','batch0'};
 xlabels = {'LQ-0', 'LQ-1','LQ-2'};
+queues = {'bursty0','bursty1','bursty2'};
 colorCellsExperiment = {colorDRF; colorStrict; colorProposed; colorhard};
-if true
-  queues = {'bursty0','bursty1','bursty2'};
+
+if false  
   compl_files = {'DRF-output_3_1_1000.csv';
                  'Strict-output_3_1_1000.csv';
                  'SpeedFair_drf-output_3_1_1000.csv';
@@ -26,7 +29,6 @@ if true
   methods = {'DRF','SP','BPF admit', 'Hard admit'};
   extra='admit';
 elseif true
-  queues = {'bursty0','bursty1','bursty2'};
   compl_files = {'DRF_Reject-output_3_1_1000.csv';
                   'Strict_Reject-output_3_1_1000.csv';
                   'SpeedFair-output_3_1_1000.csv';
@@ -35,7 +37,6 @@ elseif true
   methods = {'DRF rej','SP rej','BPF', 'Hard'};
   extra='reject';
 elseif false
-  queues = {'bursty0','bursty1','bursty2'};
   compl_files = {'DRF-output_3_1_1000.csv';
                  'Strict-output_3_1_1000.csv';
                  'SpeedFair_drf-output_3_1_1000.csv';

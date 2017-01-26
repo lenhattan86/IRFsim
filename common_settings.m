@@ -81,7 +81,8 @@ colorProposed = [237    125    49]/255;
 colorStrict = [165    165    165]/255;
 colorDRF = [68    71   196]/255;
 colorDRFW = [00    0.0    0.0];
-colorhard = [hex2dec('a8')    hex2dec('dd')    hex2dec('b5')]/255;
+%colorhard = [hex2dec('a8')    hex2dec('dd')    hex2dec('b5')]/255;%2c7fb8
+colorhard = [hex2dec('2c')    hex2dec('7f')    hex2dec('b8')]/255;%2c7fb8
 
 colorArraySimulation = [colorDRF colorDRFW colorStrict colorProposed];
 
