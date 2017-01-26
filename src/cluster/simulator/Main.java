@@ -816,6 +816,9 @@ public class Main {
       Globals.SetupMode mode = Globals.SetupMode.ShortInteractive;
       double[] errors = { 0.0, 0.1 , 0.2, 0.3 , 0.4, 0.5, 0.6 };
       
+      if(Globals.workload.equals(WorkLoadType.BB))
+        Globals.numBatchJobs = 200;
+      
 //      double[] errors = { 0.0, 0.2, 0.4, 0.6 };
 //       double[] errors = { 0.0, 0.1, 0.3, 0.5};      
 //      Globals.numBatchJobs = 100;
