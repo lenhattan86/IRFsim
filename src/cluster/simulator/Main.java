@@ -574,7 +574,7 @@ public class Main {
       }
     }
 
-    Globals.runmode = Runmode.MultipleBurstyQueues;
+    Globals.runmode = Runmode.MultipleBatchQueueRun;
 
     if (args.length >= 2) {
       String stRunmode = args[1];
@@ -607,12 +607,12 @@ public class Main {
       // Globals.SIM_END_TIME = 1000000;
       Globals.NUM_MACHINES = 1;
       Globals.MACHINE_MAX_RESOURCE = 40;
-      Globals.numBatchQueues = 1;
+      Globals.numBatchQueues = 8;
       Globals.numBurstyQueues = 1;
       Globals.numBatchJobs = 100;
       // Globals.SCALE_UP_BATCH_JOB = 1;
       Globals.DEBUG_LOCAL = true;
-      Globals.workload = Globals.WorkLoadType.BB;
+      Globals.workload = Globals.WorkLoadType.TPC_DS;
 
       Globals.setupParameters(Globals.SetupMode.ShortInteractive, 1);
 
@@ -661,6 +661,11 @@ public class Main {
       }
 
     } else if (Globals.runmode.equals(Runmode.MultipleBatchQueueRun)) {
+      
+/*      Globals.NUM_DIMENSIONS = 2;
+      Globals.workload = Globals.WorkLoadType.TPC_H;
+      Globals.MACHINE_MAX_RESOURCE = 40;*/
+      
       Globals.SetupMode mode = Globals.SetupMode.ShortInteractive;
       Method[] methods = { Method.DRF, Method.DRFW, Method.Strict,
           Method.SpeedFair };
@@ -685,7 +690,7 @@ public class Main {
               "=================================================================");
           System.out.println("Run METHOD: " + Globals.METHOD + " with "
               + Globals.numBatchQueues + " batch queues.");
-          runSimulationScenario(false);
+          runSimulationScenario(true);
           System.out.println(
               "==================================================================");
         }
