@@ -242,6 +242,8 @@ public class SpeedFairScheduler implements Scheduler {
   }
 
   private boolean resShortTermFairness(JobQueue newQueue) {
+/*    if(Simulator.CURRENT_TIME==210)
+      DEBUG = true;*/
 
     Session s = newQueue.session;
     double period = s.getPeriod(Simulator.CURRENT_TIME);
@@ -250,20 +252,23 @@ public class SpeedFairScheduler implements Scheduler {
     for (t = 0.0; t < period; t++) {
       int numQueues = 0;
       double currTime = startPeriodTime + t;
-      for (JobQueue q : elasticQueues) {
+      for (JobQueue q : admittedBurstyQueues) {
+        if (q.isActive(currTime) && q.isInStage1(currTime))
+//        if (q.isActive(currTime))
+          numQueues++;
+      }
+      
+      for (JobQueue q : bestEffortQueues) {
+//      if (q.isActive(currTime) && q.isInStage1(currTime) && !q.equals(newQueue))
         if (q.isActive(currTime) && !q.equals(newQueue))
           numQueues++;
-      }
-
-      for (JobQueue q : admittedBurstyQueues) {
-        if (q.isActive(currTime))
+      } 
+      
+      for (JobQueue q : elasticQueues) {
+        if (q.hasRunningJobs() && !q.equals(newQueue))
           numQueues++;
       }
-
-      for (JobQueue q : bestEffortQueues) {
-        if (q.isActive(currTime))
-          numQueues++;
-      }
+          
 
       Resource alpha = s.getAlpha(Simulator.CURRENT_TIME);
       Resource lhs = Resources.multiply(alpha,
@@ -309,17 +314,20 @@ public class SpeedFairScheduler implements Scheduler {
   }
 
   private void admit() {
-    DEBUG = true;
+/*    if (Simulator.CURRENT_TIME == 150.0)
+      DEBUG = true;*/
     long tStart = System.currentTimeMillis();
     Queue<JobQueue> newAdmittedQueues = new LinkedList<JobQueue>();
-    for (JobQueue q : elasticQueues) {
+    Queue<JobQueue> tempQueues = new LinkedList<JobQueue>(elasticQueues);
+    for (JobQueue q : tempQueues) {
       if (q.isLQ && q.hasRunningJobs()) {
         boolean condition1 = resGuarateeCond(q);
         boolean condition2 = resLongTermFairnessCond(q);
 
         if (condition1 && condition2) {
           admittedBurstyQueues.add(q);
-          newAdmittedQueues.add(q);
+          elasticQueues.remove(q);
+//          newAdmittedQueues.add(q);
           Output.debugln(DEBUG,
               "[SpeedFairScheduler] admitted " + q.getQueueName()
                   + " to hardGuaranteeQueues at " + Simulator.CURRENT_TIME);
@@ -329,6 +337,8 @@ public class SpeedFairScheduler implements Scheduler {
           // if(condition2){
           if (condition3 & condition4) {
             bestEffortQueues.add(q);
+            newAdmittedQueues.add(q);
+            elasticQueues.remove(q);
             Output.debugln(DEBUG,
                 "[SpeedFairScheduler] admit " + q.getQueueName()
                     + "  to softGuaranteeQueues at " + Simulator.CURRENT_TIME);
@@ -340,8 +350,7 @@ public class SpeedFairScheduler implements Scheduler {
         }
       }
     }
-    elasticQueues.removeAll(newAdmittedQueues);
-    DEBUG = false;
+//    elasticQueues.removeAll(newAdmittedQueues);
     long overheads = System.currentTimeMillis() - tStart;
 
     if (SCHEDULING_OVERHEADS)

@@ -265,7 +265,7 @@ public class JobQueue {
   }
 
   public boolean isActive(double currTime) {
-    if (this.runningJobs.size() > 0)
+    if (!isLQ && this.runningJobs.size() > 0)
       return true;
 
     if (isLQ && Globals.METHOD.equals(Globals.Method.SpeedFair)) {

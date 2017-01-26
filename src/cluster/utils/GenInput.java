@@ -31,36 +31,35 @@ public class GenInput {
 
   public static Randomness rand = new Randomness();
 
-/*  // test geninput
-  public static void main(String[] args) {
-
-    writeTaskDurationStatistics("workload/queries_bb_FB_distr.txt",
-        "pdf/" + "queries_bb_FB_distr.csv");
-    writeTaskDurationStatistics("workload/queries_tpcds_FB_distr_new.txt",
-        "pdf/" + "queries_tpcds_FB_distr_new.csv");
-    writeTaskDurationStatistics("workload/queries_tpch_FB_distr.txt",
-        "pdf/" + "queries_tpch_FB_distr.csv");
-
-    int numInteractiveQueues = 1, numInteractiveJobsPerQueue = 1;
-    int numInteractiveTask = 200, numBatchQueues = 3, numBatchJobsPerQueue = 1;
-    // genInput(numInteractiveQueues, numInteractiveJobsPerQueue,
-    // numInteractiveTask, numBatchQueues, numBatchJobsPerQueue);
-
-    Globals.NUM_DIMENSIONS = 2;
-    Queue<BaseDag> jobs = readWorkloadTrace(
-        "input_gen/" + "jobs_input_1_4.txt");
-    Queue<BaseDag> subJobs = new LinkedList<BaseDag>();
-    subJobs.add(jobs.poll());
-    genInputFromWorkload(numInteractiveQueues, numInteractiveJobsPerQueue,
-        numInteractiveTask, numBatchQueues, numBatchJobsPerQueue, subJobs);
-
-  }*/
+  /*
+   * // test geninput public static void main(String[] args) {
+   * 
+   * writeTaskDurationStatistics("workload/queries_bb_FB_distr.txt", "pdf/" +
+   * "queries_bb_FB_distr.csv");
+   * writeTaskDurationStatistics("workload/queries_tpcds_FB_distr_new.txt",
+   * "pdf/" + "queries_tpcds_FB_distr_new.csv");
+   * writeTaskDurationStatistics("workload/queries_tpch_FB_distr.txt", "pdf/" +
+   * "queries_tpch_FB_distr.csv");
+   * 
+   * int numInteractiveQueues = 1, numInteractiveJobsPerQueue = 1; int
+   * numInteractiveTask = 200, numBatchQueues = 3, numBatchJobsPerQueue = 1; //
+   * genInput(numInteractiveQueues, numInteractiveJobsPerQueue, //
+   * numInteractiveTask, numBatchQueues, numBatchJobsPerQueue);
+   * 
+   * Globals.NUM_DIMENSIONS = 2; Queue<BaseDag> jobs = readWorkloadTrace(
+   * "input_gen/" + "jobs_input_1_4.txt"); Queue<BaseDag> subJobs = new
+   * LinkedList<BaseDag>(); subJobs.add(jobs.poll());
+   * genInputFromWorkload(numInteractiveQueues, numInteractiveJobsPerQueue,
+   * numInteractiveTask, numBatchQueues, numBatchJobsPerQueue, subJobs);
+   * 
+   * }
+   */
 
   public static void genQueueInput(int numInteractiveQueues,
       int numBatchQueues) {
     String file = Globals.PathToQueueInputFile;
     Output.write("", false, file);
-    
+
     for (int i = 0; i < numInteractiveQueues; i++) {
       int queueId = i;
       String toWrite = GenInput.genSingleQueueInfo(queueId, "bursty" + queueId,
@@ -70,8 +69,9 @@ public class GenInput {
 
     for (int i = 0; i < numBatchQueues; i++) {
       int queueId = i;
-      String toWrite = GenInput.genSingleQueueInfo(queueId+numInteractiveQueues, "batch" + queueId,
-          weight, false, null);
+      String toWrite = GenInput.genSingleQueueInfo(
+          queueId + numInteractiveQueues, "batch" + queueId, weight, false,
+          null);
       Output.writeln(toWrite, true, file);
     }
   }
@@ -88,7 +88,7 @@ public class GenInput {
 
     for (int i = 0; i < numInteractiveQueues; i++) {
       int arrivalTime = 0 + i;
-      
+
       for (int j = 0; j < numInteractiveJobsPerQueue; j++) {
         arrivalTime = j * Globals.PERIODIC_INTERVAL + i;
         int jobId = i * numInteractiveJobsPerQueue + j;
@@ -140,7 +140,8 @@ public class GenInput {
   }
 
   public static String genSingleJobInfo(int jobId, String queueName,
-      StageDag job, int arrivalTime, double taskNumScale, double durScale, boolean isUncertain) {
+      StageDag job, int arrivalTime, double taskNumScale, double durScale,
+      boolean isUncertain) {
     String str = "";
     str += "# " + jobId + "\n";
     // TODO: customize the job arrival time
@@ -148,21 +149,23 @@ public class GenInput {
         + queueName + "\n";
     for (Map.Entry<String, Stage> entry : job.stages.entrySet()) {
       Stage stage = entry.getValue();
-      
+
       double uncertainDur = 0.0;
-      if(isUncertain){
+      if (isUncertain) {
         int len = SessionData.DUR_ERROR_10.length;
-        double error = SessionData.DUR_ERROR_10[stageIter%len]*Globals.ESTIMASION_ERRORS/0.1;
+        double error = SessionData.DUR_ERROR_10[stageIter % len]
+            * Globals.ESTIMASION_ERRORS / 0.1;
         error = Math.min(Math.max(error, -1), 1);
-        uncertainDur = stage.vDuration*error;
+        uncertainDur = stage.vDuration * error;
         uncertainDur = Utils.round(uncertainDur, 2);
       }
-      
-      double duration = (stage.vDuration+uncertainDur) * durScale / Globals.STEP_TIME;
+
+      double duration = (stage.vDuration + uncertainDur) * durScale
+          / Globals.STEP_TIME;
       duration = Utils.round(duration, 0) * Globals.STEP_TIME;
       duration = Utils.round(duration, 2);
       duration = Math.max(duration, Globals.STEP_TIME);
-      if(durScale<=0)
+      if (durScale <= 0)
         duration = Globals.STEP_TIME;
       // TODO: hardcode
       // duration = 5.0;
@@ -177,15 +180,20 @@ public class GenInput {
           str += " " + (float) 0.0;
         else {
           double uncertainRes = 0.0;
-          if(isUncertain){
+          if (isUncertain) {
             int len = SessionData.RES_ERROR_10.length;
-//            System.out.println("val:"+SessionData.RES_ERROR_10[stageIter%len][i]);
-            double error = SessionData.RES_ERROR_10[stageIter%len][i]*Globals.ESTIMASION_ERRORS/0.1;
+            // System.out.println("val:"+SessionData.RES_ERROR_10[stageIter%len][i]);
+            double error = SessionData.RES_ERROR_10[stageIter % len][i]
+                * Globals.ESTIMASION_ERRORS / 0.1;
             error = Math.min(Math.max(error, -1), 1);
-            uncertainRes = stage.vDemands.resource(i)*error;
+            uncertainRes = stage.vDemands.resource(i) * error;
             uncertainRes = Utils.round(uncertainRes, 2);
           }
-          str += " " + Utils.round(stage.vDemands.resource(i) + uncertainRes, 2);
+          /*
+           * if(i==0) str += " " + 0.01; else
+           */
+          str += " "
+              + Utils.round(stage.vDemands.resource(i) + uncertainRes, 2);
         }
       }
       int taskNum = (int) (stage.vids.length() * taskNumScale);
@@ -224,18 +232,18 @@ public class GenInput {
       str += "" + queueName + " 0 0.0 \n";
       str += "" + weight;
     } else {
-      str += "" + queueName + " 1 " + s.getStartTime()+" \n";
+      str += "" + queueName + " 1 " + s.getStartTime() + " \n";
       int numOfJobs = s.getNumOfJobs();
-      str += "" + numOfJobs  +"\n";
-      
+      str += "" + numOfJobs + "\n";
+
       for (int i = 0; i < numOfJobs; i++) {
         str += "" + s.getAlphaDurations()[i];
         str += " " + s.getPeriods()[i];
         for (int k = 0; k < Globals.NUM_DIMENSIONS; k++)
           str += " " + s.getAlphas()[i].resource(k);
-/*        if (i<=2)
-          System.out.println(s.getAlphas()[i]);
-*/        if (i < numOfJobs - 1)
+        /*
+         * if (i<=2) System.out.println(s.getAlphas()[i]);
+         */ if (i < numOfJobs - 1)
           str += "\n";
       }
     }
@@ -260,9 +268,8 @@ public class GenInput {
 
   }
 
-
-  private static void customizeJobs(int numInteractiveQueues, int numBatchQueues, int numBatchJobs,
-      Queue<BaseDag> jobs) {
+  private static void customizeJobs(int numInteractiveQueues,
+      int numBatchQueues, int numBatchJobs, Queue<BaseDag> jobs) {
     stageIter = 0;
     String file = Globals.PathToInputFile;
     Output.write("", false, file);
@@ -270,24 +277,24 @@ public class GenInput {
     Queue<BaseDag> shortJobs = getJobs(jobs, Globals.SMALL_JOB_DUR_THRESHOLD,
         Globals.SMALL_JOB_TASK_NUM_THRESHOLD, true);
     Iterator<BaseDag> jobIter1 = shortJobs.iterator();
-    int newJobId = 0 ;
+    int newJobId = 0;
     if (shortJobs.size() == 0 && numInteractiveQueues > 0) {
       System.err.println("shortJobs jobs are empty.");
       return;
     } else
       for (int i = 0; i < numInteractiveQueues; i++) {
         Session s = Globals.SESSION_DATA.sessionsArray[i];
-        for (int j = 0; j <s.getNumOfJobs(); j++){
+        for (int j = 0; j < s.getNumOfJobs(); j++) {
           if (jobIter1.hasNext()) {
             StageDag job = (StageDag) jobIter1.next();
             int arrivalTime = (int) s.getStartPeriodTime(j);
-            
+
             String toWrite = genSingleJobInfo(newJobId, "bursty" + (i), job,
                 arrivalTime, Globals.SCALE_UP_BURSTY_JOB,
                 Globals.SCALE_BURSTY_DURATION, true);
-            
+
             Output.writeln(toWrite, true, file);
-            
+
             newJobId++;
           } else {
             System.err.println("[GenInput] lack of the number of small jobs at "
@@ -297,16 +304,18 @@ public class GenInput {
           }
         }
       }
-    
+
     Queue<BaseDag> longJobs = getJobs(jobs, Globals.LARGE_JOB_MAX_DURATION,
         Globals.LARGE_JOB_TASK_NUM_THRESHOLD, false);
-    
-    if(Globals.AVG_TASK_DURATION>0){
+
+    if (Globals.AVG_TASK_DURATION > 0) {
       double avgTaskDuration = avgTaskDuration(longJobs);
-      Globals.SCALE_BATCH_DURATION = Globals.AVG_TASK_DURATION/avgTaskDuration;
-      Globals.SCALE_UP_BATCH_JOB = 1.0/Globals.SCALE_BATCH_DURATION*Globals.SCALE_UP_BATCH_JOB;
+      Globals.SCALE_BATCH_DURATION = Globals.AVG_TASK_DURATION
+          / avgTaskDuration;
+      Globals.SCALE_UP_BATCH_JOB = 1.0 / Globals.SCALE_BATCH_DURATION
+          * Globals.SCALE_UP_BATCH_JOB;
     }
-    
+
     Iterator<BaseDag> jobIter2 = longJobs.iterator();
     int batchStartId = Globals.BATCH_START_ID;
     int[] arrivalTimes = readRandomProcess(Globals.DIST_FILE);
@@ -340,7 +349,7 @@ public class GenInput {
       }
     }
   }
-  
+
   public static int[] readRandomProcess(String filePathStr) {
     int row = 0; // only first line
     int[] res = null;
@@ -381,6 +390,12 @@ public class GenInput {
     for (BaseDag job : jobs) {
       // System.out.println(((StageDag) job).viewDag());
       double temp = job.minCompletionTime();
+      double longestTaskDuration = job.getLongestTaskDuration();
+
+      if (Globals.LONG_DURATION_TASK_TOBE_REMOVED > 0
+          && !isSmall && longestTaskDuration > Globals.LONG_DURATION_TASK_TOBE_REMOVED  )
+        continue; // skip this job because the task is too long.
+
       // System.out.println(job.dagId + " minComplTime: "+temp + "\n");
       if (temp < minComplTime && job.allTasks().size() < numOfTasks && isSmall)
         interactiveJobs.add(job);
@@ -411,15 +426,15 @@ public class GenInput {
       e.printStackTrace();
     }
   }
-  
-  public static double avgTaskDuration(Queue<BaseDag> jobs){
+
+  public static double avgTaskDuration(Queue<BaseDag> jobs) {
     double avgDuration = 0.0;
     double numOfTasks = 0.0;
     for (BaseDag job : jobs) {
       for (Map.Entry<String, Stage> entry : job.stages.entrySet()) {
         Stage stage = entry.getValue();
         double duration = stage.vDuration;
-        avgDuration += duration*stage.vids.length();
+        avgDuration += duration * stage.vids.length();
         numOfTasks += stage.vids.length();
       }
     }

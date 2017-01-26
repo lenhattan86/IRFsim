@@ -5,18 +5,23 @@ common_settings;
 workloads = {'BB', 'TPC-DS','TPC-H'};
 worloadFolders = {'BB', 'TPCDS', 'TPCH'};
 
+fig_path = ['../EuroSys17/fig/'];
+
+% figureSize = figSizeTwothirdCol;
+figureSize = figSizeFourFifthCol;
 
 %%
 
 
 %%
-result_folder= '.'; workloads = {''}; worloadFolders = {''};
+% result_folder= '.'; workloads = {''}; worloadFolders = {''};
 % result_folder= ['result/20170125_err_demand/' ];
 % result_folder= ['result/20170125_err_a/' ];
+result_folder= ['result/20170125_err/' ];
 isOfficial = true;
 
 if isOfficial
-  errRate = 0.0:0.1:0.6;
+  errRate = 0.0:0.1:0.5;
     speedfair_compl_files = {     
       'SpeedFair-output_err0.0.csv';
       'SpeedFair-output_err0.1.csv';
@@ -58,10 +63,10 @@ figIdx = 0;
 %%
 
 
-plots  = [true, true];
+plots  = [true, false];
 
 if plots(1) 
-  Y_MAX = 1.25;
+  Y_MAX = 90;
     INTERACTIVE_QUEUE = 'bursty';
    
     figure;
@@ -75,7 +80,8 @@ if plots(1)
    [ DRF_avg_compl_time ] = obtain_compl_time( output_folder, DRF_compl_files, INTERACTIVE_QUEUE);  
       
 
-    yVals = speedfair_avg_compl_time;
+    yVals = speedfair_avg_compl_time(1:length(xVals));
+%     yVals = DRF_avg_compl_time(1:length(xVals));
    plot(xVals*100,yVals , workloadLineStyles{i}, 'LineWidth',LineWidth);
    hold on;
    if max(yVals) > Y_MAX
@@ -86,8 +92,8 @@ if plots(1)
   yLabel=strAvgComplTime;
   legendStr=workloads;
 
-  legend(legendStr,'Location','north','FontSize',fontLegend,'Orientation','horizontal');
-  set (gcf, 'Units', 'Inches', 'Position', figSizeOneCol, 'PaperUnits', 'inches', 'PaperPosition', figSizeOneCol);
+  legend(legendStr,'Location','south','FontSize',fontLegend,'Orientation','horizontal');
+  set (gcf, 'Units', 'Inches', 'Position', figureSize, 'PaperUnits', 'inches', 'PaperPosition', figureSize);
   xlabel(xLabel,'FontSize',fontAxis);
   ylabel(yLabel,'FontSize',fontAxis);
   ylim([0 Y_MAX]);
@@ -117,8 +123,8 @@ if plots(2)
    [ DRF_avg_compl_time ] = obtain_compl_time( output_folder, DRF_compl_files, INTERACTIVE_QUEUE);  
    
    
-   baseline = DRF_avg_compl_time;
-   yVals = baseline./speedfair_avg_compl_time;
+   baseline = DRF_avg_compl_time(1:length(xVals));
+   yVals = baseline./speedfair_avg_compl_time(1:length(xVals));
    plot(xVals*100,yVals , workloadLineStyles{i}, 'LineWidth',LineWidth);
    hold on;
    if max(yVals) > Y_MAX
@@ -130,7 +136,7 @@ if plots(2)
   legendStr=workloads;
 
   legend(legendStr,'Location','north','FontSize',fontLegend,'Orientation','horizontal');
-  set (gcf, 'Units', 'Inches', 'Position', figSizeOneCol, 'PaperUnits', 'inches', 'PaperPosition', figSizeOneCol);
+  set (gcf, 'Units', 'Inches', 'Position', figureSize, 'PaperUnits', 'inches', 'PaperPosition', figureSize);
   xlabel(xLabel,'FontSize',fontAxis);
   ylabel(yLabel,'FontSize',fontAxis);
   ylim([0 Y_MAX]);
@@ -138,7 +144,7 @@ if plots(2)
    
    if is_printed
        figIdx=figIdx +1;
-      fileNames{figIdx} = 'sen_analysis_est_err';
+      fileNames{figIdx} = 'sen_analysis_est_err_b';
       epsFile = [ LOCAL_FIG fileNames{figIdx} '.eps'];
         print ('-depsc', epsFile);
    end
@@ -153,7 +159,7 @@ return;
 for i=1:length(fileNames)
     fileName = fileNames{i};
     epsFile = [ LOCAL_FIG fileName '.eps'];
-    pdfFile = [ LOCAL_FIG fileName '.pdf'];    
+    pdfFile = [ fig_path fileName '.pdf'];    
     cmd = sprintf(PS_CMD_FORMAT, epsFile, pdfFile);
     status = system(cmd);
 end

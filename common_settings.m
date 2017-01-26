@@ -19,6 +19,7 @@ figSizeTwoCol = 2*figSizeOneCol;
 figSizeOneThirdCol = 1/3*figSizeOneCol;
 figSizeHalfCol = 1/2*figSizeOneCol;
 figSizeTwothirdCol = 2/3*figSizeOneCol;
+figSizeFourFifthCol = 4/5*figSizeOneCol;
 
 %%
 
@@ -52,7 +53,7 @@ strDRFW = 'DRF-W';
 strStrict = 'SP';
 strProposed = 'BPF';
 
-strEstimationErr = 'estimation errors [%]';
+strEstimationErr = 'std. of estimation errors [%]';
 strFactorImprove = 'factor of improvement';
 strAvgComplTime = 'avg. compl. (secs)';
 

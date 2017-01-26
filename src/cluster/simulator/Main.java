@@ -77,6 +77,7 @@ public class Main {
                                                             // separately from
     public static double SMALL_JOB_DUR_THRESHOLD = 40.0;
     public static double LARGE_JOB_MAX_DURATION = 0.0;
+    public static double LONG_DURATION_TASK_TOBE_REMOVED = -1.0;
 
     public static String DIST_FILE = "dist_gen/poissrnd.csv";
 
@@ -573,7 +574,7 @@ public class Main {
       }
     }
 
-    Globals.runmode = Runmode.EstimationErrors;
+    Globals.runmode = Runmode.MultipleBurstyQueues;
 
     if (args.length >= 2) {
       String stRunmode = args[1];
@@ -598,15 +599,16 @@ public class Main {
     // Globals.runmode = Runmode.TrialRun;
     if (Globals.runmode.equals(Runmode.SingleRun)) {
       Globals.SIM_END_TIME = 800.0;
+      Globals.NUM_DIMENSIONS = 2;
       // Globals.METHOD = Method.DRFW;
       // Globals.METHOD = Method.Strict;
       // Globals.METHOD = Method.DRF;
       Globals.METHOD = Method.SpeedFair;
       // Globals.SIM_END_TIME = 1000000;
       Globals.NUM_MACHINES = 1;
-      Globals.MACHINE_MAX_RESOURCE = 1000;
+      Globals.MACHINE_MAX_RESOURCE = 40;
       Globals.numBatchQueues = 1;
-      Globals.numBurstyQueues = 3;
+      Globals.numBurstyQueues = 1;
       Globals.numBatchJobs = 100;
       // Globals.SCALE_UP_BATCH_JOB = 1;
       Globals.DEBUG_LOCAL = true;
@@ -618,15 +620,16 @@ public class Main {
           "=================================================================");
       System.out.println("Run METHOD: " + Globals.METHOD + " with "
           + Globals.numBatchQueues + " batch queues.");
-      runSimulationScenario(false);
+      runSimulationScenario(true);
       System.out.println();
     } else if (Globals.runmode.equals(Runmode.MultipleBurstyQueues)) {
       // Globals.DEBUG_START = 100.0;
       // Globals.DEBUG_END = 250.0;
       Globals.SIM_END_TIME = 800.0;
+//      Globals.LONG_DURATION_TASK_TOBE_REMOVED = 20;
 
       Method[] methods = { Method.DRF, Method.Strict, Method.SpeedFair };
-      // Method[] methods = { Method.SpeedFair};
+//       Method[] methods = { Method.SpeedFair};
       Globals.NUM_MACHINES = 1;
       Globals.MACHINE_MAX_RESOURCE = 1000;
       Globals.numBatchQueues = 1;

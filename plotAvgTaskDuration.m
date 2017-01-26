@@ -4,6 +4,9 @@ common_settings;
 workloads = {'BB', 'TPC-DS','TPC-H'};
 worloadFolders = {'BB', 'TPCDS', 'TPCH'};
 
+fig_path = ['../EuroSys17/fig/'];
+
+
 % workloads = {'BB'};
 % worloadFolders = {''};
 
@@ -30,7 +33,8 @@ if false
                       'SpeedFair-output_t8.0x.csv'};  
     xVals = scaleUps;
 elseif true
-  avgDuration = [2.0, 4.0, 6.0, 8.0, 10.0, 15.0, 20.0, 30.0, 40.0, 60.0, 80.0, 100.0];
+%   avgDuration = [2.0, 4.0, 6.0, 8.0, 10.0, 15.0, 20.0, 30.0, 40.0, 60.0, 80.0, 100.0];
+    avgDuration = [2.0, 4.0, 6.0, 8.0, 10.0, 15.0, 20.0, 30.0, 40.0, 60.0, 80.0];
     speedfair_compl_files = {
                       'SpeedFair-output_avg2.0.csv';
                       'SpeedFair-output_avg4.0.csv';
@@ -45,6 +49,7 @@ elseif true
                       'SpeedFair-output_avg80.0.csv';
                       'SpeedFair-output_avg100.0.csv'};
   xVals = avgDuration;
+
 elseif false
   avgDuration = [2.0, 6.0, 10.0, 15.0, 100.0];
     speedfair_compl_files = {
@@ -68,7 +73,8 @@ figIdx = 0;
 
 
 plots  = [true, false];
-
+% figureSize = figSizeTwothirdCol;
+figureSize = figSizeFourFifthCol;
 if plots(1) 
    INTERACTIVE_QUEUE = 'bursty';
    
@@ -80,16 +86,16 @@ if plots(1)
    
    [ speedfair_avg_compl_time ] = obtain_compl_time( output_folder, speedfair_compl_files, INTERACTIVE_QUEUE);  
    
-   plot(xVals, speedfair_avg_compl_time,  workloadLineStyles{i}, 'LineWidth',LineWidth);
+   plot(xVals, speedfair_avg_compl_time(1:length(xVals)),  workloadLineStyles{i}, 'LineWidth',LineWidth);
    hold on;
   end
-  xLabel='average task duration';
-  ylim([0 100]);
-  yLabel='time (seconds)';
+  xLabel='average task duration (secs)';
+  ylim([0 90]);
+  yLabel=strAvgComplTime;
   legendStr=workloads;
 
-  legend(legendStr,'Location','northoutside','FontSize',fontLegend,'Orientation','horizontal');
-  set (gcf, 'Units', 'Inches', 'Position', figSizeOneCol, 'PaperUnits', 'inches', 'PaperPosition', figSizeOneCol);
+  legend(legendStr,'Location','south','FontSize',fontLegend,'Orientation','horizontal');
+  set (gcf, 'Units', 'Inches', 'Position', figureSize, 'PaperUnits', 'inches', 'PaperPosition', figureSize);
   xlabel(xLabel,'FontSize',fontAxis);
   ylabel(yLabel,'FontSize',fontAxis);
   set(gca,'FontSize',fontAxis);
@@ -111,7 +117,7 @@ return;
 for i=1:length(fileNames)
     fileName = fileNames{i};
     epsFile = [ LOCAL_FIG fileName '.eps'];
-    pdfFile = [ LOCAL_FIG fileName '.pdf'];    
+    pdfFile = [ fig_path fileName '.pdf'];    
     cmd = sprintf(PS_CMD_FORMAT, epsFile, pdfFile);
     status = system(cmd);
 end

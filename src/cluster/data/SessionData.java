@@ -512,14 +512,14 @@ public class SessionData {
   public static double LQ0StartTime = 50.0;
   public static double[] LQ0AlphaDurations = { 27.0, 27.0, 27.0, 27.0, 27.0,
       27.0, 27.0, 27.0, 27.0, 27.0 };
-  static double LQ0Period = 200.0;
+  static double LQ0Period = 150.0;
   public static double[] LQ0Periods = { LQ0Period, LQ0Period, LQ0Period,
       LQ0Period, LQ0Period };
 
   // LQ-1
   static int LQ1numOfJobs = 150;
   public static double LQ1StartTime = 100.0;
-  static double LQ1Period = 150.0;
+  static double LQ1Period = 100.0;
   public static double[] LQ1Periods = { LQ1Period, LQ1Period, LQ1Period,
       LQ1Period, LQ1Period, LQ1Period, LQ1Period, LQ1Period, LQ1Period,
       LQ1Period, };
@@ -547,7 +547,7 @@ public class SessionData {
 
   static int errLQnumOfJobs = 150;
   public static double errLQStartTime = 200.0;
-  public static double errLQPeriod = 350.0;
+  public static double errLQPeriod = 300; //350.0;
   public static double[] errLQPeriods = { errLQPeriod, errLQPeriod, errLQPeriod,
       errLQPeriod, errLQPeriod };
 
@@ -1262,7 +1262,7 @@ public class SessionData {
     }
 
     if (Globals.runmode.equals(Globals.Runmode.MultipleBurstyQueues)) {
-      sessionsArray[0] = new Session(LQ0AlphaDurations.length, alphas,
+      sessionsArray[0] = new Session(LQ0numOfJobs, alphas,
           alphaDurations, LQ0StartTime, LQ0Period);
       sessionsArray[1] = new Session(LQ1numOfJobs, alphas, alphaDurations,
           LQ1StartTime, LQ1Period);

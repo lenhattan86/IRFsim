@@ -170,6 +170,17 @@ public abstract class BaseDag implements Cloneable {
     }
     return complTime;
   }
+  
+  public double getLongestTaskDuration(){
+    double maxTaskDur = 0.0;
+    for (Map.Entry<String, Stage> entry : this.stages.entrySet()) {
+      Stage stage = entry.getValue();
+//      System.out.print(stage.name+ " "+ temp +",");
+      if (maxTaskDur < stage.vDuration)
+        maxTaskDur = stage.vDuration;
+    }
+    return maxTaskDur;
+  }
 
   private double minCompletionTime(Stage stage) {
 //    String stageName = "";

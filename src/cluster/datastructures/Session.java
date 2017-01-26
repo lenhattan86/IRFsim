@@ -80,6 +80,7 @@ public class Session {
         return i;
       startPeriodTime = endPeriodTime;
     }
+    System.err.println("[Sesssion] Increase the number of jobs");
     return idx;
   }
   
@@ -104,7 +105,7 @@ public class Session {
     double startPeriodTime = this.startTime;
     for (int i=0; i<this.numOfJobs; i++){
       double endPeriodTime = startPeriodTime + this.periods[i];
-      if(currTime>=startPeriodTime && currTime<=endPeriodTime)
+      if(currTime>=startPeriodTime && currTime<endPeriodTime)
         return startPeriodTime;
       startPeriodTime = endPeriodTime;
     }

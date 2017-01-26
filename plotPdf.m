@@ -13,6 +13,8 @@ workloads  = {'BB', 'TPC-DS', 'TPC-H'};
 fig_path = ['/home/tanle/projects/EuroSys17/fig/'];
 plots = [ false true]
 
+figSize = figSizeFourFifthCol;
+
 %% PDF
 if(plots(1))
   % inputFile = 'pdf/queries_bb_FB_distr.csv'; workload='BB';
@@ -40,7 +42,7 @@ if(plots(1))
   yLabel='Number of tasks';
 
 
-  set (gcf, 'Units', 'Inches', 'Position', figSizeTwothirdCol, 'PaperUnits', 'inches', 'PaperPosition', figSizeTwothirdCol);
+  set (gcf, 'Units', 'Inches', 'Position', figSize, 'PaperUnits', 'inches', 'PaperPosition', figSize);
   xlabel(xLabel,'FontSize',fontAxis);
   ylabel(yLabel,'FontSize',fontAxis);
   xlim([0 MAX_DUR]);
@@ -63,6 +65,7 @@ if(plots(2))
 
       [durations,num_tasks] = importAllTaskInfo(inputFile);
       allDurations = zeros(sum(num_tasks),1);
+      
 
       idx = 0;
       for i=1:length(num_tasks)
@@ -72,6 +75,10 @@ if(plots(2))
         end
       end
       allDurations = allDurations(allDurations<MAX_DUR);
+      
+      mean(allDurations)
+%       std(allDurations)
+
 
       [f,x]=ecdf(allDurations);
       plot(x,f, workloadLineStyles{wIdx},'LineWidth',LineWidth);
@@ -83,7 +90,6 @@ if(plots(2))
   xLabel='task duration (secs)';
   yLabel='cdf';
 
-  figSize = figSizeOneCol;
   set (gcf, 'Units', 'Inches', 'Position', figSize, 'PaperUnits', 'inches', 'PaperPosition', figSize);
   xlabel(xLabel,'FontSize',fontAxis);
   ylabel(yLabel,'FontSize',fontAxis);
