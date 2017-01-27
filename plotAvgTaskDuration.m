@@ -89,8 +89,8 @@ if plots(1)
    plot(xVals, speedfair_avg_compl_time(1:length(xVals)),  workloadLineStyles{i}, 'LineWidth',LineWidth);
    hold on;
   end
-  xLabel='average task duration (secs)';
-  ylim([0 90]);
+  xLabel='avg. task duration of TQ jobs (secs)';
+  ylim([0 130]);
   yLabel=strAvgComplTime;
   legendStr=workloads;
 

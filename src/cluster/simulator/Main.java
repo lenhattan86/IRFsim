@@ -640,14 +640,14 @@ public class Main {
     } else if (Globals.runmode.equals(Runmode.MultipleBurstyQueues)) {
       // Globals.DEBUG_START = 100.0;
       // Globals.DEBUG_END = 250.0;
-      Globals.SIM_END_TIME = 800.0;
-      // Globals.LONG_DURATION_TASK_TOBE_REMOVED = 50;
+//      Globals.SIM_END_TIME = 800.0;
+      Globals.LARGE_JOB_MAX_DURATION = 50;
+//       Globals.LONG_DURATION_TASK_TOBE_REMOVED = 50;
 
-      Method[] methods = { Method.DRF, Method.DRF_Reject, Method.Strict,
-          Method.Strict_Reject, Method.SpeedFair, Method.SpeedFair_drf,
-          Method.Hard, Method.Hard_drf };
-//      Method[] methods = { Method.SpeedFair, Method.SpeedFair_drf,
+//      Method[] methods = { Method.DRF, Method.DRF_Reject, Method.Strict,
+//          Method.Strict_Reject, Method.SpeedFair, Method.SpeedFair_drf,
 //          Method.Hard, Method.Hard_drf };
+      Method[] methods = { Method.DRF, Method.Strict, Method.SpeedFair_drf, Method.Hard_drf };
       // Method[] methods = { Method.SpeedFair,Method.HardGuarantee};
       // Method[] methods = { Method.HardGuarantee};
 //       Method[] methods = { Method.DRF, Method.SpeedFair};

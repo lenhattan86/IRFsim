@@ -15,6 +15,7 @@ cluster_size = 1000;
 
 % figureSize = [1 1 2/3 2/3].* figSizeOneCol;
 figureSize = [1 1 4/5 4/5].* figSizeOneCol;
+legendSize = [1 1 4/5 1] .* legendSize;
 
 enableSeparateLegend = true;
 
@@ -31,7 +32,8 @@ fig_path = ['../EuroSys17/fig/'];
 % result_folder = 'result/20161008/long/';  STEP_TIME = 1.0; output_sufix = 'long-interactive/';
 % result_folder = 'result/20161008/short_m/'; STEP_TIME = 1.0; output_sufix = 'short_m/';
 
-% result_folder = ['result/20170105/' workload '/']; STEP_TIME = 1.0; output_sufix = '';
+%result_folder = ['result/20170105/' workload '/']; STEP_TIME = 1.0; output_sufix = '';
+% result_folder = ['result/20170127_multi/' workload '/'];
 
 
 %%
@@ -55,7 +57,7 @@ output_sufix = 'short/'; STEP_TIME = 1.0;
 %%
 %DRF,DRF-W, Strict,SpeedFair,hard, DRF_reject, Strict Reject,
 %SpeedFair_drf, hard_drf
-plots=[true, false, false, true, false, false, false, false, false]; 
+plots=[true, false, true, false, false, false, false, true, true]; 
 % plots=[false, false, false, true, true]; %DRF, DRF-W,Strict,SpeedFair,hard
 logfolder = [result_folder 'log/'];
 
@@ -654,7 +656,7 @@ return;
 %%
 fileNames
 for i=1:length(fileNames)
-    fileName = fileNames{i};
+    fileName = fileNames{i}
     epsFile = [ LOCAL_FIG fileName '.eps'];
     pdfFile = [ fig_path fileName '.pdf'];    
     cmd = sprintf(PS_CMD_FORMAT, epsFile, pdfFile);

@@ -52,6 +52,7 @@ strDRF = 'DRF';
 strDRFW = 'DRF-W';
 strStrict = 'SP';
 strProposed = 'BPF';
+strHard = 'NA'; %
 
 strEstimationErr = 'std. of estimation errors [%]';
 strFactorImprove = 'factor of improvement';
@@ -63,9 +64,9 @@ lineStrict = '+:';
 lineDRF = '-.';
 lineDRFW = '--';
 
-lineBB = '-c';
-lineTPCDS = '--b';
-lineTPCH = '-.r';
+lineBB = '-';
+lineTPCDS = '--';
+lineTPCH = '-.';
 workloadLineStyles = {lineBB, lineTPCDS, lineTPCH};
 
 %%

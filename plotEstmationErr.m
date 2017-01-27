@@ -63,10 +63,10 @@ figIdx = 0;
 %%
 
 
-plots  = [true, false];
+plots  = [true, true];
 
 if plots(1) 
-  Y_MAX = 90;
+  Y_MAX = 150;
     INTERACTIVE_QUEUE = 'bursty';
    
     figure;

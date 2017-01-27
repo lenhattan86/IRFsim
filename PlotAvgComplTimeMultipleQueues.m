@@ -1,7 +1,7 @@
 addpath('matlab_func');
 common_settings;
 
-workload='BB_demo';
+workload='BB';
 % workload='TPCDS';
 % workload='TPCH';
 
@@ -14,27 +14,27 @@ result_folder = '';
 
 
 %%
-% xlabels = {'LQ-0', 'LQ-1','LQ-2','TQ-0'}; 
-% queues = {'bursty0','bursty1','bursty2','batch0'};
-xlabels = {'LQ-0', 'LQ-1','LQ-2'};
-queues = {'bursty0','bursty1','bursty2'};
+xlabels = {'LQ-0', 'LQ-1','LQ-2','TQ-0'}; 
+queues = {'bursty0','bursty1','bursty2','batch0'};
+% xlabels = {'LQ-0', 'LQ-1','LQ-2'};
+% queues = {'bursty0','bursty1','bursty2'};
 colorCellsExperiment = {colorDRF; colorStrict; colorProposed; colorhard};
 
-if false  
+if true  
   compl_files = {'DRF-output_3_1_1000.csv';
                  'Strict-output_3_1_1000.csv';
                  'SpeedFair_drf-output_3_1_1000.csv';
                  'Hard_drf-output_3_1_1000.csv';};  
                
-  methods = {'DRF','SP','BPF admit', 'Hard admit'};
+  methods = {'DRF','SP','BPF', 'Hard'};
   extra='admit';
-elseif true
+elseif false
   compl_files = {'DRF_Reject-output_3_1_1000.csv';
                   'Strict_Reject-output_3_1_1000.csv';
                   'SpeedFair-output_3_1_1000.csv';
                   'Hard-output_3_1_1000.csv';};  
                 
-  methods = {'DRF rej','SP rej','BPF', 'Hard'};
+  methods = {'DRF','SP','BPF', 'Hard'};
   extra='reject';
 elseif false
   compl_files = {'DRF-output_3_1_1000.csv';
@@ -68,7 +68,7 @@ figIdx = 0;
 %%
 % global batchJobRange
 % batchJobRange = [1:10]
-
+maxY = 900;
 queues_len = length(queues);
 plots  = [true, false];
 improvements = zeros(queues_len, 4);
@@ -80,7 +80,7 @@ if plots(1)
    scrsz = get(groot,'ScreenSize');   
    barChart = bar(avg_compl_times, 'group');
    
-   
+   maxVal = max(max(avg_compl_times));
    
    for i=1:length(barChart)
        barChart(i).FaceColor = colorCellsExperiment{i};
@@ -96,11 +96,11 @@ if plots(1)
 %     xlabel(xLabel,'FontSize',fontAxis);
     ylabel(yLabel,'FontSize',fontAxis);
     set(gca,'XTickLabel',xLabels,'FontSize',fontAxis);
-    ylim([0 130]);
+    ylim([0 max(maxY,maxVal)]);
    
    if is_printed
        figIdx=figIdx +1;
-      fileNames{figIdx} = 'interactive_compl_time';
+      fileNames{figIdx} = 'avg_multi_queues';
       epsFile = [ LOCAL_FIG fileNames{figIdx} '.eps'];
         print ('-depsc', epsFile);
    end
