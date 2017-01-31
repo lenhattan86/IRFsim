@@ -63,10 +63,6 @@ public class DRFScheduler implements Scheduler {
 			Collections.sort((List<BaseDag>) q.getRunningJobs(), new JobArrivalComparator());
 		}
 		
-		if (Globals.METHOD.equals(Method.DRF_Reject)
-        || Globals.METHOD.equals(Method.Strict_Reject))
-		  Simulator.QUEUE_LIST.removeRunningQueue("bursty2");
-
 		onlineDRFShare(clusterTotCapacity, Simulator.QUEUE_LIST.getRunningQueues());
 	}
 	

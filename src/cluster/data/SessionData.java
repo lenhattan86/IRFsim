@@ -519,7 +519,8 @@ public class SessionData {
   // LQ-1
   static int LQ1numOfJobs = 1500;
   public static double LQ1StartTime = 100.0;
-  static double LQ1Period = 100.0;
+//  static double LQ1Period = 100.0;
+  static double LQ1Period = 110.0;
   public static double[] LQ1Periods = { LQ1Period, LQ1Period, LQ1Period,
       LQ1Period, LQ1Period, LQ1Period, LQ1Period, LQ1Period, LQ1Period,
       LQ1Period, };

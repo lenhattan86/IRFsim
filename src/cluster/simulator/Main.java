@@ -89,7 +89,7 @@ public class Main {
     public static int SCALE_UP_FACTOR = 1;
 
     public static enum Method {
-      DRF, DRF_Reject, DRFW, SpeedFair, SpeedFair_drf, Hard, Hard_drf, Strict, Strict_Reject
+      DRF, DRFW, SpeedFair, Strict
     }
 
     public static enum QueueSchedulerPolicy {
@@ -341,30 +341,15 @@ public class Main {
     if (Globals.METHOD.equals(Method.DRF)) {
       Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.DRF;
       Globals.FileOutput = "DRF-output" + extraName + ".csv";
-    } else if (Globals.METHOD.equals(Method.DRF_Reject)) {
-      Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.DRF;
-      Globals.FileOutput = "DRF_Reject-output" + extraName + ".csv";
     } else if (Globals.METHOD.equals(Method.SpeedFair)) {
       Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.SpeedFair;
       Globals.FileOutput = "SpeedFair-output" + extraName + ".csv";
-    } else if (Globals.METHOD.equals(Method.SpeedFair_drf)) {
-      Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.SpeedFair;
-      Globals.FileOutput = "SpeedFair_drf-output" + extraName + ".csv";
     } else if (Globals.METHOD.equals(Method.DRFW)) {
       Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.DRF;
       Globals.FileOutput = "DRF-W-output" + extraName + ".csv";
     } else if (Globals.METHOD.equals(Method.Strict)) {
       Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.DRF;
       Globals.FileOutput = "Strict-output" + extraName + ".csv";
-    } else if (Globals.METHOD.equals(Method.Strict_Reject)) {
-      Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.DRF;
-      Globals.FileOutput = "Strict_Reject-output" + extraName + ".csv";
-    } else if (Globals.METHOD.equals(Method.Hard)) {
-      Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.SpeedFair;
-      Globals.FileOutput = "Hard-output" + extraName + ".csv";
-    } else if (Globals.METHOD.equals(Method.Hard_drf)) {
-      Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.SpeedFair;
-      Globals.FileOutput = "Hard_drf-output" + extraName + ".csv";
     } else {
       System.err.println("Error! test case");
       return;
@@ -640,18 +625,17 @@ public class Main {
     } else if (Globals.runmode.equals(Runmode.MultipleBurstyQueues)) {
       // Globals.DEBUG_START = 100.0;
       // Globals.DEBUG_END = 250.0;
-//      Globals.SIM_END_TIME = 800.0;
+      Globals.SIM_END_TIME = 800.0;
       Globals.LARGE_JOB_MAX_DURATION = 50;
 //       Globals.LONG_DURATION_TASK_TOBE_REMOVED = 50;
 
 //      Method[] methods = { Method.DRF, Method.DRF_Reject, Method.Strict,
 //          Method.Strict_Reject, Method.SpeedFair, Method.SpeedFair_drf,
 //          Method.Hard, Method.Hard_drf };
-      Method[] methods = { Method.DRF, Method.Strict, Method.SpeedFair_drf, Method.Hard_drf };
-      // Method[] methods = { Method.SpeedFair,Method.HardGuarantee};
+//      Method[] methods = { Method.DRF, Method.Strict, Method.SpeedFair_drf, Method.Hard_drf };
       // Method[] methods = { Method.HardGuarantee};
 //       Method[] methods = { Method.DRF, Method.SpeedFair};
-//      Method[] methods = { Method.SpeedFair};
+      Method[] methods = { Method.SpeedFair};
       Globals.NUM_MACHINES = 1;
       Globals.MACHINE_MAX_RESOURCE = 1000;
       Globals.numBatchQueues = 1;

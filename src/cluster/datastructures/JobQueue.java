@@ -176,7 +176,7 @@ public class JobQueue {
   // getters & setters
   public double getWeight() {
     double res = weight;
-    if (isLQ && (Globals.METHOD.equals(Method.Strict) || Globals.METHOD.equals(Method.Strict_Reject)))
+    if (isLQ && (Globals.METHOD.equals(Method.Strict)))
       res = Globals.STRICT_WEIGHT;
     else if (isLQ && Globals.METHOD.equals(Method.DRFW))
       res = Globals.DRFW_weight;

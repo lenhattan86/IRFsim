@@ -34,8 +34,6 @@ public class SpeedFairScheduler2_v1 implements Scheduler {
   private boolean enableSoftGuarantee = true;
 
   public SpeedFairScheduler2_v1() {
-    if(Globals.METHOD.equals(Globals.Method.Hard))
-      enableSoftGuarantee = true;
     
     clusterTotCapacity = Simulator.cluster.getClusterMaxResAlloc();
     schedulePolicy = "SpeedFair";
