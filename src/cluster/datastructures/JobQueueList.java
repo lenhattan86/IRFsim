@@ -174,7 +174,7 @@ public class JobQueueList {
       	  
       	  if (Globals.METHOD.equals(Method.DRFW)) {
             queue.setWeight(Globals.DRFW_weight);
-          } else if(Globals.METHOD.equals(Method.Strict)){
+          } else if(Globals.METHOD.equals(Method.SP)){
             queue.setWeight(Globals.STRICT_WEIGHT);
           }
       	  for(int i=0; i<numOfJobs; i++){

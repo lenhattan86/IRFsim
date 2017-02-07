@@ -36,7 +36,7 @@ public class QueueScheduler {
 		case DRF:
 			scheduler = new DRFScheduler();
 			break;
-		case SpeedFair:
+		case BPF:
 			scheduler = new BPFScheduler();
 			break;
 		default:

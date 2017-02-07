@@ -36,7 +36,7 @@ LOCAL_FIG = 'figs/';
 PS_CMD_FORMAT='ps2pdf -dEmbedAllFonts#true -dSubsetFonts#true -dEPSCrop#false -dPDFSETTINGS#/prepress %s %s';
 
 % fig_path = ['figs/'];
-fig_path = ['../../EuroSys17/fig/'];
+fig_path = LOCAL_FIG;
 
 %%
 

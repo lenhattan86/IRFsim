@@ -77,7 +77,7 @@ public class DRFScheduler implements Scheduler {
     for (JobQueue queue : runningQueues) {
       Resource normalizedShare = Resources.divideVector(queue.getResourceUsage(),
           clusterTotCapacity);
-      if (queue.isLQ && Globals.METHOD.equals(Method.Strict))
+      if (queue.isLQ && Globals.METHOD.equals(Method.SP))
         auxilaryShare[i] = -Double.MAX_VALUE;
       else
         auxilaryShare[i] = 0.0;
@@ -146,7 +146,7 @@ public class DRFScheduler implements Scheduler {
 		for (JobQueue queue : runningQueues) {
 			Resource normalizedShare = Resources.divideVector(queue.getResourceUsage(),
 			    Simulator.cluster.getClusterMaxResAlloc());
-			if (queue.isLQ && Globals.METHOD.equals(Method.Strict))
+			if (queue.isLQ && Globals.METHOD.equals(Method.SP))
 				auxilaryShare[i] = -1.0;
 			else
 				auxilaryShare[i] = 0.0;
@@ -156,7 +156,7 @@ public class DRFScheduler implements Scheduler {
 		while (true) {
 			// step 1: pick user i with lowest s_i
 			int sMinIdx = Utils.getMinValIdx(userDominantShareArr);
-			if(Globals.METHOD.equals(Method.Strict)){
+			if(Globals.METHOD.equals(Method.SP)){
 				double minVal = Double.MAX_VALUE;
 				int minIdx = -1;
 				for (int idx=0; idx<auxilaryShare.length; idx++){
@@ -223,7 +223,7 @@ public class DRFScheduler implements Scheduler {
 		for (JobQueue q : runningQueues) {
 			// 1. compute it's avg. resource demand vector it not already computed
 			Resource avgResDemandDag = q.getMaxDemand();
-			if (!Globals.METHOD.equals(Method.Strict)) // workaround for Strict
+			if (!Globals.METHOD.equals(Method.SP)) // workaround for Strict
 				avgResDemandDag.divide(factor);
 
 			// 2. normalize every dimension to the total capacity of the cluster
@@ -231,7 +231,7 @@ public class DRFScheduler implements Scheduler {
 
 			// 3. scale the resource demand vector to the max resource
 			avgResDemandDag.divide(avgResDemandDag.max());
-			if (!Globals.METHOD.equals(Method.Strict)) // workaround for Strict
+			if (!Globals.METHOD.equals(Method.SP)) // workaround for Strict
 				avgResDemandDag.multiply(q.getWeight());
 			else {
 				double ratio = Utils.round(q.getWeight() / factor, 3);

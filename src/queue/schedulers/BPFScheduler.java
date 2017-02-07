@@ -28,6 +28,8 @@ public class BPFScheduler implements Scheduler {
   private Queue<JobQueue> softGuaranteeQueues = null;
   private Queue<JobQueue> elasticQueues = null;
   private Queue<JobQueue> rejectedQueues = null;
+  
+  boolean enableSoftGuarantee = true;
 
   private String schedulePolicy;
 
@@ -41,6 +43,11 @@ public class BPFScheduler implements Scheduler {
     softGuaranteeQueues = new LinkedList<JobQueue>();
     elasticQueues = new LinkedList<JobQueue>();
     rejectedQueues = new LinkedList<JobQueue>();
+    
+    if(Globals.METHOD.equals(Method.N_BPF))
+      enableSoftGuarantee = false;
+    else
+      enableSoftGuarantee = true;
   }
 
   @Override
@@ -240,7 +247,7 @@ public class BPFScheduler implements Scheduler {
           Output.debugln(DEBUG, "[BPFScheduler] admit " + q.getQueueName() + " to hardGuaranteeQueues at "
               + Simulator.CURRENT_TIME);
         } else {
-          if (isFair) {
+          if (isFair && enableSoftGuarantee) {
             softGuaranteeQueues.add(q);
             Output.debugln(DEBUG, "[BPFScheduler] admit " + q.getQueueName() + "  to softGuaranteeQueues at "
                 + Simulator.CURRENT_TIME);

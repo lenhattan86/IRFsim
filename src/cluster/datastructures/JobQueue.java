@@ -176,7 +176,7 @@ public class JobQueue {
   // getters & setters
   public double getWeight() {
     double res = weight;
-    if (isLQ && (Globals.METHOD.equals(Method.Strict)))
+    if (isLQ && (Globals.METHOD.equals(Method.SP)))
       res = Globals.STRICT_WEIGHT;
     else if (isLQ && Globals.METHOD.equals(Method.DRFW))
       res = Globals.DRFW_weight;
@@ -249,11 +249,11 @@ public class JobQueue {
     if(!isLQ)
       return true;
 
-    if (!Globals.METHOD.equals(Globals.Method.SpeedFair)
+    if (!Globals.METHOD.equals(Globals.Method.BPF)
         && this.runningJobs.size() > 0)
       return true;
 
-    if (isLQ && Globals.METHOD.equals(Globals.Method.SpeedFair)) {
+    if (isLQ && Globals.METHOD.equals(Globals.Method.BPF)) {
       return this.getStartTime() <= Simulator.CURRENT_TIME
           && this.session.getEndTime() > Simulator.CURRENT_TIME;
     }
@@ -269,7 +269,7 @@ public class JobQueue {
     if (!isLQ && this.runningJobs.size() > 0)
       return true;
 
-    if (isLQ && Globals.METHOD.equals(Globals.Method.SpeedFair)) {
+    if (isLQ && Globals.METHOD.equals(Globals.Method.BPF)) {
       // return (session!=null) && isInStage1(currTime);
       return this.getStartTime() <= currTime;
     }

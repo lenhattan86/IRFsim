@@ -87,13 +87,14 @@ public class Main {
     public static boolean DEBUG_LOCAL = true;
 
     public static int SCALE_UP_FACTOR = 1;
-
+    
+    // SP: Strict Priority, BPF: Bounded Priority Fairness
     public static enum Method {
-      DRF, DRFW, SpeedFair, Strict
+      DRF, DRFW, BPF, SP, N_BPF
     }
 
     public static enum QueueSchedulerPolicy {
-      Fair, DRF, SpeedFair
+      Fair, DRF, BPF
     };
 
     public static QueueSchedulerPolicy QUEUE_SCHEDULER = QueueSchedulerPolicy.DRF;
@@ -134,7 +135,7 @@ public class Main {
     public static double MACHINE_MAX_RESOURCE;
     // public static int DagIdStart, DagIdEnd;
 
-    public static Method METHOD = Method.SpeedFair;
+    public static Method METHOD = Method.BPF;
     public static double DRFW_weight = 4.0;
     public static double STRICT_WEIGHT = (Double.MAX_VALUE / 100.0);
     // public static double STRICT_WEIGHT = 100000.00;
@@ -180,8 +181,7 @@ public class Main {
     public static String User1Input = DataFolder + "/" + FileInput;
     public static String User2Input = DataFolder + "/" + FileInput;
 
-    public static int numBurstyQueues = 1, numBurstyJobPerQueue = 25,
-        numInteractiveTask = 0;
+    public static int numBurstyQueues = 1, numBurstyJobPerQueue = 25, numInteractiveTask = 0;
     public static int numBatchJobs = 200;
     public static int numBatchQueues = 1;
     public static int numbatchTask = 10000;
@@ -287,10 +287,8 @@ public class Main {
         Globals.numBurstyJobPerQueue = 25;
         Globals.STEP_TIME = 1.0;
         Globals.USE_TRACE = false;
-        Globals.numInteractiveTask = (int) ((int) 20 * NUM_MACHINES
-            * MACHINE_MAX_RESOURCE);
-        Globals.numbatchTask = (int) ((int) 50 * NUM_MACHINES
-            * MACHINE_MAX_RESOURCE);
+        Globals.numInteractiveTask = (int) ((int) 20 * NUM_MACHINES * MACHINE_MAX_RESOURCE);
+        Globals.numbatchTask = (int) ((int) 50 * NUM_MACHINES * MACHINE_MAX_RESOURCE);
         break;
       default:
         Globals.numBatchJobs = 30;
@@ -299,13 +297,12 @@ public class Main {
 
       Globals.CAPACITY = Globals.MACHINE_MAX_RESOURCE * Globals.NUM_MACHINES;
 
-      double scaleUp = (double) (Globals.NUM_MACHINES
-          * Globals.MACHINE_MAX_RESOURCE) / (double) Globals.TRACE_CLUSTER_SIZE;
+      double scaleUp = (double) (Globals.NUM_MACHINES * Globals.MACHINE_MAX_RESOURCE)
+          / (double) Globals.TRACE_CLUSTER_SIZE;
 
       Globals.SCALE_UP_BATCH_JOB = Math.floor((double) 1 * scaleUp);
 
-      Globals.SCALE_UP_BURSTY_JOB = Globals.SCALE_UP_BURSTY_JOB_DEFAULT
-          * scaleUp;
+      Globals.SCALE_UP_BURSTY_JOB = Globals.SCALE_UP_BURSTY_JOB_DEFAULT * scaleUp;
     }
 
   }
@@ -316,62 +313,57 @@ public class Main {
 
     long tStart = System.currentTimeMillis();
     String extraName = "";
-    String extra = Globals.SCALE_UP_FACTOR > 1
-        ? "_" + Globals.SCALE_UP_FACTOR + "x" : "";
+    String extra = Globals.SCALE_UP_FACTOR > 1 ? "_" + Globals.SCALE_UP_FACTOR + "x" : "";
 
     if (Globals.runmode == Runmode.ScaleUpBurstyJobs) {
       extraName = "_s" + Globals.SCALE_UP_BURSTY_JOB / 50;
 
-    } else if (Globals.runmode == Runmode.ScaleBatchTaskDuration
-        || Globals.runmode == Runmode.AvgTaskDuration
+    } else if (Globals.runmode == Runmode.ScaleBatchTaskDuration || Globals.runmode == Runmode.AvgTaskDuration
         || Globals.runmode == Runmode.EstimationErrors) {
       extraName = Globals.EXTRA;
     } else
-      extraName = "_" + Globals.numBurstyQueues + "_" + Globals.numBatchQueues
-          + '_' + (int) Globals.MACHINE_MAX_RESOURCE;
+      extraName = "_" + Globals.numBurstyQueues + "_" + Globals.numBatchQueues + '_'
+          + (int) Globals.MACHINE_MAX_RESOURCE;
 
     Globals.DataFolder = "input_gen";
-    Globals.FileInput = "jobs_input_" + Globals.numBurstyQueues + '_'
-        + Globals.numBatchQueues + '_' + (int) Globals.MACHINE_MAX_RESOURCE
-        + '_' + Globals.workload + extra + Globals.EXTRA + ".txt";
-    Globals.QueueInput = "queue_input_" + Globals.numBurstyQueues + '_'
-        + Globals.numBatchQueues + '_' + (int) Globals.MACHINE_MAX_RESOURCE
-        + '_' + Globals.workload + Globals.EXTRA + ".txt";
+    Globals.FileInput = "jobs_input_" + Globals.numBurstyQueues + '_' + Globals.numBatchQueues + '_'
+        + (int) Globals.MACHINE_MAX_RESOURCE + '_' + Globals.workload + extra + Globals.EXTRA + ".txt";
+    Globals.QueueInput = "queue_input_" + Globals.numBurstyQueues + '_' + Globals.numBatchQueues + '_'
+        + (int) Globals.MACHINE_MAX_RESOURCE + '_' + Globals.workload + Globals.EXTRA + ".txt";
 
     if (Globals.METHOD.equals(Method.DRF)) {
       Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.DRF;
       Globals.FileOutput = "DRF-output" + extraName + ".csv";
-    } else if (Globals.METHOD.equals(Method.SpeedFair)) {
-      Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.SpeedFair;
+    } else if (Globals.METHOD.equals(Method.BPF) ) {
+      Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.BPF;
       Globals.FileOutput = "SpeedFair-output" + extraName + ".csv";
+    } else if (Globals.METHOD.equals(Method.N_BPF) ) {
+      Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.BPF;
+      Globals.FileOutput = "Hard-output" + extraName + ".csv";
     } else if (Globals.METHOD.equals(Method.DRFW)) {
       Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.DRF;
       Globals.FileOutput = "DRF-W-output" + extraName + ".csv";
-    } else if (Globals.METHOD.equals(Method.Strict)) {
+    } else if (Globals.METHOD.equals(Method.SP)) {
       Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.DRF;
       Globals.FileOutput = "Strict-output" + extraName + ".csv";
     } else {
-      System.err.println("Error! test case");
+      System.err.println("[Main] Error! test case");
       return;
     }
 
     Globals.PathToInputFile = Globals.DataFolder + "/" + Globals.FileInput;
-    Globals.PathToQueueInputFile = Globals.DataFolder + "/"
-        + Globals.QueueInput;
+    Globals.PathToQueueInputFile = Globals.DataFolder + "/" + Globals.QueueInput;
     Globals.PathToOutputFile = Globals.outputFolder + "/" + Globals.FileOutput;
     Globals.PathToResourceLog = "log" + "/" + Globals.FileOutput;
 
     if (Globals.IS_GEN) {
       if (Globals.USE_TRACE) {
-        Queue<BaseDag> tracedJobs = GenInput
-            .readWorkloadTrace(Globals.TRACE_FILE);
-        GenInput.genInputFromWorkload(Globals.numBurstyQueues,
-            Globals.numBurstyJobPerQueue, Globals.numInteractiveTask,
+        Queue<BaseDag> tracedJobs = GenInput.readWorkloadTrace(Globals.TRACE_FILE);
+        GenInput.genInputFromWorkload(Globals.numBurstyQueues, Globals.numBurstyJobPerQueue, Globals.numInteractiveTask,
             Globals.numBatchQueues, Globals.numBatchJobs, tracedJobs);
       } else
-        GenInput.genInput(Globals.numBurstyQueues, Globals.numBurstyJobPerQueue,
-            Globals.numInteractiveTask, Globals.numBatchQueues,
-            Globals.numBatchJobs);
+        GenInput.genInput(Globals.numBurstyQueues, Globals.numBurstyJobPerQueue, Globals.numInteractiveTask,
+            Globals.numBatchQueues, Globals.numBatchJobs);
     }
 
     // print ALL parameters for the record
@@ -404,14 +396,12 @@ public class Main {
     simulator.simulateMultiQueues();
     System.out.println("\nEnd simulation ...");
     long duration = System.currentTimeMillis() - tStart;
-    System.out
-        .print("========== " + (duration / (1000)) + " seconds ==========\n");
+    System.out.print("========== " + (duration / (1000)) + " seconds ==========\n");
   }
 
   public static void runDynamicQueueNumber() {
     long tStart = System.currentTimeMillis();
-    String extraName = "u" + Globals.USER1_MAX_Q_NUM + "_u"
-        + Globals.USER2_MAX_Q_NUM;
+    String extraName = "u" + Globals.USER1_MAX_Q_NUM + "_u" + Globals.USER2_MAX_Q_NUM;
 
     if (Globals.PRED_MODE == Globals.PredMode.PerfectPrediction) {
       Globals.FileOutput = "_output" + extraName + "_perfect" + ".csv";
@@ -432,16 +422,13 @@ public class Main {
     Globals.QueueInput = "queue_input_" + extraName + ".txt";
 
     Globals.PathToInputFile = Globals.DataFolder + "/" + Globals.FileInput;
-    Globals.PathToQueueInputFile = Globals.DataFolder + "/"
-        + Globals.QueueInput;
+    Globals.PathToQueueInputFile = Globals.DataFolder + "/" + Globals.QueueInput;
     Globals.PathToOutputFile = Globals.outputFolder + "/" + Globals.FileOutput;
     Globals.PathToResourceLog = "log" + "/" + Globals.FileOutput;
 
     if (Globals.IS_GEN) {
-      Queue<BaseDag> tracedJobs = GenInput
-          .readWorkloadTrace(Globals.TRACE_FILE);
-      GenInput.genInputFromWorkload(Globals.USER1_MAX_Q_NUM,
-          Globals.USER2_MAX_Q_NUM, Globals.JOB_NUM_PER_QUEUE_CHANGE,
+      Queue<BaseDag> tracedJobs = GenInput.readWorkloadTrace(Globals.TRACE_FILE);
+      GenInput.genInputFromWorkload(Globals.USER1_MAX_Q_NUM, Globals.USER2_MAX_Q_NUM, Globals.JOB_NUM_PER_QUEUE_CHANGE,
           tracedJobs);
     }
 
@@ -465,8 +452,7 @@ public class Main {
     simulator.simulateDynamicQueues();
     System.out.println("\nEnd simulation ...");
     long duration = System.currentTimeMillis() - tStart;
-    System.out
-        .print("========== " + (duration / (1000)) + " seconds ==========\n");
+    System.out.print("========== " + (duration / (1000)) + " seconds ==========\n");
   }
 
   public static void freeMemory() {
@@ -481,7 +467,6 @@ public class Main {
 
   public static Globals.WorkLoadType workloadMenu() {
     Globals.WorkLoadType workload = null;
-
     String[] workloads = { "BB", "TPC-DS", "TPC-H" };
     System.out.println("Please select the workload type from: ");
     showMenu(workloads);
@@ -603,7 +588,7 @@ public class Main {
       // Globals.METHOD = Method.DRFW;
       // Globals.METHOD = Method.Strict;
       // Globals.METHOD = Method.DRF;
-      Globals.METHOD = Method.SpeedFair;
+      Globals.METHOD = Method.BPF;
       // Globals.SIM_END_TIME = 1000000;
       Globals.NUM_MACHINES = 1;
       Globals.MACHINE_MAX_RESOURCE = 40;
@@ -616,33 +601,27 @@ public class Main {
 
       Globals.setupParameters(Globals.SetupMode.ShortInteractive, 1);
 
-      System.out.println(
-          "=================================================================");
-      System.out.println("Run METHOD: " + Globals.METHOD + " with "
-          + Globals.numBatchQueues + " batch queues.");
+      System.out.println("=================================================================");
+      System.out.println("Run METHOD: " + Globals.METHOD + " with " + Globals.numBatchQueues + " batch queues.");
       runSimulationScenario(true);
       System.out.println();
     } else if (Globals.runmode.equals(Runmode.MultipleBurstyQueues)) {
       // Globals.DEBUG_START = 100.0;
       // Globals.DEBUG_END = 250.0;
       Globals.SIM_END_TIME = 800.0;
+      Globals.NUM_DIMENSIONS = 2;
       Globals.LARGE_JOB_MAX_DURATION = 50;
-//       Globals.LONG_DURATION_TASK_TOBE_REMOVED = 50;
+       Globals.LONG_DURATION_TASK_TOBE_REMOVED = 50;
 
-//      Method[] methods = { Method.DRF, Method.DRF_Reject, Method.Strict,
-//          Method.Strict_Reject, Method.SpeedFair, Method.SpeedFair_drf,
-//          Method.Hard, Method.Hard_drf };
-//      Method[] methods = { Method.DRF, Method.Strict, Method.SpeedFair_drf, Method.Hard_drf };
-      // Method[] methods = { Method.HardGuarantee};
-//       Method[] methods = { Method.DRF, Method.SpeedFair};
-      Method[] methods = { Method.SpeedFair};
+       Method[] methods = { Method.DRF, Method.SP, Method.BPF, Method.N_BPF};
+//      Method[] methods = {Method.BPF};
       Globals.NUM_MACHINES = 1;
-      Globals.MACHINE_MAX_RESOURCE = 1000;
+//      Globals.MACHINE_MAX_RESOURCE = 40; 
       Globals.numBatchQueues = 1;
       Globals.numBurstyQueues = 3;
       Globals.numBatchJobs = 100;
-//      Globals.DEBUG_LOCAL = true;
-//      Globals.workload = Globals.WorkLoadType.BB;
+      // Globals.DEBUG_LOCAL = true;
+      // Globals.workload = Globals.WorkLoadType.BB;
 
       for (int i = 0; i < methods.length; i++) {
         // Trigger garbage collection to clean up memory.
@@ -651,10 +630,6 @@ public class Main {
 
         Globals.METHOD = methods[i];
 
-        /*if (Globals.METHOD.equals(Method.DRF_Reject)
-            || Globals.METHOD.equals(Method.Strict_Reject))
-          Globals.numBurstyQueues = 2;*/
-
         Globals.setupParameters(Globals.SetupMode.ShortInteractive, 1);
 
         if (i == 0)
@@ -662,24 +637,22 @@ public class Main {
         else
           Globals.IS_GEN = false;
 
-        System.out.println(
-            "=================================================================");
-        System.out.println("Run METHOD: " + Globals.METHOD + " with "
-            + Globals.numBatchQueues + " batch queues.");
+        System.out.println("=================================================================");
+        System.out.println("Run METHOD: " + Globals.METHOD + " with " + Globals.numBatchQueues + " batch queues.");
         runSimulationScenario(false);
         System.out.println();
       }
 
     } else if (Globals.runmode.equals(Runmode.MultipleBatchQueueRun)) {
 
-      /*
-       * Globals.NUM_DIMENSIONS = 2; Globals.workload =
-       * Globals.WorkLoadType.TPC_H; Globals.MACHINE_MAX_RESOURCE = 40;
-       */
+      
+       Globals.NUM_DIMENSIONS = 2; 
+       Globals.workload = Globals.WorkLoadType.BB; 
+       Globals.MACHINE_MAX_RESOURCE = 1;
+      
 
       Globals.SetupMode mode = Globals.SetupMode.ShortInteractive;
-      Method[] methods = { Method.DRF, Method.DRFW, Method.Strict,
-          Method.SpeedFair };
+      Method[] methods = { Method.DRF, Method.SP, Method.BPF };
       int[] batchQueueNums = { 1, 2, 4, 8, 16, 32 };
 
       Globals.setupParameters(mode, 1);
@@ -697,13 +670,10 @@ public class Main {
 
           Globals.METHOD = methods[i];
           Globals.numBatchQueues = batchQueueNums[j];
-          System.out.println(
-              "=================================================================");
-          System.out.println("Run METHOD: " + Globals.METHOD + " with "
-              + Globals.numBatchQueues + " batch queues.");
+          System.out.println("=================================================================");
+          System.out.println("Run METHOD: " + Globals.METHOD + " with " + Globals.numBatchQueues + " batch queues.");
           runSimulationScenario(true);
-          System.out.println(
-              "==================================================================");
+          System.out.println("==================================================================");
         }
       }
     } else if (Globals.runmode.equals(Runmode.EstimateDemand)) {
@@ -720,19 +690,15 @@ public class Main {
       Globals.METHOD = Method.DRF;
       Globals.numBatchQueues = 0;
       Globals.numBurstyQueues = 1;
-      System.out.println(
-          "=================================================================");
-      System.out.println("Run METHOD: " + Globals.METHOD + " with "
-          + Globals.numBatchQueues + " batch queues.");
+      System.out.println("=================================================================");
+      System.out.println("Run METHOD: " + Globals.METHOD + " with " + Globals.numBatchQueues + " batch queues.");
       runSimulationScenario(false);
-      System.out.println(
-          "==================================================================");
+      System.out.println("==================================================================");
     } else if (Globals.runmode.equals(Runmode.ScaleUpBurstyJobs)) {
       Globals.SetupMode mode = Globals.SetupMode.LongInteractive;
       Globals.numBatchQueues = 8;
 
-      Method[] methods = { Method.DRF, Method.DRFW, Method.Strict,
-          Method.SpeedFair };
+      Method[] methods = { Method.DRF, Method.DRFW, Method.SP, Method.BPF };
       int[] scaleFactors = { 1, 2, 4, 6, 8, 10 };
 
       for (int j = 0; j < scaleFactors.length; j++) {
@@ -746,20 +712,16 @@ public class Main {
             Globals.IS_GEN = false;
 
           Globals.METHOD = methods[i];
-          System.out.println(
-              "=================================================================");
-          System.out.println("Run METHOD: " + Globals.METHOD
-              + " with scale-up factor= " + scaleFactors[j]);
+          System.out.println("=================================================================");
+          System.out.println("Run METHOD: " + Globals.METHOD + " with scale-up factor= " + scaleFactors[j]);
           runSimulationScenario(false);
-          System.out.println(
-              "==================================================================");
+          System.out.println("==================================================================");
         }
       }
     } else if (Globals.runmode.equals(Runmode.AvgTaskDuration)) {
       Globals.STEP_TIME = 1.0;
       Globals.SetupMode mode = Globals.SetupMode.ShortInteractive;
-      double[] avgTaskDurations = { 2.0, 4.0, 6.0, 8.0, 10.0, 15.0, 20.0, 30.0,
-          40.0, 60.0, 80.0, 100.0 };
+      double[] avgTaskDurations = { 2.0, 4.0, 6.0, 8.0, 10.0, 15.0, 20.0, 30.0, 40.0, 60.0, 80.0, 100.0 };
       // double[] avgTaskDurations = {2.0, 6.0, 10.0, 15.0, 100.0};
       // double[] avgTaskDurations = { 4.0, 8.0, 20, 30, 40, 60, 80, 100.0};
       // double[] avgTaskDurations = {2.0};
@@ -768,7 +730,7 @@ public class Main {
       // Globals.SCALE_UP_BURSTY_JOB = 50*20;
 
       Globals.MACHINE_MAX_RESOURCE = 1000;
-      Globals.METHOD = Method.SpeedFair;
+      Globals.METHOD = Method.BPF;
       Globals.setupParameters(mode, 1);
 
       Globals.numBatchQueues = 8; // previously 4 in the paper.
@@ -785,22 +747,17 @@ public class Main {
         System.out.println("[INFO] Wait for garbage collectors ...");
         freeMemory();
         Globals.EXTRA = "_avg" + avgTaskDurations[i] + "";
-        System.out.println(
-            "=================================================================");
-        System.out.println("Run METHOD: " + Globals.METHOD
-            + " with avg task duration= " + Globals.AVG_TASK_DURATION);
-        System.out.println("Run METHOD: " + Globals.METHOD + " with "
-            + Globals.numBatchQueues + " batch queues.");
+        System.out.println("=================================================================");
+        System.out.println("Run METHOD: " + Globals.METHOD + " with avg task duration= " + Globals.AVG_TASK_DURATION);
+        System.out.println("Run METHOD: " + Globals.METHOD + " with " + Globals.numBatchQueues + " batch queues.");
         runSimulationScenario(false);
-        System.out.println(
-            "==================================================================");
+        System.out.println("==================================================================");
       }
     } else if (Globals.runmode.equals(Runmode.ScaleBatchTaskDuration)) {
       Globals.SetupMode mode = Globals.SetupMode.ShortInteractive;
-      double[] scaleUps = { 1.0 / 32.0, 1.0 / 16.0, 1.0 / 8.0, 1.0 / 4.0,
-          1.0 / 2.0, 1, 2, 4, 8, 16, 32 };
-      Method[] methods = { Method.DRF, Method.SpeedFair };
-      Globals.METHOD = Method.SpeedFair;
+      double[] scaleUps = { 1.0 / 32.0, 1.0 / 16.0, 1.0 / 8.0, 1.0 / 4.0, 1.0 / 2.0, 1, 2, 4, 8, 16, 32 };
+      Method[] methods = { Method.DRF, Method.BPF };
+      Globals.METHOD = Method.BPF;
       Globals.numBatchQueues = 8;
       Globals.setupParameters(mode, 1);
       Globals.IS_GEN = true;
@@ -815,15 +772,11 @@ public class Main {
         System.out.println("[INFO] Wait for garbage collectors ...");
         freeMemory();
         Globals.EXTRA = "_t" + Globals.SCALE_BATCH_DURATION + "x";
-        System.out.println(
-            "=================================================================");
-        System.out.println("Run METHOD: " + Globals.METHOD
-            + " with scale-up factor= " + Globals.SCALE_BATCH_DURATION);
-        System.out.println("Run METHOD: " + Globals.METHOD + " with "
-            + Globals.numBatchQueues + " batch queues.");
+        System.out.println("=================================================================");
+        System.out.println("Run METHOD: " + Globals.METHOD + " with scale-up factor= " + Globals.SCALE_BATCH_DURATION);
+        System.out.println("Run METHOD: " + Globals.METHOD + " with " + Globals.numBatchQueues + " batch queues.");
         runSimulationScenario(false);
-        System.out.println(
-            "==================================================================");
+        System.out.println("==================================================================");
       }
     } else if (Globals.runmode.equals(Runmode.EstimationErrors)) {
       // Globals.DEBUG_START = 200+2*SessionData.errLQPeriod;
@@ -841,7 +794,7 @@ public class Main {
       // Globals.MACHINE_MAX_RESOURCE = 100;
       // Globals.workload = Globals.WorkLoadType.BB;
 
-      Method[] methods = { Method.DRF, Method.SpeedFair };
+      Method[] methods = { Method.DRF, Method.BPF };
       // Method[] methods = { Method.SpeedFair };
       // Method[] methods = { Method.Strict };
 
@@ -865,15 +818,11 @@ public class Main {
           System.out.println("[INFO] Wait for garbage collectors ...");
           freeMemory();
 
-          System.out.println(
-              "=================================================================");
-          System.out.println("Run METHOD: " + Globals.METHOD
-              + " with EstimationErrors= " + Globals.EXTRA);
-          System.out.println("Run METHOD: " + Globals.METHOD + " with "
-              + Globals.numBatchQueues + " batch queues.");
+          System.out.println("=================================================================");
+          System.out.println("Run METHOD: " + Globals.METHOD + " with EstimationErrors= " + Globals.EXTRA);
+          System.out.println("Run METHOD: " + Globals.METHOD + " with " + Globals.numBatchQueues + " batch queues.");
           runSimulationScenario(false);
-          System.out.println(
-              "==================================================================");
+          System.out.println("==================================================================");
         }
       }
     } else if (Globals.runmode.equals(Runmode.TrialRun)) {
@@ -891,11 +840,9 @@ public class Main {
       Globals.SIM_END_TIME = 10000;
       Globals.user2_q_nums = QueueData.QUEUE_NUM_FB;
 
-      Globals.JOB_NUM_PER_QUEUE_CHANGE = (int) (10 * Globals.User2QueueInterval
-          / 100);
+      Globals.JOB_NUM_PER_QUEUE_CHANGE = (int) (10 * Globals.User2QueueInterval / 100);
       Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.DRF;
-      Globals.PredMode[] predModes = { PredMode.PerfectPrediction,
-          PredMode.GoodPrediction, PredMode.WrongPrediction,
+      Globals.PredMode[] predModes = { PredMode.PerfectPrediction, PredMode.GoodPrediction, PredMode.WrongPrediction,
           PredMode.StaticPrediction };
       // Globals.PredMode[] predModes = {PredMode.PerfectPrediction,
       // PredMode.GoodPrediction };
@@ -904,13 +851,11 @@ public class Main {
         Globals.PRED_MODE = predModes[i];
         Globals.IS_GEN = true;
         Globals.setupParameters(SetupMode.others, 1);
-        System.out.println(
-            "=================================================================");
+        System.out.println("=================================================================");
         System.out.println("Run Queue Scheduler: " + Globals.QUEUE_SCHEDULER);
         System.out.println("Run PredMode: " + Globals.PRED_MODE);
         runDynamicQueueNumber();
-        System.out.println(
-            "==================================================================");
+        System.out.println("==================================================================");
       }
     } else {
       int numberOfServers = 1;
@@ -925,8 +870,7 @@ public class Main {
 
       Globals.setupParameters(Globals.SetupMode.ShortInteractive, 1);
 
-      Globals.SCALE_UP_BURSTY_JOB = Globals.SCALE_UP_FACTOR
-          * Globals.SCALE_UP_BURSTY_JOB;
+      Globals.SCALE_UP_BURSTY_JOB = Globals.SCALE_UP_FACTOR * Globals.SCALE_UP_BURSTY_JOB;
 
       Globals.numBatchQueues = 8;
       Globals.numBurstyQueues = 1;

@@ -18,13 +18,13 @@ xlabels = {'LQ-0', 'LQ-1','LQ-2','TQ-0'};
 queues = {'bursty0','bursty1','bursty2','batch0'};
 % xlabels = {'LQ-0', 'LQ-1','LQ-2'};
 % queues = {'bursty0','bursty1','bursty2'};
-colorCellsExperiment = {colorDRF; colorStrict; colorProposed; colorhard};
+colorCellsExperiment = {colorDRF; colorStrict; colorhard; colorProposed};
 
 if true  
   compl_files = {'DRF-output_3_1_1000.csv';
-                 'Strict-output_3_1_1000.csv';
-                 'SpeedFair_drf-output_3_1_1000.csv';
-                 'Hard_drf-output_3_1_1000.csv';};  
+                 'Strict-output_3_1_1000.csv';                 
+                 'Hard_drf-output_3_1_1000.csv';
+                 'SpeedFair_drf-output_3_1_1000.csv';};  
                
   methods = {'DRF','SP','BPF', 'Hard'};
   extra='admit';
@@ -91,7 +91,7 @@ if plots(1)
     legendStr=methods;
 
     xLabels=xlabels;
-    legend(legendStr,'Location','northoutside','FontSize',fontLegend,'Orientation','horizontal');
+    legend(legendStr,'Location','northwest','FontSize',fontLegend,'Orientation','horizontal');
     set (gcf, 'Units', 'Inches', 'Position', figSizeOneCol, 'PaperUnits', 'inches', 'PaperPosition', figSizeOneCol);
 %     xlabel(xLabel,'FontSize',fontAxis);
     ylabel(yLabel,'FontSize',fontAxis);
