@@ -4,7 +4,7 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
 
-import cluster.datastructures.BaseDag;
+import cluster.datastructures.BaseJob;
 import cluster.datastructures.JobQueue;
 import cluster.datastructures.Resource;
 import cluster.datastructures.Resources;
@@ -67,8 +67,8 @@ public class FairScheduler implements Scheduler {
 			q.receivedResourcesList.add(q.getRsrcQuota());
 
 			Resource remain = q.getRsrcQuota();
-			Queue<BaseDag> runningJobs = q.getRunningJobs();
-			for (BaseDag job : runningJobs) {
+			Queue<BaseJob> runningJobs = q.getRunningJobs();
+			for (BaseJob job : runningJobs) {
 				Resource rsShare = Resources.divide(q.getRsrcQuota(), q.runningJobsSize());
 //				rsShare.floor();
 				job.rsrcQuota = rsShare;
@@ -81,13 +81,13 @@ public class FairScheduler implements Scheduler {
 	}
 	
 	private void shareRemainRes(JobQueue q, Resource remain){ // utilize more resource
-		Queue<BaseDag> runningJobs = q.cloneRunningJobs();
+		Queue<BaseJob> runningJobs = q.cloneRunningJobs();
 		while (true) {
 			if (runningJobs.isEmpty() || remain.isEmpty()){
 				break;
 			}
-			Queue<BaseDag> jobs = new LinkedList<BaseDag>(runningJobs);
-			for (BaseDag job: jobs){
+			Queue<BaseJob> jobs = new LinkedList<BaseJob>(runningJobs);
+			for (BaseJob job: jobs){
 				if (remain.isEmpty())
 					break;
 				

@@ -69,13 +69,13 @@ public class JobQueueList {
 		queue.addRunnableJob(newJob);
 	}*/
 	
-	public void addRunningJob2Queue(BaseDag newJob, String queueName) {
+	public void addRunningJob2Queue(BaseJob newJob, String queueName) {
 		JobQueue queue = getJobQueue(queueName);
 		queue.addRunningJob(newJob);
 //		queue.removeRunnableJob(newJob);
 	}
 	
-	public void addCompletionJob2Queue(BaseDag newJob, String queueName) {
+	public void addCompletionJob2Queue(BaseJob newJob, String queueName) {
 		JobQueue queue = getJobQueue(queueName);
 		queue.removeRunningJob(newJob);
 		queue.addCompletedJob(newJob);
@@ -174,9 +174,8 @@ public class JobQueueList {
       	  
       	  if (Globals.METHOD.equals(Method.DRFW)) {
             queue.setWeight(Globals.DRFW_weight);
-          } else if(Globals.METHOD.equals(Method.SP)){
-            queue.setWeight(Globals.STRICT_WEIGHT);
-          }
+          } 
+      	  
       	  for(int i=0; i<numOfJobs; i++){
       	    args = br.readLine().split(" ");
       	    if(args.length!=(2+Globals.NUM_DIMENSIONS))

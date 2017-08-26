@@ -1,6 +1,6 @@
 package cluster.sharepolicies;
 
-import cluster.datastructures.BaseDag;
+import cluster.datastructures.BaseJob;
 import cluster.datastructures.Resource;
 import cluster.datastructures.Resources;
 import cluster.simulator.Simulator;
@@ -29,7 +29,7 @@ public class FairSharePolicy extends SharePolicy {
         numJobsRunning);
 
     // update the resourceShareAllocated for every running job
-    for (BaseDag job : Simulator.runningJobs) {
+    for (BaseJob job : Simulator.runningJobs) {
       job.rsrcQuota = quotaRsrcShare;
       // Output.debugln(DEBUG,"Allocated to job:" + job.dagId + " share:"
       // + job.rsrcQuota);

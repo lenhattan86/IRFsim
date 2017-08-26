@@ -7,7 +7,7 @@ import java.util.Iterator;
 
 import cluster.cluster.Cluster;
 import cluster.datastructures.Resource;
-import cluster.datastructures.StageDag;
+import cluster.datastructures.MLJob;
 import cluster.simulator.Simulator;
 import cluster.utils.Output;
 
@@ -20,7 +20,7 @@ public class YarnSchedPolicy extends SchedPolicy {
 	}
 
 	@Override
-	public void schedule(final StageDag dag) { // TODO: add preemption
+	public void schedule(final MLJob dag) { // TODO: add preemption
 
 		if (dag.runnableTasks.isEmpty())
 			return;
@@ -69,7 +69,7 @@ public class YarnSchedPolicy extends SchedPolicy {
 	}
 
 	@Override
-	public double planSchedule(StageDag dag, Resource leftOverResources) {
+	public double planSchedule(MLJob dag, Resource leftOverResources) {
 		return -1;
 	}
 

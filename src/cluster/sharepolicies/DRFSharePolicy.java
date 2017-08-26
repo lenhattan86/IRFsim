@@ -3,10 +3,10 @@ package cluster.sharepolicies;
 import java.util.HashMap;
 import java.util.Map;
 
-import cluster.datastructures.BaseDag;
+import cluster.datastructures.BaseJob;
 import cluster.datastructures.Resource;
 import cluster.datastructures.Resources;
-import cluster.datastructures.StageDag;
+import cluster.datastructures.MLJob;
 import cluster.simulator.Simulator;
 import cluster.simulator.Main.Globals;
 
@@ -40,10 +40,10 @@ public class DRFSharePolicy extends SharePolicy {
       return;
     }
 
-    for (BaseDag job : Simulator.runningJobs) {
+    for (BaseJob job : Simulator.runningJobs) {
       if (!resDemandsDags.containsKey(job.dagId)) {
         // 1. compute it's avg. resource demand vector it not already computed
-        Resource avgResDemandDag = ((StageDag) job).totalResourceDemand();
+        Resource avgResDemandDag = ((MLJob) job).totalResourceDemand();
         avgResDemandDag.divide(job.allTasks().size());
 
         // 2. normalize every dimension to the total capacity of the cluster
@@ -57,7 +57,7 @@ public class DRFSharePolicy extends SharePolicy {
 
     // 4. sum it up across every dimension
     Resource sumDemandsRunDags = new Resource(0.0);
-    for (BaseDag job : Simulator.runningJobs) {
+    for (BaseJob job : Simulator.runningJobs) {
       sumDemandsRunDags.addWith(resDemandsDags.get(job.dagId));
     }
 
@@ -65,7 +65,7 @@ public class DRFSharePolicy extends SharePolicy {
     double drfShare = Globals.MACHINE_MAX_RESOURCE / sumDemandsRunDags.max();
 
     // 6. update the resource quota for every running job
-    for (BaseDag job : Simulator.runningJobs) {
+    for (BaseJob job : Simulator.runningJobs) {
       Resource jobDRFQuota = Resources.clone(resDemandsDags.get(job.dagId));
       jobDRFQuota.multiply(drfShare);
       job.rsrcQuota = jobDRFQuota;

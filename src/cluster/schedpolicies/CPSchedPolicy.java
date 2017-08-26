@@ -7,7 +7,7 @@ import java.util.Iterator;
 
 import cluster.cluster.Cluster;
 import cluster.datastructures.Resource;
-import cluster.datastructures.StageDag;
+import cluster.datastructures.MLJob;
 
 /**
  * CP scheduling class
@@ -21,7 +21,7 @@ public class CPSchedPolicy extends SchedPolicy {
   }
 
   @Override
-  public void schedule(final StageDag dag) {
+  public void schedule(final MLJob dag) {
 
     // no tasks to be scheduled -> skip
     if (dag.runnableTasks.isEmpty())
@@ -73,7 +73,7 @@ public class CPSchedPolicy extends SchedPolicy {
   }
 
   @Override
-  public double planSchedule(StageDag dag, Resource leftOverResources) {
+  public double planSchedule(MLJob dag, Resource leftOverResources) {
     return -1;
   }
 }

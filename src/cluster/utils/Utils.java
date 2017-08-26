@@ -11,9 +11,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
-import cluster.datastructures.BaseDag;
-import cluster.datastructures.Stage;
-import cluster.datastructures.StageDag;
+import cluster.datastructures.BaseJob;
+import cluster.datastructures.SubGraph;
+import cluster.datastructures.MLJob;
+import cluster.datastructures.Resource;
 import cluster.simulator.Main.Globals;
 
 public class Utils {
@@ -31,9 +32,9 @@ public class Utils {
   public static void generateTrace() {
 
     int numJobs = 5000;
-    Map<Integer, BaseDag> inputJobsMap = new HashMap<Integer, BaseDag>();
-    Queue<BaseDag> inputJobs = StageDag.readDags(Globals.PathToInputFile);
-    for (BaseDag dag : inputJobs) {
+    Map<Integer, BaseJob> inputJobsMap = new HashMap<Integer, BaseJob>();
+    Queue<BaseJob> inputJobs = MLJob.readDags(Globals.PathToInputFile);
+    for (BaseJob dag : inputJobs) {
       inputJobsMap.put(dag.dagId, dag);
     }
     int numInputDags = inputJobs.size();
@@ -47,11 +48,11 @@ public class Utils {
         // for every time step
         int nextDagIdx = r.pickRandomInt(numInputDags);
         //take a random DAG and write it to file with next dag ID
-        BaseDag nextDag = inputJobsMap.get(nextDagIdx);
+        BaseJob nextDag = inputJobsMap.get(nextDagIdx);
         nextDag.dagId = nextDagId;
         nextDag.arrivalTime = time;
         nextDagId++;
-        Utils.writeDagToFile((StageDag)nextDag, true);
+        Utils.writeDagToFile((MLJob)nextDag, true);
       }
     }
     else {
@@ -60,10 +61,10 @@ public class Utils {
         // for every time step
         int nextDagIdx = r.pickRandomInt(numInputDags);
         //take a random DAG and write it to file with next dag ID
-        BaseDag nextDag = inputJobsMap.get(nextDagIdx);
+        BaseJob nextDag = inputJobsMap.get(nextDagIdx);
         nextDag.dagId = nextDagId;
         nextDagId++;
-        Utils.writeDagToFile((StageDag)nextDag, false);
+        Utils.writeDagToFile((MLJob)nextDag, false);
         numJobs--;
       }
     }
@@ -91,7 +92,7 @@ public class Utils {
     return timeline;
   }
 
-  public static void writeDagToFile(StageDag dag, boolean considerTimeDistr) {
+  public static void writeDagToFile(MLJob dag, boolean considerTimeDistr) {
     File file = new File(Globals.DataFolder+"/"+Globals.FileOutput);
     try {
       BufferedWriter bw = new BufferedWriter(new FileWriter(file, true));
@@ -102,7 +103,7 @@ public class Utils {
       else {
         bw.write(dag.stages.size()+" "+dag.dagId+" "+"\n");
       }
-      for (Stage stage : dag.stages.values()) {
+      for (SubGraph stage : dag.stages.values()) {
         bw.write(stage.name+" "+stage.vDuration+" ");
         for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
           bw.write(stage.vDemands.resource(i)+" ");
@@ -110,11 +111,11 @@ public class Utils {
         bw.write(stage.vids.length()+"\n");
       }
       int numEdges = 0;
-      for (Stage stage : dag.stages.values()) {
+      for (SubGraph stage : dag.stages.values()) {
         numEdges += stage.children.size();
       }
       bw.write(numEdges+"\n");
-      for (Stage stage : dag.stages.values()) {
+      for (SubGraph stage : dag.stages.values()) {
         for (String child : stage.children.keySet()) {
           bw.write(stage.name+" "+child+" "+"ata"+"\n");
         }
@@ -148,6 +149,18 @@ public class Utils {
   		}
   	}
   	return idx;
+  }
+  
+  public static int getMinValIdx(Resource[] nonNegArray, int bottleneckId){
+    double minVal = Double.MAX_VALUE-1;
+    int idx = -1;
+    for (int i=0; i< nonNegArray.length; i++){
+      if (minVal > nonNegArray[i].resource(bottleneckId)){
+        minVal = nonNegArray[i].resource(bottleneckId);
+        idx = i;
+      }
+    }
+    return idx;
   }
   
   public static void createUserDir(final String dirName){

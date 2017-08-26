@@ -17,8 +17,8 @@ public class JobQueue {
   private static boolean DEBUG = false;
 
   // private Queue<BaseDag> runnableJobs; // Jobs are in the queue
-  private Queue<BaseDag> runningJobs;
-  public Queue<BaseDag> completedJobs;
+  private Queue<BaseJob> runningJobs;
+  public Queue<BaseJob> completedJobs;
 
   public Session session = null;
 
@@ -48,15 +48,15 @@ public class JobQueue {
   public JobQueue(String queueName) {
     this.queueName = queueName;
     // runnableJobs = new LinkedList<BaseDag>();
-    runningJobs = new LinkedList<BaseDag>();
-    completedJobs = new LinkedList<BaseDag>();
+    runningJobs = new LinkedList<BaseJob>();
+    completedJobs = new LinkedList<BaseJob>();
   }
 
   public JobQueue(String queueName, Session session) {
     this.queueName = queueName;
     // runnableJobs = new LinkedList<BaseDag>();
-    runningJobs = new LinkedList<BaseDag>();
-    completedJobs = new LinkedList<BaseDag>();
+    runningJobs = new LinkedList<BaseJob>();
+    completedJobs = new LinkedList<BaseJob>();
     this.session = session;
   }
 
@@ -77,7 +77,7 @@ public class JobQueue {
     }
 
     double avgTime = 0.0;
-    for (BaseDag job : completedJobs)
+    for (BaseJob job : completedJobs)
       avgTime += job.getCompletionTime();
     avgTime = avgTime / completedJobs.size();
 
@@ -99,7 +99,7 @@ public class JobQueue {
 
   public Resource getJobsQuota() {
     Resource res = new Resource();
-    for (BaseDag job : runningJobs) {
+    for (BaseJob job : runningJobs) {
       res.addWith(job.rsrcQuota);
     }
     return res;
@@ -144,7 +144,7 @@ public class JobQueue {
         (int) (Math.round(term / Globals.STEP_TIME)));
     resQuota = Resources.subtractPositivie(total, received);
     Resource resDemand = new Resource();
-    for (BaseDag job : runningJobs) {
+    for (BaseJob job : runningJobs) {
       resDemand = Resources.sum(resDemand, job.getMaxDemand());
     }
     return Resources.piecewiseMin(resQuota, resDemand);
@@ -152,7 +152,7 @@ public class JobQueue {
 
   public Resource getMaxDemand() {
     Resource resDemand = new Resource();
-    for (BaseDag job : runningJobs) {
+    for (BaseJob job : runningJobs) {
       resDemand = Resources.sum(resDemand, job.getMaxDemand());
     }
     return resDemand;
@@ -160,7 +160,7 @@ public class JobQueue {
 
   public Resource getResourceUsage() {
     Resource res = new Resource();
-    for (BaseDag job : this.runningJobs) {
+    for (BaseJob job : this.runningJobs) {
       res.addWith(job.getRsrcInUse());
     }
     return res;
@@ -176,12 +176,8 @@ public class JobQueue {
   // getters & setters
   public double getWeight() {
     double res = weight;
-    if (isLQ && (Globals.METHOD.equals(Method.SP)))
-      res = Globals.STRICT_WEIGHT;
-    else if (isLQ && Globals.METHOD.equals(Method.DRFW))
+    if (isLQ && Globals.METHOD.equals(Method.DRFW))
       res = Globals.DRFW_weight;
-    // else if(isInteractive && Globals.METHOD.equals(Method.SpeedFair))
-    // res = this.getSpeedFairWeight();
     return res;
   }
 
@@ -236,11 +232,11 @@ public class JobQueue {
    * }
    */
 
-  public void removeRunningJob(BaseDag newJob) {
+  public void removeRunningJob(BaseJob newJob) {
     this.runningJobs.remove(newJob);
   }
 
-  public void addCompletedJob(BaseDag newJob) {
+  public void addCompletedJob(BaseJob newJob) {
     this.completedJobs.add(newJob);
   }
 
@@ -248,15 +244,6 @@ public class JobQueue {
 //    if (!isLQ && this.runningJobs.size() > 0)
     if(!isLQ)
       return true;
-
-    if (!Globals.METHOD.equals(Globals.Method.BPF)
-        && this.runningJobs.size() > 0)
-      return true;
-
-    if (isLQ && Globals.METHOD.equals(Globals.Method.BPF)) {
-      return this.getStartTime() <= Simulator.CURRENT_TIME
-          && this.session.getEndTime() > Simulator.CURRENT_TIME;
-    }
 
     return false;
   }
@@ -269,14 +256,10 @@ public class JobQueue {
     if (!isLQ && this.runningJobs.size() > 0)
       return true;
 
-    if (isLQ && Globals.METHOD.equals(Globals.Method.BPF)) {
-      // return (session!=null) && isInStage1(currTime);
-      return this.getStartTime() <= currTime;
-    }
     return false;
   }
 
-  public Queue<BaseDag> getRunningJobs() {
+  public Queue<BaseJob> getRunningJobs() {
     return this.runningJobs;
   }
 
@@ -302,7 +285,7 @@ public class JobQueue {
     return res;
   }
 
-  public void addRunningJob(BaseDag newJob) {
+  public void addRunningJob(BaseJob newJob) {
     this.startTimeOfNewJob = Simulator.CURRENT_TIME;
     Output.debugln(DEBUG, this.queueName + " at " + this.startTimeOfNewJob);
     this.runningJobs.add(newJob);
@@ -320,9 +303,9 @@ public class JobQueue {
     this.startTimeOfNewJob = startTimeOfNewJob;
   }
 
-  public Queue<BaseDag> cloneRunningJobs() {
-    Queue<BaseDag> jobs = new LinkedList<BaseDag>();
-    for (BaseDag job : this.runningJobs)
+  public Queue<BaseJob> cloneRunningJobs() {
+    Queue<BaseJob> jobs = new LinkedList<BaseJob>();
+    for (BaseJob job : this.runningJobs)
       jobs.add(job);
     return jobs;
   }
@@ -333,8 +316,8 @@ public class JobQueue {
     return res;
   }
 
-  public BaseDag getUnallocRunningJob() {
-    for (BaseDag job : this.runningJobs)
+  public BaseJob getUnallocRunningJob() {
+    for (BaseJob job : this.runningJobs)
       if (!job.isFulllyAllocated()) {
         return job;
       }
@@ -344,7 +327,7 @@ public class JobQueue {
   public Resource assign(Resource assignedRes) {
     Resource remain = Resources.clone(assignedRes);
     while (true) {
-      BaseDag unallocJob = this.getUnallocRunningJob();
+      BaseJob unallocJob = this.getUnallocRunningJob();
       if (unallocJob == null) {
         return remain;
       }

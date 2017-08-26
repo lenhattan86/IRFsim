@@ -10,16 +10,16 @@ import java.util.Map;
 import java.util.Queue;
 
 import cluster.cluster.Cluster;
-import cluster.datastructures.BaseDag;
+import cluster.datastructures.BaseJob;
 import cluster.datastructures.JobQueue;
 import cluster.datastructures.Resource;
 import cluster.datastructures.Resources;
-import cluster.datastructures.StageDag;
+import cluster.datastructures.MLJob;
 import cluster.simulator.Simulator;
 import queue.schedulers.DRFScheduler;
+import queue.schedulers.EqualShareScheduler;
 import queue.schedulers.FairScheduler;
 import queue.schedulers.Scheduler;
-import queue.schedulers.BPFScheduler;
 import cluster.simulator.Main.Globals;
 
 public class QueueScheduler {
@@ -30,15 +30,12 @@ public class QueueScheduler {
 	public QueueScheduler() {
 	  
 		switch (Globals.QUEUE_SCHEDULER) {
-		case Fair:
-			scheduler = new FairScheduler();
-			break;
 		case DRF:
 			scheduler = new DRFScheduler();
 			break;
-		case BPF:
-			scheduler = new BPFScheduler();
-			break;
+		case EC:
+      scheduler = new EqualShareScheduler();
+      break;
 		default:
 			System.err.println("Unknown sharing policy");
 		}
@@ -53,7 +50,7 @@ public class QueueScheduler {
 		List<Integer> unhappyDagsIds = new ArrayList<Integer>();
 
 		final Map<Integer, Resource> unhappyDagsDistFromResShare = new HashMap<Integer, Resource>();
-		for (BaseDag dag : Simulator.runningJobs) {
+		for (BaseJob dag : Simulator.runningJobs) {
 			if (!dag.rsrcQuota.distinct(dag.getRsrcInUse())) {
 				continue;
 			}
@@ -81,7 +78,7 @@ public class QueueScheduler {
 			if (!availRes.greater(new Resource(0.0)))
 				break;
 
-			StageDag dag = Simulator.getDag(dagId);
+			MLJob dag = Simulator.getDag(dagId);
 
 			Resource rsrcReqTillShare = unhappyDagsDistFromResShare.get(dagId);
 

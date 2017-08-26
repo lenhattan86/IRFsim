@@ -1262,27 +1262,5 @@ public class SessionData {
       break;
     }
 
-    if (Globals.runmode.equals(Globals.Runmode.MultipleBurstyQueues)) {
-      sessionsArray[0] = new Session(LQ0numOfJobs, alphas,
-          alphaDurations, LQ0StartTime, LQ0Period);
-      sessionsArray[1] = new Session(LQ1numOfJobs, alphas, alphaDurations,
-          LQ1StartTime, LQ1Period);
-      sessionsArray[2] = new Session(LQ2numOfJobs, alphas, alphaDurations,
-          LQ2StartTime, LQ2Period);
-
-    } else if (Globals.runmode.equals(Globals.Runmode.MultipleBatchQueueRun)) {
-      sessionsArray[0] = new Session(LQnumOfJobs, alphas, alphaDurations,
-          LQStartTime, LQPeriod);
-    } else if (Globals.runmode.equals(Globals.Runmode.AvgTaskDuration)) {
-      sessionsArray[0] = new Session(simpleLQnumOfJobs, alphas, alphaDurations,
-          simpleLQStartTime, simpleLQPeriod);
-    } else if (Globals.runmode.equals(Globals.Runmode.EstimationErrors)) {
-      sessionsArray[0] = new Session(errLQnumOfJobs, alphas, alphaDurations,
-          errLQStartTime, errLQPeriod);
-    } else {
-      sessionsArray[0] = new Session(LQnumOfJobs, alphas, alphaDurations,
-          LQStartTime, LQPeriod);
-    }
-
   }
 }

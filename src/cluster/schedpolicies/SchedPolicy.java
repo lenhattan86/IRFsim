@@ -2,7 +2,7 @@ package cluster.schedpolicies;
 
 import cluster.cluster.Cluster;
 import cluster.datastructures.Resource;
-import cluster.datastructures.StageDag;
+import cluster.datastructures.MLJob;
 
 public abstract class SchedPolicy {
 	
@@ -14,7 +14,7 @@ public abstract class SchedPolicy {
     cluster = _cluster;
   }
 
-  public abstract void schedule(StageDag dag);
+  public abstract void schedule(MLJob dag);
 
-  public abstract double planSchedule(StageDag dag, Resource leftOverResources);
+  public abstract double planSchedule(MLJob dag, Resource leftOverResources);
 }

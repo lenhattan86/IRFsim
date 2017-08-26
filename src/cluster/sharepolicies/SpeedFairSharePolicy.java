@@ -3,7 +3,7 @@ package cluster.sharepolicies;
 import java.util.LinkedList;
 import java.util.Queue;
 
-import cluster.datastructures.BaseDag;
+import cluster.datastructures.BaseJob;
 import cluster.datastructures.Resource;
 import cluster.datastructures.Resources;
 import cluster.simulator.Simulator;
@@ -35,8 +35,8 @@ public class SpeedFairSharePolicy extends SharePolicy {
 
 		// update the resourceShareAllocated for every running job
 		// assign the resources based on service curves.
-		Queue<BaseDag> unhappyRunningJobs = new LinkedList<BaseDag>();
-		for (BaseDag job : Simulator.runningJobs) {
+		Queue<BaseJob> unhappyRunningJobs = new LinkedList<BaseJob>();
+		for (BaseJob job : Simulator.runningJobs) {
 			//TODO: change job.jobStartTime to job.jobStartRunningTime (dynamic for each job).
 			Resource guaranteedResource = job.serviceCurve.getMinReqService(Simulator.CURRENT_TIME-job.jobStartTime); 
 			Resource resToBeShared = Resources.subtractPositivie(guaranteedResource, job.receivedService);
@@ -56,14 +56,14 @@ public class SpeedFairSharePolicy extends SharePolicy {
 			Output.debugln(DEBUG, "number of unhappy jobs: " + numUnhappyJobs);
 			if (clusterResQuotaAvail.greater(new Resource(0))) {
 				Resource quotaRsrcShare = Resources.divide(clusterResQuotaAvail, unhappyRunningJobs.size());
-				for (BaseDag job : unhappyRunningJobs) {
+				for (BaseJob job : unhappyRunningJobs) {
 					job.rsrcQuota.addRes(quotaRsrcShare);
 				}
 			}
 		} else {
 			if (clusterResQuotaAvail.greater(new Resource(0))) {
 				Resource quotaRsrcShare = Resources.divide(clusterResQuotaAvail, numJobsRunning);
-				for (BaseDag job : Simulator.runningJobs) {
+				for (BaseJob job : Simulator.runningJobs) {
 					job.rsrcQuota.addRes(quotaRsrcShare);
 				}
 			}

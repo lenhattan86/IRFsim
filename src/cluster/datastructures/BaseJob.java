@@ -12,11 +12,15 @@ import cluster.simulator.Simulator;
 import cluster.speedfair.ServiceCurve;
 import cluster.utils.Interval;
 
-public abstract class BaseDag implements Cloneable {
+public abstract class BaseJob implements Cloneable {
 
   private static final boolean DEBUG = true;
 
   protected String queueName = "";
+  
+  public int NUM_ITERATIONS;
+  private int curr_iter = 0;
+  
   private boolean fullyAllocated = false;
   
   public ArrayList<Resource> usedReses = new ArrayList<Resource>();
@@ -36,7 +40,7 @@ public abstract class BaseDag implements Cloneable {
   public int numStages;
   public int numEdgesBtwStages;
 
-  public Map<String, Stage> stages;
+  public Map<String, SubGraph> stages;
   public Map<Integer, String> vertexToStage;
 
   public Map<Integer, Double> CPlength, BFSOrder;
@@ -94,7 +98,7 @@ public abstract class BaseDag implements Cloneable {
   // keep track remaining time from current time given some share
   public double timeToComplete;
 
-  public BaseDag(int id, int... arrival) {
+  public BaseJob(int id, int... arrival) {
     this.dagId = id;
     this.arrivalTime = (arrival.length > 0) ? arrival[0] : 0;
 
@@ -151,8 +155,8 @@ public abstract class BaseDag implements Cloneable {
   public double minCompletionTimeSimple() {
     // for simplicity, assumming that all stages can start at the same time.
     double complTime = -Double.MAX_VALUE;
-    for (Map.Entry<String, Stage> entry : this.stages.entrySet()) {
-      Stage stage = entry.getValue();
+    for (Map.Entry<String, SubGraph> entry : this.stages.entrySet()) {
+      SubGraph stage = entry.getValue();
       if (complTime < stage.vDuration)
         complTime = stage.vDuration;
     }
@@ -161,8 +165,8 @@ public abstract class BaseDag implements Cloneable {
   
   public double minCompletionTime() {
     double complTime = 0.0;
-    for (Map.Entry<String, Stage> entry : this.stages.entrySet()) {
-      Stage stage = entry.getValue();
+    for (Map.Entry<String, SubGraph> entry : this.stages.entrySet()) {
+      SubGraph stage = entry.getValue();
       double temp = minCompletionTime(stage);
 //      System.out.print(stage.name+ " "+ temp +",");
       if (complTime < temp)
@@ -173,8 +177,8 @@ public abstract class BaseDag implements Cloneable {
   
   public double getLongestTaskDuration(){
     double maxTaskDur = 0.0;
-    for (Map.Entry<String, Stage> entry : this.stages.entrySet()) {
-      Stage stage = entry.getValue();
+    for (Map.Entry<String, SubGraph> entry : this.stages.entrySet()) {
+      SubGraph stage = entry.getValue();
 //      System.out.print(stage.name+ " "+ temp +",");
       if (maxTaskDur < stage.vDuration)
         maxTaskDur = stage.vDuration;
@@ -182,11 +186,11 @@ public abstract class BaseDag implements Cloneable {
     return maxTaskDur;
   }
 
-  private double minCompletionTime(Stage stage) {
+  private double minCompletionTime(SubGraph stage) {
 //    String stageName = "";
     double localMin = 0;
     for (String parent : stage.parents.keySet()) {
-      Stage s = stages.get(parent);
+      SubGraph s = stages.get(parent);
       if (s != null) {
         double temp = minCompletionTime(s);
         if (localMin < temp){

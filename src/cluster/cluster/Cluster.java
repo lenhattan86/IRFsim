@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Logger;
 
-import cluster.datastructures.BaseDag;
+import cluster.datastructures.BaseJob;
 import cluster.datastructures.Resource;
 import cluster.datastructures.Task;
 import cluster.simulator.Simulator;
@@ -64,7 +64,7 @@ public class Cluster {
       machine.assignTask(dagId, taskId, taskDuration, taskResources);
       
       // update resource allocated to the corresponding job
-      BaseDag dag = Simulator.getDag(dagId);
+      BaseJob dag = Simulator.getDag(dagId);
       dag.getRsrcInUse().addWith(dag.rsrcDemands(taskId));
       
    // remove the task from runnable and put it in running

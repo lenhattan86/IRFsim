@@ -9,7 +9,7 @@ import cluster.carbyne.DagExecution;
 import cluster.cluster.Cluster;
 import cluster.datastructures.Resource;
 import cluster.datastructures.Resources;
-import cluster.datastructures.StageDag;
+import cluster.datastructures.MLJob;
 import cluster.datastructures.Task;
 import cluster.simulator.Simulator;
 import cluster.simulator.Main.Globals;
@@ -31,7 +31,7 @@ public class CarbyneSchedPolicy extends SchedPolicy {
   // look at the best execution timeline and pick the tasks
   // which need to be scheduled as of CURRENT_TIME
   @Override
-  public void schedule(StageDag dag) {
+  public void schedule(MLJob dag) {
     Set<Integer> tasksAsOfNowDag = Simulator.tasksToStartNow.get(dag.dagId);
     if (tasksAsOfNowDag == null || tasksAsOfNowDag.isEmpty()) {
       return;
@@ -55,7 +55,7 @@ public class CarbyneSchedPolicy extends SchedPolicy {
   }
 
   @Override
-  public double planSchedule(StageDag dag, Resource leftOverResources) {
+  public double planSchedule(MLJob dag, Resource leftOverResources) {
     if (dag.runnableTasks.isEmpty()) {
       return -1;
     }
@@ -107,11 +107,11 @@ public class CarbyneSchedPolicy extends SchedPolicy {
     return dagExec.complTime;
   }
 
-  void adjustTasksFungibleRsrcs2(StageDag dag, double expComplTime,
+  void adjustTasksFungibleRsrcs2(MLJob dag, double expComplTime,
       Set<Integer> tasksToStartNow) {
     //Output.debugln(DEBUG,"start: adjustTasksFungibleRsrcs2 at time:"+Simulator.CURRENT_TIME +" expComplTime:"+expComplTime);
 
-    StageDag adag = StageDag.clone(dag);
+    MLJob adag = MLJob.clone(dag);
     for (int taskId : tasksToStartNow) {
       Resource taskRsrcDem = Resources.clone(dag.rsrcDemands(taskId));
       double taskDuration = dag.duration(taskId);
@@ -194,10 +194,10 @@ public class CarbyneSchedPolicy extends SchedPolicy {
     //Output.debugln(DEBUG,"end: adjustTasksFungibleRsrcs2; took:"+(System.currentTimeMillis()-start)/1000);
   }
 
-  void adjustTasksFungibleRsrcsNew(StageDag dag, double expComplTime,
+  void adjustTasksFungibleRsrcsNew(MLJob dag, double expComplTime,
       Set<Integer> tasksToStartNow) {
     Output.debugln(DEBUG,"== adjustTasksFungibleRsrcsNew ==");
-    StageDag adag = StageDag.clone(dag);
+    MLJob adag = MLJob.clone(dag);
     for (int taskId : tasksToStartNow) {
       Resource taskRsrcDem = dag.rsrcDemands(taskId);
       double taskDuration = dag.duration(taskId);
@@ -280,10 +280,10 @@ public class CarbyneSchedPolicy extends SchedPolicy {
   // for the tasks which should start running as of now
   // try to decrease every fungible resource dimension
   // and see if the job completion time increases
-  void adjustTasksFungibleRsrcs(StageDag dag, double expComplTime,
+  void adjustTasksFungibleRsrcs(MLJob dag, double expComplTime,
       Set<Integer> tasksToStartNow) {
 
-    StageDag adag = StageDag.clone(dag);
+    MLJob adag = MLJob.clone(dag);
     for (int taskId : tasksToStartNow) {
       Resource taskRsrcDem = dag.rsrcDemands(taskId);
       double taskDuration = dag.duration(taskId);

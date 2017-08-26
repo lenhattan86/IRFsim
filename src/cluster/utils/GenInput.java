@@ -12,13 +12,13 @@ import java.util.Map;
 import java.util.Queue;
 
 import cluster.data.SessionData;
-import cluster.datastructures.BaseDag;
+import cluster.datastructures.BaseJob;
 import cluster.datastructures.Dependency;
 import cluster.datastructures.Resource;
 import cluster.datastructures.Session;
 import cluster.datastructures.Sessions;
-import cluster.datastructures.Stage;
-import cluster.datastructures.StageDag;
+import cluster.datastructures.SubGraph;
+import cluster.datastructures.MLJob;
 import cluster.simulator.Main.Globals;
 
 public class GenInput {
@@ -75,32 +75,29 @@ public class GenInput {
       Output.writeln(toWrite, true, file);
     }
   }
+  
+  public static void genQueueInput(int numBatchQueues) {
+    String file = Globals.PathToQueueInputFile;
+    Output.write("", false, file);
 
-  public static void genJobInput(int numInteractiveQueues,
-      int numInteractiveJobsPerQueue, int numInteractiveTask,
-      int numBatchQueues, int numBatchJobsPerQueue) {
+    for (int i = 0; i < numBatchQueues; i++) {
+      int queueId = i;
+      String toWrite = GenInput.genSingleQueueInfo(
+          queueId, "queue" + queueId, weight, false,
+          null);
+      Output.writeln(toWrite, true, file);
+    }
+  }
 
-    double[] resources1 = { 0.1, 0.1, 0.0, 0.0, 0.0, 0.0 };
+  public static void genJobInput(int numBatchQueues, int numBatchJobsPerQueue) {
 
-    String file = GenInput.jobFile + "_" + numInteractiveQueues + "_"
+    String file = GenInput.jobFile + "_"
         + numBatchQueues + ".txt";
     Output.write("", false, file);
 
-    for (int i = 0; i < numInteractiveQueues; i++) {
-      int arrivalTime = 0 + i;
-
-      for (int j = 0; j < numInteractiveJobsPerQueue; j++) {
-        arrivalTime = j * Globals.PERIODIC_INTERVAL + i;
-        int jobId = i * numInteractiveJobsPerQueue + j;
-        String toWrite = genSingleJobInfo(jobId, "bursty" + i, jobId + "",
-            arrivalTime, numInteractiveTask, Globals.STEP_TIME, resources1);
-        Output.writeln(toWrite, true, file);
-      }
-    }
-
     double[] resources2 = { 0.1, 0.1, 0.0, 0.0, 0.0, 0.0 };
 
-    int batchStartId = Globals.BATCH_START_ID;
+    int batchStartId = Globals.JOB_START_ID;
     int[] arrivalTimes = readRandomProcess(Globals.DIST_FILE);
     int arrivalIdx = 0;
     for (int j = 0; j < numBatchJobsPerQueue; j++) {
@@ -140,15 +137,15 @@ public class GenInput {
   }
 
   public static String genSingleJobInfo(int jobId, String queueName,
-      StageDag job, int arrivalTime, double taskNumScale, double durScale,
+      MLJob job, int arrivalTime, double taskNumScale, double durScale,
       boolean isUncertain) {
     String str = "";
     str += "# " + jobId + "\n";
     // TODO: customize the job arrival time
-    str += "" + job.numStages + " " + jobId + " " + arrivalTime + " "
+    str += "" + job.numStages + " " + jobId + " " + job.NUM_ITERATIONS + " "+ arrivalTime + " "
         + queueName + "\n";
-    for (Map.Entry<String, Stage> entry : job.stages.entrySet()) {
-      Stage stage = entry.getValue();
+    for (Map.Entry<String, SubGraph> entry : job.stages.entrySet()) {
+      SubGraph stage = entry.getValue();
 
       double uncertainDur = 0.0;
       if (isUncertain) {
@@ -171,14 +168,7 @@ public class GenInput {
       // duration = 5.0;
       str += stage.name + " " + duration;
 
-      int dim = Globals.NUM_DIMENSIONS;
-      if (Globals.NUM_DIMENSIONS < 2) {
-        dim = 2;
-      }
-      for (int i = 0; i < dim; i++) {
-        if (i >= Globals.NUM_DIMENSIONS)
-          str += " " + (float) 0.0;
-        else {
+      for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
           double uncertainRes = 0.0;
           if (isUncertain) {
             int len = SessionData.RES_ERROR_10.length;
@@ -189,13 +179,10 @@ public class GenInput {
             uncertainRes = stage.vDemands.resource(i) * error;
             uncertainRes = Utils.round(uncertainRes, 2);
           }
-          /*
-           * if(i==0) str += " " + 0.01; else
-           */
           str += " "
               + Utils.round(stage.vDemands.resource(i) + uncertainRes, 2);
-        }
       }
+      str += " " + stage.getBeta();
       int taskNum = (int) (stage.vids.length() * taskNumScale);
       if (taskNum == 0)
         taskNum = 1;
@@ -203,8 +190,8 @@ public class GenInput {
       stageIter++;
     }
     str += job.numEdgesBtwStages;
-    for (Map.Entry<String, Stage> entry : job.stages.entrySet()) {
-      Stage stage = entry.getValue();
+    for (Map.Entry<String, SubGraph> entry : job.stages.entrySet()) {
+      SubGraph stage = entry.getValue();
       if (!stage.children.isEmpty()) {
         for (Map.Entry<String, Dependency> child : stage.children.entrySet())
           str += "\n" + stage.name + " " + child.getKey() + " ata";
@@ -250,76 +237,24 @@ public class GenInput {
     return str;
   }
 
-  public static void genInputFromWorkload(int numInteractiveQueues,
-      int numInteractiveJobsPerQueue, int numInteractiveTask,
-      int numBatchQueues, int numBatchJobs, Queue<BaseDag> jobs) {
+  public static void genInputFromWorkload(int numBatchQueues, int numBatchJobs, Queue<BaseJob> jobs) {
 
-    genQueueInput(numInteractiveQueues, numBatchQueues);
+    genQueueInput(numBatchQueues);
 
-    customizeJobs(numInteractiveQueues, numBatchQueues, numBatchJobs, jobs);
+    customizeJobs(numBatchQueues, numBatchJobs, jobs);
   }
 
-  public static void genInputFromWorkload(int user1QueueNum, int user2QueueNum,
-      int intervalJobNum, Queue<BaseDag> jobs) {
-
-    genQueueInput(user1QueueNum, user2QueueNum);
-
-    customizeJobs(user1QueueNum, user2QueueNum, intervalJobNum, jobs);
-
-  }
-
-  private static void customizeJobs(int numInteractiveQueues,
-      int numBatchQueues, int numBatchJobs, Queue<BaseDag> jobs) {
+  private static void customizeJobs(int numBatchQueues, int numBatchJobs, Queue<BaseJob> jobs) {
     stageIter = 0;
     String file = Globals.PathToInputFile;
     Output.write("", false, file);
-    // TODO: pick the short jobs for the bursty queue.
-    Queue<BaseDag> shortJobs = getJobs(jobs, Globals.SMALL_JOB_DUR_THRESHOLD,
-        Globals.SMALL_JOB_TASK_NUM_THRESHOLD, true);
-    Iterator<BaseDag> jobIter1 = shortJobs.iterator();
-    int newJobId = 0;
-    if (shortJobs.size() == 0 && numInteractiveQueues > 0) {
-      System.err.println("shortJobs jobs are empty.");
-      return;
-    } else
-      for (int i = 0; i < numInteractiveQueues; i++) {
-        Session s = Globals.SESSION_DATA.sessionsArray[i];
-        for (int j = 0; j < s.getNumOfJobs(); j++) {
-          if (jobIter1.hasNext()) {
-            StageDag job = (StageDag) jobIter1.next();
-            int arrivalTime = (int) s.getStartPeriodTime(j);
 
-            String toWrite = genSingleJobInfo(newJobId, "bursty" + (i), job,
-                arrivalTime, Globals.SCALE_UP_BURSTY_JOB,
-                Globals.SCALE_BURSTY_DURATION, true);
-
-            Output.writeln(toWrite, true, file);
-
-            newJobId++;
-          } else {
-            jobIter1 = shortJobs.iterator();
-            j--;
-          }
-        }
-      }
-
-    Queue<BaseDag> longJobs = getJobs(jobs, Globals.LARGE_JOB_MAX_DURATION,
-        Globals.LARGE_JOB_TASK_NUM_THRESHOLD, false);
-
-    if (Globals.AVG_TASK_DURATION > 0) {
-      double avgTaskDuration = avgTaskDuration(longJobs);
-      Globals.SCALE_BATCH_DURATION = Globals.AVG_TASK_DURATION
-          / avgTaskDuration;
-      Globals.SCALE_UP_BATCH_JOB = 1.0 / Globals.SCALE_BATCH_DURATION
-          * Globals.SCALE_UP_BATCH_JOB;
-    }
-
-    Iterator<BaseDag> jobIter2 = longJobs.iterator();
-    int batchStartId = Globals.BATCH_START_ID;
+    Iterator<BaseJob> jobIter2 = jobs.iterator();
+    int batchStartId = Globals.JOB_START_ID;
     int[] arrivalTimes = readRandomProcess(Globals.DIST_FILE);
     int arrivalIdx = 0;
-    if (longJobs.size() == 0 && numBatchQueues > 0) {
-      System.err.println("long jobs are empty.");
+    if (jobs.size() == 0 && numBatchQueues > 0) {
+      System.err.println("jobs are empty.");
       return;
     }
     if (numBatchQueues == 0) {
@@ -329,21 +264,21 @@ public class GenInput {
       int batchQueueIdx = i % numBatchQueues;
       int jobIdx = i + batchStartId;
       if (jobIter2.hasNext()) {
-        StageDag job = (StageDag) jobIter2.next();
+        MLJob job = (MLJob) jobIter2.next();
         String toWrite = "";
         if (!Globals.GEN_JOB_ARRIVAL)
-          toWrite = genSingleJobInfo(jobIdx, "batch" + (batchQueueIdx), job,
+          toWrite = genSingleJobInfo(jobIdx, "queue" + (batchQueueIdx), job,
               job.arrivalTime, 1, Globals.SCALE_BATCH_DURATION, false);
         else {
           if (arrivalIdx >= arrivalTimes.length)
             arrivalIdx = 0;
-          toWrite = genSingleJobInfo(jobIdx, "batch" + (batchQueueIdx), job,
+          toWrite = genSingleJobInfo(jobIdx, "queue" + (batchQueueIdx), job,
               arrivalTimes[arrivalIdx++], Globals.SCALE_UP_BATCH_JOB,
               Globals.SCALE_BATCH_DURATION, false);
         }
         Output.writeln(toWrite, true, file);
       } else {
-        jobIter2 = longJobs.iterator();
+        jobIter2 = jobs.iterator();
       }
     }
   }
@@ -381,11 +316,11 @@ public class GenInput {
     return res;
   }
 
-  public static Queue<BaseDag> getJobs(Queue<BaseDag> jobs, double minComplTime,
+  public static Queue<BaseJob> getJobs(Queue<BaseJob> jobs, double minComplTime,
       int numOfTasks, boolean isSmall) {
     // TODO: fix this.
-    Queue<BaseDag> interactiveJobs = new LinkedList<BaseDag>();
-    for (BaseDag job : jobs) {
+    Queue<BaseJob> interactiveJobs = new LinkedList<BaseJob>();
+    for (BaseJob job : jobs) {
       // System.out.println(((StageDag) job).viewDag());
       double temp = job.minCompletionTime();
       double longestTaskDuration = job.getLongestTaskDuration();
@@ -406,13 +341,13 @@ public class GenInput {
 
   public static void writeTaskDurationStatistics(String inputFile,
       String outputFile) {
-    Queue<BaseDag> jobs = readWorkloadTrace(inputFile);
+    Queue<BaseJob> jobs = readWorkloadTrace(inputFile);
     FileWriter file = null;
     try {
       file = new FileWriter(outputFile);
-      for (BaseDag job : jobs) {
-        for (Map.Entry<String, Stage> entry : job.stages.entrySet()) {
-          Stage stage = entry.getValue();
+      for (BaseJob job : jobs) {
+        for (Map.Entry<String, SubGraph> entry : job.stages.entrySet()) {
+          SubGraph stage = entry.getValue();
           double duration = stage.vDuration;
           String toWrite = "" + duration + "," + stage.vids.length() + "\n";
           file.write(toWrite);
@@ -425,12 +360,12 @@ public class GenInput {
     }
   }
 
-  public static double avgTaskDuration(Queue<BaseDag> jobs) {
+  public static double avgTaskDuration(Queue<BaseJob> jobs) {
     double avgDuration = 0.0;
     double numOfTasks = 0.0;
-    for (BaseDag job : jobs) {
-      for (Map.Entry<String, Stage> entry : job.stages.entrySet()) {
-        Stage stage = entry.getValue();
+    for (BaseJob job : jobs) {
+      for (Map.Entry<String, SubGraph> entry : job.stages.entrySet()) {
+        SubGraph stage = entry.getValue();
         double duration = stage.vDuration;
         avgDuration += duration * stage.vids.length();
         numOfTasks += stage.vids.length();
@@ -440,17 +375,14 @@ public class GenInput {
     return avgDuration;
   }
 
-  public static void genInput(int numInteractiveQueues,
-      int numInteractiveJobsPerQueue, int numInteractiveTask,
-      int numBatchQueues, int numBatchJobsPerQueue) {
-    genQueueInput(numInteractiveQueues, numBatchQueues);
-    genJobInput(numInteractiveQueues, numInteractiveJobsPerQueue,
-        numInteractiveTask, numBatchQueues, numBatchJobsPerQueue);
+  public static void genInput(int numBatchQueues, int numBatchJobsPerQueue) {
+    genQueueInput(numBatchQueues);
+    genJobInput(numBatchQueues, numBatchJobsPerQueue);
   }
 
-  public static Queue<BaseDag> readWorkloadTrace(String workloadFile) {
-    Queue<BaseDag> jobs = new LinkedList<BaseDag>();
-    jobs = StageDag.readDags(workloadFile); // change the parameters.
+  public static Queue<BaseJob> readWorkloadTrace(String workloadFile) {
+    Queue<BaseJob> jobs = new LinkedList<BaseJob>();
+    jobs = MLJob.readDags(workloadFile); // change the parameters.
     return jobs;
   }
 }

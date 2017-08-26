@@ -3,7 +3,7 @@ package cluster.schedpolicies;
 import cluster.cluster.Cluster;
 import cluster.cluster.Machine;
 import cluster.datastructures.Resource;
-import cluster.datastructures.StageDag;
+import cluster.datastructures.MLJob;
 import cluster.utils.Pair;
 
 public class TetrisSchedPolicy extends SchedPolicy {
@@ -19,7 +19,7 @@ public class TetrisSchedPolicy extends SchedPolicy {
   }
 
   @Override
-  public void schedule(StageDag dag) {
+  public void schedule(MLJob dag) {
 
     if (dag.runnableTasks.isEmpty()) {
       return;
@@ -46,7 +46,7 @@ public class TetrisSchedPolicy extends SchedPolicy {
     }
   }
 
-  Pair<Integer, Integer> computeBestTaskToPack(StageDag dag) {
+  Pair<Integer, Integer> computeBestTaskToPack(MLJob dag) {
     Pair<Integer, Integer> bestTaskToPack = Pair.createPair(-1, -1);
 
     if (dag.runnableTasks.isEmpty()) {
@@ -85,7 +85,7 @@ public class TetrisSchedPolicy extends SchedPolicy {
   }
 
   @Override
-  public double planSchedule(StageDag dag, Resource leftOverResources) {
+  public double planSchedule(MLJob dag, Resource leftOverResources) {
     return -1;
   }
 }

@@ -8,7 +8,7 @@ import java.util.TreeMap;
 
 import cluster.cluster.Cluster;
 import cluster.datastructures.Resource;
-import cluster.datastructures.StageDag;
+import cluster.datastructures.MLJob;
 import cluster.schedpolicies.SchedPolicy;
 import cluster.schedpolicies.TetrisSchedPolicy;
 import cluster.simulator.Simulator;
@@ -20,7 +20,7 @@ public class DagExecution {
 
 	private static final boolean DEBUG = true;
 	
-  public StageDag dag;
+  public MLJob dag;
 
   // Schedule policy to schedule inside a dag
   public SchedPolicy schedPolicy;
@@ -33,8 +33,8 @@ public class DagExecution {
 
   public double complTime;
 
-  public DagExecution(StageDag _dag, Resource leftOverResources) {
-    dag = StageDag.clone(_dag);
+  public DagExecution(MLJob _dag, Resource leftOverResources) {
+    dag = MLJob.clone(_dag);
     if (leftOverResources == null) {
       dag.rsrcQuota.subtract(dag.currResDemand());
     } else {
@@ -86,7 +86,7 @@ public class DagExecution {
 
       // should always be the case
       if (finishedTasks.get(dag.dagId) != null) {
-        ((StageDag) dag).finishTasks(finishedTasks.get(dag.dagId), reverse);
+        ((MLJob) dag).finishTasks(finishedTasks.get(dag.dagId), reverse);
       } else {
         noTaskToFinish = true;
       }

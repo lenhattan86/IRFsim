@@ -1,9 +1,9 @@
 package cluster.sharepolicies;
 
-import cluster.datastructures.BaseDag;
+import cluster.datastructures.BaseJob;
 import cluster.datastructures.Resource;
 import cluster.datastructures.Resources;
-import cluster.datastructures.StageDag;
+import cluster.datastructures.MLJob;
 import cluster.simulator.Simulator;
 
 public class SJFSharePolicy extends SharePolicy {
@@ -25,8 +25,8 @@ public class SJFSharePolicy extends SharePolicy {
     // give the entire cluster share to the job with smallest SRTF
     double shortestJobVal = Double.MAX_VALUE;
     int shortestJobId = -1;
-    for (BaseDag job : Simulator.runningJobs) {
-      double jobSrtf = ((StageDag) job).srtfScore();
+    for (BaseJob job : Simulator.runningJobs) {
+      double jobSrtf = ((MLJob) job).srtfScore();
       if (jobSrtf < shortestJobVal) {
         shortestJobVal = jobSrtf;
         shortestJobId = job.dagId;
@@ -34,7 +34,7 @@ public class SJFSharePolicy extends SharePolicy {
     }
 
     assert (shortestJobVal != Double.MAX_VALUE);
-    for (BaseDag job : Simulator.runningJobs) {
+    for (BaseJob job : Simulator.runningJobs) {
       if (job.dagId == shortestJobId) {
         job.rsrcQuota = Resources.clone(Simulator.cluster
             .getClusterMaxResAlloc());

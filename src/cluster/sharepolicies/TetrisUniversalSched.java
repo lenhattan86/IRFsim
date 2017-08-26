@@ -3,7 +3,7 @@ package cluster.sharepolicies;
 import java.util.ArrayList;
 
 import cluster.cluster.Machine;
-import cluster.datastructures.BaseDag;
+import cluster.datastructures.BaseJob;
 import cluster.datastructures.Resource;
 import cluster.datastructures.Task;
 import cluster.simulator.Simulator;
@@ -28,7 +28,7 @@ public class TetrisUniversalSched extends SharePolicy {
     runnableTasks = new ArrayList<Task>();
 
     // among every runnable DAG in the cluster, compute runnable tasks 
-    for (BaseDag dag : Simulator.runningJobs) {
+    for (BaseJob dag : Simulator.runningJobs) {
       for (int taskId : dag.runnableTasks) {
         runnableTasks.add(new Task(dag.dagId, taskId,
                           dag.duration(taskId), dag.rsrcDemands(taskId)));
@@ -58,7 +58,7 @@ public class TetrisUniversalSched extends SharePolicy {
       //System.out.println("assigned:"+assigned);
       if (assigned) {
         // remove the task from runnable and put it in running
-        for (BaseDag dag : Simulator.runningJobs) {
+        for (BaseJob dag : Simulator.runningJobs) {
           if (dag.dagId == dagToPackId) {
             dag.runningTasks.add(taskToPackId);
             dag.runnableTasks.remove((Integer) taskToPackId);

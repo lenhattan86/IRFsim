@@ -8,22 +8,31 @@ import java.util.Set;
 
 import cluster.utils.Interval;
 
-public class Stage {
+public class SubGraph {
 
 	private static final boolean DEBUG = true;
   public int id;
   public String name;
-
   public Interval vids;
 
   public double vDuration;
   public Resource vDemands;
   public int arrivalTime =0; // relative Arrival Time
+  
+  private double beta = 1.0; // tranfer rate CPU -> GPU
+
+  public double getBeta() {
+    return beta;
+  }
+
+  public void setBeta(double beta) {
+    this.beta = beta;
+  }
 
   public Map<String, Dependency> parents, children;
 
-  public Stage(String name, int id, Interval vids, double duration,
-      double[] resources) {
+  public SubGraph(String name, int id, Interval vids, double duration,
+      double[] resources, double beta) {
     this.name = name;
     this.id = id;
     this.vids = new Interval(vids.begin, vids.end);
@@ -33,11 +42,12 @@ public class Stage {
 
     vDuration = duration;
     vDemands = new Resource(resources);
+    this.beta = beta;
   }
 
-  public static Stage clone(Stage stage) {
-    Stage clonedStage = new Stage(stage.name, stage.id, stage.vids,
-        stage.vDuration, stage.vDemands.resources);
+  public static SubGraph clone(SubGraph stage) {
+    SubGraph clonedStage = new SubGraph(stage.name, stage.id, stage.vids,
+        stage.vDuration, stage.vDemands.resources, stage.beta);
 
     clonedStage.parents = new HashMap<String, Dependency>();
     clonedStage.children = new HashMap<String, Dependency>();

@@ -6,7 +6,7 @@ import java.util.Iterator;
 
 import cluster.cluster.Cluster;
 import cluster.datastructures.Resource;
-import cluster.datastructures.StageDag;
+import cluster.datastructures.MLJob;
 
 public class RandomSchedPolicy extends SchedPolicy {
 	
@@ -17,7 +17,7 @@ public class RandomSchedPolicy extends SchedPolicy {
   }
 
   @Override
-  public void schedule(StageDag dag) {
+  public void schedule(MLJob dag) {
 
     if (dag.runnableTasks.isEmpty())
       return;
@@ -53,7 +53,7 @@ public class RandomSchedPolicy extends SchedPolicy {
   }
 
   @Override
-  public double planSchedule(StageDag dag, Resource leftOverResources) {
+  public double planSchedule(MLJob dag, Resource leftOverResources) {
     return -1;
   }
 }

@@ -22,7 +22,7 @@ import cluster.simulator.Main.Globals;
 import cluster.utils.Interval;
 import cluster.utils.Output;
 
-public class StageDag extends BaseDag implements Cloneable {
+public class MLJob extends BaseJob implements Cloneable {
 
 	private static final boolean DEBUG = false;
 	public String dagName;
@@ -43,15 +43,15 @@ public class StageDag extends BaseDag implements Cloneable {
 	// keep track of adjusted profiles for certain tasks;
 	public Map<Integer, Task> adjustedTaskDemands = null;
 
-	public StageDag(int id, int... arrival) {
+	public MLJob(int id, int... arrival) {
 		super(id, arrival);
-		stages = new LinkedHashMap<String, Stage>();
+		stages = new LinkedHashMap<String, SubGraph>();
 		chokePointsS = new HashSet<String>();
 		chokePointsT = null;
 	}
 
-	public static StageDag clone(StageDag dag) {
-		StageDag clonedDag = new StageDag(dag.dagId);
+	public static MLJob clone(MLJob dag) {
+		MLJob clonedDag = new MLJob(dag.dagId);
 		clonedDag.dagName = dag.dagName;
 
 		clonedDag.rsrcQuota = Resources.clone(dag.rsrcQuota);
@@ -70,10 +70,10 @@ public class StageDag extends BaseDag implements Cloneable {
   		clonedDag.BFSOrder = new HashMap<Integer, Double>(dag.BFSOrder);
 		}
 
-		for (Map.Entry<String, Stage> entry : dag.stages.entrySet()) {
+		for (Map.Entry<String, SubGraph> entry : dag.stages.entrySet()) {
 			String stageName = entry.getKey();
-			Stage stage = entry.getValue();
-			clonedDag.stages.put(stageName, Stage.clone(stage));
+			SubGraph stage = entry.getValue();
+			clonedDag.stages.put(stageName, SubGraph.clone(stage));
 		}
 
 		clonedDag.vertexToStage = new HashMap<Integer, String>(dag.vertexToStage);
@@ -106,7 +106,7 @@ public class StageDag extends BaseDag implements Cloneable {
 		}
 
 		Map<Integer, String> vStartIdToStage = new TreeMap<Integer, String>();
-		for (Stage stage : stages.values()) {
+		for (SubGraph stage : stages.values()) {
 			vStartIdToStage.put(stage.vids.begin, stage.name);
 		}
 
@@ -128,7 +128,7 @@ public class StageDag extends BaseDag implements Cloneable {
 
 		// reinitialize the mapping from vertices to stages
 		vertexToStage.clear();
-		for (Stage stage : stages.values()) {
+		for (SubGraph stage : stages.values()) {
 			for (int i = stage.vids.begin; i <= stage.vids.end; i++) {
 				vertexToStage.put(i, stage.name);
 			}
@@ -203,7 +203,7 @@ public class StageDag extends BaseDag implements Cloneable {
 		str += "\n == DAG: " + this.dagId + " == arrives at " + this.arrivalTime + " in Queue: "
 		    + this.queueName + "\n";
 
-		for (Stage stage : stages.values()) {
+		for (SubGraph stage : stages.values()) {
 			str += "Stage: " + stage.id + " " + stage.name + " lasts " + stage.vDuration + " " + " [";
 			for (int i = 0; i < Globals.NUM_DIMENSIONS; i++)
 				str += stage.vDemands.resource(i) + " ";
@@ -231,10 +231,10 @@ public class StageDag extends BaseDag implements Cloneable {
 	// end print dag //
 
 	// read dags from file //
-	public static Queue<BaseDag> readDags(String filePathString) {
+	public static Queue<BaseJob> readDags(String filePathString) {
 	  Output.debugln(DEBUG,"[readDags] read "+ filePathString);
 
-		Queue<BaseDag> dags = new LinkedList<BaseDag>();
+		Queue<BaseJob> dags = new LinkedList<BaseJob>();
 		File file = new File(filePathString);
 		assert (file.exists() && !file.isDirectory());
 
@@ -255,11 +255,12 @@ public class StageDag extends BaseDag implements Cloneable {
 				}
 
 				int numStages = 0, ddagId = -1, arrival = 0;
+				int numOfIterations = 0;
 				vIdxStart = 0;
 				vIdxEnd = 0;
 
 				String[] args = line.split(" ");
-				assert (args.length <= 2) : "Incorrect node entry";
+				assert (args.length <= 3) : "Incorrect node entry";
 
 				dagsReadSoFar += 1;
 				String queueName = "default";
@@ -268,16 +269,20 @@ public class StageDag extends BaseDag implements Cloneable {
 					numStages = Integer.parseInt(args[0]);
 					ddagId = Integer.parseInt(args[1]);
 					if (args.length >= 3) {
-						arrival = Integer.parseInt(args[2]);
-					}
+					  numOfIterations = Integer.parseInt(args[2]);
+          }
 					if (args.length >= 4) {
-						queueName = args[3].trim();
+						arrival = Integer.parseInt(args[3]);
 					}
 					if (args.length >= 5) {
-					  sId = Integer.parseInt(args[4].trim());
+						queueName = args[4].trim();
+					}
+					if (args.length >= 6) {
+					  sId = Integer.parseInt(args[5].trim());
           }
 					assert (numStages > 0);
 					assert (ddagId >= 0);
+					assert (numOfIterations > 0);
 				} else if (args.length == 1) {
 					numStages = Integer.parseInt(line);
 					ddagId = dagsReadSoFar;
@@ -285,8 +290,9 @@ public class StageDag extends BaseDag implements Cloneable {
 					assert (ddagId >= 0);
 				}
 
-				StageDag dag = new StageDag(ddagId, arrival);
+				MLJob dag = new MLJob(ddagId, arrival);
 				dag.numStages = numStages;
+				dag.NUM_ITERATIONS = numOfIterations;
 				dag.dagName = dag_name;
 				dag.setQueueName(queueName);
 				dag.sessionId = sId;
@@ -294,8 +300,6 @@ public class StageDag extends BaseDag implements Cloneable {
 					Simulator.QUEUE_LIST.addJobQueue(queueName);
 				else
 					Simulator.QUEUE_LIST = new JobQueueList();
-				// dag.serviceCurve =
-				// Simulator.QUEUE_LIST.getJobQueue(queueName).serviceCurve;
 
 				for (int i = 0; i < numStages; ++i) {
 					String lline = br.readLine();
@@ -310,31 +314,21 @@ public class StageDag extends BaseDag implements Cloneable {
 					durV = Double.parseDouble(args[1]);
 					assert (durV >= 0);
 					double[] resources = new double[Globals.NUM_DIMENSIONS];
-					for (int j = 0; j < Globals.NUM_DIMENSIONS; j++) {
+					
+					int j = 0;
+					for (; j < Globals.NUM_DIMENSIONS; j++) {
 						double res = Double.parseDouble(args[j + 2]);
 						assert (res >= 0 && res <= 1);
 						resources[j] = res;
 					}
-
-					/*if (Globals.ERROR != 0) {
-						double durMax = (1 + Globals.ERROR) * durV;
-						double minDurVPossible = Math.min(durMax, durV);
-						double maxDurVPossible = Math.max(durMax, durV);
-						durV = Math.max(((1 + (Globals.ERROR / 2)) * durV), 1);
-						// r.pickRandomDouble(minDurVPossible, maxDurVPossible);
-
-						for (int j = 0; j < Globals.NUM_DIMENSIONS; j++) {
-							resources[j] = Math.max((1 + Globals.ERROR) * resources[j], 0.001);
-						}
-					}*/
+					double beta = Double.parseDouble(args[j + 2]);
 
 					numVertices = Integer.parseInt(args[args.length - 1]);
 					assert (numVertices >= 0);
 
 					vIdxEnd += numVertices;
-
-					Stage stage = new Stage(stageName, i, new Interval(vIdxStart, vIdxEnd - 1), durV,
-					    resources);
+					SubGraph stage = new SubGraph(stageName, i, new Interval(vIdxStart, vIdxEnd - 1), durV,
+					    resources, beta);
 
 					String arrivalStr = args[args.length - 2];
 					if (arrivalStr.startsWith("@"))
@@ -345,7 +339,7 @@ public class StageDag extends BaseDag implements Cloneable {
 				}
 
 				dag.vertexToStage = new HashMap<Integer, String>();
-				for (Stage stage : dag.stages.values())
+				for (SubGraph stage : dag.stages.values())
 					for (int i = stage.vids.begin; i <= stage.vids.end; i++){
 					    dag.vertexToStage.put(i, stage.name);
 					}
@@ -499,7 +493,7 @@ public class StageDag extends BaseDag implements Cloneable {
 		Map<String, Integer> numParents = new HashMap<String, Integer>();
 		List<String> freeStages = new ArrayList<String>();
 
-		for (Stage s : stages.values()) {
+		for (SubGraph s : stages.values()) {
 			if (s.parents.size() == 0) {
 				freeStages.add(s.name);
 			} else {
@@ -618,7 +612,7 @@ public class StageDag extends BaseDag implements Cloneable {
 
 	public Resource totalResourceDemand() {
 		Resource totalResDemand = new Resource(0.0);
-		for (Stage stage : stages.values()) {
+		for (SubGraph stage : stages.values()) {
 			totalResDemand.addWith(stage.totalWork());
 		}
 		return totalResDemand;
@@ -626,7 +620,7 @@ public class StageDag extends BaseDag implements Cloneable {
 
 	public Resource totalWorkInclDur() {
 		Resource totalResDemand = new Resource(0.0);
-		for (Stage stage : stages.values()) {
+		for (SubGraph stage : stages.values()) {
 			totalResDemand.addWith(stage.totalWork());
 		}
 		return totalResDemand;
@@ -635,7 +629,7 @@ public class StageDag extends BaseDag implements Cloneable {
 	@Override
 	public Map area() {
 		Map<Integer, Double> area_dims = new TreeMap<Integer, Double>();
-		for (Stage stage : stages.values()) {
+		for (SubGraph stage : stages.values()) {
 			for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
 				double bef = area_dims.get(i) != null ? area_dims.get(i) : 0;
 				bef += stage.vids.length() * stage.vDuration * stage.vDemands.resources[i];
@@ -648,7 +642,7 @@ public class StageDag extends BaseDag implements Cloneable {
 	@Override
 	public double totalWorkJob() {
 		double scoreTotalWork = 0;
-		for (Stage stage : stages.values()) {
+		for (SubGraph stage : stages.values()) {
 			scoreTotalWork += stage.stageContribToSrtfScore(new HashSet<Integer>());
 		}
 		return scoreTotalWork;
@@ -659,7 +653,7 @@ public class StageDag extends BaseDag implements Cloneable {
 		consideredTasks.addAll(this.runningTasks);
 
 		double scoreSrtf = 0;
-		for (Stage stage : stages.values()) {
+		for (SubGraph stage : stages.values()) {
 			scoreSrtf += stage.stageContribToSrtfScore(consideredTasks);
 		}
 		return scoreSrtf;
@@ -762,7 +756,7 @@ public class StageDag extends BaseDag implements Cloneable {
     Output.debugln(DEBUG, tasksToRun1.toString());*/
     
     ArrayList<Integer>  tasksToRun = new ArrayList<Integer>();
-    for (Stage stageToBeSched : stages.values()){
+    for (SubGraph stageToBeSched : stages.values()){
       boolean stageReadyToSched = true;
       
       ArrayList<Integer> candTasks = stageToBeSched.getTasks(); 
@@ -787,8 +781,8 @@ public class StageDag extends BaseDag implements Cloneable {
     return false;
   }
 	
-	public Stage[] allStages(){
-	  return (Stage[]) stages.values().toArray();
+	public SubGraph[] allStages(){
+	  return (SubGraph[]) stages.values().toArray();
 	}
 
 	// should decrease only the resources allocated in the current time quanta
@@ -849,7 +843,7 @@ public class StageDag extends BaseDag implements Cloneable {
 		this.descendantsS = new HashMap<String, Set<String>>();
 		this.unorderedNeighborsS = new HashMap<String, Set<String>>();
 
-		for (Stage s : stages.values()) {
+		for (SubGraph s : stages.values()) {
 			int vid = s.vids.begin;
 
 			Set<String> ancestorsStS = new HashSet<String>();

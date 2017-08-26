@@ -2,12 +2,12 @@ package cluster.utils;
 
 import java.util.Comparator;
 
-import cluster.datastructures.BaseDag;
+import cluster.datastructures.BaseJob;
 
-public class JobArrivalComparator implements Comparator<BaseDag>{
+public class JobArrivalComparator implements Comparator<BaseJob>{
 
 	@Override
-	public int compare(BaseDag job1, BaseDag job2) {
+	public int compare(BaseJob job1, BaseJob job2) {
 		int res = 0; 
 		if (job1.arrivalTime > job2.arrivalTime){
 			res = 1;

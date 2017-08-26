@@ -6,7 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import cluster.datastructures.BaseDag;
+import cluster.datastructures.BaseJob;
 import cluster.datastructures.Resource;
 import cluster.datastructures.Resources;
 import cluster.datastructures.Task;
@@ -83,7 +83,7 @@ public class Machine {
     currentTime = execMode ? Simulator.CURRENT_TIME : currentTime;
     
     runningTasks.remove(task);
-    BaseDag dag = Simulator.getDag(task.dagId);
+    BaseJob dag = Simulator.getDag(task.dagId);
     dag.getRsrcInUse().subtract(task.resDemands);
     
  // remove the task from runnable and put it in running
@@ -110,7 +110,7 @@ public class Machine {
         totalResAlloc.subtract(t.resDemands);
 
         // update resource freed from corresponding job
-        BaseDag dag = Simulator.getDag(t.dagId);
+        BaseJob dag = Simulator.getDag(t.dagId);
         dag.getRsrcInUse().subtract(t.resDemands);
 
         if (tasksFinished.get(t.dagId) == null) {
