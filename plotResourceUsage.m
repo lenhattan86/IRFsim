@@ -7,7 +7,7 @@ workload='BB';
 num_batch_queues = 2;
 num_interactive_queue = 0;
 num_queues = num_batch_queues + num_interactive_queue;
-START_TIME = 0; END_TIME = 200;
+START_TIME = 0; END_TIME = 500;
 is_printed = true;
 cluster_size = 40;
 

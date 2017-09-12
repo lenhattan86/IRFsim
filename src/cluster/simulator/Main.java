@@ -417,7 +417,7 @@ public class Main {
     if (Globals.runmode.equals(Runmode.SingleRun)) {
 //      Globals.SIM_END_TIME = 800.0;
       Globals.METHOD = Method.EC;
-      Globals.NUM_MACHINES = 1;
+      Globals.NUM_MACHINES = 10;
       Globals.MACHINE_MAX_RESOURCE=40;
       Globals.numQueues = 8;
       Globals.numBatchJobs = 100;
@@ -429,18 +429,18 @@ public class Main {
       runSimulationScenario(false);
       System.out.println();
     } else {
-      Globals.MEMORY_SCALE_DOWN=10;
+      Globals.MEMORY_SCALE_DOWN=1;
       Globals.NUM_MACHINES = 1;
       Globals.SIM_END_TIME = 800.0;
-      Globals.METHOD = Method.EC;
-//      Globals.METHOD = Method.MaxMinMem;
+//      Globals.METHOD = Method.EC;
+      Globals.METHOD = Method.MaxMinMem;
       Globals.MACHINE_MAX_RESOURCE = 40;
       Globals.workload = Globals.WorkLoadType.BB;
       Globals.IS_GEN = true;
       Globals.SCALE_UP_FACTOR = 1;
       Globals.setupParameters();
       Globals.numQueues = 2;
-      Globals.numBatchJobs = 50;
+      Globals.numBatchJobs = 200;
       runSimulationScenario(false);
       System.out.println();
     }
