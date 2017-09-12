@@ -137,7 +137,7 @@ public class JobQueue {
     this.receivedResourcesList.add(0, res);
   }
 
-  public Resource computeShare(double term, Resource guartRate) {
+/*  public Resource computeShare(double term, Resource guartRate) {
     Resource resQuota = new Resource();
     Resource received = this.getReceivedRes(term - Globals.STEP_TIME);
     Resource total = Resources.multiply(guartRate,
@@ -148,15 +148,15 @@ public class JobQueue {
       resDemand = Resources.sum(resDemand, job.getMaxDemand());
     }
     return Resources.piecewiseMin(resQuota, resDemand);
-  }
+  }*/
 
-  public Resource getMaxDemand() {
+/*  public Resource getMaxDemand() {
     Resource resDemand = new Resource();
     for (BaseJob job : runningJobs) {
       resDemand = Resources.sum(resDemand, job.getMaxDemand());
     }
     return resDemand;
-  }
+  }*/
 
   public Resource getResourceUsage() {
     Resource res = new Resource();
@@ -331,10 +331,8 @@ public class JobQueue {
       if (unallocJob == null) {
         return remain;
       }
-      // TODO: a job may have a variety of tasks having different resource
-      // demands.
       int taskId = unallocJob.getCommingTaskId();
-      Resource allocRes = unallocJob.rsrcDemands(taskId);
+      Resource allocRes = unallocJob.rsrcUsage(taskId);
       if (remain.greaterOrEqual(allocRes)) {
         boolean assigned = Simulator.cluster.assignTask(unallocJob.dagId,
             taskId, unallocJob.duration(taskId), allocRes);
@@ -349,7 +347,7 @@ public class JobQueue {
           Output.debugln(DEBUG,
               "[DRFScheduler] Cannot assign resource to the task" + taskId
                   + " of Job " + unallocJob.dagId + " " + allocRes);
-          break; // TODO: Add the further process to utilize more resource.
+          break;
         }
       } else {
         // do not allocate to this queue any more

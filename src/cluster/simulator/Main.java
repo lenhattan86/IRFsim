@@ -79,16 +79,19 @@ public class Main {
 
     public static boolean DEBUG_ALL = false;
     public static boolean DEBUG_LOCAL = true;
+    
+    public static int TASK_BROKEN_DOWN = 10; // 100 subtask per task
+    public static double TIME_UNIT = 0.1;  // seconds
 
     public static int SCALE_UP_FACTOR = 1;
     
     // SP: Strict Priority, BPF: Bounded Priority Fairness
     public static enum Method {
-      DRF, DRFW, EC
+      DRF, DRFW, EC, MaxMinMem
     }
 
     public static enum QueueSchedulerPolicy {
-      DRF, EC
+      DRF, EC, MaxMinMem
     };
 
     public static QueueSchedulerPolicy QUEUE_SCHEDULER = QueueSchedulerPolicy.EC;
@@ -125,7 +128,7 @@ public class Main {
     public static boolean ADJUST_FUNGIBLE = false;
     public static double ZERO = 0.001;
 
-    public static double SIM_END_TIME = 100.0;
+    public static double SIM_END_TIME = 7.0;
 
     public static int NUM_OPT = 0, NUM_PES = 0;
 
@@ -165,7 +168,7 @@ public class Main {
     public static int numQueues = 1;
     public static int numbatchTask = 10000;
 
-    public static double STEP_TIME = 1.0;
+    public static double STEP_TIME = 0.1;
 
     public static boolean ENABLE_PREEMPTION = false;
 
@@ -173,6 +176,8 @@ public class Main {
 
     public static double SCALE_BURSTY_DURATION = 1.0;
     public static double SCALE_BATCH_DURATION = 1.0;
+    
+    public static double MEMORY_SCALE_DOWN = 100;
 
     public static int JOB_NUM_PER_QUEUE_CHANGE;
 
@@ -225,7 +230,7 @@ public class Main {
       double scaleUp = (double) (Globals.NUM_MACHINES * Globals.MACHINE_MAX_RESOURCE)
           / (double) Globals.TRACE_CLUSTER_SIZE;
 
-      Globals.SCALE_UP_BATCH_JOB = Math.floor((double) 1 * scaleUp);
+//      Globals.SCALE_UP_BATCH_JOB = Math.floor((double) 1 * scaleUp);
     }
 
   }
@@ -251,7 +256,10 @@ public class Main {
       Globals.FileOutput = "DRF-output" + extraName + ".csv";
     } else if (Globals.METHOD.equals(Method.EC)) {
       Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.EC;
-      Globals.FileOutput = "EC-output" + extraName + ".csv";
+      Globals.FileOutput = "ES-output" + extraName + ".csv";
+    } else if (Globals.METHOD.equals(Method.MaxMinMem)) {
+      Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.MaxMinMem;
+      Globals.FileOutput = "MaxMinMem-output" + extraName + ".csv";
     } else {
       System.err.println("[Main] Error! test case");
       return;
@@ -274,7 +282,7 @@ public class Main {
     System.out.println("=====================");
     System.out.println("Simulation Parameters");
     System.out.println("=====================");
-    System.out.println("Runmode              = " + Globals.runmode);
+    System.out.println("Runmode             = " + Globals.runmode);
     System.out.println("METHOD              = " + Globals.METHOD);
     System.out.println("Cluster Size        = " + Globals.NUM_MACHINES);
     System.out.println("Server Capacity     = " + Globals.MACHINE_MAX_RESOURCE);
@@ -407,10 +415,10 @@ public class Main {
     }
 
     if (Globals.runmode.equals(Runmode.SingleRun)) {
-      Globals.SIM_END_TIME = 800.0;
+//      Globals.SIM_END_TIME = 800.0;
       Globals.METHOD = Method.EC;
       Globals.NUM_MACHINES = 1;
-      Globals.MACHINE_MAX_RESOURCE = 40;
+      Globals.MACHINE_MAX_RESOURCE=40;
       Globals.numQueues = 8;
       Globals.numBatchJobs = 100;
       Globals.DEBUG_LOCAL = true;
@@ -418,18 +426,21 @@ public class Main {
       Globals.setupParameters();
       System.out.println("=================================================================");
       System.out.println("Run METHOD: " + Globals.METHOD + " with " + Globals.numQueues + " batch queues.");
-      runSimulationScenario(true);
+      runSimulationScenario(false);
       System.out.println();
     } else {
+      Globals.MEMORY_SCALE_DOWN=10;
       Globals.NUM_MACHINES = 1;
+      Globals.SIM_END_TIME = 800.0;
       Globals.METHOD = Method.EC;
-      Globals.MACHINE_MAX_RESOURCE = 1;
-      Globals.workload = Globals.WorkLoadType.SIMPLE;
+//      Globals.METHOD = Method.MaxMinMem;
+      Globals.MACHINE_MAX_RESOURCE = 40;
+      Globals.workload = Globals.WorkLoadType.BB;
       Globals.IS_GEN = true;
       Globals.SCALE_UP_FACTOR = 1;
       Globals.setupParameters();
       Globals.numQueues = 2;
-      Globals.numBatchJobs = 2;
+      Globals.numBatchJobs = 50;
       runSimulationScenario(false);
       System.out.println();
     }

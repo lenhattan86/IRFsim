@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import cluster.datastructures.BaseJob;
+import cluster.datastructures.InterchangableResourceDemand;
 import cluster.datastructures.Resource;
 import cluster.datastructures.Resources;
 import cluster.datastructures.Task;
@@ -14,8 +15,8 @@ import cluster.simulator.Simulator;
 import cluster.utils.Utils;
 
 public class Machine {
-	
-	private static final boolean DEBUG = true;
+
+  private static final boolean DEBUG = true;
 
   int machineId;
 
@@ -58,41 +59,39 @@ public class Machine {
     return earliestStartTime;
   }
 
-  public void assignTask(int dagId, int taskId, double taskDuration,
-      Resource taskResources) {
-    // TODO - change 0.0 in case of self editing state thing
+  public void assignTask(int dagId, int taskId, double taskDuration, Resource taskResources) {
     currentTime = execMode ? Simulator.CURRENT_TIME : currentTime;
 
     // if task does not fit -> reject it
     boolean fit = getTotalResAvail().greaterOrEqual(taskResources);
-    if (!fit)
-      return;
+    if (!fit) return;
 
     // 1. update the amount of resources allocated
     totalResAlloc.addWith(taskResources);
 
     // 2. compute the expected time for this task
-    double expTaskComplTime = Utils.round(currentTime + taskDuration, 2);
-    Task t = new Task(dagId, taskId, taskDuration, taskResources);
+    // TODO: compute the expected task completion time.
+    double expTaskComplTime = Utils.roundDefault(currentTime + taskDuration);
+    Task t = new Task(dagId, taskId, taskDuration, null);
+    t.usage = taskResources;
     runningTasks.put(t, expTaskComplTime);
-   
   }
-  
-  public Resource preemptTask(Task task) {
-    // TODO - change 0.0 in case of self editing state thing
+
+/*  public Resource preemptTask(Task task) {
     currentTime = execMode ? Simulator.CURRENT_TIME : currentTime;
-    
+
     runningTasks.remove(task);
     BaseJob dag = Simulator.getDag(task.dagId);
-    dag.getRsrcInUse().subtract(task.resDemands);
-    
- // remove the task from runnable and put it in running
- 		dag.runningTasks.add(task.dagId);
- 		// unallocJob.launchedTasksNow.add(taskId);
- 		dag.runnableTasks.remove(task.dagId);
-    
-    return task.resDemands;
-  }
+    // TODO: may not need this
+    dag.getRsrcInUse().subtract(task.demand);
+
+    // remove the task from runnable and put it in running
+    dag.runningTasks.add(task.dagId);
+    // unallocJob.launchedTasksNow.add(taskId);
+    dag.runnableTasks.remove(task.dagId);
+    // TODO: do not need this
+    return task.demand;
+  }*/
 
   // [dagId -> List<TaskId>]
   public Map<Integer, List<Integer>> finishTasks(double... finishTime) {
@@ -107,11 +106,14 @@ public class Machine {
 
       if (entry.getValue() <= currentTime) {
         Task t = entry.getKey();
-        totalResAlloc.subtract(t.resDemands);
+        Resource taskRes = t.usage;
+        // TODO: update the remaining resource
+        totalResAlloc.subtract(taskRes);
 
         // update resource freed from corresponding job
         BaseJob dag = Simulator.getDag(t.dagId);
-        dag.getRsrcInUse().subtract(t.resDemands);
+        // TODO: update the remaining resource
+        dag.getRsrcInUse().subtract(taskRes);
 
         if (tasksFinished.get(t.dagId) == null) {
           tasksFinished.put(t.dagId, new ArrayList<Integer>());
@@ -131,17 +133,17 @@ public class Machine {
     return this.machineId;
   }
 
-	public Task getLastRunningTask(String queueName) {
-		Task res = null;
-		Iterator<Map.Entry<Task, Double>> iter = runningTasks.entrySet().iterator();
+  public Task getLastRunningTask(String queueName) {
+    Task res = null;
+    Iterator<Map.Entry<Task, Double>> iter = runningTasks.entrySet().iterator();
     while (iter.hasNext()) {
       Map.Entry<Task, Double> entry = iter.next();
       Task task = entry.getKey();
       String qName = Simulator.getDag(task.dagId).getQueueName();
       if (qName.equals(queueName)) {
-      	res = task;
+        res = task;
       }
     }
-	  return res;
+    return res;
   }
 }

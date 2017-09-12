@@ -11,6 +11,7 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
 
+import cluster.data.JobData;
 import cluster.data.SessionData;
 import cluster.datastructures.BaseJob;
 import cluster.datastructures.Dependency;
@@ -141,7 +142,6 @@ public class GenInput {
       boolean isUncertain) {
     String str = "";
     str += "# " + jobId + "\n";
-    // TODO: customize the job arrival time
     str += "" + job.numStages + " " + jobId + " " + job.NUM_ITERATIONS + " "+ arrivalTime + " "
         + queueName + "\n";
     for (Map.Entry<String, SubGraph> entry : job.stages.entrySet()) {
@@ -154,21 +154,22 @@ public class GenInput {
             * Globals.ESTIMASION_ERRORS / 0.1;
         error = Math.min(Math.max(error, -1), 1);
         uncertainDur = stage.vDuration * error;
-        uncertainDur = Utils.round(uncertainDur, 2);
+        uncertainDur = Utils.roundDefault(uncertainDur);
       }
 
       double duration = (stage.vDuration + uncertainDur) * durScale
           / Globals.STEP_TIME;
-      duration = Utils.round(duration, 0) * Globals.STEP_TIME;
-      duration = Utils.round(duration, 2);
+      duration = Utils.roundDefault(duration);
       duration = Math.max(duration, Globals.STEP_TIME);
       if (durScale <= 0)
         duration = Globals.STEP_TIME;
       // TODO: hardcode
       // duration = 5.0;
       str += stage.name + " " + duration;
-
-      for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
+      
+      //TODO: it may not be correct here as the following conversion is not proper.
+      double[] resArray = stage.vDemands.convertToResourceArray();
+      for (int i = 0; i < 2; i++) {
           double uncertainRes = 0.0;
           if (isUncertain) {
             int len = SessionData.RES_ERROR_10.length;
@@ -176,14 +177,15 @@ public class GenInput {
             double error = SessionData.RES_ERROR_10[stageIter % len][i]
                 * Globals.ESTIMASION_ERRORS / 0.1;
             error = Math.min(Math.max(error, -1), 1);
-            uncertainRes = stage.vDemands.resource(i) * error;
-            uncertainRes = Utils.round(uncertainRes, 2);
+            uncertainRes = resArray[i] * error;
+            uncertainRes = Utils.roundDefault(uncertainRes);
           }
           str += " "
-              + Utils.round(stage.vDemands.resource(i) + uncertainRes, 2);
+              + Utils.roundDefault(resArray[i] + uncertainRes);
       }
-      str += " " + stage.getBeta();
-      int taskNum = (int) (stage.vids.length() * taskNumScale);
+//      str += " " + stage.getBeta();      
+      str += " " + JobData.BETAs[(jobId*job.numStages+stageIter) % JobData.BETAs.length];
+      int taskNum = (int) (stage.taskNum * taskNumScale);
       if (taskNum == 0)
         taskNum = 1;
       str += " " + taskNum + "\n";
@@ -265,6 +267,9 @@ public class GenInput {
       int jobIdx = i + batchStartId;
       if (jobIter2.hasNext()) {
         MLJob job = (MLJob) jobIter2.next();
+        
+        job.convertFromDAGToMLJob(); // Convert DAG to MLJob
+        
         String toWrite = "";
         if (!Globals.GEN_JOB_ARRIVAL)
           toWrite = genSingleJobInfo(jobIdx, "queue" + (batchQueueIdx), job,
@@ -355,7 +360,6 @@ public class GenInput {
       }
       file.close();
     } catch (IOException e) {
-      // TODO Auto-generated catch block
       e.printStackTrace();
     }
   }
@@ -382,7 +386,7 @@ public class GenInput {
 
   public static Queue<BaseJob> readWorkloadTrace(String workloadFile) {
     Queue<BaseJob> jobs = new LinkedList<BaseJob>();
-    jobs = MLJob.readDags(workloadFile); // change the parameters.
+    jobs = MLJob.readDags(workloadFile, false, false); // change the parameters.
     return jobs;
   }
 }

@@ -6,23 +6,26 @@ public class Task implements Comparable<Task> {
   public int taskId;
   public int dagId;
   public double taskDuration;
-  public Resource resDemands;
+  public InterchangableResourceDemand demand;
+  public Resource usage;
+  
+  private int numSubtask = 0;
 
   public Task(int dagId, int taskId) {
     this.dagId = dagId;
     this.taskId = taskId;
   }
 
-  public Task(int dagId, int taskId, double taskDuration, Resource resDemands) {
+  public Task(int dagId, int taskId, double taskDuration, InterchangableResourceDemand demand) {
     this.dagId = dagId;
     this.taskId = taskId;
     this.taskDuration = taskDuration;
-    this.resDemands = resDemands;
+    this.demand = demand;
   }
 
-  public Task(double taskDuration, Resource resDemands) {
+  public Task(double taskDuration, InterchangableResourceDemand demand) {
     this.taskDuration = taskDuration;
-    this.resDemands = resDemands;
+    this.demand = demand;
   }
 
   @Override
@@ -35,4 +38,13 @@ public class Task implements Comparable<Task> {
   public int compareTo(Task arg0) {
     return 0;
   }
+  
+  public void increaseSubtask(){
+    this.numSubtask++;
+  }
+  
+  public int getNumSubtask(){
+    return this.numSubtask;
+  }
+  
 }

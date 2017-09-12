@@ -15,7 +15,7 @@ public class Resources {
       if (isNormalized)
         scale = Simulator.cluster.getClusterMaxResAlloc().resource(i);
       double resSize = size * scale;
-      res.resources[i] = Utils.round(resSize, 2);
+      res.resources[i] = Utils.roundDefault(resSize);
     }
     return res;
   }
@@ -46,7 +46,7 @@ public class Resources {
   public static Resource subtract(Resource total, Resource decr) {
     Resource subtractedRes = new Resource(0.0);
     for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
-      subtractedRes.resources[i] = Utils.round(total.resources[i] - decr.resources[i], 2);
+      subtractedRes.resources[i] = Utils.roundDefault(total.resources[i] - decr.resources[i]);
     }
     return subtractedRes;
   }
@@ -54,7 +54,7 @@ public class Resources {
   public static Resource subtractPositivie(Resource total, Resource decr) {
     Resource subtractedRes = new Resource(0.0);
     for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
-      subtractedRes.resources[i] = Math.max(Utils.round(total.resources[i] - decr.resources[i], 2), 0);
+      subtractedRes.resources[i] = Math.max(Utils.roundDefault(total.resources[i] - decr.resources[i]), 0);
     }
     return subtractedRes;
   }
@@ -72,7 +72,7 @@ public class Resources {
     assert (factor > 0);
     Resource normalizedRes = new Resource();
     for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
-      normalizedRes.resources[i] = Utils.round(res.resources[i] / factor, 2);
+      normalizedRes.resources[i] = Utils.roundDefault(res.resources[i] / factor);
     }
     return normalizedRes;
   }
@@ -80,7 +80,7 @@ public class Resources {
   public static Resource divideVector(Resource res, Resource denom) {
     Resource normalizedRes = new Resource();
     for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
-      normalizedRes.resources[i] = Utils.round(res.resources[i] / denom.resource(i), 2);
+      normalizedRes.resources[i] = Utils.roundDefault(res.resources[i] / denom.resource(i));
     }
     return normalizedRes;
   }
@@ -89,7 +89,7 @@ public class Resources {
     assert (factor > 0);
     Resource normalizedRes = new Resource();
     for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
-      normalizedRes.resources[i] = Utils.round(res.resources[i] / factor, 2);
+      normalizedRes.resources[i] = Utils.roundDefault(res.resources[i] / factor);
     }
     return normalizedRes;
   }
@@ -107,7 +107,7 @@ public class Resources {
     assert (factor > 0);
     Resource normalizedRes = new Resource();
     for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
-      normalizedRes.resources[i] = Utils.round(res.resources[i] * factor, 2);
+      normalizedRes.resources[i] = Utils.roundDefault(res.resources[i] * factor);
     }
     return normalizedRes;
   }
@@ -116,7 +116,7 @@ public class Resources {
     assert (factor > 0);
     Resource normalizedRes = new Resource();
     for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
-      normalizedRes.resources[i] = Utils.round(res.resources[i] * factor, 2);
+      normalizedRes.resources[i] = Utils.roundDefault(res.resources[i] * factor);
     }
     return normalizedRes;
   }
@@ -124,7 +124,7 @@ public class Resources {
   public static Resource sum(Resource res, Resource addedRes) {
     Resource newRes = new Resource();
     for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
-      newRes.resources[i] = res.resources[i] + Utils.round(addedRes.resources[i], 2);
+      newRes.resources[i] = res.resources[i] + Utils.roundDefault(addedRes.resources[i]);
     }
     return newRes;
   }
@@ -132,7 +132,7 @@ public class Resources {
   public static Resource sumRound(Resource res, Resource addedRes) {
     Resource newRes = new Resource();
     for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
-      newRes.resources[i] = Utils.round(res.resources[i] + addedRes.resources[i], 2);
+      newRes.resources[i] = Utils.roundDefault(res.resources[i] + addedRes.resources[i]);
     }
     return newRes;
   }

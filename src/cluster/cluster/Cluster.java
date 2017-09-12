@@ -46,6 +46,7 @@ public class Cluster {
       LOG.warning("ERROR; task should fit");
       return false;
     }
+    //TODO: how to assign task?
     machine.assignTask(dagId, taskId, taskDuration, taskResources);
     return true;
   }
@@ -60,12 +61,11 @@ public class Cluster {
       boolean fit = machine.getTotalResAvail().greaterOrEqual(taskResources);
       if (!fit)
         continue;
-
       machine.assignTask(dagId, taskId, taskDuration, taskResources);
       
       // update resource allocated to the corresponding job
       BaseJob dag = Simulator.getDag(dagId);
-      dag.getRsrcInUse().addWith(dag.rsrcDemands(taskId));
+      dag.getRsrcInUse().addWith(taskResources);
       
    // remove the task from runnable and put it in running
   		dag.runningTasks.add(taskId);
@@ -78,7 +78,7 @@ public class Cluster {
   }
   
 //checks for fitting in resShare should already be done
- public Resource preemptTask(String queueName) {
+ /*public Resource preemptTask(String queueName) {
 	 Resource returnedRes = null;
 	 
    for (Machine machine : machines.values()) {
@@ -88,7 +88,7 @@ public class Cluster {
      }
    }
    return returnedRes;
- }
+ }*/
 
   // return: [Key: dagId -- Value: List<taskId>]
   public Map<Integer, List<Integer>> finishTasks(double... earliestFinishTime) {

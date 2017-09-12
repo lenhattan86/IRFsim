@@ -27,7 +27,7 @@ for i=1:numOfStages
   jobDemand = [jobDemand '}'];
   errors = [errors jobDemand ',']; 
 end
-errors = [errors '}'];
+errors = [errors '};'];
 
 fid=fopen('err.txt','w');
 

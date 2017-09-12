@@ -25,7 +25,7 @@ public class Resource implements Comparable {
 	public Resource(double res) {
 		resources = new double[Globals.NUM_DIMENSIONS];
 		for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
-			resources[i] = Utils.round(res, 2);
+			resources[i] = Utils.roundDefault(res);
 		}
 	}
 
@@ -34,7 +34,7 @@ public class Resource implements Comparable {
 	public Resource(Resource res) {
 		resources = new double[Globals.NUM_DIMENSIONS];
 		for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
-			resources[i] = Utils.round(res.resource(i), 2);
+			resources[i] = Utils.roundDefault(res.resource(i));
 		}
 	}
 
@@ -42,7 +42,7 @@ public class Resource implements Comparable {
 		resources = new double[Globals.NUM_DIMENSIONS];
 		for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
 		  int idx = i%res.length;
-			resources[i] = Utils.round(res[idx], 2);
+			resources[i] = Utils.roundDefault(res[idx]);
 		}
 	}
 	
@@ -86,7 +86,7 @@ public class Resource implements Comparable {
 		Resource addedRes = Resources.clone(res);
 		for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
 			addedRes.resources[i] += val;
-			addedRes.resources[i] = Utils.round(addedRes.resources[i], 2);
+			addedRes.resources[i] = Utils.roundDefault(addedRes.resources[i]);
 		}
 		return addedRes;
 	}
@@ -95,21 +95,21 @@ public class Resource implements Comparable {
 	public void addWith(Resource res) {
 		for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
 			resources[i] += res.resources[i];
-			resources[i] = Utils.round(resources[i], 2);
+			resources[i] = Utils.roundDefault(resources[i]);
 		}
 	}
 
 	public void subtract(Resource res) {
 		for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
 			resources[i] -= res.resources[i];
-			resources[i] = Utils.round(Math.max(resources[i], 0), 2);
+			resources[i] = Utils.roundDefault(Math.max(resources[i], 0));
 		}
 	}
 
 	public void subtract(double decr) {
 		for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
 			resources[i] -= decr;
-			resources[i] = Utils.round(Math.max(resources[i], 0), 2);
+			resources[i] = Utils.roundDefault(Math.max(resources[i], 0));
 		}
 	}
 
@@ -123,7 +123,6 @@ public class Resource implements Comparable {
 	public void divide(double factor) {
 		for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
 			resources[i] /= factor;
-			// resources[i] = Utils.round(resources[i], 2);
 		}
 	}
 
@@ -194,7 +193,7 @@ public class Resource implements Comparable {
 				score += a.resources[i] * b.resources[i];
 			}
 		}
-		return Utils.round(score, 2);
+		return Utils.roundDefault(score);
 	}
 
 	public boolean distinctNew(Resource res) {
@@ -322,7 +321,7 @@ public class Resource implements Comparable {
 	public String toStringList() {
     String output = "{";
     for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
-      output += Utils.round(resources[i]/Globals.CAPACITY, 4);
+      output += Utils.roundDefault(resources[i]/Globals.CAPACITY);
       if (i<Globals.NUM_DIMENSIONS-1)
         output +=  ",";      
     }
@@ -346,7 +345,7 @@ public class Resource implements Comparable {
 	
 	public void round(int places){
 		for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
-			this.resources[i] = Utils.round(this.resources[i],places);
+			this.resources[i] = Utils.roundDefault(this.resources[i]);
 		}
 	}
 	
@@ -367,7 +366,7 @@ public class Resource implements Comparable {
 	public double sum() {
 		double sum=0.0;
 		for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
-			sum += this.resources[i]; //TODO need to normalize resources
+			sum += this.resources[i]; 
 		}
 		return sum;
 	}

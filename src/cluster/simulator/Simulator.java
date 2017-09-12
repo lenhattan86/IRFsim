@@ -30,7 +30,7 @@ import cluster.utils.Utils;
 // implement the timeline server
 public class Simulator {
 
-  public static boolean DEBUG = false;
+  public static boolean DEBUG = true;
 
   public static double CURRENT_TIME = 0;
 
@@ -38,7 +38,7 @@ public class Simulator {
   public static Queue<BaseJob> runningJobs = null;
   public static Queue<BaseJob> runningBatchJobs = null;
   public static Queue<BaseJob> completedJobs = null;
-  
+
   public static boolean STOP_CMD = false;
 
   public static JobQueueList QUEUE_LIST = null;
@@ -73,8 +73,7 @@ public class Simulator {
       }
     }
 
-    if (dag == null)
-      return;
+    if (dag == null) return;
 
     int newDagId = dags.size();
     try {
@@ -82,7 +81,7 @@ public class Simulator {
       newDag.dagId = newDagId;
       newDag.dagName = "" + newDagId;
       dags.add(newDag);
-//      Simulator.QUEUE_LIST.addRunnableJob2Queue(newDag, newDag.getQueueName());
+      // Simulator.QUEUE_LIST.addRunnableJob2Queue(newDag, newDag.getQueueName());
     } catch (CloneNotSupportedException e) {
       e.printStackTrace();
     }
@@ -91,31 +90,26 @@ public class Simulator {
   public Simulator() {
     CURRENT_TIME = 0;
     STOP_CMD = false;
-    
+
     QUEUE_LIST = new JobQueueList();
 
     QUEUE_LIST.readQueue(Globals.PathToQueueInputFile);
-    
+
     QUEUE_LIST.sortJobQueues();
 
     QUEUE_LIST.printQueueInfo();
-    
+
     System.out.println("start reading Dags from " + Globals.PathToInputFile);
 
-    runnableJobs = MLJob.readDags(Globals.PathToInputFile);
-    
-    System.out.println("done reading Dags from " + Globals.PathToInputFile);
-    
-    runningBatchJobs = new LinkedList<BaseJob>();
+    runnableJobs = MLJob.readDags(Globals.PathToInputFile, true, true);
 
-    Output.debugln(DEBUG, "Print DAGs");
-    // for (BaseDag dag : runnableJobs) {
-    // ((StageDag) dag).viewDag();
-    // }
+    System.out.println("done reading Dags from " + Globals.PathToInputFile);
+
+    runningBatchJobs = new LinkedList<BaseJob>();
 
     cluster = new Cluster(true, new Resource(Globals.MACHINE_MAX_RESOURCE));
 
-    if (Globals.COMPUTE_STATISTICS) {
+    /*if (Globals.COMPUTE_STATISTICS) {
       double[] area_makespan = new double[Globals.NUM_DIMENSIONS];
       Output.debugln(DEBUG, "#dag_id maxCP area");
       double total_area = 0.0;
@@ -125,7 +119,8 @@ public class Simulator {
         for (SubGraph stage : ddag.stages.values()) {
           bottlenecks[stage.vDemands.resBottleneck()] += 1;
         }
-        Output.debugln(DEBUG, "dagName:" + ddag.dagName + " numOfStages:" + ddag.stages.values().size());
+        Output.debugln(DEBUG,
+            "dagName:" + ddag.dagName + " numOfStages:" + ddag.stages.values().size());
         for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
           Output.debug(DEBUG, " " + bottlenecks[i] / ddag.stages.values().size());
         }
@@ -136,25 +131,26 @@ public class Simulator {
         for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
           area_makespan[i] += dag.area().get(i);
         }
-        double areaJob = (double) Collections.max(dag.area().values()) / Globals.MACHINE_MAX_RESOURCE;
+        double areaJob = (double) Collections.max(dag.area().values())
+            / Globals.MACHINE_MAX_RESOURCE;
         double maxCPJob = dag.getMaxCP();
         Output.debugln(DEBUG, dag.dagId + " " + maxCPJob + " " + areaJob);
         total_area += areaJob;
       }
       double max_area_makespan = Double.MIN_VALUE;
       for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
-        max_area_makespan = Math.max(max_area_makespan, area_makespan[i] / Globals.MACHINE_MAX_RESOURCE);
+        max_area_makespan = Math.max(max_area_makespan,
+            area_makespan[i] / Globals.MACHINE_MAX_RESOURCE);
       }
       Output.debugln(DEBUG, "makespan_lb: " + total_area + " " + max_area_makespan);
       // System.exit(-1); // TODO: why exit in the middle
-    }
+    }*/
 
     totalReplayedJobs = runnableJobs.size();
     runningJobs = new LinkedList<BaseJob>();
     completedJobs = new LinkedList<BaseJob>();
 
     queueSched = new QueueScheduler();
-
 
     tasksToStartNow = new TreeMap<Integer, Set<Integer>>();
 
@@ -170,14 +166,14 @@ public class Simulator {
       // for (Simulator.CURRENT_TIME = 0; Simulator.CURRENT_TIME <=
       // Globals.SIM_END_TIME; Simulator.CURRENT_TIME += Globals.STEP_TIME) {
 
-      if (Simulator.CURRENT_TIME >= Globals.DEBUG_START && Simulator.CURRENT_TIME <= Globals.DEBUG_END) {
+      if (Simulator.CURRENT_TIME >= Globals.DEBUG_START
+          && Simulator.CURRENT_TIME <= Globals.DEBUG_END) {
         DEBUG = true;
-      } else
-        DEBUG = false;
+      } else DEBUG = false;
 
-      Output.debugln(DEBUG, "\n==== STEP_TIME:" + Simulator.CURRENT_TIME + " ====\n");
+      Output.debugln(DEBUG, "\n==== STEP_TIME:" + Utils.roundDefault(Simulator.CURRENT_TIME) + " ====\n");
 
-      Simulator.CURRENT_TIME = Utils.round(Simulator.CURRENT_TIME, 2);
+      Simulator.CURRENT_TIME = Utils.roundDefault(Simulator.CURRENT_TIME);
       tasksToStartNow.clear();
 
       // terminate any task if it can finish and update cluster available
@@ -189,7 +185,6 @@ public class Simulator {
 
       // handle jobs completion and arrivals
       boolean newJobArrivals = handleNewJobArrival4MultiQueues();
-      
       // STOP condition
       if (stop()) {
         printReport();
@@ -203,18 +198,18 @@ public class Simulator {
       if (!jobCompleted && !newJobArrivals && finishedTasks.isEmpty())
         Output.debugln(DEBUG, "----- Do nothing ----");
       else {
-        Output.debugln(DEBUG,
-            "[Simulator]: START work conserving; clusterAvail:" + Simulator.cluster.getClusterResAvail());
+        Output.debugln(DEBUG, "[Simulator]: START work conserving; clusterAvail:"
+            + Simulator.cluster.getClusterResAvail());
         queueSched.schedule();
-        Output.debugln(DEBUG,
-            "[Simulator]: END work conserving; clusterAvail:" + Simulator.cluster.getClusterResAvail());
+        Output.debugln(DEBUG, "[Simulator]: END work conserving; clusterAvail:"
+            + Simulator.cluster.getClusterResAvail());
       }
-      
+
       for (BaseJob dag : Simulator.runningJobs) {
         dag.receivedService.addUsage(dag.getRsrcInUse());
         Resource usage = new Resource(dag.getRsrcInUse());
         dag.usedReses.add(usage);
-//        System.out.println(usage);
+        // System.out.println(usage);
       }
 
       Simulator.printUsedResources();
@@ -225,8 +220,7 @@ public class Simulator {
   }
 
   private boolean isStop() {
-    if (Simulator.CURRENT_TIME >= Globals.SIM_END_TIME)
-      return true;
+    if (Simulator.CURRENT_TIME >= Globals.SIM_END_TIME) return true;
     // return false;
     return IS_STOP;
   }
@@ -244,7 +238,7 @@ public class Simulator {
       makespan = Math.max(makespan, dagDuration);
       average += dagDuration;
       results.put(dag.dagId, dagDuration);
-      System.out.println(dag.dagId + " " + dagDuration);
+      System.out.println(dag.dagId + " " + dagDuration + " : " + dag.getQueueName());
     }
     average /= completedJobs.size();
     System.out.println("---------------------");
@@ -254,10 +248,6 @@ public class Simulator {
     // System.out.println(dagId + " " + results.get(dagId));
     // }
     System.out.println("---------------------");
-    // for (JobQueue queue : QUEUE_LIST.getJobQueues()) {
-    // System.out.println("Queue " + queue.getQueueName() + "'s job compl. time:
-    // " + queue.avgCompletionTime()); //TODO:
-    // }
     System.out.println("NUM_OPT:" + Globals.NUM_OPT + " NUM_PES:" + Globals.NUM_PES);
   }
 
@@ -270,42 +260,41 @@ public class Simulator {
       double dagDuration = (dag.jobEndTime - dag.jobStartRunningTime);
       makespan = Math.max(makespan, dagDuration);
       results.put(dag.dagId, dagDuration);
-      Output.writeln(dag.dagId + "," + dag.jobStartRunningTime + "," + dag.jobEndTime + "," + dagDuration + ","
-          + dag.getQueueName());
+      Output.writeln(dag.dagId + "," + dag.jobStartRunningTime + "," + dag.jobEndTime + ","
+          + dagDuration + "," + dag.getQueueName());
     }
   }
-  
+
   private void writeResUsage() {
     System.out.println("==== Resource Usage in details ====");
     System.out.print("jobs = ");
     for (BaseJob dag : completedJobs) {
-      System.out.print(dag.dagId+",");
+      System.out.print(dag.dagId + ",");
     }
     System.out.println("");
-    
+
     System.out.print("normalizeRes = {");
     for (BaseJob dag : completedJobs) {
       Resource maxRes = new Resource();
-      for (Resource res: dag.usedReses)
-        maxRes  = Resources.piecewiseMax(maxRes, res);
-      System.out.print(""+maxRes.toStringList()+",");
+      for (Resource res : dag.usedReses)
+        maxRes = Resources.piecewiseMax(maxRes, res);
+      System.out.print("" + maxRes.toStringList() + ",");
     }
     System.out.println("};");
-    
+
     System.out.print("durs = {");
     for (BaseJob dag : completedJobs) {
       double dagDuration = (dag.jobEndTime - dag.jobStartRunningTime);
-      System.out.print(dagDuration+",");
+      System.out.print(dagDuration + ",");
     }
     System.out.println("};");
-    
-    
+
   }
 
   public static void printUsedResources() {
     for (BaseJob dag : runningJobs) {
-      Output.debugln(DEBUG,
-          "Dag Id " + dag.dagId + " in " + dag.getQueueName() + " -- dag.rsrcInUse: " + dag.getRsrcInUse());
+      Output.debugln(DEBUG, "Dag Id " + dag.dagId + " in " + dag.getQueueName()
+          + " -- dag.rsrcInUse: " + dag.getRsrcInUse());
       // Output.writeln(dag.dagId + ", " + dag.rsrcInUse, true,
       // Globals.PathToResourceLog);
       // Output.debugln(DEBUG, "Dag Id " + dag.dagId + " -- Resource Share: " +
@@ -332,19 +321,17 @@ public class Simulator {
   }
 
   boolean stop() {
-    if(Simulator.CURRENT_TIME >= Globals.SIM_END_TIME)
+    if (Simulator.CURRENT_TIME >= Globals.SIM_END_TIME) {
+      System.out.println("Simulator finished as the time is up.");
       return true;
-    
-    if ((Globals.DEBUG_ALL||Globals.DEBUG_LOCAL) && Simulator.CURRENT_TIME >= Globals.SIM_END_TIME)
+    }
+
+    if ((Globals.DEBUG_ALL || Globals.DEBUG_LOCAL)
+        && Simulator.CURRENT_TIME >= Globals.SIM_END_TIME)
       return true;
-    // return (runnableJobs.isEmpty() && runningJobs.isEmpty() &&
-    // (completedJobs.size() == totalReplayedJobs));
-//    if (runningBatchJobs.isEmpty() && runnableJobs.isEmpty())
-//      System.err.println("You need to increase the number of bursty jobs");
-    
-    if ( Globals.numQueues != 0)
-      return runningBatchJobs.isEmpty();
-    
+
+    if (Globals.numQueues != 0) return runningBatchJobs.isEmpty();
+
     return STOP_CMD;
   }
 
@@ -360,15 +347,14 @@ public class Simulator {
 
         Output.debugln(DEBUG, "DAG:" + crdag.dagId + ": " + finishedTasks.get(crdag.dagId).size()
             + " tasks finished at time:" + Simulator.CURRENT_TIME);
-
-//        boolean thisDagFinished = ((StageDag) crdag).finishTasks_old(finishedTasks.get(crdag.dagId), false);
-        boolean thisDagFinished = ((MLJob) crdag).finishTasks(finishedTasks.get(crdag.dagId), false);
+        boolean thisDagFinished = ((MLJob) crdag).finishTasks(finishedTasks.get(crdag.dagId),
+            false);
 
         if (thisDagFinished) {
-          Output.debugln(DEBUG, "DAG:" + crdag.dagId + " finished at time:" + Simulator.CURRENT_TIME);
+          Output.debugln(DEBUG,
+              "DAG:" + crdag.dagId + " finished at time:" + Simulator.CURRENT_TIME);
           runningBatchJobs.remove(crdag);
           completedJobs.add(crdag);
-
           QUEUE_LIST.addCompletionJob2Queue(crdag, crdag.getQueueName());
 
           iter.remove();
@@ -382,10 +368,10 @@ public class Simulator {
 
   boolean handleNewJobArrival4MultiQueues() {
     // flag which specifies if jobs have inter-arrival times or starts at t=0
-    Output.debugln(DEBUG,
-        "handleNewJobArrival; currentTime:" + Simulator.CURRENT_TIME + " nextTime:" + nextTimeToLaunchJob);
+    Output.debugln(DEBUG, "handleNewJobArrival; currentTime:" + Simulator.CURRENT_TIME
+        + " nextTime:" + nextTimeToLaunchJob);
 
-    boolean existNewJob = false; 
+    boolean existNewJob = false;
 
     // for batch jobs.
     // start all batch jobs at time = 0
@@ -396,7 +382,8 @@ public class Simulator {
           newlyStartedJobs.add(newJob);
           Simulator.QUEUE_LIST.addRunningJob2Queue(newJob, newJob.getQueueName());
           newJob.jobStartTime = Simulator.CURRENT_TIME;
-          Output.debugln(DEBUG, "Started job:" + newJob.dagId + " at time:" + Simulator.CURRENT_TIME);
+          Output.debugln(DEBUG,
+              "Started job:" + newJob.dagId + " at time:" + Simulator.CURRENT_TIME);
           existNewJob = true;
         }
       }
@@ -412,7 +399,8 @@ public class Simulator {
             // dag.jobStartRunningTime = dag.jobStartTime;
             newlyStartedJobs.add(dag);
             Simulator.QUEUE_LIST.addRunningJob2Queue(dag, dag.getQueueName());
-            Output.debugln(DEBUG, "Started job:" + dag.dagId + " at time:" + Simulator.CURRENT_TIME);
+            Output.debugln(DEBUG,
+                "Started job:" + dag.dagId + " at time:" + Simulator.CURRENT_TIME);
             existNewJob = true;
           }
         }
@@ -428,32 +416,18 @@ public class Simulator {
     return existNewJob;
   }
 
-  boolean handleNewJobCompleted() {
-    int currCompletedJobs = completedJobs.size();
-    if (lastCompletedJobs < currCompletedJobs) {
-      lastCompletedJobs = currCompletedJobs;
-      return true;
-    }
-    return false;
-  }
-
   public static MLJob getDag(int dagId) {
     for (BaseJob dag : Simulator.runningJobs) {
       if (dag.dagId == dagId) {
         return (MLJob) dag;
       }
     }
-    System.err.println("\nThere is no job "+dagId);
+    System.err.println("\nThere is no job " + dagId);
     return null;
   }
-
 
   void updateQueueWeight() {
 
   }
 
-  private void setWeight4Queue(String queueName, double weight) {
-    JobQueue q = Simulator.QUEUE_LIST.getJobQueue(queueName);
-    q.setWeight(weight);
-  }
 }

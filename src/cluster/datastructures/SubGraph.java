@@ -14,9 +14,10 @@ public class SubGraph {
   public int id;
   public String name;
   public Interval vids;
+  public int taskNum;
 
   public double vDuration;
-  public Resource vDemands;
+  public InterchangableResourceDemand vDemands;
   public int arrivalTime =0; // relative Arrival Time
   
   private double beta = 1.0; // tranfer rate CPU -> GPU
@@ -31,23 +32,24 @@ public class SubGraph {
 
   public Map<String, Dependency> parents, children;
 
-  public SubGraph(String name, int id, Interval vids, double duration,
-      double[] resources, double beta) {
+  public SubGraph(String name, int id, Interval vids, double duration, int taskNum,
+      InterchangableResourceDemand demand) {
     this.name = name;
     this.id = id;
+    this.taskNum = taskNum;
     this.vids = new Interval(vids.begin, vids.end);
 
     parents = new HashMap<String, Dependency>();
     children = new HashMap<String, Dependency>();
 
     vDuration = duration;
-    vDemands = new Resource(resources);
-    this.beta = beta;
+    vDemands = new InterchangableResourceDemand(demand.getGpuCpu(), demand.getMemory(), demand.getBeta());
   }
 
   public static SubGraph clone(SubGraph stage) {
+    
     SubGraph clonedStage = new SubGraph(stage.name, stage.id, stage.vids,
-        stage.vDuration, stage.vDemands.resources, stage.beta);
+        stage.vDuration, stage.taskNum, stage.vDemands);
 
     clonedStage.parents = new HashMap<String, Dependency>();
     clonedStage.children = new HashMap<String, Dependency>();
@@ -76,24 +78,31 @@ public class SubGraph {
     return vDuration;
   }
 
-  public Resource rsrcDemands(int task) {
+  public InterchangableResourceDemand rsrcDemands(int task) {
     assert (task >= vids.begin && task <= vids.end);
     return vDemands;
   }
+  
+  /*public Resource rsrcUsage(int task) {
+    assert (task >= vids.begin && task <= vids.end);
+    //todo: get the real usage of a task
+    return vDemands.convertToCPUDemand();
+  }*/
+
 
   public Resource totalWork() {
-    Resource totalWork = Resources.clone(vDemands);
+    Resource totalWork = Resources.clone(vDemands.convertToGPUDemand());
     totalWork.multiply(vids.end - vids.begin + 1);
     return totalWork;
   }
 
   public Resource totalWorkInclDur() {
-    Resource totalWork = Resources.clone(vDemands);
+    Resource totalWork = Resources.clone(vDemands.convertToGPUDemand());
     totalWork.multiply((vids.end - vids.begin + 1) * vDuration);
     return totalWork;
   }
 
-  public double stageContribToSrtfScore(Set<Integer> consideredTasks) {
+/*  public double stageContribToSrtfScore(Set<Integer> consideredTasks) {
     Set<Integer> stageTasks = new HashSet<Integer>();
     for (int task = vids.begin; task <= vids.end; task++) {
       stageTasks.add(task);
@@ -106,7 +115,7 @@ public class SubGraph {
     }
     double l2Norm = Resource.l2Norm(vDemands);
     return l2Norm * remTasksToSched * vDuration;
-  }
+  }*/
   
   public ArrayList<Integer> getTasks(){
     ArrayList<Integer> stageTasks = new ArrayList<Integer>();

@@ -1,4 +1,4 @@
-function [queueNames,res1,res2,flag] = importResUsageLog(filename, startRow, endRow)
+function [queueNames,res1,res2, res3, flag] = importResUsageLog(filename, startRow, endRow)
 %IMPORTFILE Import numeric data from a text file as column vectors.
 %   [BATCH0,VARNAME2,VARNAME3] = IMPORTFILE(FILENAME) Reads data from text
 %   file FILENAME for the default selection.
@@ -26,6 +26,7 @@ if ~exist(filename, 'file')
    queueNames = 0;
    res1 = 0;
    res2 = 0;
+   res3 = 0;
    flag = false;
    return;
 end
@@ -36,7 +37,7 @@ fileID = fopen(filename,'r');
 %	column2: double (%f)
 %   column3: double (%f)
 % For more information, see the TEXTSCAN documentation.
-formatSpec = '%s%f%f%[^\n\r]';
+formatSpec = '%s%f%f%f%[^\n\r]';
 
 %% Open the text file.
 fileID = fopen(filename,'r');
@@ -67,6 +68,7 @@ fclose(fileID);
 queueNames = dataArray{:, 1};
 res1 = dataArray{:, 2};
 res2 = dataArray{:, 3};
+res3 = dataArray{:, 4};
 flag = true;
 if length(res1)<2
   flag = false;

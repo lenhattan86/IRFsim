@@ -1,22 +1,15 @@
 package queue.schedulers;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Queue;
 
-import jdk.nashorn.internal.objects.Global;
 import cluster.datastructures.BaseJob;
+import cluster.datastructures.InterchangableResourceDemand;
 import cluster.datastructures.JobQueue;
 import cluster.datastructures.Resource;
 import cluster.datastructures.Resources;
 import cluster.simulator.Simulator;
 import cluster.simulator.Main.Globals;
-import cluster.simulator.Main.Globals.Method;
 import cluster.utils.JobArrivalComparator;
 import cluster.utils.Output;
 import cluster.utils.Utils;
@@ -34,7 +27,7 @@ public class EqualShareScheduler implements Scheduler {
 
 	public EqualShareScheduler() {
 		clusterTotCapacity = Simulator.cluster.getClusterMaxResAlloc();
-		this.schedulePolicy = "EC";
+		this.schedulePolicy = "ES";
 	}
 
 	@Override
@@ -54,72 +47,84 @@ public class EqualShareScheduler implements Scheduler {
 	}
 	
 	public static void equallyAllocate(Resource resCapacity, List<JobQueue> runningQueues) {
-    // init
-    Resource consumedRes = new Resource();
-    Resource[] userDominantShareArr = new Resource[runningQueues.size()];
-    
-    int bottleneck = 0;
+	  
+	  if(runningQueues.isEmpty()) return;
+	  
+	  int numOfQueues = runningQueues.size();
+    // retrieved current usage
+    Resource[] userShareArr = new Resource[runningQueues.size()];
     int i = 0;
-    double[] auxilaryShare = new double[runningQueues.size()];
-    int bottleneckRes = 0; 
     for (JobQueue queue : runningQueues) {
       Resource normalizedShare = Resources.divideVector(queue.getResourceUsage(),
           Simulator.cluster.getClusterMaxResAlloc());
-      auxilaryShare[i] = 0.0;
-      userDominantShareArr[i] = Resources.divide(normalizedShare, queue.getWeight());
+      userShareArr[i] = Resources.divide(normalizedShare, queue.getWeight());
       i++;
     }
     
-    while (true) {
-      // step 1: pick user i with lowest equal fair share
-      
-      int sMinIdx = Utils.getMinValIdx(userDominantShareArr,bottleneck);
-      
-      if (sMinIdx < 0) {
-        // There are more resources than demand.
-        break;
-      }
-      // D_i demand for the next task
-      JobQueue q = runningQueues.get(sMinIdx);
-      BaseJob unallocJob = q.getUnallocRunningJob();
-      if (unallocJob == null) {
-        userDominantShareArr[sMinIdx].resources[bottleneck]= Double.MAX_VALUE;
-        continue;
-      }
-
-      int taskId = unallocJob.getCommingTaskId();
-      Resource allocRes = unallocJob.rsrcDemands(taskId);
-      // Like Yarn, assign one single container for the task
-      // step 3: if fit, C+D_i <= R, allocate
-      Resource temp = Resources.sumRound(consumedRes, allocRes);
-      if (resCapacity.greaterOrEqual(temp)) {
-        consumedRes = temp;
-        q.setRsrcQuota(Resources.sum(q.getRsrcQuota(), q.nextTaskRes()));
-        boolean assigned = Simulator.cluster.assignTask(unallocJob.dagId, taskId,
-            unallocJob.duration(taskId), allocRes);
-        if (assigned) {
-          // update userDominantShareArr
-          double maxRes = q.getResourceUsage().max()/Globals.CAPACITY;
-          userDominantShareArr[sMinIdx].resources[bottleneck] = maxRes / q.getWeight();
-          
-          if (unallocJob.jobStartRunningTime<0){
-            unallocJob.jobStartRunningTime = Simulator.CURRENT_TIME;
-          }
-        } else {
-          Output.debugln(DEBUG, "[EqualShareScheduler] Cannot assign resource to the task" + taskId
-              + " of Job " + unallocJob.dagId + " " + allocRes);
-          userDominantShareArr[sMinIdx].resources[bottleneck] = Double.MAX_VALUE;
+    // step 1: compute equal share
+    Resource equalShares = Resources.divide(resCapacity, numOfQueues);
+    
+    // step 2: allocate the share
+    for (JobQueue q:runningQueues){
+      Resource allocRes = q.getResourceUsage();
+      boolean jobAvail = true;
+      while(jobAvail) {
+        BaseJob unallocJob = q.getUnallocRunningJob();
+        if(unallocJob==null) {
+          jobAvail = false;
+          break;
         }
 
-      } else {
-        userDominantShareArr[sMinIdx].resources[bottleneck] = Double.MAX_VALUE;
-        // do not allocate to this queue any more
-        // break;
+        boolean isResAvail = true;
+        while(isResAvail){
+          // allocate resource to each task.
+          int taskId = unallocJob.getCommingTaskId();
+          if(taskId<0)
+            break;
+          Resource remainingRes = Resources.subtract(equalShares, allocRes);
+          
+          InterchangableResourceDemand demand = unallocJob.rsrcDemands(taskId);
+          Resource gDemand = demand.convertToGPUDemand();
+          Resource cDemand = demand.convertToCPUDemand();
+          Resource taskDemand = null;
+          boolean isCPU = false;
+          if(!gDemand.fitsIn(remainingRes)) {
+            if(!cDemand.fitsIn(remainingRes)){
+              isResAvail = false;
+              jobAvail = false;
+              break;
+            }else{
+              taskDemand = cDemand;
+              isCPU=true;
+            }
+          } else{
+            taskDemand = gDemand;
+          }
+          
+          boolean assigned = Simulator.cluster.assignTask(unallocJob.dagId, taskId,
+              unallocJob.duration(taskId), taskDemand);
+          
+          if(assigned){
+            allocRes = Resources.sum(allocRes, taskDemand);
+            if(isCPU){
+              unallocJob.isCPUUsages.put(taskId, true);
+//              Output.debugln(true, "job: " + unallocJob.dagId + " task: "+taskId);
+            }
+              
+            if (unallocJob.jobStartRunningTime<0){
+              unallocJob.jobStartRunningTime = Simulator.CURRENT_TIME;
+            }
+          } else {
+//            Output.debugln(true, "Failed to assign the resource to job " + unallocJob.dagId);
+            isResAvail=false;
+            jobAvail=false;
+            break;
+          }
+        }
       }
-    }
+    }   
   }
 
-	
 	@Override
 	public String getSchedulePolicy() {
 		return this.schedulePolicy;

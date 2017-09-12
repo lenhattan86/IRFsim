@@ -205,9 +205,7 @@ public class MLJob extends BaseJob implements Cloneable {
 
 		for (SubGraph stage : stages.values()) {
 			str += "Stage: " + stage.id + " " + stage.name + " lasts " + stage.vDuration + " " + " [";
-			for (int i = 0; i < Globals.NUM_DIMENSIONS; i++)
-				str += stage.vDemands.resource(i) + " ";
-			str += "]\n";
+			str += stage.toString() + "]\n";
 
 			str += " Task No: " + (stage.vids.end - stage.vids.begin + 1);
 			// for (int i = stage.vids.begin; i <= stage.vids.end; i++)
@@ -231,7 +229,7 @@ public class MLJob extends BaseJob implements Cloneable {
 	// end print dag //
 
 	// read dags from file //
-	public static Queue<BaseJob> readDags(String filePathString) {
+	public static Queue<BaseJob> readDags(String filePathString, boolean readNumIter, boolean readBeta) {
 	  Output.debugln(DEBUG,"[readDags] read "+ filePathString);
 
 		Queue<BaseJob> dags = new LinkedList<BaseJob>();
@@ -250,7 +248,6 @@ public class MLJob extends BaseJob implements Cloneable {
 				if (line.startsWith("#")) {
 					dag_name = line.split("#")[1];
 					dag_name = dag_name.trim();
-//					Output.debugln(DEBUG,"[readDags] DAG name: " + dag_name);
 					continue;
 				}
 
@@ -266,19 +263,20 @@ public class MLJob extends BaseJob implements Cloneable {
 				String queueName = "default";
 				int sId = -1;
 				if (args.length >= 2) {
-					numStages = Integer.parseInt(args[0]);
-					ddagId = Integer.parseInt(args[1]);
-					if (args.length >= 3) {
-					  numOfIterations = Integer.parseInt(args[2]);
+				  int j=0;
+					numStages = Integer.parseInt(args[j++]);
+					ddagId = Integer.parseInt(args[j++]);
+					if (args.length > j && readNumIter) {
+					  numOfIterations = Integer.parseInt(args[j++]);
           }
-					if (args.length >= 4) {
-						arrival = Integer.parseInt(args[3]);
+					if (args.length > j) {
+						arrival = Integer.parseInt(args[j++]);
 					}
-					if (args.length >= 5) {
-						queueName = args[4].trim();
+					if (args.length > j) {
+						queueName = args[j++].trim();
 					}
-					if (args.length >= 6) {
-					  sId = Integer.parseInt(args[5].trim());
+					if (args.length > j) {
+					  sId = Integer.parseInt(args[j++].trim());
           }
 					assert (numStages > 0);
 					assert (ddagId >= 0);
@@ -292,7 +290,8 @@ public class MLJob extends BaseJob implements Cloneable {
 
 				MLJob dag = new MLJob(ddagId, arrival);
 				dag.numStages = numStages;
-				dag.NUM_ITERATIONS = numOfIterations;
+				if(readNumIter)
+				  dag.NUM_ITERATIONS = numOfIterations;
 				dag.dagName = dag_name;
 				dag.setQueueName(queueName);
 				dag.sessionId = sId;
@@ -304,31 +303,29 @@ public class MLJob extends BaseJob implements Cloneable {
 				for (int i = 0; i < numStages; ++i) {
 					String lline = br.readLine();
 					args = lline.split(" ");
-
+					assert (args.length == 7);
+					
 					int numVertices;
 					String stageName;
 					double durV;
-					stageName = args[0];
+					int j = 0;					
+					stageName = args[j++];
 					assert (stageName.length() > 0);
 
-					durV = Double.parseDouble(args[1]);
+					durV = Double.parseDouble(args[j++]);
 					assert (durV >= 0);
-					double[] resources = new double[Globals.NUM_DIMENSIONS];
 					
-					int j = 0;
-					for (; j < Globals.NUM_DIMENSIONS; j++) {
-						double res = Double.parseDouble(args[j + 2]);
-						assert (res >= 0 && res <= 1);
-						resources[j] = res;
-					}
-					double beta = Double.parseDouble(args[j + 2]);
-
+					double gpuCpuDemand = Double.parseDouble(args[j++]);					
+					double memory = Double.parseDouble(args[j++]);
+					double beta = 1.0;
+					if(readBeta)
+					  beta = Double.parseDouble(args[j++]);
+					InterchangableResourceDemand demand = new InterchangableResourceDemand(gpuCpuDemand, memory, beta);
+					
 					numVertices = Integer.parseInt(args[args.length - 1]);
 					assert (numVertices >= 0);
-
 					vIdxEnd += numVertices;
-					SubGraph stage = new SubGraph(stageName, i, new Interval(vIdxStart, vIdxEnd - 1), durV,
-					    resources, beta);
+					SubGraph stage = new SubGraph(stageName, i, new Interval(vIdxStart, vIdxEnd - 1),  durV, numVertices , demand);
 
 					String arrivalStr = args[args.length - 2];
 					if (arrivalStr.startsWith("@"))
@@ -381,15 +378,13 @@ public class MLJob extends BaseJob implements Cloneable {
 				// dag.scaleDag();
 //				dag.setCriticalPaths();
 //				dag.setBFSOrder();
-				// add initial runnable tasks => all tasks with no parents
+				
 				for (int taskId : dag.allTasks()) {
 					if (dag.getParents(taskId).isEmpty()) {
 						dag.runnableTasks.add(taskId);
 					}
 				}
-//					Output.debugln(DEBUG,"Job: " + dag.dagId + " has " + dag.allTasks().size() + " tasks and "
-//					    + dag.runnableTasks.size() + " runnable tasks");
-				// dag.seedUnorderedNeighbors();
+
 				dags.add(dag);
 				// Simulator.QUEUE_LIST.addRunnableJob2Queue(dag, dag.getQueueName());
 			}
@@ -538,12 +533,26 @@ public class MLJob extends BaseJob implements Cloneable {
 	// end DAG traversals //
 
 	@Override
-	public Resource rsrcDemands(int taskId) {
+	public InterchangableResourceDemand rsrcDemands(int taskId) {
 		if (adjustedTaskDemands != null && adjustedTaskDemands.get(taskId) != null) {
-			return adjustedTaskDemands.get(taskId).resDemands;
+		  //TODO: compute the real demands for this.
+			return adjustedTaskDemands.get(taskId).demand;
 		}
 		return stages.get(vertexToStage.get(taskId)).rsrcDemands(taskId);
 	}
+	
+	 @Override
+  public Resource rsrcUsage(int taskId) {
+    if (adjustedTaskDemands != null && adjustedTaskDemands.get(taskId) != null) {
+      //TODO: compute the real demands for this.
+      return adjustedTaskDemands.get(taskId).usage;
+    }
+    
+    if(this.isCPUUsages.get(taskId)!=null)
+      return this.stages.get(vertexToStage.get(taskId)).rsrcDemands(taskId).convertToCPUDemand();
+    else
+      return this.stages.get(vertexToStage.get(taskId)).rsrcDemands(taskId).convertToGPUDemand();
+  }
 
 	@Override
 	public double duration(int taskId) {
@@ -630,33 +639,15 @@ public class MLJob extends BaseJob implements Cloneable {
 	public Map area() {
 		Map<Integer, Double> area_dims = new TreeMap<Integer, Double>();
 		for (SubGraph stage : stages.values()) {
+		  //TODO: double check this.
+		  Resource res = stage.vDemands.convertToGPUDemand();
 			for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
 				double bef = area_dims.get(i) != null ? area_dims.get(i) : 0;
-				bef += stage.vids.length() * stage.vDuration * stage.vDemands.resources[i];
+				bef += stage.vids.length() * stage.vDuration * res.resources[i];
 				area_dims.put(i, bef);
 			}
 		}
 		return area_dims;
-	}
-
-	@Override
-	public double totalWorkJob() {
-		double scoreTotalWork = 0;
-		for (SubGraph stage : stages.values()) {
-			scoreTotalWork += stage.stageContribToSrtfScore(new HashSet<Integer>());
-		}
-		return scoreTotalWork;
-	}
-
-	public double srtfScore() {
-		Set<Integer> consideredTasks = new HashSet<Integer>(this.finishedTasks);
-		consideredTasks.addAll(this.runningTasks);
-
-		double scoreSrtf = 0;
-		for (SubGraph stage : stages.values()) {
-			scoreSrtf += stage.stageContribToSrtfScore(consideredTasks);
-		}
-		return scoreSrtf;
 	}
 
 	// return true or false -> based on if this job has finished or not
@@ -701,22 +692,6 @@ public class MLJob extends BaseJob implements Cloneable {
 
 		}
 
-		/*
-		 * // enable new runnableTasks if any // RG: expensive operation here - TODO
-		 * (optimize) // for every task check if his parents are in finishedTasks
-		 * for (int candTask : allTasks()) { if (runnableTasks.contains(candTask) ||
-		 * runningTasks.contains(candTask) || finishedTasks.contains(candTask)) {
-		 * continue; }
-		 * 
-		 * boolean candTaskReadyToSched = true; List<Interval> depCandTask =
-		 * (!reverse) ? getParents(candTask) : getChildren(candTask);
-		 * 
-		 * for (Interval ival : depCandTask) { for (int i = ival.begin; i <=
-		 * ival.end; i++) { if (!finishedTasks.contains(i)) { candTaskReadyToSched =
-		 * false; break; } } }
-		 * 
-		 * if (candTaskReadyToSched) { runnableTasks.add(candTask); } }
-		 */
 		return false;
 	}
 	
@@ -786,7 +761,7 @@ public class MLJob extends BaseJob implements Cloneable {
 	}
 
 	// should decrease only the resources allocated in the current time quanta
-	public Resource currResShareAvailable() {
+/*	public Resource currResShareAvailable() {
 		Resource totalShareAllocated = Resources.clone(this.rsrcQuota);
 
 		for (int task : launchedTasksNow) {
@@ -795,7 +770,7 @@ public class MLJob extends BaseJob implements Cloneable {
 		}
 		totalShareAllocated.normalize();
 		return totalShareAllocated;
-	}
+	}*/
 
 	public void seedUnorderedNeighbors() {
 
@@ -920,6 +895,19 @@ public class MLJob extends BaseJob implements Cloneable {
 			ancestors.put(i, a);
 		}
 	}
+	
+	public void convertFromDAGToMLJob(){
+	  // convert the number of tasks at each stage
+	  for (SubGraph stage : this.stages.values()){
+	    int scale = (int)(stage.vDuration/this.NUM_ITERATIONS);
+	    stage.vDuration = scale*Globals.TIME_UNIT;
+	    stage.taskNum = Globals.TASK_BROKEN_DOWN*stage.taskNum;
+	    double gc = stage.vDemands.getGpuCpu()/Globals.TASK_BROKEN_DOWN;
+	    double m = stage.vDemands.getMemory()/Globals.TASK_BROKEN_DOWN;
+	    double beta = stage.vDemands.getBeta();
+	    stage.vDemands = new InterchangableResourceDemand(gc, m, beta); 
+	  }
+  }
 
 	public void seedDescendants(int i, Map<Integer, Set<Integer>> descendants) {
 		if (!descendants.containsKey(i)) {

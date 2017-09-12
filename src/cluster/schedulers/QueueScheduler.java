@@ -16,9 +16,8 @@ import cluster.datastructures.Resource;
 import cluster.datastructures.Resources;
 import cluster.datastructures.MLJob;
 import cluster.simulator.Simulator;
-import queue.schedulers.DRFScheduler;
 import queue.schedulers.EqualShareScheduler;
-import queue.schedulers.FairScheduler;
+import queue.schedulers.MaxMinMemScheduler;
 import queue.schedulers.Scheduler;
 import cluster.simulator.Main.Globals;
 
@@ -28,14 +27,13 @@ public class QueueScheduler {
 	public Scheduler scheduler;
 	
 	public QueueScheduler() {
-	  
 		switch (Globals.QUEUE_SCHEDULER) {
-		case DRF:
-			scheduler = new DRFScheduler();
-			break;
 		case EC:
       scheduler = new EqualShareScheduler();
       break;
+		case MaxMinMem:
+      scheduler = new MaxMinMemScheduler();
+      break;  
 		default:
 			System.err.println("Unknown sharing policy");
 		}
@@ -90,7 +88,6 @@ public class QueueScheduler {
 				availRes.subtract(toGive);
 			}
 		}
-		
 	}
 	
 }

@@ -33,7 +33,7 @@ public class Utils {
 
     int numJobs = 5000;
     Map<Integer, BaseJob> inputJobsMap = new HashMap<Integer, BaseJob>();
-    Queue<BaseJob> inputJobs = MLJob.readDags(Globals.PathToInputFile);
+    Queue<BaseJob> inputJobs = MLJob.readDags(Globals.PathToInputFile, false, false);
     for (BaseJob dag : inputJobs) {
       inputJobsMap.put(dag.dagId, dag);
     }
@@ -105,8 +105,9 @@ public class Utils {
       }
       for (SubGraph stage : dag.stages.values()) {
         bw.write(stage.name+" "+stage.vDuration+" ");
+        double[] resArray = stage.vDemands.convertToResourceArray();
         for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
-          bw.write(stage.vDemands.resource(i)+" ");
+          bw.write(resArray[i]+" ");
         }
         bw.write(stage.vids.length()+"\n");
       }
@@ -126,7 +127,7 @@ public class Utils {
     }
   }
 
-  public static double round(double value, int places) {
+  public static double roundBase(double value, int places) {
   	double factor = Math.pow(10.0, places);
     double roundedVal = value;
     roundedVal = roundedVal * factor;
@@ -136,7 +137,7 @@ public class Utils {
   }
   
   public static double roundDefault(double value) {
-  	return round(value, 2);
+  	return roundBase(value, 4);
   }
   
   public static int getMinValIdx(double[] nonNegArray){

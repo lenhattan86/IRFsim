@@ -3,6 +3,7 @@ package cluster.datastructures;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -18,7 +19,7 @@ public abstract class BaseJob implements Cloneable {
 
   protected String queueName = "";
   
-  public int NUM_ITERATIONS;
+  public int NUM_ITERATIONS = 10;
   private int curr_iter = 0;
   
   private boolean fullyAllocated = false;
@@ -39,6 +40,8 @@ public abstract class BaseJob implements Cloneable {
   public int arrivalTime; // arrival time from the input
   public int numStages;
   public int numEdgesBtwStages;
+  
+  public int numIterations=1;
 
   public Map<String, SubGraph> stages;
   public Map<Integer, String> vertexToStage;
@@ -47,7 +50,7 @@ public abstract class BaseJob implements Cloneable {
 
   public abstract void setCriticalPaths();
 
-  public abstract double totalWorkJob();
+//  public abstract double totalWorkJob();
 
   public abstract double getMaxCP();
 
@@ -57,8 +60,12 @@ public abstract class BaseJob implements Cloneable {
 
   public abstract void setBFSOrder();
 
-  public abstract Resource rsrcDemands(int task_id); // demand of from a task at
+  public abstract InterchangableResourceDemand rsrcDemands(int task_id); // demand of from a task at
                                                      // a certain time step
+  
+  public HashMap<Integer, Boolean> isCPUUsages = new HashMap<Integer, Boolean>();
+  
+  public abstract Resource rsrcUsage(int task_id); // resource usage
 
   public ServiceCurve serviceCurve = new ServiceCurve();
   
@@ -113,13 +120,13 @@ public abstract class BaseJob implements Cloneable {
     serviceCurve = new ServiceCurve();
   }
 
-  public Resource currResDemand() {
+ /* public Resource currResDemand() {
     Resource usedRes = new Resource(0.0);
     for (int taskId : runningTasks) {
       usedRes.addWith(rsrcDemands(taskId));
     }
     return usedRes;
-  }
+  }*/
 
   public double getCompletionTime() {
     if (this.jobStartRunningTime < 0)
@@ -128,7 +135,7 @@ public abstract class BaseJob implements Cloneable {
     return this.jobEndTime - this.jobStartRunningTime;
   }
 
-  public Resource getMaxDemand() {
+/*  public Resource getMaxDemand() {
     Resource demand = new Resource(0.0);
     for (int taskId : runnableTasks) {
       demand.addWith(rsrcDemands(taskId));
@@ -137,20 +144,22 @@ public abstract class BaseJob implements Cloneable {
       demand.addWith(rsrcDemands(taskId));
     }
     return demand;
-  }
+  }*/
 
   public boolean isFulllyAllocated() {
     return this.runnableTasks.size() == 0;
   }
 
   public int getCommingTaskId() {
+    if(this.runnableTasks.isEmpty())
+      return -1;
     return this.runnableTasks.iterator().next();
   }
 
-  public Resource getCommingTaskRes() {
+/*  public Resource getCommingTaskRes() {
     int nextTaskId = this.runnableTasks.iterator().next();
     return this.rsrcDemands(nextTaskId);
-  }
+  }*/
 
   public double minCompletionTimeSimple() {
     // for simplicity, assumming that all stages can start at the same time.
