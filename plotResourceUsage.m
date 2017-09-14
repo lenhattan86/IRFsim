@@ -2,14 +2,15 @@ clear; close all;
 addpath('matlab_func');
 common_settings;
 
-workload='BB';
+%workload='BB';
+workload='SIMPLE';
 
 num_batch_queues = 2;
 num_interactive_queue = 0;
 num_queues = num_batch_queues + num_interactive_queue;
-START_TIME = 0; END_TIME = 500;
+START_TIME = 0; END_TIME = 100;
 is_printed = true;
-cluster_size = 40;
+cluster_size = 100;
 
 % figureSize = [1 1 2/3 2/3].* figSizeOneCol;
 figureSize = [1 1 4/5 6/5].* figSizeOneCol;
@@ -63,10 +64,9 @@ end
 extraStr = ['_' int2str(num_batch_queues) '_' int2str(cluster_size)];
 extraStrReject = ['_' int2str(num_batch_queues) '_' int2str(cluster_size)];
 
-
    %%
 if plots(1)   
-   logFile = [ logfolder 'ES-output' extraStr  '.csv'];
+   logFile = [ logfolder 'ES-output' extraStr  '.csv']
    [queueNames, res1, res2, res3, flag] = importResUsageLog(logFile);   
    
    if (flag)

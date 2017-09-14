@@ -25,6 +25,12 @@ public class JobQueue {
   public boolean isLQ = false;
 
   private double weight = 1.0;
+  
+  private double beta = 1.0;
+  
+  public void setBeta(double beta){
+    this.beta = beta;
+  }
 
   /*
    * public double getStartTime() { return startTime; }

@@ -80,7 +80,7 @@ public class Main {
     public static boolean DEBUG_ALL = false;
     public static boolean DEBUG_LOCAL = true;
     
-    public static int TASK_BROKEN_DOWN = 10; // 100 subtask per task
+    public static int TASK_BROKEN_DOWN = 1; // 100 subtask per task
     public static double TIME_UNIT = 0.1;  // seconds
 
     public static int SCALE_UP_FACTOR = 1;
@@ -432,10 +432,10 @@ public class Main {
       Globals.MEMORY_SCALE_DOWN=1;
       Globals.NUM_MACHINES = 1;
       Globals.SIM_END_TIME = 800.0;
-//      Globals.METHOD = Method.EC;
-      Globals.METHOD = Method.MaxMinMem;
-      Globals.MACHINE_MAX_RESOURCE = 40;
-      Globals.workload = Globals.WorkLoadType.BB;
+      Globals.METHOD = Method.EC;
+//      Globals.METHOD = Method.MaxMinMem;
+      Globals.MACHINE_MAX_RESOURCE = 100;
+      Globals.workload = Globals.WorkLoadType.SIMPLE;
       Globals.IS_GEN = true;
       Globals.SCALE_UP_FACTOR = 1;
       Globals.setupParameters();

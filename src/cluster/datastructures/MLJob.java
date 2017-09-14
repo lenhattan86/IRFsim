@@ -53,6 +53,7 @@ public class MLJob extends BaseJob implements Cloneable {
 	public static MLJob clone(MLJob dag) {
 		MLJob clonedDag = new MLJob(dag.dagId);
 		clonedDag.dagName = dag.dagName;
+		clonedDag.numStages = dag.numStages;
 
 		clonedDag.rsrcQuota = Resources.clone(dag.rsrcQuota);
 		clonedDag.jobExpDur = dag.jobExpDur;
@@ -896,9 +897,10 @@ public class MLJob extends BaseJob implements Cloneable {
 		}
 	}
 	
-	public void convertFromDAGToMLJob(){
+	public MLJob convertFromDAGToMLJob(){
+	  MLJob job = clone(this);
 	  // convert the number of tasks at each stage
-	  for (SubGraph stage : this.stages.values()){
+	  for (SubGraph stage : job.stages.values()){
 	    int scale = (int)(stage.vDuration/this.NUM_ITERATIONS);
 	    stage.vDuration = scale*Globals.TIME_UNIT;
 	    stage.taskNum = Globals.TASK_BROKEN_DOWN*stage.taskNum;
@@ -907,6 +909,7 @@ public class MLJob extends BaseJob implements Cloneable {
 	    double beta = stage.vDemands.getBeta();
 	    stage.vDemands = new InterchangableResourceDemand(gc, m, beta); 
 	  }
+	  return job;
   }
 
 	public void seedDescendants(int i, Map<Integer, Set<Integer>> descendants) {

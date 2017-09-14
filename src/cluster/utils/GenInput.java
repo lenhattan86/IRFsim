@@ -56,47 +56,42 @@ public class GenInput {
    * }
    */
 
-  public static void genQueueInput(int numInteractiveQueues,
-      int numBatchQueues) {
+  public static void genQueueInput(int numInteractiveQueues, int numBatchQueues) {
     String file = Globals.PathToQueueInputFile;
     Output.write("", false, file);
 
-    for (int i = 0; i < numInteractiveQueues; i++) {
-      int queueId = i;
-      String toWrite = GenInput.genSingleQueueInfo(queueId, "bursty" + queueId,
-          weight, true, Globals.SESSION_DATA.sessionsArray[i]);
-      Output.writeln(toWrite, true, file);
-    }
-
     for (int i = 0; i < numBatchQueues; i++) {
       int queueId = i;
-      String toWrite = GenInput.genSingleQueueInfo(
-          queueId + numInteractiveQueues, "batch" + queueId, weight, false,
-          null);
+      String toWrite = GenInput.genSingleQueueInfo(queueId + numInteractiveQueues,
+          "batch" + queueId, weight, null, 1.0);
       Output.writeln(toWrite, true, file);
     }
   }
-  
+
   public static void genQueueInput(int numBatchQueues) {
     String file = Globals.PathToQueueInputFile;
     Output.write("", false, file);
 
     for (int i = 0; i < numBatchQueues; i++) {
       int queueId = i;
-      String toWrite = GenInput.genSingleQueueInfo(
-          queueId, "queue" + queueId, weight, false,
-          null);
+      String toWrite = GenInput.genSingleQueueInfo(queueId, "queue" + queueId, weight, null,
+          JobData.BETAs[i]);
       Output.writeln(toWrite, true, file);
     }
   }
 
   public static void genJobInput(int numBatchQueues, int numBatchJobsPerQueue) {
 
-    String file = GenInput.jobFile + "_"
-        + numBatchQueues + ".txt";
+    String file = GenInput.jobFile + "_" + numBatchQueues + ".txt";
     Output.write("", false, file);
 
-    double[] resources2 = { 0.1, 0.1, 0.0, 0.0, 0.0, 0.0 };
+    double[] resources2 = {
+        0.1,
+        0.1,
+        0.0,
+        0.0,
+        0.0,
+        0.0 };
 
     int batchStartId = Globals.JOB_START_ID;
     int[] arrivalTimes = readRandomProcess(Globals.DIST_FILE);
@@ -105,44 +100,50 @@ public class GenInput {
       for (int i = 0; i < numBatchQueues; i++) {
         int jobId = j * numBatchQueues + i + batchStartId;
         String toWrite = genSingleJobInfo(jobId, "batch" + (i), jobId + "",
-            arrivalTimes[arrivalIdx++], Globals.numbatchTask, Globals.STEP_TIME,
-            resources2);
+            arrivalTimes[arrivalIdx++], Globals.numbatchTask, Globals.STEP_TIME, resources2);
         // System.out.println(toWrite);
         Output.writeln(toWrite, true, file);
       }
     }
   }
 
-  public static String genSingleJobInfo(int jobId, String queueName,
-      String jobName, int arrivalTime, int numOfTasks, double taskDur,
+  public static String genSingleJobInfo(
+      int jobId,
+      String queueName,
+      String jobName,
+      int arrivalTime,
+      int numOfTasks,
+      double taskDur,
       double[] resources) {
     int numOfStage = 1;
     String str = "";
     str += "# " + jobId + "\n";
-    str += "" + numOfStage + " " + jobId + " " + arrivalTime + " " + queueName
-        + "\n";
+    str += "" + numOfStage + " " + jobId + " " + arrivalTime + " " + queueName + "\n";
     str += "Stage_0 " + taskDur;
     int dim = Globals.NUM_DIMENSIONS;
     if (Globals.NUM_DIMENSIONS < 2) {
       dim = 2;
     }
     for (int i = 0; i < dim; i++) {
-      if (i >= Globals.NUM_DIMENSIONS)
-        str += " " + (float) 0.0;
-      else
-        str += " " + resources[i];
+      if (i >= Globals.NUM_DIMENSIONS) str += " " + (float) 0.0;
+      else str += " " + resources[i];
     }
     str += " " + numOfTasks + "\n";
     str += "0";
     return str;
   }
 
-  public static String genSingleJobInfo(int jobId, String queueName,
-      MLJob job, int arrivalTime, double taskNumScale, double durScale,
-      boolean isUncertain) {
+  public static String genSingleJobInfo(
+      int jobId,
+      String queueName,
+      MLJob job,
+      int arrivalTime,
+      double taskNumScale,
+      double durScale,
+      boolean isUncertain, double beta) {
     String str = "";
     str += "# " + jobId + "\n";
-    str += "" + job.numStages + " " + jobId + " " + job.NUM_ITERATIONS + " "+ arrivalTime + " "
+    str += "" + job.numStages + " " + jobId + " " + job.NUM_ITERATIONS + " " + arrivalTime + " "
         + queueName + "\n";
     for (Map.Entry<String, SubGraph> entry : job.stages.entrySet()) {
       SubGraph stage = entry.getValue();
@@ -150,44 +151,39 @@ public class GenInput {
       double uncertainDur = 0.0;
       if (isUncertain) {
         int len = SessionData.DUR_ERROR_10.length;
-        double error = SessionData.DUR_ERROR_10[stageIter % len]
-            * Globals.ESTIMASION_ERRORS / 0.1;
+        double error = SessionData.DUR_ERROR_10[stageIter % len] * Globals.ESTIMASION_ERRORS / 0.1;
         error = Math.min(Math.max(error, -1), 1);
         uncertainDur = stage.vDuration * error;
         uncertainDur = Utils.roundDefault(uncertainDur);
       }
 
-      double duration = (stage.vDuration + uncertainDur) * durScale
-          / Globals.STEP_TIME;
+      double duration = (stage.vDuration + uncertainDur) * durScale / Globals.STEP_TIME;
       duration = Utils.roundDefault(duration);
       duration = Math.max(duration, Globals.STEP_TIME);
-      if (durScale <= 0)
-        duration = Globals.STEP_TIME;
+      if (durScale <= 0) duration = Globals.STEP_TIME;
       // TODO: hardcode
       // duration = 5.0;
       str += stage.name + " " + duration;
-      
-      //TODO: it may not be correct here as the following conversion is not proper.
+
+      // TODO: it may not be correct here as the following conversion is not proper.
       double[] resArray = stage.vDemands.convertToResourceArray();
       for (int i = 0; i < 2; i++) {
-          double uncertainRes = 0.0;
-          if (isUncertain) {
-            int len = SessionData.RES_ERROR_10.length;
-            // System.out.println("val:"+SessionData.RES_ERROR_10[stageIter%len][i]);
-            double error = SessionData.RES_ERROR_10[stageIter % len][i]
-                * Globals.ESTIMASION_ERRORS / 0.1;
-            error = Math.min(Math.max(error, -1), 1);
-            uncertainRes = resArray[i] * error;
-            uncertainRes = Utils.roundDefault(uncertainRes);
-          }
-          str += " "
-              + Utils.roundDefault(resArray[i] + uncertainRes);
+        double uncertainRes = 0.0;
+        if (isUncertain) {
+          int len = SessionData.RES_ERROR_10.length;
+          // System.out.println("val:"+SessionData.RES_ERROR_10[stageIter%len][i]);
+          double error = SessionData.RES_ERROR_10[stageIter % len][i] * Globals.ESTIMASION_ERRORS
+              / 0.1;
+          error = Math.min(Math.max(error, -1), 1);
+          uncertainRes = resArray[i] * error;
+          uncertainRes = Utils.roundDefault(uncertainRes);
+        }
+        str += " " + Utils.roundDefault(resArray[i] + uncertainRes);
       }
-//      str += " " + stage.getBeta();      
-      str += " " + JobData.BETAs[(jobId*job.numStages+stageIter) % JobData.BETAs.length];
+      // str += " " + stage.getBeta();
+      str += " " + beta;
       int taskNum = (int) (stage.taskNum * taskNumScale);
-      if (taskNum == 0)
-        taskNum = 1;
+      if (taskNum == 0) taskNum = 1;
       str += " " + taskNum + "\n";
       stageIter++;
     }
@@ -213,33 +209,24 @@ public class GenInput {
    * (i < rateLen - 1) str += "\n"; } return str; }
    */
 
-  public static String genSingleQueueInfo(int queueId, String queueName,
-      double weight, boolean isLQ, Session s) {
+  public static String genSingleQueueInfo(
+      int queueId,
+      String queueName,
+      double weight,
+      Session s,
+      double beta) {
     String str = "";
     str += "# " + queueId + "\n";
-    if (!isLQ) {
-      str += "" + queueName + " 0 0.0 \n";
-      str += "" + weight;
-    } else {
-      str += "" + queueName + " 1 " + s.getStartTime() + " \n";
-      int numOfJobs = s.getNumOfJobs();
-      str += "" + numOfJobs + "\n";
-
-      for (int i = 0; i < numOfJobs; i++) {
-        str += "" + s.getAlphaDurations()[i];
-        str += " " + s.getPeriods()[i];
-        for (int k = 0; k < Globals.NUM_DIMENSIONS; k++)
-          str += " " + s.getAlphas()[i].resource(k);
-        /*
-         * if (i<=2) System.out.println(s.getAlphas()[i]);
-         */ if (i < numOfJobs - 1)
-          str += "\n";
-      }
-    }
+    str += "" + queueName + " 0.0 \n";
+    str += "" + weight +"\n";
+    str += "" + beta;
     return str;
   }
 
-  public static void genInputFromWorkload(int numBatchQueues, int numBatchJobs, Queue<BaseJob> jobs) {
+  public static void genInputFromWorkload(
+      int numBatchQueues,
+      int numBatchJobs,
+      Queue<BaseJob> jobs) {
 
     genQueueInput(numBatchQueues);
 
@@ -266,24 +253,24 @@ public class GenInput {
       int batchQueueIdx = i % numBatchQueues;
       int jobIdx = i + batchStartId;
       if (jobIter2.hasNext()) {
-        MLJob job = (MLJob) jobIter2.next();
-        
-        job.convertFromDAGToMLJob(); // Convert DAG to MLJob
-        
+        MLJob orgJob = (MLJob) jobIter2.next();
+
+        MLJob job = orgJob.convertFromDAGToMLJob(); // Convert DAG to MLJob
+
         String toWrite = "";
-        if (!Globals.GEN_JOB_ARRIVAL)
-          toWrite = genSingleJobInfo(jobIdx, "queue" + (batchQueueIdx), job,
-              job.arrivalTime, 1, Globals.SCALE_BATCH_DURATION, false);
+        double beta = JobData.BETAs[batchQueueIdx % JobData.BETAs.length];
+        if (!Globals.GEN_JOB_ARRIVAL) toWrite = genSingleJobInfo(jobIdx, "queue" + (batchQueueIdx),
+            job, job.arrivalTime, 1, Globals.SCALE_BATCH_DURATION, false,beta);
         else {
-          if (arrivalIdx >= arrivalTimes.length)
-            arrivalIdx = 0;
+          if (arrivalIdx >= arrivalTimes.length) arrivalIdx = 0;
           toWrite = genSingleJobInfo(jobIdx, "queue" + (batchQueueIdx), job,
-              arrivalTimes[arrivalIdx++], Globals.SCALE_UP_BATCH_JOB,
-              Globals.SCALE_BATCH_DURATION, false);
+              arrivalTimes[arrivalIdx++], Globals.SCALE_UP_BATCH_JOB, Globals.SCALE_BATCH_DURATION,
+              false,beta);
         }
         Output.writeln(toWrite, true, file);
       } else {
         jobIter2 = jobs.iterator();
+        i--;
       }
     }
   }
@@ -309,8 +296,7 @@ public class GenInput {
             arrivals[i + 1] = arrivalTime;
           }
           res = arrivals;
-        } else if (rowIdx > row)
-          break;
+        } else if (rowIdx > row) break;
         rowIdx++;
       }
       br.close();
@@ -321,8 +307,11 @@ public class GenInput {
     return res;
   }
 
-  public static Queue<BaseJob> getJobs(Queue<BaseJob> jobs, double minComplTime,
-      int numOfTasks, boolean isSmall) {
+  public static Queue<BaseJob> getJobs(
+      Queue<BaseJob> jobs,
+      double minComplTime,
+      int numOfTasks,
+      boolean isSmall) {
     // TODO: fix this.
     Queue<BaseJob> interactiveJobs = new LinkedList<BaseJob>();
     for (BaseJob job : jobs) {
@@ -330,22 +319,20 @@ public class GenInput {
       double temp = job.minCompletionTime();
       double longestTaskDuration = job.getLongestTaskDuration();
 
-      if (Globals.LONG_DURATION_TASK_TOBE_REMOVED > 0
-          && !isSmall && longestTaskDuration > Globals.LONG_DURATION_TASK_TOBE_REMOVED  )
+      if (Globals.LONG_DURATION_TASK_TOBE_REMOVED > 0 && !isSmall
+          && longestTaskDuration > Globals.LONG_DURATION_TASK_TOBE_REMOVED)
         continue; // skip this job because the task is too long.
 
       // System.out.println(job.dagId + " minComplTime: "+temp + "\n");
       if (temp < minComplTime && job.allTasks().size() < numOfTasks && isSmall)
         interactiveJobs.add(job);
-      else if (temp > minComplTime && job.allTasks().size() > numOfTasks
-          && !isSmall)
+      else if (temp > minComplTime && job.allTasks().size() > numOfTasks && !isSmall)
         interactiveJobs.add(job);
     }
     return interactiveJobs;
   }
 
-  public static void writeTaskDurationStatistics(String inputFile,
-      String outputFile) {
+  public static void writeTaskDurationStatistics(String inputFile, String outputFile) {
     Queue<BaseJob> jobs = readWorkloadTrace(inputFile);
     FileWriter file = null;
     try {

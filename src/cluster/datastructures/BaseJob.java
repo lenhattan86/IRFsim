@@ -19,7 +19,7 @@ public abstract class BaseJob implements Cloneable {
 
   protected String queueName = "";
   
-  public int NUM_ITERATIONS = 10;
+  public int NUM_ITERATIONS = 1;
   private int curr_iter = 0;
   
   private boolean fullyAllocated = false;
@@ -132,7 +132,8 @@ public abstract class BaseJob implements Cloneable {
     if (this.jobStartRunningTime < 0)
       System.err.println(
           "you haven't set the starting time for this job " + this.dagId);
-    return this.jobEndTime - this.jobStartRunningTime;
+//    return this.jobEndTime - this.jobStartRunningTime;
+    return this.jobEndTime - this.jobStartTime;
   }
 
 /*  public Resource getMaxDemand() {
