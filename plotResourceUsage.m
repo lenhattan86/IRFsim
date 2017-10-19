@@ -5,10 +5,10 @@ common_settings;
 %workload='BB';
 workload='SIMPLE';
 
-num_batch_queues = 2;
+num_batch_queues = 3;
 num_interactive_queue = 0;
 num_queues = num_batch_queues + num_interactive_queue;
-START_TIME = 0; END_TIME = 100;
+START_TIME = 0; END_TIME = 100;  STEP_TIME = 1;
 is_printed = true;
 cluster_size = 100;
 
@@ -18,7 +18,7 @@ legendSize = [1 1 4/5 1] .* legendSize;
 
 enableSeparateLegend = true;
 
-barColors = colorb2(1:num_queues);
+barColors = colorb3(1:num_queues);
 
 scale_down_mem = 1;
 
@@ -35,11 +35,11 @@ fig_path='../IRF/figs/';
 %%
 result_folder= '';
 
-output_sufix = ''; STEP_TIME = 0.1; 
+output_sufix = ''; 
 
 %%
 % EC
-plots=[true, true]; 
+plots=[0, 0, 1]; 
 logfolder = [result_folder 'log/'];
 
 start_time_step = START_TIME/STEP_TIME;
@@ -212,6 +212,80 @@ if plots(2)
    end
 end
 
+%% 
+if plots(3)   
+   logFile = [ logfolder 'SpeedUp-output' extraStr  '.csv'];
+   [queueNames, res1, res2, res3, flag] = importResUsageLog(logFile);   
+   
+   if (flag)
+      figure;
+      subplot(3,1,1);   
+      resAll = zeros(1,num_queues*num_time_steps);
+      res = res1(startIdx:length(res1));
+      if(length(resAll)>length(res))
+         resAll(1:length(res)) = res;
+      else
+         resAll = res(1:num_queues*num_time_steps);
+      end
+      shapeRes = reshape(resAll,num_queues,num_time_steps);
+      shapeRes = fipQueues( shapeRes, num_interactive_queue, num_batch_queues);
+      
+      hBar = bar(timeInSeconds,shapeRes',barwidth,'stacked','EdgeColor','none');
+      set(hBar,{'FaceColor'},barColors);   
+      ylabel('CPU');xlabel('seconds');
+      ylim([0 cluster_size]);
+      xlim([0 max(timeInSeconds)]);
+      %legend(lengendStr,'Location','northoutside','FontSize',fontLegend,'Orientation','horizontal');
+      %title('DRF - CPU','fontsize',fontLegend);
+      
+      subplot(3,1,2);
+      resAll = zeros(1,num_queues*num_time_steps);
+      res = res2(startIdx:length(res2));
+      if(length(resAll)>length(res))
+         resAll(1:length(res)) = res;
+      else
+         resAll = res(1:num_queues*num_time_steps);
+      end
+      shapeRes = reshape(resAll,num_queues,num_time_steps);
+      shapeRes = fipQueues( shapeRes, num_interactive_queue, num_batch_queues);
+      
+      hBar = bar(timeInSeconds,shapeRes',barwidth,'stacked','EdgeColor','none');
+      set(hBar,{'FaceColor'},barColors);   
+      ylabel('GPU');xlabel('seconds');
+      ylim([0 cluster_size]);
+      xlim([0 max(timeInSeconds)]);
+      %legend(lengendStr,'Location','northoutside','FontSize',fontLegend,'Orientation','horizontal');
+      %title('DRF - Memory','fontsize',fontLegend);
+      
+      subplot(3,1,3);
+      resAll = zeros(1,num_queues*num_time_steps);
+      res = res3(startIdx:length(res3));
+      if(length(resAll)>length(res))
+         resAll(1:length(res)) = res;
+      else
+         resAll = res(1:num_queues*num_time_steps);
+      end
+      shapeRes = reshape(resAll,num_queues,num_time_steps);
+      shapeRes = fipQueues( shapeRes, num_interactive_queue, num_batch_queues);
+      
+      hBar = bar(timeInSeconds,shapeRes',barwidth,'stacked','EdgeColor','none');
+      set(hBar,{'FaceColor'},barColors);   
+      ylabel('memory');xlabel('seconds');
+      ylim([0 cluster_size]);
+      xlim([0 max(timeInSeconds)]);
+      %legend(lengendStr,'Location','northoutside','FontSize',fontLegend,'Orientation','horizontal');
+      %title('DRF - Memory','fontsize',fontLegend);
+      
+      set (gcf, 'Units', 'Inches', 'Position', figureSize, 'PaperUnits', 'inches', 'PaperPosition', figureSize);
+      if is_printed         
+          figIdx=figIdx +1;
+        fileNames{figIdx} = ['q' int2str(num_batch_queues) '_' int2str(scale_down_mem) '_res_usage_speedup'];         
+        epsFile = [ LOCAL_FIG fileNames{figIdx} '.eps'];
+        print ('-depsc', epsFile);
+      end
+   end
+end
+
 %%
 
 %% create dummy graph with legends
@@ -223,7 +297,7 @@ if enableSeparateLegend
   set(gca,'FontSize',fontSize);
   axis([20000,20001,20000,20001]) %move dummy points out of view
   axis off %hide axis  
-  set(gca,'YColor','none');      
+  set(gca,'YColor','none');
   set (gcf, 'Units', 'Inches', 'Position', legendSize, 'PaperUnits', 'inches', 'PaperPosition', legendSize);    
 
   if is_printed   
@@ -242,12 +316,12 @@ end
 
 return;
 %%
-
+extra='_bad';
 for i=1:length(fileNames)
     fileName = fileNames{i}
     epsFile = [ LOCAL_FIG fileName '.eps'];
-    pdfFile = [ fig_path fileName '.pdf'];    
+    pdfFile = [ fig_path fileName extra '.pdf']    
     cmd = sprintf(PS_CMD_FORMAT, epsFile, pdfFile);
     status = system(cmd);
 end
-fileNames
+%fileNames

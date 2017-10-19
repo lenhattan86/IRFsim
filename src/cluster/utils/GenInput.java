@@ -63,7 +63,7 @@ public class GenInput {
     for (int i = 0; i < numBatchQueues; i++) {
       int queueId = i;
       String toWrite = GenInput.genSingleQueueInfo(queueId + numInteractiveQueues,
-          "batch" + queueId, weight, null, 1.0);
+          "batch" + queueId, weight, null, 1.0, 1.0);
       Output.writeln(toWrite, true, file);
     }
   }
@@ -75,7 +75,7 @@ public class GenInput {
     for (int i = 0; i < numBatchQueues; i++) {
       int queueId = i;
       String toWrite = GenInput.genSingleQueueInfo(queueId, "queue" + queueId, weight, null,
-          JobData.BETAs[i]);
+          JobData.BETAs[i], JobData.reportBETAs[i]);
       Output.writeln(toWrite, true, file);
     }
   }
@@ -161,8 +161,6 @@ public class GenInput {
       duration = Utils.roundDefault(duration);
       duration = Math.max(duration, Globals.STEP_TIME);
       if (durScale <= 0) duration = Globals.STEP_TIME;
-      // TODO: hardcode
-      // duration = 5.0;
       str += stage.name + " " + duration;
 
       // TODO: it may not be correct here as the following conversion is not proper.
@@ -214,12 +212,13 @@ public class GenInput {
       String queueName,
       double weight,
       Session s,
-      double beta) {
+      double beta, double reportBeta) {
     String str = "";
     str += "# " + queueId + "\n";
     str += "" + queueName + " 0.0 \n";
     str += "" + weight +"\n";
-    str += "" + beta;
+    str += "" + beta +"\n";
+    str += "" + reportBeta;
     return str;
   }
 
@@ -258,7 +257,9 @@ public class GenInput {
         MLJob job = orgJob.convertFromDAGToMLJob(); // Convert DAG to MLJob
 
         String toWrite = "";
+        
         double beta = JobData.BETAs[batchQueueIdx % JobData.BETAs.length];
+        
         if (!Globals.GEN_JOB_ARRIVAL) toWrite = genSingleJobInfo(jobIdx, "queue" + (batchQueueIdx),
             job, job.arrivalTime, 1, Globals.SCALE_BATCH_DURATION, false,beta);
         else {

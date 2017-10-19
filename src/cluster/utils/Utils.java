@@ -18,8 +18,8 @@ import cluster.datastructures.Resource;
 import cluster.simulator.Main.Globals;
 
 public class Utils {
-	
-	private static final boolean DEBUG = true;
+
+  private static final boolean DEBUG = true;
 
   // generate a trace
   // read a bunch of dags
@@ -47,24 +47,23 @@ public class Utils {
       for (Integer time : timeline) {
         // for every time step
         int nextDagIdx = r.pickRandomInt(numInputDags);
-        //take a random DAG and write it to file with next dag ID
+        // take a random DAG and write it to file with next dag ID
         BaseJob nextDag = inputJobsMap.get(nextDagIdx);
         nextDag.dagId = nextDagId;
         nextDag.arrivalTime = time;
         nextDagId++;
-        Utils.writeDagToFile((MLJob)nextDag, true);
+        Utils.writeDagToFile((MLJob) nextDag, true);
       }
-    }
-    else {
+    } else {
       // generate random numJobs jobs in a trace
       while (numJobs > 0) {
         // for every time step
         int nextDagIdx = r.pickRandomInt(numInputDags);
-        //take a random DAG and write it to file with next dag ID
+        // take a random DAG and write it to file with next dag ID
         BaseJob nextDag = inputJobsMap.get(nextDagIdx);
         nextDag.dagId = nextDagId;
         nextDagId++;
-        Utils.writeDagToFile((MLJob)nextDag, false);
+        Utils.writeDagToFile((MLJob) nextDag, false);
         numJobs--;
       }
     }
@@ -72,7 +71,7 @@ public class Utils {
 
   public static List<Integer> timeDistribution() {
 
-    String fileTimeDistribution = Globals.DataFolder+"/FBdistribution.txt";
+    String fileTimeDistribution = Globals.DataFolder + "/FBdistribution.txt";
     File file = new File(fileTimeDistribution);
     if (!file.exists()) return null;
 
@@ -93,32 +92,31 @@ public class Utils {
   }
 
   public static void writeDagToFile(MLJob dag, boolean considerTimeDistr) {
-    File file = new File(Globals.DataFolder+"/"+Globals.FileOutput);
+    File file = new File(Globals.DataFolder + "/" + Globals.FileOutput);
     try {
       BufferedWriter bw = new BufferedWriter(new FileWriter(file, true));
-      bw.write("# "+dag.dagName+"\n");
+      bw.write("# " + dag.dagName + "\n");
       if (considerTimeDistr) {
-        bw.write(dag.stages.size()+" "+dag.dagId+" "+dag.arrivalTime+"\n");
-      }
-      else {
-        bw.write(dag.stages.size()+" "+dag.dagId+" "+"\n");
+        bw.write(dag.stages.size() + " " + dag.dagId + " " + dag.arrivalTime + "\n");
+      } else {
+        bw.write(dag.stages.size() + " " + dag.dagId + " " + "\n");
       }
       for (SubGraph stage : dag.stages.values()) {
-        bw.write(stage.name+" "+stage.vDuration+" ");
+        bw.write(stage.name + " " + stage.vDuration + " ");
         double[] resArray = stage.vDemands.convertToResourceArray();
         for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
-          bw.write(resArray[i]+" ");
+          bw.write(resArray[i] + " ");
         }
-        bw.write(stage.vids.length()+"\n");
+        bw.write(stage.vids.length() + "\n");
       }
       int numEdges = 0;
       for (SubGraph stage : dag.stages.values()) {
         numEdges += stage.children.size();
       }
-      bw.write(numEdges+"\n");
+      bw.write(numEdges + "\n");
       for (SubGraph stage : dag.stages.values()) {
         for (String child : stage.children.keySet()) {
-          bw.write(stage.name+" "+child+" "+"ata"+"\n");
+          bw.write(stage.name + " " + child + " " + "ata" + "\n");
         }
       }
       bw.close();
@@ -128,46 +126,61 @@ public class Utils {
   }
 
   public static double roundBase(double value, int places) {
-  	double factor = Math.pow(10.0, places);
+    double factor = Math.pow(10.0, places);
     double roundedVal = value;
     roundedVal = roundedVal * factor;
     roundedVal = Math.round(roundedVal);
     roundedVal /= factor;
     return roundedVal;
   }
-  
+
   public static double roundDefault(double value) {
-  	return roundBase(value, 4);
+    return roundBase(value, 4);
   }
-  
-  public static int getMinValIdx(double[] nonNegArray){
-  	double minVal = Double.MAX_VALUE-1;
-  	int idx = -1;
-  	for (int i=0; i< nonNegArray.length; i++){
-  		if (minVal > nonNegArray[i]){
-  			minVal = nonNegArray[i];
-  			idx = i;
-  		}
-  	}
-  	return idx;
-  }
-  
-  public static int getMinValIdx(Resource[] nonNegArray, int bottleneckId){
-    double minVal = Double.MAX_VALUE-1;
+
+  public static int getMinValIdx(double[] nonNegArray) {
+    double minVal = Double.MAX_VALUE - 1;
     int idx = -1;
-    for (int i=0; i< nonNegArray.length; i++){
-      if (minVal > nonNegArray[i].resource(bottleneckId)){
+    for (int i = 0; i < nonNegArray.length; i++) {
+      if (minVal > nonNegArray[i]) {
+        minVal = nonNegArray[i];
+        idx = i;
+      }
+    }
+    return idx;
+  }
+
+  public static int getMinValIdx(Resource[] nonNegArray, int bottleneckId) {
+    double minVal = Double.MAX_VALUE - 1;
+    int idx = -1;
+    for (int i = 0; i < nonNegArray.length; i++) {
+      if (minVal > nonNegArray[i].resource(bottleneckId)) {
         minVal = nonNegArray[i].resource(bottleneckId);
         idx = i;
       }
     }
     return idx;
   }
-  
-  public static void createUserDir(final String dirName){
+
+  public static void createUserDir(final String dirName) {
     final File dir = new File(dirName);
     if (!dir.exists() && !dir.mkdirs()) {
-      System.err.println("cannot mkdir "+dirName);
+      System.err.println("cannot mkdir " + dirName);
     }
-}
+  }
+  
+  public static double min(double... arrays){
+    double minVal = Double.MAX_VALUE;
+    for (double arg : arrays)
+      if (minVal>arg)
+        minVal = arg;
+    return minVal;
+  }
+  
+  public static double[] multifly(double[] array, double factor){
+	  double[] result = array;
+	  for (int i=0; i<array.length; i++)
+		  result[i] = array[i]*factor;
+	  return result;
+  }
 }

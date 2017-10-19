@@ -1,6 +1,9 @@
 package cluster.datastructures;
 
 import cluster.simulator.Simulator;
+
+import java.util.List;
+
 import cluster.simulator.Main.Globals;
 import cluster.utils.Utils;
 
@@ -124,7 +127,7 @@ public class Resources {
   public static Resource sum(Resource res, Resource addedRes) {
     Resource newRes = new Resource();
     for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
-      newRes.resources[i] = res.resources[i] + Utils.roundDefault(addedRes.resources[i]);
+      newRes.resources[i] = res.resources[i] + addedRes.resources[i];
     }
     return newRes;
   }
@@ -137,5 +140,24 @@ public class Resources {
     return newRes;
   }
   
-
+  public static Resource sum(List<JobQueue> jobQueues) {
+    Resource res = new Resource();
+    for(JobQueue q: jobQueues)
+    	res = sum(res, q.getResourceUsage());
+    return res;
+  }
+  
+  public static Resource sum(Resource resources[]) {
+    Resource res = new Resource();
+    for(int i=0; i< resources.length; i++)
+    	res = sum(res, resources[i]);
+    return res;
+  }
+  
+  public static Resource[] NONEs(int n){
+	  Resource res[] = new Resource[n];
+	  for (int i=0; i<n; i++)
+		  res[i] = new Resource();
+	  return res;
+  }
 }

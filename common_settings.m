@@ -112,6 +112,7 @@ colorb8i1 = {colorBursty0; colorBatch0; colorBatch1; colorBatch2; colorBatch3; c
 colorb1i1 = {colorBursty0; colorBatch0};
 colorb1i3 = {colorBursty0; colorBursty1;colorBursty2; colorBatch0};
 colorb2={colorBursty0; colorBatch0};
+colorb3={colorBursty0; colorBatch0; colorBursty2};
 
 colorBursty = colorBursty0;
 colorBatch = colorBatch0;

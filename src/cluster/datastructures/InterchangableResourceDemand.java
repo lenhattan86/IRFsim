@@ -60,6 +60,11 @@ public class InterchangableResourceDemand {
     return res;
   }
   
+  public void adddWith(InterchangableResourceDemand demand){
+    this.gpuCpu += demand.gpuCpu;
+    this.memory += demand.memory;
+  }
+  
   @Override
   public String toString() {    
     return "gc="+ this.gpuCpu + "|mem=" + this.memory + "|beta=" +this.beta;

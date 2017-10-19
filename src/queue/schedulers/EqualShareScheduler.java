@@ -1,5 +1,6 @@
 package queue.schedulers;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -46,11 +47,18 @@ public class EqualShareScheduler implements Scheduler {
 		equallyAllocate(clusterTotCapacity, Simulator.QUEUE_LIST.getRunningQueues());
 	}
 	
-	public static void equallyAllocate(Resource resCapacity, List<JobQueue> runningQueues) {
+	public static void equallyAllocate(Resource resCapacity, List<JobQueue> runningQueues2) {
 	  
-	  if(runningQueues.isEmpty()) return;
+	  
+	  List<JobQueue> runningQueues = new ArrayList<JobQueue>();
+	  
+	  for (JobQueue queue : runningQueues2) {
+      if(queue.hasRunningJobs())
+        runningQueues.add(queue);
+    }
 	  
 	  int numOfQueues = runningQueues.size();
+	  if(runningQueues.isEmpty()) return;
     // retrieved current usage
     Resource[] userShareArr = new Resource[runningQueues.size()];
     int i = 0;

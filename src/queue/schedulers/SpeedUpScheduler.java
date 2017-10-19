@@ -1,16 +1,23 @@
 package queue.schedulers;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import com.joptimizer.exception.JOptimizerException;
+import com.joptimizer.optimizers.LPOptimizationRequest;
+import com.joptimizer.optimizers.LPPrimalDualMethod;
 
 import cluster.datastructures.BaseJob;
 import cluster.datastructures.InterchangableResourceDemand;
 import cluster.datastructures.JobQueue;
 import cluster.datastructures.Resource;
 import cluster.datastructures.Resources;
+import cluster.schedulers.QueueScheduler;
 import cluster.simulator.Simulator;
 import cluster.simulator.Main;
 import cluster.simulator.Main.Globals;
+import cluster.simulator.Main.Globals.QueueSchedulerPolicy;
 import cluster.utils.JobArrivalComparator;
 import cluster.utils.Output;
 import cluster.utils.Utils;
@@ -28,7 +35,7 @@ public class SpeedUpScheduler implements Scheduler {
 
 	public SpeedUpScheduler() {
 		clusterTotCapacity = Simulator.cluster.getClusterMaxResAlloc();
-		this.schedulePolicy = "MaxMinMemScheduler";
+		this.schedulePolicy = "SpeedUp";
 	}
 
 	@Override
@@ -44,84 +51,93 @@ public class SpeedUpScheduler implements Scheduler {
 		}
 		
 		// equal share all resources
-		maxMinMem(clusterTotCapacity, Simulator.QUEUE_LIST.getRunningQueues());
+		speedUp(clusterTotCapacity, Simulator.QUEUE_LIST.getRunningQueues());
 	}
 	
-	public static void maxMinMem(Resource resCapacity, List<JobQueue> runningQueues) {
-	  if(Simulator.CURRENT_TIME==0.0)
-	    DEBUG=true;
-	  
-	  if(runningQueues.isEmpty()) return;
-	  Resource allocRes = Simulator.cluster.getClusterAllocatedRes();
-	  Resource remainResource = Resources.subtract(resCapacity,allocRes);
-	  int numOfQueues = runningQueues.size();
-	  double[] memShares = new double[numOfQueues];
-	  int i=0;
-	  for (JobQueue queue : runningQueues) {
-      memShares[i] = queue.getResourceUsage().resource(Globals.NUM_DIMENSIONS-1);
-      i++;
-    }
-	  
-    boolean resAvail = true;    
-    int numAllocQueues = 0;
-    while(resAvail && numAllocQueues < numOfQueues){
-      // step 1: pick user with min memory share
-      double minMem = Double.MAX_VALUE;
-      i=0; int minIdx =0;
-      JobQueue q=runningQueues.get(0);
-      for (; i<numOfQueues; i++) {
-        if(memShares[i]<=minMem){
-          q = runningQueues.get(i);
-          minIdx=i;
-          minMem = memShares[i];
-        }
-      }
-      
-      // pick the task with min beta
-      BaseJob unallocJob = q.getUnallocRunningJob();
-      if(unallocJob==null) {
-        memShares[minIdx] = Double.MAX_VALUE;
-        numAllocQueues++;
-        continue;
-      }
-      
-      int taskId = unallocJob.getCommingTaskId();
-      InterchangableResourceDemand demand = unallocJob.rsrcDemands(taskId);
-      Resource gDemand = demand.convertToGPUDemand();
-      Resource cDemand = demand.convertToCPUDemand();
-      Resource taskDemand = null;
-      
-      boolean isCPU = false;
-      if(!gDemand.fitsIn(remainResource)) {
-        if(!cDemand.fitsIn(remainResource)){
-          memShares[minIdx] = Double.MAX_VALUE;
-          numAllocQueues++;
-          break;
-        }else{
-          taskDemand = cDemand;
-          isCPU=true;
-        }
-      } else{
-        taskDemand = gDemand;
-      }
-      
-      boolean assigned = Simulator.cluster.assignTask(unallocJob.dagId, taskId,
-          unallocJob.duration(taskId), taskDemand);
-      
-      if(assigned){
-        remainResource = Resources.subtract(remainResource, taskDemand);
-        memShares[minIdx]+= taskDemand.resource(Globals.NUM_DIMENSIONS-1);
-        if(isCPU){
-          unallocJob.isCPUUsages.put(taskId, true);
-        }
-          
-        if (unallocJob.jobStartRunningTime<0){
-          unallocJob.jobStartRunningTime = Simulator.CURRENT_TIME;
-        }
-      } 
-    }
-  }
+	public static void speedUp(Resource resCapacity, List<JobQueue> runningQueues) {
+	    List<JobQueue> activeQueues = new ArrayList<JobQueue>();
+	    for (JobQueue queue : runningQueues) {
+	      if (queue.hasRunningJobs()) {
+	        activeQueues.add(queue);
+	      }
+	    }
+	    if (activeQueues.isEmpty()) return;
 
+	    int n = activeQueues.size();
+
+	    // step 1: computes the shares
+	    // Objective function
+	    double[] f = new double[3 * n + 1];
+	    f[3 * n] = -1;
+	    
+	    double ri[] = new double[n];
+	    double bi[] = new double[n];
+	    for (int i = 0; i < n; i++) {
+	      double beta = activeQueues.get(i).getReportBeta();
+	      ri[i] = activeQueues.get(i).getReportMemToCpuRatio();
+	      bi[i] = Double.min((1+beta)/n, 1/(ri[i]*n));
+	    }
+	    
+	 // equalities constraints.
+      double[][] A = new double[1 * n][3 * n + 1];
+
+      for (int i = 0; i < n; i++) {
+        A[i][3 * i + 0] = 1; // xi
+        A[i][3 * i + 1] = activeQueues.get(i).getReportBeta(); // yi
+        A[i][3 * i + 2] = -bi[i]; // ki
+        
+        A[i][3 * n] = 0; // k*
+      }
+      double[] b = new double[1 * n];
+
+	    // Inequalities constraints
+	    double[][] G = new double[2 + 2*n][3 * n + 1];
+	    double[] h = new double[2 + 2*n];
+	    h[0]=1;
+	    h[1]=1;
+	    for (int i = 0; i < n; i++) {
+	      G[0][3 * i] = G[1][3 * i + 1] = 1.0; // sum xi, sum yi
+	      
+	      for (int j=0; j<n; j++)
+	        G[2 + i][3 * j + 2] = bi[j]*ri[j];
+	      h[2 + i] = 1;
+	      
+	      G[2 + n+ i][3 * i + 2] = -1;
+	      G[2 + n+ i][3 * n] = 1;
+	    }
+	    
+	    // Bounds on variables
+	    double[] lb = new double[3 * n + 1];
+	    double[] ub = new double[3 * n + 1];
+	    // optimization problem
+	    LPOptimizationRequest or = new LPOptimizationRequest();
+	    or.setC(f);
+	    or.setG(G);
+	    or.setH(h);
+	    or.setLb(lb);
+	    or.setA(A);
+	    or.setB(b);
+	    or.setDumpProblem(false);
+	    // optimization
+	    LPPrimalDualMethod opt = new LPPrimalDualMethod();
+	    opt.setLPOptimizationRequest(or);
+	    try {
+	      opt.optimize();
+	    } catch (JOptimizerException e) {
+	      e.printStackTrace();
+	    }
+	    double[] sol = opt.getOptimizationResponse().getSolution();
+	    // step 2: allocate the resources.
+	    for (int i = 0; i < n; i++) {
+	      JobQueue q = activeQueues.get(i);
+	      double shares[] = {
+	          sol[3 * i + 0]*clusterTotCapacity.resource(0),
+	          sol[3 * i + 1]*clusterTotCapacity.resource(1),
+	          sol[3 * i + 2]*bi[i]*ri[i]*clusterTotCapacity.resource(2) };
+	      
+	      QueueScheduler.allocateResToQueue(q, shares);
+	    }
+	  }
 	@Override
 	public String getSchedulePolicy() {
 		return this.schedulePolicy;

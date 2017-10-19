@@ -12,6 +12,7 @@ import cluster.utils.Utils;
 
 @SuppressWarnings("rawtypes")
 public class Resource implements Comparable {
+	//CPU, GPU, Memory.
 
 	private static Logger LOG = Logger.getLogger(Resource.class.getName());
 
@@ -143,6 +144,16 @@ public class Resource implements Comparable {
 			}
 		}
 		return res_idx_b;
+	}
+	
+	public double bottleneckRes(){
+		double max = Double.MIN_VALUE;
+		for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
+			if (max < resources[i]) {
+				max = resources[i];
+			}
+		}
+		return max;
 	}
 	
 	public int idOfMaxResource() {

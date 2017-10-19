@@ -109,42 +109,44 @@ public class Simulator {
 
     cluster = new Cluster(true, new Resource(Globals.MACHINE_MAX_RESOURCE));
 
-    /*if (Globals.COMPUTE_STATISTICS) {
-      double[] area_makespan = new double[Globals.NUM_DIMENSIONS];
-      Output.debugln(DEBUG, "#dag_id maxCP area");
-      double total_area = 0.0;
-      for (BaseJob dag : runnableJobs) {
-        MLJob ddag = (MLJob) dag;
-        double[] bottlenecks = new double[Globals.NUM_DIMENSIONS];
-        for (SubGraph stage : ddag.stages.values()) {
-          bottlenecks[stage.vDemands.resBottleneck()] += 1;
-        }
-        Output.debugln(DEBUG,
-            "dagName:" + ddag.dagName + " numOfStages:" + ddag.stages.values().size());
-        for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
-          Output.debug(DEBUG, " " + bottlenecks[i] / ddag.stages.values().size());
-        }
-        Output.debug(DEBUG, "\n");
-      }
-      // System.exit(-1); //TODO: why exit in the middle
-      for (BaseJob dag : runnableJobs) {
-        for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
-          area_makespan[i] += dag.area().get(i);
-        }
-        double areaJob = (double) Collections.max(dag.area().values())
-            / Globals.MACHINE_MAX_RESOURCE;
-        double maxCPJob = dag.getMaxCP();
-        Output.debugln(DEBUG, dag.dagId + " " + maxCPJob + " " + areaJob);
-        total_area += areaJob;
-      }
-      double max_area_makespan = Double.MIN_VALUE;
-      for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
-        max_area_makespan = Math.max(max_area_makespan,
-            area_makespan[i] / Globals.MACHINE_MAX_RESOURCE);
-      }
-      Output.debugln(DEBUG, "makespan_lb: " + total_area + " " + max_area_makespan);
-      // System.exit(-1); // TODO: why exit in the middle
-    }*/
+    /*
+     * if (Globals.COMPUTE_STATISTICS) {
+     * double[] area_makespan = new double[Globals.NUM_DIMENSIONS];
+     * Output.debugln(DEBUG, "#dag_id maxCP area");
+     * double total_area = 0.0;
+     * for (BaseJob dag : runnableJobs) {
+     * MLJob ddag = (MLJob) dag;
+     * double[] bottlenecks = new double[Globals.NUM_DIMENSIONS];
+     * for (SubGraph stage : ddag.stages.values()) {
+     * bottlenecks[stage.vDemands.resBottleneck()] += 1;
+     * }
+     * Output.debugln(DEBUG,
+     * "dagName:" + ddag.dagName + " numOfStages:" + ddag.stages.values().size());
+     * for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
+     * Output.debug(DEBUG, " " + bottlenecks[i] / ddag.stages.values().size());
+     * }
+     * Output.debug(DEBUG, "\n");
+     * }
+     * // System.exit(-1); //TODO: why exit in the middle
+     * for (BaseJob dag : runnableJobs) {
+     * for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
+     * area_makespan[i] += dag.area().get(i);
+     * }
+     * double areaJob = (double) Collections.max(dag.area().values())
+     * / Globals.MACHINE_MAX_RESOURCE;
+     * double maxCPJob = dag.getMaxCP();
+     * Output.debugln(DEBUG, dag.dagId + " " + maxCPJob + " " + areaJob);
+     * total_area += areaJob;
+     * }
+     * double max_area_makespan = Double.MIN_VALUE;
+     * for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
+     * max_area_makespan = Math.max(max_area_makespan,
+     * area_makespan[i] / Globals.MACHINE_MAX_RESOURCE);
+     * }
+     * Output.debugln(DEBUG, "makespan_lb: " + total_area + " " + max_area_makespan);
+     * // System.exit(-1); // TODO: why exit in the middle
+     * }
+     */
 
     totalReplayedJobs = runnableJobs.size();
     runningJobs = new LinkedList<BaseJob>();
@@ -170,8 +172,13 @@ public class Simulator {
           && Simulator.CURRENT_TIME <= Globals.DEBUG_END) {
         DEBUG = true;
       } else DEBUG = false;
+      /*
+       * if(Simulator.CURRENT_TIME>=15.0)
+       * DEBUG=true;
+       */
 
-      Output.debugln(DEBUG, "\n==== STEP_TIME:" + Utils.roundDefault(Simulator.CURRENT_TIME) + " ====\n");
+      Output.debugln(DEBUG,
+          "\n==== STEP_TIME:" + Utils.roundDefault(Simulator.CURRENT_TIME) + " ====\n");
 
       Simulator.CURRENT_TIME = Utils.roundDefault(Simulator.CURRENT_TIME);
       tasksToStartNow.clear();
@@ -243,7 +250,17 @@ public class Simulator {
     average /= completedJobs.size();
     System.out.println("---------------------");
     System.out.println("Avg. job compl. time:" + average);
+    System.out.println("Jobs completed: "+completedJobs.size());
     System.out.println("Makespan:" + makespan);
+    
+    for (JobQueue queue:QUEUE_LIST.getJobQueues()){
+      double avg = 0.0;
+      for (BaseJob dag : queue.completedJobs) {
+        avg += dag.getCompletionTime();
+      }
+      avg = avg/queue.completedJobs.size();
+      System.out.println(queue.getQueueName() + ": Avg. compl. time:" +avg+ " Jobs completed: " + queue.completedJobs.size());
+    }
     // for (Integer dagId : results.keySet()) {
     // System.out.println(dagId + " " + results.get(dagId));
     // }

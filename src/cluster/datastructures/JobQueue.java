@@ -1,6 +1,6 @@
 package cluster.datastructures;
 
-import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -9,10 +9,9 @@ import java.util.Queue;
 import cluster.simulator.Main.Globals;
 import cluster.simulator.Main.Globals.Method;
 import cluster.simulator.Simulator;
-import cluster.speedfair.ServiceRate;
 import cluster.utils.Output;
 
-public class JobQueue {
+public class JobQueue{
 
   private static boolean DEBUG = false;
 
@@ -23,13 +22,27 @@ public class JobQueue {
   public Session session = null;
 
   public boolean isLQ = false;
-
+  
   private double weight = 1.0;
+  
+  private double reportBeta = 1.0;
   
   private double beta = 1.0;
   
+  public double getBeta(){
+    return this.beta;
+  }
+  
   public void setBeta(double beta){
     this.beta = beta;
+  }
+  
+  public void setReportBeta(double betaVal){
+    this.reportBeta = betaVal;
+  }
+  
+  public double getReportBeta(){
+    return this.reportBeta;
   }
 
   /*
@@ -170,6 +183,38 @@ public class JobQueue {
       res.addWith(job.getRsrcInUse());
     }
     return res;
+  }
+  
+  public InterchangableResourceDemand getDemand(){
+    Resource res = new Resource();
+    for(BaseJob job: this.getRunningJobs()){
+      res.addWith(job.getDemand());
+    }
+    InterchangableResourceDemand demand = new InterchangableResourceDemand(res.resource(0), res.resource(2), this.reportBeta);
+    return demand;
+  }
+  
+  public InterchangableResourceDemand getReportDemand(){
+    Resource res = new Resource();
+    for(BaseJob job: this.getRunningJobs()){
+      res.addWith(job.getReportDemand());
+    }
+    InterchangableResourceDemand demand = new InterchangableResourceDemand(res.resource(0), res.resource(2), this.reportBeta);
+    return demand;
+  }
+  
+  public double getMemToCpuRatio(){
+    InterchangableResourceDemand demand = this.getDemand();
+    double cpu = demand.getGpuCpu();
+    double mem = demand.getMemory();
+    return mem/cpu;
+  }
+  
+  public double getReportMemToCpuRatio(){
+    InterchangableResourceDemand demand = this.getReportDemand();
+    double cpu = demand.getGpuCpu();
+    double mem = demand.getMemory();
+    return mem/cpu;
   }
 
   public String getResourceUsageStr() {
@@ -368,4 +413,5 @@ public class JobQueue {
       return session.getStartTime();
     return 0.0;
   }
+
 }

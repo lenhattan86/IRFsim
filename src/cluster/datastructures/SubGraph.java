@@ -18,6 +18,7 @@ public class SubGraph {
 
   public double vDuration;
   public InterchangableResourceDemand vDemands;
+  public InterchangableResourceDemand reportDemands;
   public int arrivalTime =0; // relative Arrival Time
   
   private double beta = 1.0; // tranfer rate CPU -> GPU
@@ -81,6 +82,11 @@ public class SubGraph {
   public InterchangableResourceDemand rsrcDemands(int task) {
     assert (task >= vids.begin && task <= vids.end);
     return vDemands;
+  }
+  
+  public InterchangableResourceDemand reportDemands(int task) {
+    assert (task >= vids.begin && task <= vids.end);
+    return reportDemands;
   }
   
   /*public Resource rsrcUsage(int task) {

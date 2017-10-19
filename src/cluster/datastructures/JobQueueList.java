@@ -162,8 +162,11 @@ public class JobQueueList {
       	//TODO: hard-code the high weight for interactive queues for DRF-W
     	  double weight = Double.parseDouble(br.readLine().trim());
     	  queue.setWeight(weight);
-    	  double beta = Double.parseDouble(br.readLine().trim());
+        double beta = Double.parseDouble(br.readLine().trim());
         queue.setBeta(beta);
+    	  double reportBeta = Double.parseDouble(br.readLine().trim());
+        queue.setReportBeta(reportBeta);
+
 
     	  Simulator.QUEUE_LIST.addJobQueue(queue);
       }
@@ -172,6 +175,16 @@ public class JobQueueList {
     } catch (Exception e) {
       e.printStackTrace();
     }
+	}
+	
+	public int queueIdx(String queueName){
+	  int idx = -1;
+	  for (JobQueue q:this.jobQueues){
+	    idx++;
+	    if(q.queueName.equals(queueName))
+	      break;
+	  }
+	  return idx;
 	}
 	
 }

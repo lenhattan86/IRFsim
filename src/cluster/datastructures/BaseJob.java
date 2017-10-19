@@ -63,6 +63,11 @@ public abstract class BaseJob implements Cloneable {
   public abstract InterchangableResourceDemand rsrcDemands(int task_id); // demand of from a task at
                                                      // a certain time step
   
+  public abstract Resource naiveRsrcDemands(int task_id); // demand of from a task at
+  // a certain time step
+  
+  public abstract InterchangableResourceDemand reportDemands(int taskId);
+  
   public HashMap<Integer, Boolean> isCPUUsages = new HashMap<Integer, Boolean>();
   
   public abstract Resource rsrcUsage(int task_id); // resource usage
@@ -120,13 +125,28 @@ public abstract class BaseJob implements Cloneable {
     serviceCurve = new ServiceCurve();
   }
 
- /* public Resource currResDemand() {
-    Resource usedRes = new Resource(0.0);
-    for (int taskId : runningTasks) {
-      usedRes.addWith(rsrcDemands(taskId));
+  public Resource getDemand() {
+    Resource resDemand = new Resource();
+    for (int taskId : runnableTasks) {
+      resDemand.addWith(rsrcDemands(taskId).convertToCPUDemand());
     }
-    return usedRes;
-  }*/
+    for (int taskId : runningTasks) {
+      resDemand.addWith(rsrcDemands(taskId).convertToCPUDemand());
+    }
+    return resDemand;
+  }
+  
+  public Resource getReportDemand() {
+    Resource resDemand = new Resource();
+    for (int taskId : runnableTasks) {
+      resDemand.addWith(reportDemands(taskId).convertToCPUDemand());
+    }
+    for (int taskId : runningTasks) {
+      resDemand.addWith(reportDemands(taskId).convertToCPUDemand());
+    }
+    return resDemand;
+  }
+  
 
   public double getCompletionTime() {
     if (this.jobStartRunningTime < 0)
