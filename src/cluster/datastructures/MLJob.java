@@ -50,6 +50,47 @@ public class MLJob extends BaseJob implements Cloneable {
 		chokePointsS = new HashSet<String>();
 		chokePointsT = null;
 	}
+	
+	public static MLJob genDumbMLJob(int id, double arrival, int interation, String queueName, InterchangableResourceDemand demand, InterchangableResourceDemand reportDemand){
+		MLJob job = new MLJob(id);
+		job.dagName = ""+id;
+		job.numStages = interation;
+		job.numEdgesBtwStages = interation-1;
+
+		job.runnableTasks = new LinkedHashSet<Integer>();
+		job.runningTasks = new LinkedHashSet<Integer>();
+		job.finishedTasks = new LinkedHashSet<Integer>();
+
+		String stageName = Globals.strStage;
+		SubGraph stage = new SubGraph(stageName, 1, new Interval(0, (int)Globals.STEP_TIME), 1.0, 0,
+				demand);
+		
+		double gpuCpuDemand = demand.convertToCPU();
+		double memory = demand.getMemory();
+		double beta = demand.getBeta();
+
+//		stage.reportDemands = new InterchangableResourceDemand(gpuCpuDemand + JobData.cheatedCpu[qIdx],
+//				memory + JobData.cheatedMemory[qIdx], beta + JobData.cheatedBeta[qIdx]);
+		
+		stage.reportDemands = reportDemand; 
+
+		job.stages.put(stageName, SubGraph.clone(stage));
+		
+
+		job.vertexToStage = new HashMap<Integer, String>();
+		job.ancestorsS = new HashMap<String, Set<String>>();
+		job.descendantsS = new HashMap<String, Set<String>>();
+		job.unorderedNeighborsS = new HashMap<String, Set<String>>();
+
+		job.ancestorsT = new HashMap<Integer, Set<Integer>>();
+		job.descendantsT = new HashMap<Integer, Set<Integer>>();
+
+		job.setQueueName(queueName);
+		
+		job.generateIterations(JobData.jobIterations[(jobNum-1)%JobData.jobIterations.length]);
+
+		return job;
+	}
 
 	public static MLJob clone(MLJob dag) {
 		MLJob clonedDag = new MLJob(dag.dagId);

@@ -15,6 +15,7 @@ import cluster.data.JobData;
 import cluster.data.SessionData;
 import cluster.datastructures.BaseJob;
 import cluster.datastructures.Dependency;
+import cluster.datastructures.InterchangableResourceDemand;
 import cluster.datastructures.Resource;
 import cluster.datastructures.Session;
 import cluster.datastructures.Sessions;
@@ -186,12 +187,59 @@ public class GenInput {
 		str += "" + reportBeta;
 		return str;
 	}
+	
+	public static void genInput(int numQueues, int numJobs, Queue<BaseJob> jobs) {
 
-	public static void genInputFromWorkload(int numBatchQueues, int numBatchJobs, Queue<BaseJob> jobs) {
+		genQueueInput(numQueues);
 
-		genQueueInput(numBatchQueues);
+		customizeJobsFromNothing(numQueues, numJobs);
+	}
+	
+	private static void customizeJobsFromNothing(int numBatchQueues, int numBatchJobs) {
+		stageIter = 0;
+		String file = Globals.PathToInputFile;
+		Output.write("", false, file);
 
-		customizeJobs(numBatchQueues, numBatchJobs, jobs);
+		int batchStartId = Globals.JOB_START_ID;
+		int[] arrivalTimes = readRandomProcess(Globals.DIST_FILE);
+		int arrivalIdx = 0;
+		if (numBatchQueues == 0) {
+			return;
+		}
+		for (int i = 0; i < numBatchJobs; i++) {
+			int batchQueueIdx = i % numBatchQueues;
+			int jobIdx = i + batchStartId;
+			double arrival=0.0;
+			int iteration = 1;
+			InterchangableResourceDemand demand = new InterchangableResourceDemand(0.0, 0.0, 0.0);
+			InterchangableResourceDemand reportDemand = new InterchangableResourceDemand(0.0, 0.0, 0.0);
+			MLJob job = (MLJob) MLJob.genDumbMLJob(jobIdx, arrival, iteration, "", demand, reportDemand);
+
+			// job = job.convertFromDAGToMLJob(); // Convert DAG to MLJob
+
+			String toWrite = "";
+
+			int idx = batchQueueIdx % JobData.reportBETAs.length;
+			double beta = JobData.reportBETAs[idx] + JobData.cheatedBeta[idx];
+
+			if (!Globals.GEN_JOB_ARRIVAL)
+				toWrite = genSingleJobInfo(jobIdx, "queue" + (batchQueueIdx), job, job.arrivalTime, 1,
+						Globals.SCALE_BATCH_DURATION, false, beta);
+			else {
+				if (arrivalIdx >= arrivalTimes.length)
+					arrivalIdx = 0;
+				toWrite = genSingleJobInfo(jobIdx, "queue" + (batchQueueIdx), job, arrivalTimes[arrivalIdx++],
+						Globals.SCALE_UP_BATCH_JOB, Globals.SCALE_BATCH_DURATION, false, beta);
+			}
+			Output.writeln(toWrite, true, file);
+		}
+	}
+
+	public static void genInputFromWorkload(int numQueues, int numJobs, Queue<BaseJob> jobs) {
+
+		genQueueInput(numQueues);
+
+		customizeJobs(numQueues, numJobs, jobs);
 	}
 
 	private static void customizeJobs(int numBatchQueues, int numBatchJobs, Queue<BaseJob> jobs) {
