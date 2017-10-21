@@ -35,6 +35,9 @@ end
 
     while abs(cur_load(1)-cur_load(2))>10^(-5) && flag == 1  %not equal
             gpumin = gpumin -1;
+            if (gpumin<=0)
+              error('gpumin is negative');
+            end
             price = [1 beta(gpumin) 1+beta(gpumin)];   
             user_alloc = useralloc(beta,ratio,price);  % 1 to gpumin on cpu
             cur_load = sum(user_alloc);
@@ -74,8 +77,7 @@ end
  end
  budget = max(sum(finalalloc));
  price = price * budget;
- finalalloc = finalalloc/budget;
-    
+ finalalloc = finalalloc/budget;   
         
         
         
@@ -84,7 +86,7 @@ end
     function [useralloc] = userallocGPU( beta, ratio, current_price)  %allocation calculation
         useralloc = zeros(n,3);
         for j = 1:n
-        useralloc(j,3) = min(1/current_price(3),max(ratio(j),beta(j)*ratio(j)/current_price(2)))
+        useralloc(j,3) = min(1/current_price(3),max(ratio(j),beta(j)*ratio(j)/current_price(2)));
             if beta(j) < current_price(2)  
                 useralloc(j,1) = useralloc(j,3)/ratio(j);
                 useralloc(j,2) = 0;
@@ -101,7 +103,7 @@ end
     function [useralloc] = useralloc( beta, ratio, current_price)  %allocation calculation
         useralloc = zeros(n,3);
         for j = 1:n
-        useralloc(j,3) = min(1/current_price(3),max(ratio(j),beta(j)*ratio(j)/current_price(2)));
+        useralloc(j,3) = min(1/current_price(3),max(ratio(j),beta(j)*ratio(j)/current_price(2)))
             if beta(j) <= current_price(2)  % if beta = price, then put in CPU
                 useralloc(j,1) = useralloc(j,3)/ratio(j);
                 useralloc(j,2) = 0;

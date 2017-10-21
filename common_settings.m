@@ -36,23 +36,28 @@ LOCAL_FIG = 'figs/';
 PS_CMD_FORMAT='ps2pdf -dEmbedAllFonts#true -dSubsetFonts#true -dEPSCrop#false -dPDFSETTINGS#/prepress %s %s';
 
 % fig_path = ['figs/'];
-fig_path = LOCAL_FIG;
+fig_path = '../IRF/figs/';
 
 %%
 
-strLQ = 'LQ';
-strTQ = 'TQ';
-
-strLQs = 'LQs';
-strTQs = 'TQs';
+strUser1 = 'User 1';
+strUser2 = 'User 2';
+strUser3 = 'User 3';
+strUnalloc = 'unallocated';
 
 strUnalloc = 'unallocated';
 
+strES = 'ES';
 strDRF = 'DRF';
-strDRFW = 'DRF-W';
-strStrict = 'SP';
-strProposed = 'BPF';
-strHard = 'NA'; %
+strEDRF = 'EDRF';
+strMP = 'MP';
+strMSR = 'MSR';
+strPricing = 'Pricing';
+
+strGPU = 'GPU';
+strCPU = 'CPU';
+strMemory= 'Memory';
+
 
 strEstimationErr = 'std. of estimation errors [%]';
 strFactorImprove = 'factor of improvement';
@@ -90,6 +95,9 @@ colorArraySimulation = [colorDRF colorDRFW colorStrict colorProposed];
 
 colorBarMinMax='k';
 lineWidthBarMinMax=1.5;
+colorUser1 = [hex2dec('1f')    hex2dec('49')    hex2dec('7d')]/255;
+colorUser2 = [hex2dec('22')    hex2dec('5e')    hex2dec('a8')]/255;
+colorUser3 = [hex2dec('f7')    hex2dec('96')    hex2dec('46')]/255;
 
 % colorBursty0 = [0    0.4470    0.7410];
 colorBursty0 = [hex2dec('1f')    hex2dec('49')    hex2dec('7d')]/255;

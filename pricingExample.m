@@ -1,10 +1,10 @@
 close all; clc; clear all;
 addpath('matlab_func');
 
+memory= [0.005 0.01 0.01]'; 
+cpugpu = [0.1 0.1 0.1]'; 
+beta = [10 1 0.1]'; 
 
-cpugpu = [0.7 0.4 0.3]'; 
-beta = [10 0.1 1]'; 
-memory= [0.03 0.2 0.4]'; 
 % N=3; 
 % cpugpu = 1 + 99.*rand(N,1);
 % beta = 0.1+4.9.*rand(N,1);

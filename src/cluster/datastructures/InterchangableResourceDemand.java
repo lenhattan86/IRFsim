@@ -56,7 +56,7 @@ public class InterchangableResourceDemand {
   }
   
   public double[] convertToResourceArray(){
-    double[] res = {this.convertToCPU(), this.memory/Globals.MEMORY_SCALE_DOWN, this.beta};
+    double[] res = { this.convertToCPU(),  this.memory/Globals.MEMORY_SCALE_DOWN, this.beta};
     return res;
   }
   

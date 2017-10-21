@@ -152,9 +152,15 @@ public abstract class BaseJob implements Cloneable {
     if (this.jobStartRunningTime < 0)
       System.err.println(
           "you haven't set the starting time for this job " + this.dagId);
-//    return this.jobEndTime - this.jobStartRunningTime;
     return this.jobEndTime - this.jobStartTime;
   }
+  public double getCompletionTimeFromAllocated() {
+    if (this.jobStartRunningTime < 0)
+      System.err.println(
+          "you haven't set the starting time for this job " + this.dagId);
+    return this.jobEndTime - this.jobStartRunningTime;
+  }
+
 
 /*  public Resource getMaxDemand() {
     Resource demand = new Resource(0.0);

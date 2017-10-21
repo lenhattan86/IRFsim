@@ -10,6 +10,7 @@ import cluster.datastructures.Resource;
 import cluster.datastructures.Resources;
 import cluster.simulator.Simulator;
 import cluster.simulator.Main.Globals;
+import cluster.simulator.Main.Globals.Method;
 import cluster.utils.JobArrivalComparator;
 import cluster.utils.Output;
 import cluster.utils.Utils;
@@ -49,78 +50,6 @@ public class DRFScheduler implements Scheduler {
 		onlineDRFShare(clusterTotCapacity, Simulator.QUEUE_LIST.getRunningQueues());
 	}
 	
-	//TODO: onlineDRFShare_new is incomplete
-  public static void onlineDRFShare_new(Resource resCapacity, List<JobQueue> runningQueues) {
-    // init
-    Resource consumedRes = Simulator.cluster.getClusterAllocatedRes();
-    double[] userDominantShareArr = new double[runningQueues.size()];
-    // TODO: consider the allocated share (because of no preemption).
-    int i = 0;
-    double[] auxilaryShare = new double[runningQueues.size()];
-    for (JobQueue queue : runningQueues) {
-      Resource normalizedShare = Resources.divideVector(queue.getResourceUsage(),
-          clusterTotCapacity);
-    auxilaryShare[i] = 0.0;
-      userDominantShareArr[i] = normalizedShare.max() / queue.getWeight()
-          + auxilaryShare[i];
-      i++;
-    }
-    while (true) {
-      // step 1: pick user i with lowest s_i
-      int sMinIdx = Utils.getMinValIdx(userDominantShareArr);
-      if (sMinIdx < 0) {
-        // There are more resources than demand.
-        break;
-      }
-      // D_i demand for the next task
-      JobQueue q = runningQueues.get(sMinIdx);
-      BaseJob unallocJob = q.getUnallocRunningJob();
-      if (unallocJob == null) {
-        userDominantShareArr[sMinIdx] = Double.MAX_VALUE;
-        // do not allocate to this queue any more
-        continue;
-      }
-
-      int taskId = unallocJob.getCommingTaskId();
-      Resource allocRes = unallocJob.naiveRsrcDemands(taskId);
-      if(q.getBeta()>=1)
-    	  allocRes.resources[0] = 0;
-      else
-    	  allocRes.resources[1] = 0;
-      
-      // Like Yarn, assign one single container for the task
-      // step 3: if fit, C+D_i <= R, allocate
-      Resource temp = Resources.sumRound(consumedRes, allocRes);
-      if (resCapacity.greaterOrEqual(temp)) {
-        consumedRes = temp;
-        q.setRsrcQuota(Resources.sum(q.getRsrcQuota(), q.nextTaskRes()));
-        boolean assigned = Simulator.cluster.assignTask(unallocJob.dagId, taskId,
-            unallocJob.duration(taskId), allocRes);
-        if (assigned) {
-          // update userDominantShareArr
-          double maxRes = Resources.divideVector(q.getResourceUsage(),
-              clusterTotCapacity).max();
-          userDominantShareArr[sMinIdx] = maxRes / q.getWeight()
-              + auxilaryShare[sMinIdx];
-          
-          if (unallocJob.jobStartRunningTime<0){
-            unallocJob.jobStartRunningTime = Simulator.CURRENT_TIME;
-          }
-        } else {
-          Output.debugln(DEBUG, "[DRFScheduler] Cannot assign resource to the task" + taskId
-              + " of Job " + unallocJob.dagId + " " + allocRes);
-          userDominantShareArr[sMinIdx] = Double.MAX_VALUE;
-        }
-
-      } else {
-        userDominantShareArr[sMinIdx] = Double.MAX_VALUE;
-        // do not allocate to this queue any more
-        // break;
-      }
-    }
-  }
-
-
 	public static void onlineDRFShare(Resource resCapacity, List<JobQueue> runningQueues) {
 		// init
 		Resource consumedRes = new Resource();
@@ -153,10 +82,16 @@ public class DRFScheduler implements Scheduler {
 
 			int taskId = unallocJob.getCommingTaskId();
 		   Resource allocRes = unallocJob.naiveRsrcDemands(taskId);
+		   double gpucpu = allocRes.resources[0];
+	      if(Globals.METHOD.equals(Globals.Method.DRF))
 		      if(q.getBeta()>=1)
-		    	  allocRes.resources[0] = 0;
+		    	  allocRes.resources[0] = 0; //Prefer GPU.
 		      else
-		    	  allocRes.resources[1] = 0;
+		    	  allocRes.resources[1] = 0; //prefer CPU.
+	      else if(Globals.METHOD.equals(Globals.Method.EDRF))
+	    	  allocRes.resources[0] = allocRes.resources[1] = gpucpu/(1+q.getReportBeta());
+	      else
+	    	  System.err.println("This method does is not DRF: " + Globals.METHOD);
 			// Like Yarn, assign one single container for the task
 			// step 3: if fit, C+D_i <= R, allocate
 			Resource temp = Resources.sumRound(consumedRes, allocRes);

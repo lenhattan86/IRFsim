@@ -25,6 +25,8 @@ public class Main {
   public static class Globals {
 
     public static WorkLoadType workload = WorkLoadType.BB;
+    
+    public static String strStage = "stage";
 
     public static String TRACE_FILE = "workload/queries_bb_FB_distr.txt"; // BigBench
 
@@ -106,6 +108,7 @@ public class Main {
     // SP: Strict Priority, BPF: Bounded Priority Fairness
     public static enum Method {
       DRF,
+      EDRF,
       DRFW,
       ES,
       MaxMinMem,
@@ -115,13 +118,13 @@ public class Main {
 
     public static enum QueueSchedulerPolicy {
       DRF,
-      EC,
+      ES,
       MaxMinMem,
       SpeedUp,
       Pricing
     };
 
-    public static QueueSchedulerPolicy QUEUE_SCHEDULER = QueueSchedulerPolicy.EC;
+    public static QueueSchedulerPolicy QUEUE_SCHEDULER = QueueSchedulerPolicy.ES;
 
     public enum JobsArrivalPolicy {
       All,
@@ -265,7 +268,6 @@ public class Main {
             10,
             0.1,
             1 };
-        JobData.BETAs = goodBetas;
         JobData.reportBETAs=goodBetas;
         break;
       case SIMPLE_BAD:
@@ -275,7 +277,6 @@ public class Main {
             10,
             0.1,
             1 };
-        JobData.BETAs = badBetas;
         JobData.reportBETAs=badBetas;
         break;
       default:
@@ -310,8 +311,11 @@ public class Main {
     if (Globals.METHOD.equals(Method.DRF)) {
       Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.DRF;
       Globals.FileOutput = "DRF-output" + extraName + ".csv";
+    } else if (Globals.METHOD.equals(Method.EDRF)) {
+        Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.DRF;
+        Globals.FileOutput = "EDRF-output" + extraName + ".csv";
     } else if (Globals.METHOD.equals(Method.ES)) {
-      Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.EC;
+      Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.ES;
       Globals.FileOutput = "ES-output" + extraName + ".csv";
     } else if (Globals.METHOD.equals(Method.MaxMinMem)) {
       Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.MaxMinMem;
@@ -440,6 +444,15 @@ public class Main {
   }
 
   public static void main(String[] args) {
+    if (args.length >= 2) {
+        String stRunmode = args[1];
+        if (stRunmode.equals("SingleRun")) {
+        } else {
+          System.err.println("usage [workload] [runmode]");
+          return;
+        }
+      }
+	    
     Utils.createUserDir("log");
     Utils.createUserDir("output");
     Utils.createUserDir("input_gen");
@@ -447,61 +460,50 @@ public class Main {
     System.out.println("Started Simulation....");
     System.out.println("........" + now() + ".....");
 
-    Globals.MACHINE_MAX_RESOURCE = 1000;
-    Globals.numBatchJobs = 500;
-    Globals.DRFW_weight = 4.0;
-
-    Globals.workload = Globals.WorkLoadType.SIMPLE;
+//    Globals.workload = Globals.WorkLoadType.SIMPLE;
 
     if (args.length >= 1) {
-      String stWorkload = args[0];
-      if (stWorkload.equals("BB")) {
-        Globals.workload = Globals.WorkLoadType.BB;
-      } else if (stWorkload.equals("TPC-H")) {
-        Globals.workload = Globals.WorkLoadType.TPC_H;
-      } else if (stWorkload.equals("TPC-DS")) {
-        Globals.workload = Globals.WorkLoadType.TPC_DS;
-      } else {
-        System.err.println("usage [workload]");
-        return;
-      }
+      String runMode = args[0];
+      if(runMode.equals("SingleRun"))
+    	  Globals.runmode = Runmode.SingleRun;
+      else if(runMode.equals("SimpleComparison"))
+      		Globals.runmode = Runmode.SimpleComparison;
+      else
+    	  return;
     }
 
-    Globals.runmode = Runmode.NONE;
-
-    if (args.length >= 2) {
-      String stRunmode = args[1];
-      if (stRunmode.equals("SingleRun")) {
-      } else {
-        System.err.println("usage [workload] [runmode]");
-        return;
-      }
-    }
+    Globals.runmode = Runmode.SimpleComparison;
 
     if (Globals.runmode.equals(Runmode.SingleRun)) {
-      Globals.METHOD = Method.ES;
-      Globals.NUM_MACHINES = 10;
-      Globals.MACHINE_MAX_RESOURCE = 40;
-      Globals.numQueues = 8;
-      Globals.numBatchJobs = 100;
-      Globals.DEBUG_LOCAL = true;
-      Globals.workload = Globals.WorkLoadType.TPC_DS;
-      Globals.setupParameters();
-      System.out.println("=================================================================");
-      System.out.println(
-          "Run METHOD: " + Globals.METHOD + " with " + Globals.numQueues + " batch queues.");
-      runSimulationScenario(false);
-      System.out.println();
+    	 Globals.MEMORY_SCALE_DOWN = 1;
+         Globals.NUM_MACHINES = 1;
+         Globals.SIM_END_TIME = 20.0;
+         Globals.METHOD = Method.Pricing;
+         Globals.MACHINE_MAX_RESOURCE = 10;
+         Globals.workload = Globals.WorkLoadType.SIMPLE;
+         Globals.IS_GEN = true;
+         Globals.SCALE_UP_FACTOR = 1;
+         Globals.setupParameters();
+         Globals.numQueues = 3;
+         Globals.numBatchJobs = 9000;
+         runSimulationScenario(false);
+         System.out.println();
     } else if (Globals.runmode.equals(Runmode.SimpleComparison)) {
+      Globals.MEMORY_SCALE_DOWN = 1;
       Globals.Method[] methods = {
           Method.ES,
-          Method.MaxMinMem };
+          Method.DRF,
+          Method.EDRF,
+          Method.MaxMinMem,
+          Method.SpeedUp,
+          Method.Pricing
+          };
       Globals.NUM_MACHINES = 1;
-      Globals.SIM_END_TIME = 100.0;
-      Globals.numBatchJobs = 100;
-      Globals.MACHINE_MAX_RESOURCE = 100;
+      Globals.SIM_END_TIME = 20.0;
+      Globals.numBatchJobs = 9000;
+      Globals.MACHINE_MAX_RESOURCE = 10;
       Globals.numQueues = 3;
-      Globals.workload = Globals.WorkLoadType.SIMPLE_GOOD;
+      Globals.workload = Globals.WorkLoadType.SIMPLE;
       Globals.IS_GEN = true;
       for (Globals.Method method : methods) {
         Globals.METHOD = method;
@@ -513,19 +515,19 @@ public class Main {
     } else {
       Globals.MEMORY_SCALE_DOWN = 1;
       Globals.NUM_MACHINES = 1;
-      Globals.SIM_END_TIME = 100.0;
+      Globals.SIM_END_TIME = 20.0;
 //       Globals.METHOD = Method.ES;
 //      Globals.METHOD = Method.MaxMinMem;
 //      Globals.METHOD = Method.SpeedUp;
-//      Globals.METHOD = Method.Pricing;
-      Globals.METHOD = Method.DRF;
-      Globals.MACHINE_MAX_RESOURCE = 100;
+      Globals.METHOD = Method.Pricing;
+//      Globals.METHOD = Method.DRF;
+      Globals.MACHINE_MAX_RESOURCE = 10;
       Globals.workload = Globals.WorkLoadType.SIMPLE;
       Globals.IS_GEN = true;
       Globals.SCALE_UP_FACTOR = 1;
       Globals.setupParameters();
       Globals.numQueues = 3;
-      Globals.numBatchJobs = 4500;
+      Globals.numBatchJobs = 9000;
       runSimulationScenario(false);
       System.out.println();
     }

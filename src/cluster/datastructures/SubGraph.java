@@ -10,7 +10,7 @@ import cluster.utils.Interval;
 
 public class SubGraph {
 
-	private static final boolean DEBUG = true;
+  private static final boolean DEBUG = true;
   public int id;
   public String name;
   public Interval vids;
@@ -72,6 +72,34 @@ public class SubGraph {
     }
     return clonedStage;
   }
+  
+  public static SubGraph clone(SubGraph stage, boolean isDependency) {
+	    
+	    SubGraph clonedStage = new SubGraph(stage.name, stage.id, stage.vids,
+	        stage.vDuration, stage.taskNum, stage.vDemands);
+
+	    clonedStage.parents = new HashMap<String, Dependency>();
+	    clonedStage.children = new HashMap<String, Dependency>();
+
+	    if(isDependency) {
+		    for (Map.Entry<String, Dependency> entry : stage.parents.entrySet()) {
+		      String stageName = entry.getKey();
+		      Dependency dep = entry.getValue();
+		      Dependency clonedDep = new Dependency(dep.parent, dep.child, dep.type,
+		          dep.parent_ids, dep.child_ids);
+		      clonedStage.parents.put(stageName, clonedDep);
+		    }
+	
+		    for (Map.Entry<String, Dependency> entry : stage.children.entrySet()) {
+		      String stageName = entry.getKey();
+		      Dependency dep = entry.getValue();
+		      Dependency clonedDep = new Dependency(dep.parent, dep.child, dep.type,
+		          dep.parent_ids, dep.child_ids);
+		      clonedStage.children.put(stageName, clonedDep);
+		    }
+	    }
+	    return clonedStage;
+	  }
 
   // task level convenience
   public double duration(int task) {

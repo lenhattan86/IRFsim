@@ -30,7 +30,7 @@ import cluster.utils.Utils;
 // implement the timeline server
 public class Simulator {
 
-  public static boolean DEBUG = true;
+  public static boolean DEBUG = false;
 
   public static double CURRENT_TIME = 0;
 
@@ -101,7 +101,7 @@ public class Simulator {
 
     System.out.println("start reading Dags from " + Globals.PathToInputFile);
 
-    runnableJobs = MLJob.readDags(Globals.PathToInputFile, true, true);
+    runnableJobs = MLJob.readDags(Globals.PathToInputFile, true, true, false);
 
     System.out.println("done reading Dags from " + Globals.PathToInputFile);
 
@@ -168,15 +168,6 @@ public class Simulator {
       // for (Simulator.CURRENT_TIME = 0; Simulator.CURRENT_TIME <=
       // Globals.SIM_END_TIME; Simulator.CURRENT_TIME += Globals.STEP_TIME) {
 
-      if (Simulator.CURRENT_TIME >= Globals.DEBUG_START
-          && Simulator.CURRENT_TIME <= Globals.DEBUG_END) {
-        DEBUG = true;
-      } else DEBUG = false;
-      /*
-       * if(Simulator.CURRENT_TIME>=15.0)
-       * DEBUG=true;
-       */
-
       Output.debugln(DEBUG,
           "\n==== STEP_TIME:" + Utils.roundDefault(Simulator.CURRENT_TIME) + " ====\n");
 
@@ -241,11 +232,12 @@ public class Simulator {
     for (BaseJob dag : completedJobs) {
       // System.out.println("Dag:" + dag.dagId + " compl. time:"
       // + (dag.jobEndTime - dag.jobStartTime));
-      double dagDuration = dag.getCompletionTime();
+//      double dagDuration = dag.getCompletionTime();
+      double dagDuration = dag.getCompletionTimeFromAllocated();
       makespan = Math.max(makespan, dagDuration);
       average += dagDuration;
       results.put(dag.dagId, dagDuration);
-      System.out.println(dag.dagId + " " + dagDuration + " : " + dag.getQueueName());
+//      System.out.println(dag.dagId + " " + dagDuration + " : " + dag.getQueueName());
     }
     average /= completedJobs.size();
     System.out.println("---------------------");
@@ -256,7 +248,8 @@ public class Simulator {
     for (JobQueue queue:QUEUE_LIST.getJobQueues()){
       double avg = 0.0;
       for (BaseJob dag : queue.completedJobs) {
-        avg += dag.getCompletionTime();
+        //avg += dag.getCompletionTime();
+    	  avg += dag.getCompletionTimeFromAllocated();
       }
       avg = avg/queue.completedJobs.size();
       System.out.println(queue.getQueueName() + ": Avg. compl. time:" +avg+ " Jobs completed: " + queue.completedJobs.size());
@@ -399,8 +392,8 @@ public class Simulator {
           newlyStartedJobs.add(newJob);
           Simulator.QUEUE_LIST.addRunningJob2Queue(newJob, newJob.getQueueName());
           newJob.jobStartTime = Simulator.CURRENT_TIME;
-          Output.debugln(DEBUG,
-              "Started job:" + newJob.dagId + " at time:" + Simulator.CURRENT_TIME);
+          /*Output.debugln(DEBUG,
+              "Started job:" + newJob.dagId + " at time:" + Simulator.CURRENT_TIME);*/
           existNewJob = true;
         }
       }

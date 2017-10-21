@@ -86,10 +86,13 @@ public class PricingScheduler implements Scheduler {
 			currLoad = Resources.sum(finalAlloc);
 		}
 		
-		double error = Math.pow(10, -5);
+		double error = Math.pow(10, -4);
 		while(Math.abs(currLoad.resources[0]- currLoad.resources[1])>error && flag){
 			gpumin = gpumin -1;
-			price[0] = 1; price[1] = betas[gpumin]; price[2]=1+gpumin;
+			if(gpumin<0)
+				System.err.println("gpumin is negative");
+			
+			price[0] = 1; price[1] = betas[gpumin]; price[2]=1+betas[gpumin];
 			useralloc = useralloc(betas, ratios, price);
 			currLoad = Resources.sum(useralloc);
 			if (currLoad.resources[0]>currLoad.resource(1)){
@@ -110,11 +113,11 @@ public class PricingScheduler implements Scheduler {
 			}
 			else
 			{
-				for (double k=betas[gpumin+1]; k <=betas[gpumin]; k=k-0.00001){
+				for (double k=betas[gpumin+1]; k >=betas[gpumin]; k=k-0.0001){
 					price[0] = 1; price[1] = k; price[2] = k+1;
 					useralloc = userallocGPU(betas, ratios, price);
 					currLoad = Resources.sum(useralloc);
-					if (Math.abs(currLoad.resource(0)-currLoad.resource(1))<Math.pow(10, -5)) {
+					if (Math.abs(currLoad.resource(0)-currLoad.resource(1))<error) {
 						finalAlloc = useralloc;
 						flag = false;
 						break;

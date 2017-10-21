@@ -29,7 +29,7 @@ public class QueueScheduler {
 
   public QueueScheduler() {
     switch (Globals.QUEUE_SCHEDULER) {
-    case EC:
+    case ES:
       scheduler = new EqualShareScheduler();
       break;
     case DRF:

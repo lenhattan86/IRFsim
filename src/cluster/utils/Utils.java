@@ -33,7 +33,7 @@ public class Utils {
 
     int numJobs = 5000;
     Map<Integer, BaseJob> inputJobsMap = new HashMap<Integer, BaseJob>();
-    Queue<BaseJob> inputJobs = MLJob.readDags(Globals.PathToInputFile, false, false);
+    Queue<BaseJob> inputJobs = MLJob.readDags(Globals.PathToInputFile, false, false, false);
     for (BaseJob dag : inputJobs) {
       inputJobsMap.put(dag.dagId, dag);
     }
@@ -135,7 +135,7 @@ public class Utils {
   }
 
   public static double roundDefault(double value) {
-    return roundBase(value, 4);
+    return roundBase(value, 5);
   }
 
   public static int getMinValIdx(double[] nonNegArray) {
