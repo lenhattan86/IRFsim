@@ -47,8 +47,6 @@ public class PricingScheduler implements Scheduler {
 	}
 
 	public static void pricing(Resource resCapacity, List<JobQueue> runningQueues) {
-		if(DEBUG && Simulator.CURRENT_TIME<1.0)
-			System.out.println("Debug");
 		
 		int numberOfQueues = runningQueues.size();
 		Collections.sort((List<JobQueue>) runningQueues, new BetaComparator());
@@ -70,6 +68,7 @@ public class PricingScheduler implements Scheduler {
 		Resource useralloc[] = userallocGPU(betas, ratios, price);
 		
 		Resource currLoad = Resources.sum(useralloc);
+	
 		int gpumin = numberOfQueues-1;
 		boolean flag = true;
 
@@ -87,6 +86,15 @@ public class PricingScheduler implements Scheduler {
 		}
 		
 		double error = Math.pow(10, -4);
+		
+		if (numberOfQueues==0){
+			System.err.println("numberOfQueues is too small");
+			return;
+		} else if (numberOfQueues==1){
+			flag = false;
+			finalAlloc[0] = new Resource(resCapacity);
+		}
+		
 		while(Math.abs(currLoad.resources[0]- currLoad.resources[1])>error && flag){
 			gpumin = gpumin -1;
 			if(gpumin<0)
@@ -127,10 +135,12 @@ public class PricingScheduler implements Scheduler {
 
 		}
 		
-		double budget = Resources.sum(finalAlloc).bottleneckRes();
-		price = Utils.multifly(price, budget);
-		for (int j=0; j<numberOfQueues; j++){
-			finalAlloc[j] = Resources.divideNoRound(finalAlloc[j], budget);
+		if(numberOfQueues>1){
+			double budget = Resources.sum(finalAlloc).bottleneckRes();
+			price = Utils.multifly(price, budget);
+			for (int j=0; j<numberOfQueues; j++){
+				finalAlloc[j] = Resources.divideNoRound(finalAlloc[j], budget);
+			}
 		}
 		
 		// step 3: allocate the resources.

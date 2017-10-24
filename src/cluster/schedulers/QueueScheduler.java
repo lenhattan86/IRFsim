@@ -103,6 +103,7 @@ public class QueueScheduler {
     Resource computedShares = new Resource(shares);
     Resource allocRes = q.getResourceUsage();
     boolean jobAvail = true;
+    int remainJobs = q.runningJobsSize();
     while (jobAvail) {
       BaseJob unallocJob = q.getUnallocRunningJob();
       if (unallocJob == null) {

@@ -185,13 +185,21 @@ public class JobQueue{
     return res;
   }
   
+  public Resource demand = null;
+  
   public InterchangableResourceDemand getDemand(){
+  	// TODO this is wrong in dynamic case.
     Resource res = new Resource();
-    for(BaseJob job: this.getRunningJobs()){
-      res.addWith(job.getDemand());
-    }
-    InterchangableResourceDemand demand = new InterchangableResourceDemand(res.resource(0), res.resource(2), this.reportBeta);
-    return demand;
+    if(demand==null){
+	    for(BaseJob job: this.getRunningJobs()){
+	      res.addWith(job.getDemand());
+	    }
+	    demand = new Resource(res);
+    } else
+    	res = new Resource(demand);
+//  	Resource res = this.getUnallocRunningJob().getDemand(); //TODO: this is not correct
+    InterchangableResourceDemand resDemand = new InterchangableResourceDemand(res.resource(0), res.resource(2), this.reportBeta);
+    return resDemand;
   }
   
   public InterchangableResourceDemand getReportDemand(){

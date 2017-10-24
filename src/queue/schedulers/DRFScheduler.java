@@ -1,13 +1,20 @@
 package queue.schedulers;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.joptimizer.exception.JOptimizerException;
+import com.joptimizer.optimizers.LPOptimizationRequest;
+import com.joptimizer.optimizers.LPPrimalDualMethod;
+
 import cluster.datastructures.BaseJob;
+import cluster.datastructures.InterchangableResourceDemand;
 import cluster.datastructures.JobQueue;
 import cluster.datastructures.Resource;
 import cluster.datastructures.Resources;
+import cluster.schedulers.QueueScheduler;
 import cluster.simulator.Simulator;
 import cluster.simulator.Main.Globals;
 import cluster.simulator.Main.Globals.Method;
@@ -47,8 +54,58 @@ public class DRFScheduler implements Scheduler {
 			Collections.sort((List<BaseJob>) q.getRunningJobs(), new JobArrivalComparator());
 		}
 		
-		onlineDRFShare(clusterTotCapacity, Simulator.QUEUE_LIST.getRunningQueues());
+		drf(clusterTotCapacity, Simulator.QUEUE_LIST.getRunningQueues());
 	}
+	
+	public static void drf(Resource resCapacity, List<JobQueue> runningQueues) {
+
+    List<JobQueue> activeQueues = new ArrayList<JobQueue>();
+    for (JobQueue queue : runningQueues) {
+      if (queue.hasRunningJobs()) {
+        activeQueues.add(queue);
+      }
+    }
+    if (activeQueues.isEmpty()) return;
+    
+    int n = activeQueues.size();
+    double[][] demands = new double[n][3];
+    double[] dorminantRate = new double[3]; 
+    for(int i=0; i<n; i++){
+    	
+    	JobQueue q = activeQueues.get(i);
+    	InterchangableResourceDemand demand = q.getDemand();
+    	demands[i][2] = demand.getMemory();
+      if(Globals.METHOD.equals(Globals.Method.DRF))
+	      if(q.getBeta()>=1){
+	      	demands[i][0] = 0; //Prefer GPU.
+	      	demands[i][1] = demand.convertToGPU(); //Prefer GPU.
+	      } else {
+	      	demands[i][0] = demand.convertToCPU();
+	      	demands[i][1] = 0; //prefer CPU.
+	      }
+      else if(Globals.METHOD.equals(Globals.Method.FDRF)){
+      	demands[i][0] = demands[i][1]= demand.convertToCPU()/(1+q.getReportBeta());
+      } else
+    	  System.err.println("This method does is not DRF: " + Globals.METHOD);
+      
+    	int iMax = Utils.idxOfMax(demands[i]);
+    	double maxDemand = demands[i][iMax];
+    	for(int j=0; j<3; j++){
+    		dorminantRate[j]+=demands[i][j]/maxDemand;
+    	}
+    }
+    double dorminantShare = dorminantRate[Utils.idxOfMax(dorminantRate)];
+    // step 2: allocate the resources.
+    for (int i = 0; i < n; i++) {
+      JobQueue q = activeQueues.get(i);
+      double dorminantDemand = Utils.max(demands[i]);
+      double shares[] = {
+          resCapacity.resource(0)/dorminantShare*demands[i][0]/dorminantDemand,
+          resCapacity.resource(0)/dorminantShare*demands[i][1]/dorminantDemand,
+          resCapacity.resource(0)/dorminantShare*demands[i][2]/dorminantDemand};
+      QueueScheduler.allocateResToQueue(q, shares);
+    }
+  }
 	
 	public static void onlineDRFShare(Resource resCapacity, List<JobQueue> runningQueues) {
 		// init
@@ -88,7 +145,7 @@ public class DRFScheduler implements Scheduler {
 		    	  allocRes.resources[0] = 0; //Prefer GPU.
 		      else
 		    	  allocRes.resources[1] = 0; //prefer CPU.
-	      else if(Globals.METHOD.equals(Globals.Method.EDRF))
+	      else if(Globals.METHOD.equals(Globals.Method.FDRF))
 	    	  allocRes.resources[0] = allocRes.resources[1] = gpucpu/(1+q.getReportBeta());
 	      else
 	    	  System.err.println("This method does is not DRF: " + Globals.METHOD);
@@ -112,12 +169,13 @@ public class DRFScheduler implements Scheduler {
 					Output.debugln(DEBUG, "[DRFScheduler] Cannot assign resource to the task" + taskId
 					    + " of Job " + unallocJob.dagId + " " + allocRes);
 					userDominantShareArr[sMinIdx] = Double.MAX_VALUE;
+					break;
 				}
 
 			} else {
 				userDominantShareArr[sMinIdx] = Double.MAX_VALUE;
 				// do not allocate to this queue any more
-				// break;
+				break;
 			}
 		}
 	}

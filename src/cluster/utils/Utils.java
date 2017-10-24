@@ -135,7 +135,7 @@ public class Utils {
   }
 
   public static double roundDefault(double value) {
-    return roundBase(value, 5);
+    return roundBase(value, 6);
   }
 
   public static int getMinValIdx(double[] nonNegArray) {
@@ -175,6 +175,28 @@ public class Utils {
       if (minVal>arg)
         minVal = arg;
     return minVal;
+  }
+  
+  public static int idxOfMax(double... arrays){
+    double maxVal = Double.MIN_VALUE;
+    int i=0, idx = 0;
+    for (double arg : arrays){
+      if (maxVal<arg){
+      	maxVal = arg;
+      	idx=i;
+      }
+      i++;
+    }
+    return idx;
+  }
+  
+  public static double max(double... arrays){
+    double maxVal = Double.MIN_VALUE;
+    for (double arg : arrays){
+      if (maxVal<arg)
+      	maxVal = arg;
+    }
+    return maxVal;
   }
   
   public static double[] multifly(double[] array, double factor){

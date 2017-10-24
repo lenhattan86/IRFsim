@@ -12,7 +12,7 @@ axisWidth = 1.5;
 
 %%
 
-legendSize = [0.0 0 5 0.3];
+legendSize = [0.0 0 5 0.4];
 figSizeOneCol = [0.0 0 5 3];
 figSizeOneColHaflRow = [1 1 1 0.5].* figSizeOneCol;
 figSizeTwoCol = 2*figSizeOneCol;
@@ -25,6 +25,7 @@ figSizeFourFifthCol = 4/5*figSizeOneCol;
 
 barLineWidth=0;
 groupBarSize = 0.9;
+barSize = 0.5;
 
 %%
 
@@ -43,25 +44,30 @@ fig_path = '../IRF/figs/';
 strUser1 = 'User 1';
 strUser2 = 'User 2';
 strUser3 = 'User 3';
-strUnalloc = 'unallocated';
-
+strUser4 = 'User 4';
 strUnalloc = 'unallocated';
 
 strES = 'ES';
 strDRF = 'DRF';
-strEDRF = 'EDRF';
+strFDRF = 'FDRF';
 strMP = 'MP';
 strMSR = 'MSR';
 strPricing = 'Pricing';
 
 strGPU = 'GPU';
 strCPU = 'CPU';
-strMemory= 'Memory';
+strMemory= 'mem.';
+
+strJobCompleted = 'completed jobs';
+
+strNormCapacity='norm. capacity';
 
 
 strEstimationErr = 'std. of estimation errors [%]';
 strFactorImprove = 'factor of improvement';
 strAvgComplTime = 'avg. compl. (secs)';
+
+strMethods='methods';
 
 %% line specs
 lineProposed = '-';
@@ -96,8 +102,9 @@ colorArraySimulation = [colorDRF colorDRFW colorStrict colorProposed];
 colorBarMinMax='k';
 lineWidthBarMinMax=1.5;
 colorUser1 = [hex2dec('1f')    hex2dec('49')    hex2dec('7d')]/255;
-colorUser2 = [hex2dec('22')    hex2dec('5e')    hex2dec('a8')]/255;
+colorUser2 = [0.4660    0.6740    0.1880];
 colorUser3 = [hex2dec('f7')    hex2dec('96')    hex2dec('46')]/255;
+colorUser4 = [0.2500    0.2500    0.2500];
 
 % colorBursty0 = [0    0.4470    0.7410];
 colorBursty0 = [hex2dec('1f')    hex2dec('49')    hex2dec('7d')]/255;

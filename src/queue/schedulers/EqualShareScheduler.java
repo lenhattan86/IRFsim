@@ -9,6 +9,7 @@ import cluster.datastructures.InterchangableResourceDemand;
 import cluster.datastructures.JobQueue;
 import cluster.datastructures.Resource;
 import cluster.datastructures.Resources;
+import cluster.schedulers.QueueScheduler;
 import cluster.simulator.Simulator;
 import cluster.simulator.Main.Globals;
 import cluster.utils.JobArrivalComparator;
@@ -47,7 +48,30 @@ public class EqualShareScheduler implements Scheduler {
 		equallyAllocate(clusterTotCapacity, Simulator.QUEUE_LIST.getRunningQueues());
 	}
 	
-	public static void equallyAllocate(Resource resCapacity, List<JobQueue> runningQueues2) {
+public static void equallyAllocate(Resource resCapacity, List<JobQueue> runningQueues2) {
+	  
+	  
+	  List<JobQueue> runningQueues = new ArrayList<JobQueue>();
+	  
+	  for (JobQueue queue : runningQueues2) {
+      if(queue.hasRunningJobs())
+        runningQueues.add(queue);
+    }
+	  
+	  int numOfQueues = runningQueues.size();
+	  if(runningQueues.isEmpty()) return;
+    
+    // step 1: compute equal share
+    Resource equalShares = Resources.divide(resCapacity, numOfQueues);
+    
+    for (int i = 0; i < numOfQueues; i++) {
+      JobQueue q = runningQueues.get(i);
+      double shares[] = equalShares.resources;
+      QueueScheduler.allocateResToQueue(q, shares);
+    }
+  }
+	
+	public static void equallyAllocate_online(Resource resCapacity, List<JobQueue> runningQueues2) {
 	  
 	  
 	  List<JobQueue> runningQueues = new ArrayList<JobQueue>();

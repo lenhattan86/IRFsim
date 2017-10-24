@@ -64,9 +64,9 @@ end
 extraStr = ['_' int2str(num_batch_queues) '_' int2str(cluster_size)];
 
 %%
-% prefixes = {'ES', 'DRF', 'MaxMinMem', 'SpeedUp', 'Pricing'};
+% prefixes = {'ES', 'DRF','EDRF', 'MaxMinMem', 'SpeedUp', 'Pricing'};
 % prefixes = {'Pricing'};
-prefixes = {'DRF','EDRF'};
+prefixes = {'MaxMinMem','SpeedUp','Pricing'};
 for iFile=1:length(prefixes)
   if plots(1)   
      logFile = [ logfolder prefixes{iFile} '-output' extraStr  '.csv']
@@ -106,7 +106,7 @@ for iFile=1:length(prefixes)
 
         hBar = bar(timeInSeconds,shapeRes',barwidth,'stacked','EdgeColor','none');
         set(hBar,{'FaceColor'},barColors);   
-        ylabel('GPU');xlabel('seconds');
+        ylabel('GPU','FontSize',fontAxis);xlabel('seconds','FontSize',fontAxis);
         ylim([0 cluster_size]);
         xlim([0 max(timeInSeconds)]);
         %legend(lengendStr,'Location','northoutside','FontSize',fontLegend,'Orientation','horizontal');

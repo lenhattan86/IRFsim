@@ -165,9 +165,13 @@ public class Simulator {
   public void simulateMultiQueues() {
     Simulator.CURRENT_TIME = 0;
     while (true) {
+    	double progress = Simulator.CURRENT_TIME/Globals.SIM_END_TIME*100;
+    	if(progress%10==0)
+    		System.out.println("progress: "+progress + "%");
+    	
       // for (Simulator.CURRENT_TIME = 0; Simulator.CURRENT_TIME <=
       // Globals.SIM_END_TIME; Simulator.CURRENT_TIME += Globals.STEP_TIME) {
-
+    	
       Output.debugln(DEBUG,
           "\n==== STEP_TIME:" + Utils.roundDefault(Simulator.CURRENT_TIME) + " ====\n");
 

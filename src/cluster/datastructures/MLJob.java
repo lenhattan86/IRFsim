@@ -51,23 +51,23 @@ public class MLJob extends BaseJob implements Cloneable {
 		chokePointsT = null;
 	}
 	
-	public static MLJob genDumbMLJob(int id, double arrival, int interation, String queueName, InterchangableResourceDemand demand, InterchangableResourceDemand reportDemand){
+	public static MLJob genDumbMLJob(int id, double arrival, int numIteration, String queueName, InterchangableResourceDemand demand, InterchangableResourceDemand reportDemand, int numTask){
 		MLJob job = new MLJob(id);
 		job.dagName = ""+id;
-		job.numStages = interation;
-		job.numEdgesBtwStages = interation-1;
+		job.numStages = 1;
+		job.numEdgesBtwStages = 1;
 
 		job.runnableTasks = new LinkedHashSet<Integer>();
 		job.runningTasks = new LinkedHashSet<Integer>();
 		job.finishedTasks = new LinkedHashSet<Integer>();
 
 		String stageName = Globals.strStage;
-		SubGraph stage = new SubGraph(stageName, 1, new Interval(0, (int)Globals.STEP_TIME), 1.0, 0,
+		SubGraph stage = new SubGraph(stageName, 1, new Interval(0, (int)Globals.STEP_TIME), 1.0, numTask,
 				demand);
 		
-		double gpuCpuDemand = demand.convertToCPU();
+		/*double gpuCpuDemand = demand.convertToCPU();
 		double memory = demand.getMemory();
-		double beta = demand.getBeta();
+		double beta = demand.getBeta();*/
 
 //		stage.reportDemands = new InterchangableResourceDemand(gpuCpuDemand + JobData.cheatedCpu[qIdx],
 //				memory + JobData.cheatedMemory[qIdx], beta + JobData.cheatedBeta[qIdx]);
@@ -75,7 +75,6 @@ public class MLJob extends BaseJob implements Cloneable {
 		stage.reportDemands = reportDemand; 
 
 		job.stages.put(stageName, SubGraph.clone(stage));
-		
 
 		job.vertexToStage = new HashMap<Integer, String>();
 		job.ancestorsS = new HashMap<String, Set<String>>();
@@ -87,7 +86,8 @@ public class MLJob extends BaseJob implements Cloneable {
 
 		job.setQueueName(queueName);
 		
-		job.generateIterations(JobData.jobIterations[(jobNum-1)%JobData.jobIterations.length]);
+		job.numEdgesBtwStages=numIteration-1;
+		job.generateIterations(numIteration);
 
 		return job;
 	}
@@ -373,8 +373,8 @@ public class MLJob extends BaseJob implements Cloneable {
 					SubGraph stage = new SubGraph(stageName, i, new Interval(vIdxStart, vIdxEnd - 1), durV, numVertices,
 							demand);
 
-					stage.reportDemands = new InterchangableResourceDemand(gpuCpuDemand + JobData.cheatedCpu[qIdx],
-							memory + JobData.cheatedMemory[qIdx], beta + JobData.cheatedBeta[qIdx]);
+					stage.reportDemands = new InterchangableResourceDemand(gpuCpuDemand + Globals.jobData.cheatedCpu[qIdx],
+							memory + Globals.jobData.cheatedMemory[qIdx], beta + Globals.jobData.cheatedBeta[qIdx]);
 
 					String arrivalStr = args[args.length - 2];
 					if (arrivalStr.startsWith("@"))
@@ -434,8 +434,8 @@ public class MLJob extends BaseJob implements Cloneable {
 					}
 				}
 				
-				if(genIteration)
-					dag.generateIterations(JobData.jobIterations[(jobNum-1)%JobData.jobIterations.length]);
+		/*		if(genIteration)
+					dag.generateIterations(JobData.jobIterations[(jobNum-1)%JobData.jobIterations.length]);*/
 
 				dags.add(dag);
 				// Simulator.QUEUE_LIST.addRunnableJob2Queue(dag,
@@ -466,11 +466,10 @@ public class MLJob extends BaseJob implements Cloneable {
 			for (int i = newStage.vids.begin; i <= newStage.vids.end; i++) {
 				this.vertexToStage.put(i, newStage.name);
 			}
-			
-			this.numEdgesBtwStages++;
 			this.populateParentsAndChildrenStructure(prevStage, newStageName, "ata");
 			prevStage = newStageName;
 		}
+		this.numEdgesBtwStages=numIter-1;
 		this.numStages = numIter;
 	}
 
