@@ -460,11 +460,11 @@ public class Main {
   public static void main(String[] args) {
   	int idx = -1;
   	double beta = 50;
-  	Globals.runmode = Runmode.Analysis;
+  	Globals.runmode = Runmode.SingleRun;
   	
     if (args.length >= 1) {
     		beta = Double.parseDouble(args[0]);
-    		Globals.runmode = Runmode.Analysis;
+    		Globals.runmode = Runmode.SingleRun;
       }
 	    
     Utils.createUserDir("log");
@@ -475,7 +475,7 @@ public class Main {
     System.out.println("........" + now() + ".....");
 
 //    Globals.workload = Globals.WorkLoadType.SIMPLE;
-    boolean multipe = true;
+    boolean multipe = false;
     
     
     
@@ -497,7 +497,7 @@ public class Main {
          Globals.SCALE_UP_FACTOR = 1;
          Globals.setupParameters();
          Globals.numQueues = 4;
-         Globals.numBatchJobs = 20000;
+         Globals.numBatchJobs = 20;
          runSimulationScenario(false);
          System.out.println();
     } else if (Globals.runmode.equals(Runmode.SingleRun) && multipe){
