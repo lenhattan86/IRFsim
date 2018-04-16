@@ -70,8 +70,7 @@ public class DRFScheduler implements Scheduler {
     int n = activeQueues.size();
     double[][] demands = new double[n][3];
     double[] dorminantRate = new double[3]; 
-    for(int i=0; i<n; i++){
-    	
+    for(int i=0; i<n; i++){    	
     	JobQueue q = activeQueues.get(i);
     	InterchangableResourceDemand demand = q.getDemand();
     	demands[i][2] = demand.getMemory();
