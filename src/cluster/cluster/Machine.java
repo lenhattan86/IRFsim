@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 
 import cluster.datastructures.BaseJob;
-import cluster.datastructures.InterchangableResourceDemand;
 import cluster.datastructures.Resource;
 import cluster.datastructures.Resources;
 import cluster.datastructures.Task;

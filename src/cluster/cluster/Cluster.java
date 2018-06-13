@@ -10,7 +10,6 @@ import java.util.logging.Logger;
 
 import cluster.datastructures.BaseJob;
 import cluster.datastructures.Resource;
-import cluster.datastructures.Task;
 import cluster.simulator.Simulator;
 import cluster.simulator.Main.Globals;
 

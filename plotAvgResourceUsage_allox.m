@@ -6,7 +6,7 @@ workload='SIMPLE';
 
 num_queues = 3;
 START_TIME = 0; END_TIME = 10;  STEP_TIME = 1;
-is_printed = true;
+is_printed = false;
 
 isLarge = false;
 largeStr = '';
@@ -14,16 +14,16 @@ if isLarge
   cluster_size = 600;
   num_queues = 30;
   END_TIME = 4;
-%   largeStr='_lbeta_cpu';
-%   largeStr='_lbeta_mix';
-%   largeStr='_sbeta_cpu';
   largeStr='_mbeta_lcpu';
 else
-  cluster_size = 60;
+  cluster_size = 60; 
   END_TIME = 10;
-   largeStr='';
+  capacity = cluster_size * [64 1 96];
+  largeStr='';
 end
-
+stackLabels = {strUser1,strUser2, strUser3, 'Unallocated'};
+colorUsers = {colorUser1; colorUser2; colorUser3; colorWasted};
+     
 enableSeparateLegend = true;
 
 scale_down_mem = 1;
@@ -68,20 +68,19 @@ for iFile=1:length(prefixes)
      logFile = [ logfolder prefixes{iFile} '-output' extraStr  '.csv'];
      [queueNames, res1, res2, res3, flag] = importResUsageLog(logFile);   
 
-     colorUsers = {colorUser1; colorUser2; colorUser3; colorUser4; colorWasted};
-     stackLabels = {strUser1,strUser2, strUser3, strUser4, 'Unallocated'};
      groupLabels = { strCPU, strGPU, strMemory};  
 
      if (flag)
-        figure;
+        figIdx=figIdx +1;
+        figures{figIdx} = figure;
         [ avgCPU ] = convertToAvgUsage( res1, num_queues, num_time_steps,startIdx);
         [ avgGPU ] = convertToAvgUsage( res2, num_queues, num_time_steps,startIdx);
         [ avgMemory ] = convertToAvgUsage( res3, num_queues, num_time_steps,startIdx);
-        avgRes = [[avgCPU cluster_size-sum(avgCPU)]; [avgGPU cluster_size-sum(avgGPU)];[avgMemory cluster_size-sum(avgMemory)]]/cluster_size;              
+        avgRes = [[avgCPU capacity(1)-sum(avgCPU)]; [avgGPU capacity(2)-sum(avgGPU)];[avgMemory capacity(3)-sum(avgMemory)]]./(capacity'*ones(1,num_queues+1));
         hBar = bar(1:3, avgRes, 0.5, 'stacked');
         ylabel(strNormCapacity);
 %         if ~isLarge
-%           set(hBar,{'FaceColor'}, colorUsers);      
+          set(hBar,{'FaceColor'}, colorUsers);      
 %         end
 %         legend(stackLabels,'Location','northoutside','FontSize',fontLegend,'Orientation','horizontal');  
         set(gca,'XTickLabel', groupLabels, 'FontSize', fontAxis);
@@ -89,13 +88,11 @@ for iFile=1:length(prefixes)
           title(prefixes{iFile});
         end
         ylim([0 1]);
+        xlim([0.5 3.5]);
         set (gcf, 'Units', 'Inches', 'Position', figSize, 'PaperUnits', 'inches', 'PaperPosition', figSize);     
-        if is_printed   
-          figIdx=figIdx +1;
-          fileNames{figIdx} = ['avgResourceUsage_' prefixes{iFile}  ];        
-          epsFile = [ LOCAL_FIG fileNames{figIdx} '.eps'];
-          print ('-depsc', epsFile);
-        end   
+        
+        fileNames{figIdx} = ['avgResourceUsage_' prefixes{iFile}  ];                
+
      end
   end
 end
@@ -105,10 +102,11 @@ legendSize = [0.0 0 6 0.4];
 
 if ~isLarge
   if enableSeparateLegend
-    figure
+    figIdx=figIdx +1;
+    figures{figIdx} = figure;
     hBar = bar(1:3, avgRes,barwidth,'stacked');
 
-%     set(hBar,{'FaceColor'}, colorUsers);      
+    set(hBar,{'FaceColor'}, colorUsers);      
 
     legend(stackLabels,'Location','southoutside','FontSize',fontLegend,'Orientation','horizontal');
     set(gca,'FontSize',fontSize);
@@ -117,12 +115,12 @@ if ~isLarge
     set(gca,'YColor','none');
     set (gcf, 'Units', 'Inches', 'Position', legendSize, 'PaperUnits', 'inches', 'PaperPosition', legendSize);    
 
-    if is_printed   
-        figIdx=figIdx +1;
+%     if is_printed   
+%         figIdx=figIdx +1;
       fileNames{figIdx} = ['q' int2str(num_queues)  'avg_res_usage_legend'];        
-      epsFile = [ LOCAL_FIG fileNames{figIdx} '.eps'];
-      print ('-depsc', epsFile);
-    end
+%       epsFile = [ LOCAL_FIG fileNames{figIdx} '.eps'];
+%       print ('-depsc', epsFile);
+%     end
   end
 end
 
@@ -137,7 +135,8 @@ for iFile=1:length(prefixes)
      groupLabels = { strCPU, strGPU, strMemory};  
 
      if (flag)
-        figure;
+        figIdx=figIdx +1;
+        figures{figIdx} =figure;
         [ avgCPU ] = convertToAvgUsage( res1, num_queues, num_time_steps,startIdx);
         [ avgGPU ] = convertToAvgUsage( res2, num_queues, num_time_steps,startIdx);
         [ avgMemory ] = convertToAvgUsage( res3, num_queues, num_time_steps,startIdx);
@@ -152,12 +151,7 @@ for iFile=1:length(prefixes)
         end
         ylim([0 1]);
         set (gcf, 'Units', 'Inches', 'Position', figSize, 'PaperUnits', 'inches', 'PaperPosition', figSize);     
-        if is_printed   
-          figIdx=figIdx +1;
-          fileNames{figIdx} = ['res_util_' prefixes{iFile}  ];        
-          epsFile = [ LOCAL_FIG fileNames{figIdx} '.eps'];
-          print ('-depsc', epsFile);
-        end   
+         fileNames{figIdx} = ['res_util_' prefixes{iFile}  ];        
      end
   end
 end
@@ -165,10 +159,11 @@ return;
 %%
 extra='';
 for i=1:length(fileNames)
-    fileName = fileNames{i}
+    fileName = fileNames{i};
     epsFile = [ LOCAL_FIG fileName '.eps'];
-     pdfFile = [ LOCAL_FIG fileName largeStr '.pdf']  
-%     pdfFile = [ fig_path fileName largeStr '.pdf']    
+    print (figures{i}, '-depsc', epsFile);
+    
+    pdfFile = [ fig_path fileName largeStr '.pdf']  
     cmd = sprintf(PS_CMD_FORMAT, epsFile, pdfFile);
     status = system(cmd);
 end

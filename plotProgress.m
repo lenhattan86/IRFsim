@@ -1,11 +1,11 @@
 addpath('matlab_func');
 common_settings;
-
+% is_printed = 1;
 %%
-queue_num = 4;
+queue_num = 3;
+figureSize = figSizeOneCol/3*2;
 
-
-plots  = [false, false, true, true];
+plots  = [true, true];
 
 isLarge = false;
 largeStr = '';
@@ -23,31 +23,25 @@ if isLarge
 %   largeStr='';
   plots(1:2:3)=false;
 else
-  cluster_size = 100;
-  END_TIME = 10;
-  largeStr='_case2';
-  queue_num=4;
+  cluster_size = 60;
+  END_TIME = 150;
+  largeStr='';
+  queue_num=3;
 end
 
 
 outputExtra = '';
-colorUsers = {colorUser1; colorUser2; colorUser3; colorUser4};
+colorUsers = {colorUser1; colorUser2; colorUser3};
 %%
 % methods = {strES, strDRF, strFDRF, strMP, strMSR, strPricing};
-methods = {strES, strDRF, strMP, strFDRF,  strPricing};
-  files = {['ES-output_' num2str(queue_num) '_' num2str(cluster_size) largeStr '.csv'];
-                ['DRF-output_' num2str(queue_num) '_' num2str(cluster_size) largeStr '.csv'];
-                ['MaxMinMem-output_' num2str(queue_num) '_' num2str(cluster_size) largeStr '.csv'];
-                ['FDRF-output_' num2str(queue_num) '_' num2str(cluster_size) largeStr '.csv'];                
-%                 ['SpeedUp-output_' num2str(queue_num) '_' num2str(cluster_size) largeStr '.csv'];
-                ['Pricing-output_' num2str(queue_num) '_' num2str(cluster_size) largeStr '.csv']
-                 };
+methods = { strDRF, strES, strAlloX};
+files = { ['DRF-output_' num2str(queue_num) '_' num2str(cluster_size) largeStr '.csv'];
+          ['ES-output_' num2str(queue_num) '_' num2str(cluster_size) largeStr '.csv'];                
+          ['AlloX-output_' num2str(queue_num) '_' num2str(cluster_size) largeStr '.csv']};
 
 num_batch_queues = 1;
 num_interactive_queue = 3;
 num_queues = num_batch_queues + num_interactive_queue;
-
-
 
 %%
 result_folder = '';
@@ -62,76 +56,10 @@ figIdx = 0;
 
 
 
+QUEUES = {'queue0', 'queue1', 'queue2'};
+
 %%
-QUEUES = {'queue0', 'queue1', 'queue2', 'queue3'};
 if plots(1) 
-    
-    
-    avgComplTime = zeros(length(QUEUES), length(methods));
-    for i=1:length(QUEUES)
-      [ avgComplTime(i,:) ] = obtain_compl_time( output_folder, files, QUEUES{i});
-    end
-
-   figure;
-   scrsz = get(groot,'ScreenSize');   
-   hBar = bar(avgComplTime', 'group');
-   set(hBar,{'FaceColor'}, colorUsers);   
-   %title('Average completion time of interactive jobs','fontsize',fontLegend);
-   xLabel=strMethods;
-    yLabel=strAvgComplTime;
-    legendStr={strUser1, strUser2, strUser3, strUser4};
-
-    xLabels=methods;
-    legend(legendStr,'Location','northoutside','FontSize',fontLegend,'Orientation','horizontal');
-    set (gcf, 'Units', 'Inches', 'Position', figSizeOneCol, 'PaperUnits', 'inches', 'PaperPosition', figSizeOneCol);
-    xlabel(xLabel,'FontSize',fontAxis);
-    ylabel(yLabel,'FontSize',fontAxis);
-    set(gca,'XTickLabel',xLabels,'FontSize',fontAxis);
-   
-   if is_printed
-       figIdx=figIdx +1;
-      fileNames{figIdx} = 'avg_compl_time_each';
-      epsFile = [ LOCAL_FIG fileNames{figIdx} '.eps'];
-        print ('-depsc', epsFile);
-   end  
-end
-
-%%
-if plots(2) 
-    QUEUES = 'queue';
-   
-   [ avg_compl_time ] = obtain_compl_time( output_folder, files, QUEUES);
-
-   figure;
-   scrsz = get(groot,'ScreenSize');   
-   hBar = bar(avg_compl_time', barSize);
-%    set(hBar,{'FaceColor'}, colorUsers);   
-   %title('Average completion time of interactive jobs','fontsize',fontLegend);
-   xLabel=strMethods;
-    yLabel=strAvgComplTime;
-%     legendStr={'ES', 'DRF', 'MaxMin', 'SpeedUp', 'Pricing'};
-
-    xLabels=methods;
-%     legend(legendStr,'Location','northoutside','FontSize',fontLegend,'Orientation','horizontal');
-    set (gcf, 'Units', 'Inches', 'Position', figSizeOneCol, 'PaperUnits', 'inches', 'PaperPosition', figSizeOneCol);
-    xlabel(xLabel,'FontSize',fontAxis);
-    ylabel(yLabel,'FontSize',fontAxis);
-    set(gca,'XTickLabel',xLabels,'FontSize',fontAxis);
-   
-   if is_printed
-       figIdx=figIdx +1;
-      fileNames{figIdx} = 'avg_compl_time_all';
-      epsFile = [ LOCAL_FIG fileNames{figIdx} '.eps'];
-        print ('-depsc', epsFile);
-   end  
-end
-
-
-
-
-%%
-scaleUP=50/END_TIME;
-if plots(3) 
     
     jobCompleted = zeros(length(QUEUES), length(methods));
     for i=1:length(QUEUES)
@@ -139,68 +67,64 @@ if plots(3)
     end
     (jobCompleted(1,:)-jobCompleted(1,1))/jobCompleted(1,1)*100
     (jobCompleted(1,:)-jobCompleted(1,2))/jobCompleted(1,2)*100
-   figure;
+   figIdx=figIdx +1;         figures{figIdx} =figure;
    scrsz = get(groot,'ScreenSize');   
-   hBar = bar(jobCompleted'*scaleUP, 'group');
+   hBar = bar(jobCompleted', 'group');
    set(hBar,{'FaceColor'}, colorUsers);   
 %    set(gca,'yscale','log')
    %title('Average completion time of interactive jobs','fontsize',fontLegend);
    xLabel=strMethods;
     yLabel=strJobCompleted;
     legendStr={strUser1, strUser2, strUser3, strUser4};
-
+    xlim([0.5 3.5]);
+    ylim([0 max(max(jobCompleted))*1.1]);
     xLabels=methods;
     legend(legendStr,'Location','northoutside','FontSize',fontLegend,'Orientation','horizontal');
-    set (gcf, 'Units', 'Inches', 'Position', figSizeOneCol, 'PaperUnits', 'inches', 'PaperPosition', figSizeOneCol);
+    set (gcf, 'Units', 'Inches', 'Position', figureSize, 'PaperUnits', 'inches', 'PaperPosition', figureSize);
     xlabel(xLabel,'FontSize',fontAxis);
     ylabel(yLabel,'FontSize',fontAxis);
     set(gca,'XTickLabel',xLabels,'FontSize',fontAxis);
    
-   if is_printed
-       figIdx=figIdx +1;
+
       fileNames{figIdx} = 'job_completed_each';
-      epsFile = [ LOCAL_FIG fileNames{figIdx} '.eps'];
-        print ('-depsc', epsFile);
-   end  
 end
 
 %%
-if plots(4) 
-    QUEUES = 'queue';
+if plots(2) 
+    queueName = 'queue';
    
-   [ jobCompleted ] = obtain_job_completed( output_folder, files, QUEUES);
+   [ jobCompleted ] = obtain_job_completed( output_folder, files, queueName);
 
-   figure;
+   figIdx=figIdx +1;         figures{figIdx} =figure;
    scrsz = get(groot,'ScreenSize');   
-   bar(jobCompleted'*scaleUP,barSize);
+   yVals = jobCompleted./(jobCompleted(1));
+   bar(yVals,barSize);
    %title('Average completion time of interactive jobs','fontsize',fontLegend);
    xLabel=strMethods;
     yLabel=strJobCompleted;
 %     legendStr={'ES', 'DRF', 'MaxMin', 'SpeedUp', 'Pricing'};
-
+  xlim([0.5 3.5]);
+  ylim ([0 max(yVals*1.1)]);
     xLabels=methods;
 %     legend(legendStr,'Location','northoutside','FontSize',fontLegend,'Orientation','horizontal');
-    set (gcf, 'Units', 'Inches', 'Position', figSizeOneCol, 'PaperUnits', 'inches', 'PaperPosition', figSizeOneCol);
+    set (gcf, 'Units', 'Inches', 'Position', figureSize, 'PaperUnits', 'inches', 'PaperPosition', figureSize);
     xlabel(xLabel,'FontSize',fontAxis);
     ylabel(yLabel,'FontSize',fontAxis);
     set(gca,'XTickLabel',xLabels,'FontSize',fontAxis);
    
-   if is_printed
-       figIdx=figIdx +1;
-      fileNames{figIdx} = 'job_completed_all';
-      epsFile = [ LOCAL_FIG fileNames{figIdx} '.eps'];
-        print ('-depsc', epsFile);
-   end  
+
+    fileNames{figIdx} = 'job_completed_all';
 end
 
-fileNames
 return;
 %%
-
+extra='';
 for i=1:length(fileNames)
     fileName = fileNames{i};
     epsFile = [ LOCAL_FIG fileName '.eps'];
-    pdfFile = [ fig_path fileName largeStr '.pdf'];    
+    print (figures{i}, '-depsc', epsFile);
+    
+    pdfFile = [ fig_path fileName largeStr '.pdf']  
     cmd = sprintf(PS_CMD_FORMAT, epsFile, pdfFile);
     status = system(cmd);
 end

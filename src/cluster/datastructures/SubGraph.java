@@ -44,7 +44,7 @@ public class SubGraph {
     children = new HashMap<String, Dependency>();
 
     vDuration = duration;
-    vDemands = new InterchangableResourceDemand(demand.getGpuCpu(), demand.getMemory(), demand.getBeta());
+    vDemands = new InterchangableResourceDemand(demand);
   }
 
   public static SubGraph clone(SubGraph stage) {
@@ -117,39 +117,6 @@ public class SubGraph {
     return reportDemands;
   }
   
-  /*public Resource rsrcUsage(int task) {
-    assert (task >= vids.begin && task <= vids.end);
-    //todo: get the real usage of a task
-    return vDemands.convertToCPUDemand();
-  }*/
-
-
-  public Resource totalWork() {
-    Resource totalWork = Resources.clone(vDemands.convertToGPUDemand());
-    totalWork.multiply(vids.end - vids.begin + 1);
-    return totalWork;
-  }
-
-  public Resource totalWorkInclDur() {
-    Resource totalWork = Resources.clone(vDemands.convertToGPUDemand());
-    totalWork.multiply((vids.end - vids.begin + 1) * vDuration);
-    return totalWork;
-  }
-
-/*  public double stageContribToSrtfScore(Set<Integer> consideredTasks) {
-    Set<Integer> stageTasks = new HashSet<Integer>();
-    for (int task = vids.begin; task <= vids.end; task++) {
-      stageTasks.add(task);
-    }
-    stageTasks.removeAll(consideredTasks);
-
-    int remTasksToSched = stageTasks.size();
-    if (remTasksToSched == 0) {
-      return 0;
-    }
-    double l2Norm = Resource.l2Norm(vDemands);
-    return l2Norm * remTasksToSched * vDuration;
-  }*/
   
   public ArrayList<Integer> getTasks(){
     ArrayList<Integer> stageTasks = new ArrayList<Integer>();

@@ -1,6 +1,7 @@
 clear; close all;
 addpath('matlab_func');
 common_settings;
+is_printed = false;
 
 %workload='BB';
 workload='SIMPLE';
@@ -8,8 +9,7 @@ workload='SIMPLE';
 num_batch_queues = 3;
 num_interactive_queue = 0;
 num_queues = num_batch_queues + num_interactive_queue;
-START_TIME = 0; END_TIME = 100;  STEP_TIME = 1;
-is_printed = true;
+START_TIME = 0; END_TIME = 10;  STEP_TIME = 1;
 cluster_size = 10;
 
 % figureSize = [1 1 2/3 2/3].* figSizeOneCol;
@@ -22,7 +22,7 @@ barColors = colorb3(1:num_queues);
 
 scale_down_mem = 1;
 
-fig_path='../IRF/figs/';
+% fig_path='../IRF/figs/';
 
 %%
 

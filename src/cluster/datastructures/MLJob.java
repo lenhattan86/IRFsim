@@ -17,7 +17,6 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.TreeMap;
 
-import cluster.data.JobData;
 import cluster.simulator.Simulator;
 import cluster.simulator.Main.Globals;
 import cluster.utils.Interval;
@@ -360,21 +359,22 @@ public class MLJob extends BaseJob implements Cloneable {
 					durV = Double.parseDouble(args[j++]);
 					assert (durV >= 0);
 
-					double gpuCpuDemand = Double.parseDouble(args[j++]);
-					double memory= Double.parseDouble(args[j++]);
-					double beta = 1.0;
-					if (readBeta)
-						beta = Double.parseDouble(args[j++]);
-					InterchangableResourceDemand demand = new InterchangableResourceDemand(gpuCpuDemand, memory, beta);
+					double cpu = Double.parseDouble(args[j++]);
+					double mem = Double.parseDouble(args[j++]);
+					double cpuComplt = Double.parseDouble(args[j++]);
+					double gpu = Double.parseDouble(args[j++]);
+					double gpuMem = Double.parseDouble(args[j++]);
+					double gpuComplt = Double.parseDouble(args[j++]);
+				// TODO: read the real demands
+					InterchangableResourceDemand demand = new InterchangableResourceDemand(cpu, mem, gpu, gpuMem, cpuComplt, gpuComplt );
 
 					numVertices = Integer.parseInt(args[args.length - 1]);
 					assert (numVertices >= 0);
 					vIdxEnd += numVertices;
 					SubGraph stage = new SubGraph(stageName, i, new Interval(vIdxStart, vIdxEnd - 1), durV, numVertices,
 							demand);
-
-					stage.reportDemands = new InterchangableResourceDemand(gpuCpuDemand + Globals.jobData.cheatedCpu[qIdx],
-							memory + Globals.jobData.cheatedMemory[qIdx], beta + Globals.jobData.cheatedBeta[qIdx]);
+					// TODO: read the report demands
+					stage.reportDemands = new InterchangableResourceDemand(0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
 
 					String arrivalStr = args[args.length - 2];
 					if (arrivalStr.startsWith("@"))
@@ -628,10 +628,7 @@ public class MLJob extends BaseJob implements Cloneable {
 			return adjustedTaskDemands.get(taskId).usage;
 		}
 
-		if (this.isCPUUsages.get(taskId) != null)
-			return this.stages.get(vertexToStage.get(taskId)).rsrcDemands(taskId).convertToCPUDemand();
-		else
-			return this.stages.get(vertexToStage.get(taskId)).rsrcDemands(taskId).convertToGPUDemand();
+		return this.stages.get(vertexToStage.get(taskId)).rsrcDemands(taskId).getUsage();
 	}
 
 	@Override
@@ -699,7 +696,7 @@ public class MLJob extends BaseJob implements Cloneable {
 		return allTasks;
 	}
 
-	public Resource totalResourceDemand() {
+	/*public Resource totalResourceDemand() {
 		Resource totalResDemand = new Resource(0.0);
 		for (SubGraph stage : stages.values()) {
 			totalResDemand.addWith(stage.totalWork());
@@ -713,9 +710,9 @@ public class MLJob extends BaseJob implements Cloneable {
 			totalResDemand.addWith(stage.totalWork());
 		}
 		return totalResDemand;
-	}
+	}*/
 
-	@Override
+/*	@Override
 	public Map area() {
 		Map<Integer, Double> area_dims = new TreeMap<Integer, Double>();
 		for (SubGraph stage : stages.values()) {
@@ -728,7 +725,7 @@ public class MLJob extends BaseJob implements Cloneable {
 			}
 		}
 		return area_dims;
-	}
+	}*/
 
 	// return true or false -> based on if this job has finished or not
 	public boolean finishTasks_old(List<Integer> completedTasks, boolean reverse) {
@@ -835,16 +832,6 @@ public class MLJob extends BaseJob implements Cloneable {
 	public SubGraph[] allStages() {
 		return (SubGraph[]) stages.values().toArray();
 	}
-
-	// should decrease only the resources allocated in the current time quanta
-	/*
-	 * public Resource currResShareAvailable() { Resource totalShareAllocated =
-	 * Resources.clone(this.rsrcQuota);
-	 * 
-	 * for (int task : launchedTasksNow) { Resource rsrcDemandsTask =
-	 * rsrcDemands(task); totalShareAllocated.subtract(rsrcDemandsTask); }
-	 * totalShareAllocated.normalize(); return totalShareAllocated; }
-	 */
 
 	public void seedUnorderedNeighbors() {
 
@@ -977,10 +964,14 @@ public class MLJob extends BaseJob implements Cloneable {
 			// int scale = (int)(stage.vDuration/this.NUM_ITERATIONS);
 			// stage.vDuration = scale*Globals.TIME_UNIT;
 			stage.taskNum = Globals.TASK_BROKEN_DOWN * stage.taskNum;
-			double gc = stage.vDemands.getGpuCpu() / Globals.TASK_BROKEN_DOWN;
-			double m = stage.vDemands.getMemory() / Globals.TASK_BROKEN_DOWN;
-			double beta = stage.vDemands.getBeta();
-			stage.vDemands = new InterchangableResourceDemand(gc, m, beta);
+			double cpu = stage.vDemands.cpu / Globals.TASK_BROKEN_DOWN;
+			double mem = stage.vDemands.mem / Globals.TASK_BROKEN_DOWN;
+			double cpuCmplt = stage.vDemands.cpuCompl;
+			double gpu = stage.vDemands.gpu / Globals.TASK_BROKEN_DOWN;
+			double gpuMem = stage.vDemands.gpuMem / Globals.TASK_BROKEN_DOWN;
+			double gpuCmplt = stage.vDemands.gpuCompl;
+			//TODO: double check
+			stage.vDemands = new InterchangableResourceDemand(cpu, mem, gpu, gpuMem, cpuCmplt, gpuCmplt);
 		}
 		
 		// update vids for dependencies between stages
@@ -1026,9 +1017,9 @@ public class MLJob extends BaseJob implements Cloneable {
 	public Resource naiveRsrcDemands(int taskId) {
 		Resource res = new Resource();
 		InterchangableResourceDemand demand = rsrcDemands(taskId);
-		res.resources[0] = demand.convertToCPU();
+/*		res.resources[0] = demand.convertToCPU();
 		res.resources[1] = demand.convertToGPU();
-		res.resources[2] = demand.getMemory();
+		res.resources[2] = demand.getMemory();*/
 		return res;
 	}
 }

@@ -37,7 +37,7 @@ LOCAL_FIG = 'figs/';
 PS_CMD_FORMAT='ps2pdf -dEmbedAllFonts#true -dSubsetFonts#true -dEPSCrop#false -dPDFSETTINGS#/prepress %s %s';
 
 % fig_path = ['figs/'];
-fig_path = '../IRF/figs/';
+fig_path = '/home/tanle/Dropbox/Papers/AlloX/figs/';
 
 %%
 
@@ -47,12 +47,13 @@ strUser3 = 'User 3';
 strUser4 = 'User 4';
 strUnalloc = 'unallocated';
 
-strES = 'ES';
+strES = 'ES+RP';
 strDRF = 'DRF';
 strFDRF = 'FDRF';
 strMP = 'MP';
 strMSR = 'MSR';
 strPricing = 'Pricing';
+strAlloX = 'AlloX';
 
 strGPU = 'GPU';
 strCPU = 'CPU';

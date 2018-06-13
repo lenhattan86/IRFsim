@@ -5,10 +5,6 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.joptimizer.exception.JOptimizerException;
-import com.joptimizer.optimizers.LPOptimizationRequest;
-import com.joptimizer.optimizers.LPPrimalDualMethod;
-
 import cluster.datastructures.BaseJob;
 import cluster.datastructures.InterchangableResourceDemand;
 import cluster.datastructures.JobQueue;
@@ -17,7 +13,6 @@ import cluster.datastructures.Resources;
 import cluster.schedulers.QueueScheduler;
 import cluster.simulator.Simulator;
 import cluster.simulator.Main.Globals;
-import cluster.simulator.Main.Globals.Method;
 import cluster.utils.JobArrivalComparator;
 import cluster.utils.Output;
 import cluster.utils.Utils;
@@ -39,11 +34,6 @@ public class DRFScheduler implements Scheduler {
 	// N - total number of running jobs
 	@Override
 	public void computeResShare() {
-//
-//		if (Simulator.CURRENT_TIME >= Globals.DEBUG_START && Simulator.CURRENT_TIME <= Globals.DEBUG_END) {
-//			DEBUG = true;
-//		} else
-//			DEBUG = false;
 
 		int numQueuesRuning = Simulator.QUEUE_LIST.getRunningQueues().size();
 		if (numQueuesRuning == 0) {
@@ -58,7 +48,6 @@ public class DRFScheduler implements Scheduler {
 	}
 	
 	public static void drf(Resource resCapacity, List<JobQueue> runningQueues) {
-
     List<JobQueue> activeQueues = new ArrayList<JobQueue>();
     for (JobQueue queue : runningQueues) {
       if (queue.hasRunningJobs()) {
@@ -73,19 +62,15 @@ public class DRFScheduler implements Scheduler {
     for(int i=0; i<n; i++){    	
     	JobQueue q = activeQueues.get(i);
     	InterchangableResourceDemand demand = q.getDemand();
-    	demands[i][2] = demand.getMemory();
-      if(Globals.METHOD.equals(Globals.Method.DRF))
-	      if(q.getBeta()>=1){
-	      	demands[i][0] = 0; //Prefer GPU.
-	      	demands[i][1] = demand.convertToGPU(); //Prefer GPU.
-	      } else {
-	      	demands[i][0] = demand.convertToCPU();
-	      	demands[i][1] = 0; //prefer CPU.
-	      }
-      else if(Globals.METHOD.equals(Globals.Method.FDRF)){
-      	demands[i][0] = demands[i][1]= demand.convertToCPU()/(1+q.getReportBeta());
-      } else
-    	  System.err.println("This method does is not DRF: " + Globals.METHOD);
+      if(q.getBeta()>=1){
+      	demands[i][0] = 0; //Prefer GPU.
+      	demands[i][1] = demand.getGpuDemand().resource(1)/resCapacity.resource(1); //Prefer GPU.
+      	demands[i][2] = demand.getGpuDemand().resource(2)/resCapacity.resource(2);
+      } else {
+      	demands[i][0] = demand.getCpuDemand().resource(0)/resCapacity.resource(0);
+      	demands[i][1] = 0; //prefer CPU.
+      	demands[i][2] = demand.getCpuDemand().resource(2)/resCapacity.resource(2);
+      }
       
     	int iMax = Utils.idxOfMax(demands[i]);
     	double maxDemand = demands[i][iMax];
@@ -100,13 +85,13 @@ public class DRFScheduler implements Scheduler {
       double dorminantDemand = Utils.max(demands[i]);
       double shares[] = {
           resCapacity.resource(0)/dorminantShare*demands[i][0]/dorminantDemand,
-          resCapacity.resource(0)/dorminantShare*demands[i][1]/dorminantDemand,
-          resCapacity.resource(0)/dorminantShare*demands[i][2]/dorminantDemand};
+          resCapacity.resource(1)/dorminantShare*demands[i][1]/dorminantDemand,
+          resCapacity.resource(2)/dorminantShare*demands[i][2]/dorminantDemand};
       QueueScheduler.allocateResToQueue(q, shares);
     }
   }
 	
-	public static void onlineDRFShare(Resource resCapacity, List<JobQueue> runningQueues) {
+/*	public static void onlineDRFShare(Resource resCapacity, List<JobQueue> runningQueues) {
 		// init
 		Resource consumedRes = new Resource();
 		double[] userDominantShareArr = new double[runningQueues.size()];
@@ -179,7 +164,7 @@ public class DRFScheduler implements Scheduler {
 		}
 	}
 
-
+*/
 	public void fairShareForJobs(JobQueue q, Resource availRes) {
 		boolean fit = availRes.greaterOrEqual(q.getRsrcQuota());
 		if (!fit) {
@@ -206,28 +191,6 @@ public class DRFScheduler implements Scheduler {
 		availRes = Resources.subtract(availRes, q.getRsrcQuota());
 	}
 
-	/*public void fifoShareForJobs(JobQueue q, Resource availRes) {
-		boolean fit = availRes.greaterOrEqual(q.getRsrcQuota());
-		if (!fit) {
-			Resource newQuota = Resources.piecewiseMin(availRes, q.getRsrcQuota());
-			q.setRsrcQuota(newQuota);
-		}
-		q.receivedResourcesList.add(q.getRsrcQuota());
-
-		Resource remain = q.getRsrcQuota();
-		List<BaseJob> runningJobs = new LinkedList<BaseJob>(q.getRunningJobs());
-		Collections.sort(runningJobs, new JobArrivalComparator());
-		for (BaseJob job : runningJobs) {
-			Resource rsShare = Resources.piecewiseMin(remain, job.getMaxDemand());
-			job.rsrcQuota = rsShare;
-			remain.subtract(rsShare);
-			Output.debugln(DEBUG,
-			    "[DRFScheduler] Allocated to job:" + job.dagId + " @ " + job.getQueueName() + " "
-			        + job.rsrcQuota);
-		}
-		availRes = Resources.subtract(availRes, q.getRsrcQuota());
-	}
-*/
 	@Override
 	public String getSchedulePolicy() {
 		return this.schedulePolicy;

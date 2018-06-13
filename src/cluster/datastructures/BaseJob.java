@@ -1,9 +1,6 @@
 package cluster.datastructures;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -54,7 +51,7 @@ public abstract class BaseJob implements Cloneable {
 
   public abstract double getMaxCP();
 
-  public abstract Map<Integer, Double> area();
+//  public abstract Map<Integer, Double> area();
 
   public abstract double longestCriticalPath(int taskId);
 
@@ -68,7 +65,7 @@ public abstract class BaseJob implements Cloneable {
   
   public abstract InterchangableResourceDemand reportDemands(int taskId);
   
-  public HashMap<Integer, Boolean> isCPUUsages = new HashMap<Integer, Boolean>();
+//  public HashMap<Integer, Boolean> isCPUUsages = new HashMap<Integer, Boolean>();
   
   public abstract Resource rsrcUsage(int task_id); // resource usage
 
@@ -125,26 +122,26 @@ public abstract class BaseJob implements Cloneable {
     serviceCurve = new ServiceCurve();
   }
 
-  public Resource getDemand() {
+  public InterchangableResourceDemand getDemand() {
+  	//TODO: we need to convert to the sum of demand if the tasks are not identical
     Resource resDemand = new Resource();
     for (int taskId : runnableTasks) {
-      resDemand.addWith(rsrcDemands(taskId).convertToCPUDemand());
+      return rsrcDemands(taskId);
     }
     for (int taskId : runningTasks) {
-      resDemand.addWith(rsrcDemands(taskId).convertToCPUDemand());
+    	return rsrcDemands(taskId);
     }
-    return resDemand;
+    return null;
   }
   
-  public Resource getReportDemand() {
-    Resource resDemand = new Resource();
+  public InterchangableResourceDemand getReportDemand() {
     for (int taskId : runnableTasks) {
-      resDemand.addWith(reportDemands(taskId).convertToCPUDemand());
+    	return reportDemands(taskId);
     }
     for (int taskId : runningTasks) {
-      resDemand.addWith(reportDemands(taskId).convertToCPUDemand());
+    	return reportDemands(taskId);
     }
-    return resDemand;
+    return null;
   }
   
 
@@ -161,17 +158,6 @@ public abstract class BaseJob implements Cloneable {
     return this.jobEndTime - this.jobStartRunningTime;
   }
 
-
-/*  public Resource getMaxDemand() {
-    Resource demand = new Resource(0.0);
-    for (int taskId : runnableTasks) {
-      demand.addWith(rsrcDemands(taskId));
-    }
-    for (int taskId : runningTasks) {
-      demand.addWith(rsrcDemands(taskId));
-    }
-    return demand;
-  }*/
 
   public boolean isFulllyAllocated() {
     return this.runnableTasks.size() == 0;

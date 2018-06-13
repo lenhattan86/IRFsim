@@ -1,6 +1,5 @@
 package cluster.datastructures;
 
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -188,42 +187,33 @@ public class JobQueue{
   public Resource demand = null;
   
   public InterchangableResourceDemand getDemand(){
-  	// TODO this is wrong in dynamic case.
-    Resource res = new Resource();
-    if(demand==null){
-	    for(BaseJob job: this.getRunningJobs()){
-	      res.addWith(job.getDemand());
-	    }
-	    demand = new Resource(res);
-    } else
-    	res = new Resource(demand);
-//  	Resource res = this.getUnallocRunningJob().getDemand(); //TODO: this is not correct
-    InterchangableResourceDemand resDemand = new InterchangableResourceDemand(res.resource(0), res.resource(2), this.reportBeta);
-    return resDemand;
+    for(BaseJob job: this.getRunningJobs()){
+      return job.getDemand();
+    }
+    return null;
   }
   
   public InterchangableResourceDemand getReportDemand(){
     Resource res = new Resource();
     for(BaseJob job: this.getRunningJobs()){
-      res.addWith(job.getReportDemand());
+      return job.getReportDemand();
     }
-    InterchangableResourceDemand demand = new InterchangableResourceDemand(res.resource(0), res.resource(2), this.reportBeta);
-    return demand;
+    return null;
   }
   
-  public double getMemToCpuRatio(){
+/*  public double getMemToCpuRatio(){
     InterchangableResourceDemand demand = this.getDemand();
     double cpu = demand.getGpuCpu();
     double mem = demand.getMemory();
     return mem/cpu;
-  }
+  }*/
   
-  public double getReportMemToCpuRatio(){
+/*  public double getReportMemToCpuRatio(){
     InterchangableResourceDemand demand = this.getReportDemand();
     double cpu = demand.getGpuCpu();
     double mem = demand.getMemory();
     return mem/cpu;
-  }
+  }*/
 
   public String getResourceUsageStr() {
     String str = this.queueName;

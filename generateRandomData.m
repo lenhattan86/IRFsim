@@ -198,3 +198,23 @@ fprintf(fid, largecputomem);
 fprintf(fid, '\n');
 fclose(fid);
 largecputomem
+
+%% CPU completion time errors
+cpuCmpltStd = 50;
+cpuCmpltMean = 0;
+cpuVals = cpuCmpltStd.*randn(numOfJobs, 1) + cpuCmpltMean;
+cpuMin = -149;
+cpuMax =  149;
+cpuVals = max(cpuVals, cpuMin);
+% cpuVals = min(cpuVals, cpuMax);
+cpuCmpltErrors = '{';
+for j =1:numOfJobs
+  y = cpuVals(j);
+  cpuCmpltErrors = [cpuCmpltErrors  num2str(y) ','];    
+end
+cpuCmpltErrors = [cpuCmpltErrors '};'];
+fid=fopen('cpuCmpltErrors.txt','w');
+fprintf(fid, cpuCmpltErrors);
+fprintf(fid, '\n');
+fclose(fid);
+cpuCmpltErrors

@@ -59,7 +59,7 @@ public class PricingScheduler implements Scheduler {
 		double ratios[] = new double[numberOfQueues];
 		for (int i = 0; i < numberOfQueues; i++) {
 			JobQueue q = runningQueues.get(i);
-			ratios[i] = q.getDemand().getMemory() / q.getDemand().getGpuCpu();
+//			ratios[i] = q.getDemand().getMemory() / q.getDemand().getGpuCpu();
 		}
 
 		// initialization
@@ -154,7 +154,7 @@ public class PricingScheduler implements Scheduler {
 		for (int i = 0; i < numberOfQueues; i++) {
 			JobQueue q = runningQueues.get(i);
 			double shares[] = { finalAlloc[i].resource(0), finalAlloc[i].resource(1), finalAlloc[i].resource(2) };
-			shares = Utils.multifly(shares, Globals.MACHINE_MAX_RESOURCE);
+//			shares = Utils.multifly(shares, Globals.MACHINE_MAX_RESOURCE);
 			QueueScheduler.allocateResToQueue(q, shares);
 		}
 	}

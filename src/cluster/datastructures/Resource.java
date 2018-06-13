@@ -4,10 +4,6 @@ import cluster.simulator.Main.Globals;
 
 import java.util.logging.Logger;
 
-import com.sun.corba.se.impl.javax.rmi.CORBA.Util;
-
-import cluster.simulator.Main;
-import cluster.simulator.Simulator;
 import cluster.utils.Utils;
 
 @SuppressWarnings("rawtypes")
@@ -229,6 +225,7 @@ public class Resource implements Comparable {
 				resources[i] = 0;
 		}
 	}
+	
 
 	public boolean greaterOrEqual(Resource res) {
 		// every dimension should be at greater or equal
@@ -332,7 +329,7 @@ public class Resource implements Comparable {
 	public String toStringList() {
     String output = "{";
     for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
-      output += Utils.roundDefault(resources[i]/Globals.CAPACITY);
+      output += Utils.roundDefault(resources[i]);
       if (i<Globals.NUM_DIMENSIONS-1)
         output +=  ",";      
     }

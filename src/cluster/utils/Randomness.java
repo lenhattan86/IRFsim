@@ -113,4 +113,9 @@ public class Randomness {
 
     return retval;
   }
+  
+  public double[] getNormalDistribution(int n, double mean, double min, double max) {
+  	double res[] = null;
+  	return res;
+  }
 }

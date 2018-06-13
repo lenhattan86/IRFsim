@@ -5,22 +5,17 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
 
-import cluster.data.JobData;
 import cluster.data.SessionData;
 import cluster.datastructures.BaseJob;
 import cluster.datastructures.Dependency;
 import cluster.datastructures.InterchangableResourceDemand;
-import cluster.datastructures.Resource;
 import cluster.datastructures.Session;
-import cluster.datastructures.Sessions;
 import cluster.datastructures.SubGraph;
-import cluster.datastructures.Task;
 import cluster.datastructures.MLJob;
 import cluster.simulator.Main.Globals;
 
@@ -34,11 +29,14 @@ public class GenInput {
 
 	public static Randomness rand = new Randomness();
 
-	public static void main(String[] args) {
-		writeTaskDurationStatistics("workload/queries_bb_FB_distr.txt", "pdf/" + "queries_bb_FB_distr.csv");
-		writeTaskDurationStatistics("workload/queries_tpcds_FB_distr_new.txt", "pdf/" + "queries_tpcds_FB_distr_new.csv");
-		writeTaskDurationStatistics("workload/queries_tpch_FB_distr.txt", "pdf/" + "queries_tpch_FB_distr.csv");
-	}
+	// public static void main(String[] args) {
+	// writeTaskDurationStatistics("workload/queries_bb_FB_distr.txt", "pdf/" +
+	// "queries_bb_FB_distr.csv");
+	// writeTaskDurationStatistics("workload/queries_tpcds_FB_distr_new.txt",
+	// "pdf/" + "queries_tpcds_FB_distr_new.csv");
+	// writeTaskDurationStatistics("workload/queries_tpch_FB_distr.txt", "pdf/" +
+	// "queries_tpch_FB_distr.csv");
+	// }
 
 	public static void genQueueInput(int numInteractiveQueues, int numBatchQueues) {
 		String file = Globals.PathToQueueInputFile;
@@ -59,7 +57,9 @@ public class GenInput {
 		for (int i = 0; i < numBatchQueues; i++) {
 			int queueId = i;
 			String toWrite = GenInput.genSingleQueueInfo(queueId, "queue" + queueId, weight, null,
-					Globals.jobData.reportBETAs[i] + Globals.jobData.cheatedBeta[i], Globals.jobData.reportBETAs[i]);
+					(Globals.jobData.reportBETAs[i] + Globals.jobData.cheatedBeta[i]) * Globals.jobData.cpus[i]
+							/ Globals.jobData.gpus[i],
+					Globals.jobData.reportBETAs[i] * Globals.jobData.cpus[i] / Globals.jobData.gpus[i]);
 			Output.writeln(toWrite, true, file);
 		}
 	}
@@ -134,7 +134,7 @@ public class GenInput {
 			// TODO: it may not be correct here as the following conversion is
 			// not proper.
 			double[] resArray = stage.vDemands.convertToResourceArray();
-			for (int i = 0; i < 2; i++) {
+			for (int i = 0; i < resArray.length; i++) {
 				double uncertainRes = 0.0;
 				if (isUncertain) {
 					int len = SessionData.RES_ERROR_10.length;
@@ -146,8 +146,7 @@ public class GenInput {
 				}
 				str += " " + Utils.roundDefault(resArray[i] + uncertainRes);
 			}
-			// str += " " + stage.getBeta();
-			str += " " + beta;
+			str += " " + beta; // reported beta.
 			int taskNum = (int) (stage.taskNum * taskNumScale);
 			if (taskNum == 0)
 				taskNum = 1;
@@ -198,7 +197,7 @@ public class GenInput {
 		stageIter = 0;
 		String file = Globals.PathToInputFile;
 		Output.write("", false, file);
-		
+
 		Queue<BaseJob> runnableJobs = new LinkedList<BaseJob>();
 
 		int batchStartId = Globals.JOB_START_ID;
@@ -211,37 +210,40 @@ public class GenInput {
 			int batchQueueIdx = i % numBatchQueues;
 			int jobIdx = i + batchStartId;
 			double arrival = 0.0;
-			
-			int dataIdx = jobIdx%Globals.jobData.numTasks[0].length;
-			int iteration = Globals.jobData.jobIterations[batchQueueIdx][dataIdx];;
-			int numTasks = Globals.jobData.numTasks[batchQueueIdx][dataIdx];
-			double cpu = 0;
-			double mem = 0;
-			double UNIT = 1.0;
-			double ratio = Globals.jobData.compuationToMemRatios[batchQueueIdx][dataIdx];
-			if(ratio<0){
-				cpu = UNIT/numTasks*Globals.jobData.scaleUpDemand;
-				mem = 0;
-			}else if (ratio>1){
-				cpu = UNIT/numTasks*Globals.jobData.scaleUpDemand;
-				mem = UNIT/(ratio*numTasks)*Globals.jobData.scaleUpDemand;
-			}else {
-				cpu = ratio/numTasks*Globals.jobData.scaleUpDemand;
-				mem = UNIT/numTasks*Globals.jobData.scaleUpDemand;
-			}
-			
-			int scaleUp = Globals.jobData.jobSize[batchQueueIdx] / Globals.jobData.scaleUpDemand;
-			
-			InterchangableResourceDemand demand = new InterchangableResourceDemand(cpu, mem, 0.0);
-			InterchangableResourceDemand reportDemand = new InterchangableResourceDemand(cpu, mem, 0.0);
-			MLJob job = (MLJob) MLJob.genDumbMLJob(jobIdx, arrival, iteration, "", demand, reportDemand, numTasks*scaleUp);
 
+			int dataIdx = jobIdx % Globals.jobData.numTasks[0].length;
+			int iteration = Globals.jobData.jobIterations[batchQueueIdx][dataIdx];
+			;
+			int numTasks = Globals.jobData.numTasks[batchQueueIdx][dataIdx];
+
+			double cpu = Globals.jobData.cpus[batchQueueIdx];
+			double mem = Globals.jobData.mem[batchQueueIdx];
+			double cpuCmplt = 0;
+			if (Globals.ENABLE_CPU_CMPT_ERROR) {
+				cpuCmplt = Globals.jobData.cpuComplts[batchQueueIdx]
+					+ Globals.jobData.cpuCmpltErrors[i % Globals.jobData.cpuCmpltErrors.length];
+			} else {
+				cpuCmplt = Globals.jobData.cpuComplts[batchQueueIdx];
+			}
+
+			double gpu = Globals.jobData.gpus[batchQueueIdx];
+			double gpuMem = Globals.jobData.gpuMem[batchQueueIdx];
+			double gpuCmplt = Globals.jobData.cpuComplts[batchQueueIdx] / Globals.jobData.reportBETAs[batchQueueIdx];
+
+			int scaleUp = Globals.jobData.jobSize[batchQueueIdx] / Globals.jobData.scaleUpDemand;
+
+			// TODO: generate the input for the simulation
+			InterchangableResourceDemand demand = new InterchangableResourceDemand(cpu, mem, gpu, gpuMem, cpuCmplt, gpuCmplt);
+			InterchangableResourceDemand reportDemand = new InterchangableResourceDemand(cpu, mem, gpu, gpuMem, cpuCmplt,
+					gpuCmplt);
+
+			MLJob job = (MLJob) MLJob.genDumbMLJob(jobIdx, arrival, iteration, "", demand, reportDemand, numTasks * scaleUp);
 			String toWrite = "";
 
 			int idx = batchQueueIdx % Globals.jobData.reportBETAs.length;
 			double beta = Globals.jobData.reportBETAs[idx] + Globals.jobData.cheatedBeta[idx];
 
-			if (Globals.GEN_JOB_ARRIVAL){
+			if (Globals.GEN_JOB_ARRIVAL) {
 				if (arrivalIdx >= arrivalTimes.length)
 					arrivalIdx = 0;
 				toWrite = genSingleJobInfo(jobIdx, "queue" + (batchQueueIdx), job, arrivalTimes[arrivalIdx++],
@@ -371,8 +373,8 @@ public class GenInput {
 					SubGraph stage = entry.getValue();
 					double duration = stage.vDuration;
 					int taskId = stage.vids.begin;
-					double memory = stage.rsrcDemands(taskId).convertToCPU();
-					double cpu = stage.rsrcDemands(taskId).getMemory();
+					double memory = stage.rsrcDemands(taskId).mem;
+					double cpu = stage.rsrcDemands(taskId).cpu;
 					String toWrite = "" + duration + "," + stage.vids.length() + "," + cpu + "," + memory + "\n";
 					file.write(toWrite);
 				}

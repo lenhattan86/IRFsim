@@ -1,7 +1,6 @@
 package cluster.simulator;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -12,13 +11,11 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import cluster.cluster.Cluster;
-import cluster.data.QueueData;
 import cluster.datastructures.BaseJob;
 import cluster.datastructures.JobQueue;
 import cluster.datastructures.JobQueueList;
 import cluster.datastructures.Resource;
 import cluster.datastructures.Resources;
-import cluster.datastructures.SubGraph;
 import cluster.datastructures.MLJob;
 import cluster.schedulers.QueueScheduler;
 import cluster.simulator.Main.Globals;
@@ -106,8 +103,8 @@ public class Simulator {
     System.out.println("done reading Dags from " + Globals.PathToInputFile);
 
     runningBatchJobs = new LinkedList<BaseJob>();
-
-    cluster = new Cluster(true, new Resource(Globals.MACHINE_MAX_RESOURCE));
+    double capacity[] = {Globals.MACHINE_MAX_CPU, Globals.MACHINE_MAX_GPU, Globals.MACHINE_MAX_MEM};
+    cluster = new Cluster(true, new Resource(capacity));
 
     /*
      * if (Globals.COMPUTE_STATISTICS) {
@@ -250,13 +247,13 @@ public class Simulator {
     System.out.println("Makespan:" + makespan);
     
     for (JobQueue queue:QUEUE_LIST.getJobQueues()){
-      double avg = 0.0;
+    	/*double avg = 0.0;
       for (BaseJob dag : queue.completedJobs) {
         //avg += dag.getCompletionTime();
     	  avg += dag.getCompletionTimeFromAllocated();
       }
-      avg = avg/queue.completedJobs.size();
-      System.out.println(queue.getQueueName() + ": Avg. compl. time:" +avg+ " Jobs completed: " + queue.completedJobs.size());
+      avg = avg/queue.completedJobs.size();*/
+      System.out.println(queue.getQueueName() + " Jobs completed: " + queue.completedJobs.size());
     }
     // for (Integer dagId : results.keySet()) {
     // System.out.println(dagId + " " + results.get(dagId));

@@ -23,7 +23,6 @@ import com.joptimizer.util.ColtUtils;
 
 import cern.colt.matrix.tdouble.DoubleMatrix1D;
 import cern.colt.matrix.tdouble.DoubleMatrix2D;
-import cern.jet.math.tdouble.DoubleFunctions;
 
 /**
  * Barrier method.
