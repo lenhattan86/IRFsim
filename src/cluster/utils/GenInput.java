@@ -116,13 +116,6 @@ public class GenInput {
 			SubGraph stage = entry.getValue();
 
 			double uncertainDur = 0.0;
-			if (isUncertain) {
-				int len = SessionData.DUR_ERROR_10.length;
-				double error = SessionData.DUR_ERROR_10[stageIter % len] * Globals.ESTIMASION_ERRORS / 0.1;
-				error = Math.min(Math.max(error, -1), 1);
-				uncertainDur = stage.vDuration * error;
-				uncertainDur = Utils.roundDefault(uncertainDur);
-			}
 
 			double duration = (stage.vDuration + uncertainDur) * durScale / Globals.STEP_TIME;
 			duration = Utils.roundDefault(duration);
@@ -134,17 +127,9 @@ public class GenInput {
 			// TODO: it may not be correct here as the following conversion is
 			// not proper.
 			double[] resArray = stage.vDemands.convertToResourceArray();
+//			resArray[0] =  
 			for (int i = 0; i < resArray.length; i++) {
-				double uncertainRes = 0.0;
-				if (isUncertain) {
-					int len = SessionData.RES_ERROR_10.length;
-					// System.out.println("val:"+SessionData.RES_ERROR_10[stageIter%len][i]);
-					double error = SessionData.RES_ERROR_10[stageIter % len][i] * Globals.ESTIMASION_ERRORS / 0.1;
-					error = Math.min(Math.max(error, -1), 1);
-					uncertainRes = resArray[i] * error;
-					uncertainRes = Utils.roundDefault(uncertainRes);
-				}
-				str += " " + Utils.roundDefault(resArray[i] + uncertainRes);
+				str += " " + Utils.roundDefault(resArray[i]);
 			}
 			str += " " + beta; // reported beta.
 			int taskNum = (int) (stage.taskNum * taskNumScale);

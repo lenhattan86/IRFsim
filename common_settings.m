@@ -70,6 +70,8 @@ strAvgComplTime = 'avg. compl. (secs)';
 
 strMethods='methods';
 
+strBudget='norm. budget';
+
 %% line specs
 lineProposed = '-';
 lineStrict = '+:';

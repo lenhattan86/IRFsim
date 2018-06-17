@@ -114,8 +114,27 @@ public class Randomness {
     return retval;
   }
   
-  public double[] getNormalDistribution(int n, double mean, double min, double max) {
-  	double res[] = null;
+  public double[] getNormalDistribution(int n, double mean, double std, double min, double max) {
+  	double res[] = new double[n];
+  	Random r = new Random();
+  	for (int i=0; i< n; i++){
+  		double val = r.nextGaussian() * std + mean;
+  		val = Math.max(val, min);
+  		res[i] = Math.min(val, max);
+  	}
+  	return res;
+  }
+  
+  public static double[][] getNormalDistribution(int n, int m, double mean, double std, double min, double max) {
+  	double res[][] = new double[n][m];
+  	Random r = new Random();
+  	for (int i=0; i< n; i++){
+  		for (int j=0; j< m; j++){
+	  		double val = r.nextGaussian() * std + mean;
+	  		val = Math.max(val, min);
+	  		res[i][j] = Math.min(val, max);
+  		}
+  	}
   	return res;
   }
 }

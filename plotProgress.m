@@ -23,12 +23,11 @@ if isLarge
 %   largeStr='';
   plots(1:2:3)=false;
 else
-  cluster_size = 60;
+  cluster_size = 600;
   END_TIME = 150;
   largeStr='';
   queue_num=3;
 end
-
 
 outputExtra = '';
 colorUsers = {colorUser1; colorUser2; colorUser3};
@@ -42,7 +41,6 @@ files = { ['DRF-output_' num2str(queue_num) '_' num2str(cluster_size) largeStr '
 num_batch_queues = 1;
 num_interactive_queue = 3;
 num_queues = num_batch_queues + num_interactive_queue;
-
 %%
 result_folder = '';
 output_folder = [result_folder 'output/'];

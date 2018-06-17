@@ -44,13 +44,15 @@ public class AlloXScheduler implements Scheduler {
 		// allox_heuristic(clusterTotCapacity,
 		// Simulator.QUEUE_LIST.getRunningQueues());
 		allox(clusterTotCapacity, Simulator.QUEUE_LIST.getRunningQueues());
+//		allox_heuristic(clusterTotCapacity, Simulator.QUEUE_LIST.getRunningQueues());
 	}
 
 	public static void allox(Resource resCapacity, List<JobQueue> runningQueues) {
 		// sort queues based on beta
 		int numberOfQueues = runningQueues.size();
 
-		double SHARES[][] = { { 3520, 0, 880 }, { 320, 28.57, 217.14 }, { 0, 31.43, 62.86 } };
+//		double SHARES[][] = { { 3520, 0, 880 }, { 320, 28.57, 217.14 }, { 0, 31.43, 62.86 } };
+		double SHARES[][] = { { 35200, 0, 8800 }, { 3200, 285.7, 2171.4 }, { 0, 314.3, 628.6 } };
 		for (int i = 0; i < numberOfQueues; i++) {
 			JobQueue q = runningQueues.get(i);
 			double shares[] = SHARES[i];
