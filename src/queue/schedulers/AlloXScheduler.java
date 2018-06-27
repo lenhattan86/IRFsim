@@ -43,8 +43,8 @@ public class AlloXScheduler implements Scheduler {
 
 		// allox_heuristic(clusterTotCapacity,
 		// Simulator.QUEUE_LIST.getRunningQueues());
-		allox(clusterTotCapacity, Simulator.QUEUE_LIST.getRunningQueues());
-//		allox_heuristic(clusterTotCapacity, Simulator.QUEUE_LIST.getRunningQueues());
+//		allox(clusterTotCapacity, Simulator.QUEUE_LIST.getRunningQueues());
+		allox_heuristic(clusterTotCapacity, Simulator.QUEUE_LIST.getRunningQueues());
 	}
 
 	public static void allox(Resource resCapacity, List<JobQueue> runningQueues) {

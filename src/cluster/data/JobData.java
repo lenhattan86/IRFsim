@@ -27,7 +27,7 @@ public class JobData {
 		public double[][] compuationToMemRatios;
 		public int scaleUpDemand = 1;
 		
-		public double[][] betaErrs;
+		public double[] betaErrs;
 	
 	public JobData(){
 		if(Globals.SCENARIO==null){

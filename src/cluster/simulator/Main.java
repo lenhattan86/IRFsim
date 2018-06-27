@@ -484,22 +484,23 @@ public class Main {
 				System.out.println();
 			}
 		} else if (Globals.runmode.equals(Runmode.BetaErrors)) {
-			double betaStds[] = {0.1, 0.5};
+			double betaStds[] = {0.0, 0.1, 0.2, 0.3, 0.4, 0.5};
 			Globals.jobData = new JobData();
 			Globals.MEMORY_SCALE_DOWN = 1;
 			Globals.NUM_MACHINES = 1;
 			Globals.SIM_END_TIME = 600.0;
-			Globals.Method[] methods = { Method.ES, Method.DRF, Method.AlloX };
-			Globals.MACHINE_MAX_GPU = 12*5;
+			Globals.Method[] methods = { Method.DRF, Method.AlloX };
+//			Globals.Method[] methods = { Method.ES };
+			Globals.MACHINE_MAX_GPU = 12;
 			Globals.MACHINE_MAX_CPU = Globals.MACHINE_MAX_GPU*64;			
 			Globals.MACHINE_MAX_MEM = Globals.MACHINE_MAX_GPU*96;
 			Globals.workload = Globals.WorkLoadType.SIMPLE;
 			Globals.numQueues = 3;
-			Globals.numBatchJobs = 50000;
+			Globals.numBatchJobs = 2000;
 			
 			for (double betaStd : betaStds){
 				// generate beta errors:
-				Globals.jobData.betaErrs = Randomness.getNormalDistribution(Globals.NumRandomSamples, Globals.numQueues, 0, betaStd, 0, 2);
+				Globals.jobData.betaErrs = Randomness.getNormalDistribution(Globals.NumRandomSamples , 0, betaStd, -1, 1);
 				for (Globals.Method method : methods) {
 					Globals.METHOD = method;
 					Globals.setupParameters();
@@ -507,6 +508,7 @@ public class Main {
 					Globals.IS_GEN = false;
 					System.out.println();
 				}
+				Globals.IS_GEN = true;
 			}
 		} else {
 			Globals.MEMORY_SCALE_DOWN = 1;

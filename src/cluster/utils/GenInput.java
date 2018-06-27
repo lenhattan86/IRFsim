@@ -107,7 +107,7 @@ public class GenInput {
 		return str;
 	}
 
-	public static String genSingleJobInfo(int jobId, String queueName, MLJob job, int arrivalTime, double taskNumScale,
+	public static String genSingleJobInfo(int queueId, int jobId, String queueName, MLJob job, int arrivalTime, double taskNumScale,
 			double durScale, boolean isUncertain, double beta) {
 		String str = "";
 		str += "# " + jobId + "\n";
@@ -127,10 +127,19 @@ public class GenInput {
 			// TODO: it may not be correct here as the following conversion is
 			// not proper.
 			double[] resArray = stage.vDemands.convertToResourceArray();
-//			resArray[0] =  
+			if (Globals.jobData.betaErrs.length > 0){
+				double speedUp = resArray[2]/resArray[5];
+				int jobNum = Globals.jobData.betaErrs.length;
+				double err =  Globals.jobData.betaErrs[jobId%jobNum];
+				speedUp = speedUp + speedUp * err;
+				resArray[5] = Math.round(resArray[2]/speedUp);
+				if (resArray[5] == 0)
+						resArray[5] = 1.0;
+			}
 			for (int i = 0; i < resArray.length; i++) {
 				str += " " + Utils.roundDefault(resArray[i]);
 			}
+			
 			str += " " + beta; // reported beta.
 			int taskNum = (int) (stage.taskNum * taskNumScale);
 			if (taskNum == 0)
@@ -231,10 +240,10 @@ public class GenInput {
 			if (Globals.GEN_JOB_ARRIVAL) {
 				if (arrivalIdx >= arrivalTimes.length)
 					arrivalIdx = 0;
-				toWrite = genSingleJobInfo(jobIdx, "queue" + (batchQueueIdx), job, arrivalTimes[arrivalIdx++],
+				toWrite = genSingleJobInfo(batchQueueIdx, jobIdx, "queue" + (batchQueueIdx), job, arrivalTimes[arrivalIdx++],
 						Globals.SCALE_UP_BATCH_JOB, Globals.SCALE_BATCH_DURATION, false, beta);
 			} else {
-				toWrite = genSingleJobInfo(jobIdx, "queue" + (batchQueueIdx), job, job.arrivalTime, 1,
+				toWrite = genSingleJobInfo(batchQueueIdx, jobIdx, "queue" + (batchQueueIdx), job, job.arrivalTime, 1,
 						Globals.SCALE_BATCH_DURATION, false, beta);
 			}
 			Output.writeln(toWrite, true, file);
@@ -278,12 +287,12 @@ public class GenInput {
 				double beta = Globals.jobData.reportBETAs[idx] + Globals.jobData.cheatedBeta[idx];
 
 				if (!Globals.GEN_JOB_ARRIVAL)
-					toWrite = genSingleJobInfo(jobIdx, "queue" + (batchQueueIdx), job, job.arrivalTime, 1,
+					toWrite = genSingleJobInfo(batchQueueIdx, jobIdx, "queue" + (batchQueueIdx), job, job.arrivalTime, 1,
 							Globals.SCALE_BATCH_DURATION, false, beta);
 				else {
 					if (arrivalIdx >= arrivalTimes.length)
 						arrivalIdx = 0;
-					toWrite = genSingleJobInfo(jobIdx, "queue" + (batchQueueIdx), job, arrivalTimes[arrivalIdx++],
+					toWrite = genSingleJobInfo(batchQueueIdx, jobIdx, "queue" + (batchQueueIdx), job, arrivalTimes[arrivalIdx++],
 							Globals.SCALE_UP_BATCH_JOB, Globals.SCALE_BATCH_DURATION, false, beta);
 				}
 				Output.writeln(toWrite, true, file);
