@@ -9,5 +9,6 @@
 	<classpathentry kind="lib" path="lib/parallelcolt-0.9.4.jar"/>
 	<classpathentry kind="lib" path="lib/csparsej-1.1.1.jar"/>
 	<classpathentry kind="lib" path="lib/commons-csv-1.5.jar"/>
+	<classpathentry kind="lib" path="lib/opencsv-4.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

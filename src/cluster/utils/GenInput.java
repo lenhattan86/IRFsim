@@ -127,7 +127,7 @@ public class GenInput {
 			// TODO: it may not be correct here as the following conversion is
 			// not proper.
 			double[] resArray = stage.vDemands.convertToResourceArray();
-			if (Globals.jobData.betaErrs.length > 0){
+			if (Globals.jobData.betaErrs != null){
 				double speedUp = resArray[2]/resArray[5];
 				int jobNum = Globals.jobData.betaErrs.length;
 				double err =  Globals.jobData.betaErrs[jobId%jobNum];

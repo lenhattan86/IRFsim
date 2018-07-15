@@ -40,6 +40,8 @@ public class Main {
 		public static int NumRandomSamples = 1500; 
 
 		public static double RES_UNIT = 0.001;
+		
+		public static int NUM_JOBS_FOR_AVG_CMPL = 400;
 
 		public static final int TRACE_CLUSTER_SIZE = 25;
 
@@ -430,7 +432,7 @@ public class Main {
 	}
 
 	public static void main(String[] args) {
-		Globals.runmode = Runmode.BetaErrors;
+		Globals.runmode = Runmode.SingleRun;
 
 		Utils.createUserDir("log");
 		Utils.createUserDir("output");
@@ -442,21 +444,23 @@ public class Main {
 //		Globals.workload = Globals.WorkLoadType.SIMPLE;
 		Globals.ENABLE_CPU_CMPT_ERROR = false;
 		if (Globals.runmode.equals(Runmode.SingleRun)) {
+//			Globals.IS_GEN = true;
 			Globals.jobData = new JobData();
+//			Globals.jobData.betaErrs = Randomness.getNormalDistribution(Globals.NumRandomSamples , 0, 0.4, -1, 1);
 			Globals.MEMORY_SCALE_DOWN = 1;
 			Globals.NUM_MACHINES = 1;
 			Globals.SIM_END_TIME = 600.0;
 			
-			Globals.METHOD = Method.AlloX;
 //			Globals.METHOD = Method.DRF;
 //			Globals.METHOD = Method.ES;
+			Globals.METHOD = Method.AlloX;
 			
-			Globals.MACHINE_MAX_GPU = 12*5*10;
+			
+			Globals.MACHINE_MAX_GPU = 12*5;
 			Globals.MACHINE_MAX_CPU = Globals.MACHINE_MAX_GPU*64;			
 			Globals.MACHINE_MAX_MEM = Globals.MACHINE_MAX_GPU*96;
-			Globals.workload = Globals.WorkLoadType.SIMPLE;
+			Globals.workload = Globals.WorkLoadType.SIMPLE;			
 			
-			Globals.IS_GEN = true;
 			Globals.SCALE_UP_FACTOR = 1;
 			Globals.setupParameters();
 			Globals.numQueues = 3;

@@ -60,6 +60,7 @@ strCPU = 'CPU';
 strMemory= 'mem.';
 
 strJobCompleted = 'completed jobs';
+strAvgCmplt = 'avg. compl. time';
 
 strNormCapacity='norm. capacity';
 

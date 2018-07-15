@@ -149,6 +149,10 @@ public abstract class BaseJob implements Cloneable {
     if (this.jobStartRunningTime < 0)
       System.err.println(
           "you haven't set the starting time for this job " + this.dagId);
+    if (this.jobEndTime < 0)
+      System.err.println(
+          "completion time of the job is not " + this.dagId);
+    
     return this.jobEndTime - this.jobStartTime;
   }
   public double getCompletionTimeFromAllocated() {

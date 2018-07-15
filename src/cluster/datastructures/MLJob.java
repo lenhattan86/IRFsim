@@ -39,6 +39,7 @@ public class MLJob extends BaseJob implements Cloneable {
 
 	public Set<String> chokePointsS;
 	public Set<Integer> chokePointsT;
+	public double beta = 1.0;
 
 	// keep track of adjusted profiles for certain tasks;
 	public Map<Integer, Task> adjustedTaskDemands = null;
@@ -365,6 +366,7 @@ public class MLJob extends BaseJob implements Cloneable {
 					double gpu = Double.parseDouble(args[j++]);
 					double gpuMem = Double.parseDouble(args[j++]);
 					double gpuComplt = Double.parseDouble(args[j++]);
+					double beta = cpuComplt/gpuComplt*cpu/gpu;
 				// TODO: read the real demands
 					InterchangableResourceDemand demand = new InterchangableResourceDemand(cpu, mem, gpu, gpuMem, cpuComplt, gpuComplt );
 
@@ -381,6 +383,7 @@ public class MLJob extends BaseJob implements Cloneable {
 						stage.arrivalTime = Integer.parseInt(arrivalStr.substring(1));
 
 					dag.stages.put(stageName, stage);
+					dag.beta = beta;
 					vIdxStart = vIdxEnd;
 				}
 

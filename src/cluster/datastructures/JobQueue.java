@@ -411,5 +411,21 @@ public class JobQueue{
       return session.getStartTime();
     return 0.0;
   }
+  
+  public double computeBetaOnRunningJobs(){
+  	double beta = 1.0;
+  	int count = 0;
+  	int N = 150;
+  	for (BaseJob job : this.runningJobs) {
+  		MLJob mJob = (MLJob) job;
+  		beta += mJob.beta; 
+  		count ++;
+  		if (count>=N)
+  			break;
+  	}
+  	beta = beta/N;
+  	return beta;
+  }
+
 
 }

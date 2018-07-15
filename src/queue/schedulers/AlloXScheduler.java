@@ -43,16 +43,33 @@ public class AlloXScheduler implements Scheduler {
 
 		// allox_heuristic(clusterTotCapacity,
 		// Simulator.QUEUE_LIST.getRunningQueues());
-//		allox(clusterTotCapacity, Simulator.QUEUE_LIST.getRunningQueues());
-		allox_heuristic(clusterTotCapacity, Simulator.QUEUE_LIST.getRunningQueues());
+		allox(clusterTotCapacity, Simulator.QUEUE_LIST.getRunningQueues());
+//		allox_heuristic(clusterTotCapacity, Simulator.QUEUE_LIST.getRunningQueues());
 	}
 
-	public static void allox(Resource resCapacity, List<JobQueue> runningQueues) {
+	public static void allox_static(Resource resCapacity, List<JobQueue> runningQueues) {
 		// sort queues based on beta
 		int numberOfQueues = runningQueues.size();
 
 //		double SHARES[][] = { { 3520, 0, 880 }, { 320, 28.57, 217.14 }, { 0, 31.43, 62.86 } };
-		double SHARES[][] = { { 35200, 0, 8800 }, { 3200, 285.7, 2171.4 }, { 0, 314.3, 628.6 } };
+//		double SHARES[][] = { { 35200, 0, 8800 }, { 3200, 285.7, 2171.4 }, { 0, 314.3, 628.6 } };
+		double SHARES[][] = { { 3520, 0, 880 }, { 320, 28.57, 217.14 }, { 0, 31.43, 62.86 } };
+		for (int i = 0; i < numberOfQueues; i++) {
+			JobQueue q = runningQueues.get(i);
+			double shares[] = SHARES[i];
+			if (!isComputed) {
+				System.out.println("i=" + i + "(" + shares[0] + "," + shares[1] + "," + shares[2] + ")");
+			}
+			QueueScheduler.allocateResToQueue(q, shares);
+		}
+		isComputed = true;
+	}
+	
+	public static void allox(Resource resCapacity, List<JobQueue> runningQueues) {
+		// sort queues based on beta
+		int numberOfQueues = runningQueues.size();
+
+		double SHARES[][] = { { 3520, 0, 880 }, { 320, 28.57, 217.14 }, { 0, 31.43, 62.86 } };
 		for (int i = 0; i < numberOfQueues; i++) {
 			JobQueue q = runningQueues.get(i);
 			double shares[] = SHARES[i];
@@ -71,13 +88,14 @@ public class AlloXScheduler implements Scheduler {
 		double[] betas = new double[runningQueues.size()];
 		for (int i = 0; i < runningQueues.size(); i++) {
 			betas[i] = runningQueues.get(i).getReportBeta();
+//			betas[i] = runningQueues.get(i).computeBetaOnRunningJobs();
 		}
 
 		// initialization
 		double price[] = new double[2];
 		JobQueue lastQueue = runningQueues.get(numberOfQueues - 1);
 		price[0] = 1;
-		price[1] = lastQueue.getReportBeta();
+		price[1] = betas[numberOfQueues-1];
 		Resource useralloc[] = userAlloc(betas, price);
 		Resource currLoad = Resources.sum(useralloc);
 		currLoad = Resources.divideVector(currLoad, resCapacity);
@@ -118,6 +136,9 @@ public class AlloXScheduler implements Scheduler {
 
 		Resource sumAlloc = Resources.sum(useralloc);
 		// step 3: allocate the resources.
+		if (!isComputed) {
+			System.out.println("betas=(" + betas[0] + "," + betas[1] + "," + betas[2] + ")");
+		}
 		for (int i = 0; i < numberOfQueues; i++) {
 			JobQueue q = runningQueues.get(i);
 			double shares[] = { 0, 0, 0 };

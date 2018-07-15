@@ -231,14 +231,7 @@ public class Simulator {
     double average = 0.0;
     ArrayList<Double> avgCompletionTimePerQueue = new ArrayList<Double>();
     for (BaseJob dag : completedJobs) {
-      // System.out.println("Dag:" + dag.dagId + " compl. time:"
-      // + (dag.jobEndTime - dag.jobStartTime));
-//      double dagDuration = dag.getCompletionTime();
-      double dagDuration = dag.getCompletionTimeFromAllocated();
-      makespan = Math.max(makespan, dagDuration);
-      average += dagDuration;
-      results.put(dag.dagId, dagDuration);
-//      System.out.println(dag.dagId + " " + dagDuration + " : " + dag.getQueueName());
+      makespan = Math.max(makespan, dag.jobEndTime);
     }
     average /= completedJobs.size();
     System.out.println("---------------------");
@@ -247,13 +240,17 @@ public class Simulator {
     System.out.println("Makespan:" + makespan);
     
     for (JobQueue queue:QUEUE_LIST.getJobQueues()){
-    	/*double avg = 0.0;
+    	double avg = 0.0;
+    	int count = 0;
       for (BaseJob dag : queue.completedJobs) {
-        //avg += dag.getCompletionTime();
-    	  avg += dag.getCompletionTimeFromAllocated();
+        avg += dag.getCompletionTime();
+//    	  avg += dag.getCompletionTimeFromAllocated();
+        count++;
+        if (Globals.NUM_JOBS_FOR_AVG_CMPL > 0 && count >= Globals.NUM_JOBS_FOR_AVG_CMPL)
+        	break;
       }
-      avg = avg/queue.completedJobs.size();*/
-      System.out.println(queue.getQueueName() + " Jobs completed: " + queue.completedJobs.size());
+      avg = avg/count;
+      System.out.println(queue.getQueueName() + " Jobs completed: " + queue.completedJobs.size() + " avg. cmplt of "+count+" jobs : " + avg);
     }
     // for (Integer dagId : results.keySet()) {
     // System.out.println(dagId + " " + results.get(dagId));
