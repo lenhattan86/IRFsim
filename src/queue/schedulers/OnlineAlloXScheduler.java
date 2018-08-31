@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.List;
 
 import cluster.datastructures.BaseJob;
+import cluster.datastructures.JobArrivalComparator;
 import cluster.datastructures.JobQueue;
 import cluster.datastructures.Resource;
 import cluster.datastructures.Resources;
@@ -11,7 +12,6 @@ import cluster.schedulers.QueueScheduler;
 import cluster.simulator.Main.Globals;
 import cluster.simulator.Simulator;
 import cluster.utils.BetaComparator;
-import cluster.utils.JobArrivalComparator;
 import cluster.utils.Utils;
 
 public class OnlineAlloXScheduler implements Scheduler {
@@ -109,7 +109,7 @@ public class OnlineAlloXScheduler implements Scheduler {
 			if (!isComputed) {
 				System.out.println("i=" + i + "(" + shares[0] + "," + shares[1] + "," + shares[2] + ")");
 			}
-			QueueScheduler.allocateResToQueue(q, shares);
+			QueueScheduler.allocateResToQueue(q, shares, true);
 		}
 		isComputed = true;
 	}

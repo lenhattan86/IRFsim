@@ -1,5 +1,6 @@
 package cluster.datastructures;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -27,6 +28,8 @@ public class JobQueue{
   private double reportBeta = 1.0;
   
   private double beta = 1.0;
+  
+  public double L = 0.0;
   
   public double getBeta(){
     return this.beta;
@@ -184,6 +187,17 @@ public class JobQueue{
     return res;
   }
   
+  public double getNormalizedDorminantResUsage() {
+    Resource usage = this.getResourceUsage();
+    double maxVal = -1;
+    for (int i = 0; i<Simulator.Capacity.resources.length; i++){
+    	double temp = usage.resource(i)/Simulator.Capacity.resource(i);
+    	if (temp > maxVal)
+    		maxVal = temp;
+    }
+    return maxVal;
+  }
+  
   public Resource demand = null;
   
   public InterchangableResourceDemand getDemand(){
@@ -311,6 +325,16 @@ public class JobQueue{
   public Queue<BaseJob> getRunningJobs() {
     return this.runningJobs;
   }
+  
+  public Queue<BaseJob> getQueuedUpJobs() {
+  	Queue<BaseJob> baseJobs = new LinkedList<BaseJob>();
+  	for (BaseJob job : this.runningJobs){
+  		if (!job.isFulllyAllocated()){
+  			baseJobs.add(job);
+  		}
+  	}
+    return baseJobs;
+  }
 
   public int runningJobsSize() {
     return this.runningJobs.size();
@@ -334,7 +358,7 @@ public class JobQueue{
     return res;
   }
 
-  public void addRunningJob(BaseJob newJob) {
+	public void addRunningJob(BaseJob newJob) {
     this.startTimeOfNewJob = Simulator.CURRENT_TIME;
     Output.debugln(DEBUG, this.queueName + " at " + this.startTimeOfNewJob);
     this.runningJobs.add(newJob);

@@ -3,6 +3,7 @@ package cluster.datastructures;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -10,7 +11,6 @@ import java.util.Queue;
 
 import cluster.simulator.Main.Globals;
 import cluster.simulator.Main.Globals.Method;
-import cluster.utils.JobArrivalComparator;
 import cluster.utils.QueueArrivalComparator;
 import cluster.simulator.Simulator;
 
@@ -122,6 +122,15 @@ public class JobQueueList {
 	
 	public List<JobQueue> getRunningQueues(){
 		return runningQueues;
+	}
+	
+	public List<JobQueue> getQueuesWithQueuedJobs(){
+		List<JobQueue> queues = new ArrayList<JobQueue>();
+		for (JobQueue q: runningQueues){
+			if (q.getQueuedUpJobs().size()>0)
+				queues.add(q);
+		}
+		return queues;
 	}
 	
 	public Queue<JobQueue> getRunningInteractiveQueues(){

@@ -134,15 +134,14 @@ public class Randomness {
   public static double[] getNormalDistribution(int n, double mean, double std, double min, double max) {
   	double res[] = new double[n];
   	Random r = new Random();
-  	double sum = 0.0; 
+//  	double sum = 0.0; 
   	for (int i=0; i< n; i++){
   		double val = r.nextGaussian() * std + mean;
   		val = Math.max(val, min);
   		res[i] = Math.min(val, max);
-  		res[i] = val;
-  		sum += val;
+  		res[i] = Utils.roundBase(val, 2);
+//  		sum += val;
   	}
-  	System.out.println("mean beta err: " + sum/(n));
   	return res;
   }
 }

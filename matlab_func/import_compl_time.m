@@ -30,8 +30,19 @@ end
 % For more information, see the TEXTSCAN documentation.
 formatSpec = '%f%f%f%f%s%[^\n\r]';
 
+if ~exist(filename, 'file')
+    
+    JobId = nan;
+    startTime = nan;
+    endTime = nan;
+    duration = nan;
+    queueName = nan;
+    return;
+end
 %% Open the text file.
 fileID = fopen(filename,'r');
+
+
 
 %% Read columns of data according to format string.
 % This call is based on the structure of the file used to generate this

@@ -26,6 +26,7 @@ figSizeFourFifthCol = 4/5*figSizeOneCol;
 barLineWidth=0;
 groupBarSize = 0.9;
 barSize = 0.5;
+lineWidth = 2;
 
 %%
 
@@ -37,7 +38,8 @@ LOCAL_FIG = 'figs/';
 PS_CMD_FORMAT='ps2pdf -dEmbedAllFonts#true -dSubsetFonts#true -dEPSCrop#false -dPDFSETTINGS#/prepress %s %s';
 
 % fig_path = ['figs/'];
-fig_path = '/home/tanle/Dropbox/Papers/AlloX/figs/';
+% fig_path = '/home/tanle/Dropbox/Papers/AlloX/figs/';
+fig_path = '/ssd/projects/overleaf-allox/figs/';
 
 %%
 
@@ -60,12 +62,14 @@ strCPU = 'CPU';
 strMemory= 'mem.';
 
 strJobCompleted = 'completed jobs';
-strAvgCmplt = 'avg. compl. time';
+strAvgCmplt = 'avg. compl. time (mins)';
+strMakeSpan = 'makespan';
+strImprovement = 'improvement (%)';
 
 strNormCapacity='norm. capacity';
+strCdf = 'cdf';
 
-
-strEstimationErr = 'std. of estimation errors [%]';
+strEstimationErr = 'std. of estimation errors (%)';
 strFactorImprove = 'factor of improvement';
 strAvgComplTime = 'avg. compl. (secs)';
 
@@ -94,14 +98,11 @@ workloadLineStyles = {lineBB, lineTPCDS, lineTPCH};
 % colorDRFW = [0.9290    0.6940    0.1250];
 
 colorProposed = [237    125    49]/255;
-colorStrict = [165    165    165]/255;
+colorES = [165    165    165]/255;
 colorDRF = [68    71   196]/255;
 colorDRFW = [00    0.0    0.0];
 %colorhard = [hex2dec('a8')    hex2dec('dd')    hex2dec('b5')]/255;%2c7fb8
 colorhard = [hex2dec('2c')    hex2dec('7f')    hex2dec('b8')]/255;%2c7fb8
-
-colorArraySimulation = [colorDRF colorDRFW colorStrict colorProposed];
-
 
 colorBarMinMax='k';
 lineWidthBarMinMax=1.5;

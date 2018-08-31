@@ -28,7 +28,7 @@ public class InterchangableResourceDemand {
   }
   
   public boolean isCpuJob(){
-  	return beta < 0.0001;
+  	return this.cpuCompl < this.gpuCompl;
   }
   
   public InterchangableResourceDemand(InterchangableResourceDemand d){
@@ -50,7 +50,14 @@ public class InterchangableResourceDemand {
   public Resource getGpuDemand(){
   	double res[]  = {0, gpu, gpuMem};
   	return new Resource(res);
-  }  
+  }
+  
+  public Resource getNaiveDemand(){
+  	if (cpuCompl > gpuCompl)
+  		return this.getCpuDemand();
+  	else
+  		return this.getGpuDemand();
+  }
   
   public Resource getUsage(){
   	

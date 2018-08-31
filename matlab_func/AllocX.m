@@ -12,9 +12,9 @@ function [final_alloc,final_price] = AllocX(report,cluster_size)
     report(:,1) = report(:,1)* cluster_size(3)/cluster_size(1);
     report(:,2) = report(:,2)* cluster_size(2)/cluster_size(1);
     report(:,3) = report(:,3)* cluster_size(3)/cluster_size(2);
-    ratio_cm = report(:,1);  % cpu/mem ratio;
-    ratio_gm = report(:,3);  % gpu/mem ratio;
-    beta = report(:,2);   
+    ratio_cm    = report(:,1);  % cpu/mem ratio;
+    ratio_gm    = report(:,3);  % gpu/mem ratio;
+    beta        = report(:,2);   
 
     %price for gpu
     pg = [0 sort(beta).'];

@@ -17,7 +17,11 @@ public abstract class BaseJob implements Cloneable {
   protected String queueName = "";
   
   public int NUM_ITERATIONS = 1;
+  public double fairVal = 0; 
+  public boolean wasScheduled = false;
   private int curr_iter = 0;
+  public boolean isCpu = false;
+  public boolean isCompleted = false;
   
   private boolean fullyAllocated = false;
   
@@ -134,6 +138,12 @@ public abstract class BaseJob implements Cloneable {
     return null;
   }
   
+  public double getPForAlloX() {
+  	double res = 0;
+  	res = (this.getDemand().cpuCompl/this.getDemand().gpuCompl)*(this.getDemand().cpuCompl - this.getDemand().gpuCompl);
+  	return res;
+  }
+  
   public InterchangableResourceDemand getReportDemand() {
     for (int taskId : runnableTasks) {
     	return reportDemands(taskId);
@@ -142,6 +152,11 @@ public abstract class BaseJob implements Cloneable {
     	return reportDemands(taskId);
     }
     return null;
+  }
+  
+  public double getMinProcessingTime(){
+  	return this.getReportDemand().cpuCompl < this.getReportDemand().gpuCompl ? this.getReportDemand().cpuCompl
+				: this.getReportDemand().gpuCompl;
   }
   
 
@@ -236,5 +251,33 @@ public abstract class BaseJob implements Cloneable {
     return Simulator.QUEUE_LIST.getJobQueue(queueName);
   }
 
-  // public Object BaseDag clone();
+	public boolean isOnCPU() {
+		return isCpu;
+	}
+	
+	public void onStart(Resource capacity){
+	// find the owner of the job		
+			double p1 = this.getDemand().cpuCompl;
+			double p2 = this.getDemand().gpuCompl;
+			if (p1 < p2){
+				if (this.isOnCPU()) {
+					this.fairVal = Math.max(this.getDemand().cpu/capacity.resource(0), this.getDemand().mem/capacity.resource(2));
+				} else {
+					this.fairVal = p1/p2* Math.max(this.getDemand().cpu/capacity.resource(0), this.getDemand().mem/capacity.resource(2));
+				}
+			} else {
+				if (this.isOnCPU()) {
+					this.fairVal = p2/p1* Math.max(this.getDemand().gpu/capacity.resource(1), this.getDemand().gpuMem/capacity.resource(2));
+				} else {
+					this.fairVal = Math.max(this.getDemand().gpu/capacity.resource(1), this.getDemand().gpuMem/capacity.resource(2));
+				}
+			}
+			this.getQueue().L += this.fairVal;
+			wasScheduled = true;
+	}
+	
+	public void onFinish(){
+		this.getQueue().L -= this.fairVal;
+		this.isCompleted = true;
+  }
 }

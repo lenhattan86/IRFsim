@@ -11,7 +11,6 @@ function [ avg_compl_time complTimes] = obtain_compl_time( folder, files, QUEUE_
       if exist(filePath, 'file')
          [JobId,startTime,endTime,duration,queueName] = import_compl_time(filePath);
          complTimes = [complTimes duration'];
-   %       queueName = queueName(1:length(QUEUE_NAME));
          idxs = false(1,length(duration));
          for j=1:length(queueName)
             strTemp =  queueName{j};
@@ -22,10 +21,8 @@ function [ avg_compl_time complTimes] = obtain_compl_time( folder, files, QUEUE_
                end
             end
          end
-   %       idxs = strcmp(queueName, names);
          avg_compl_time(i) = mean(duration(idxs));         
       end
-   end
-    size(complTimes);
+   end    
 end
 

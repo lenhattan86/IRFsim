@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.List;
 
 import cluster.datastructures.BaseJob;
+import cluster.datastructures.JobArrivalComparator;
 import cluster.datastructures.JobQueue;
 import cluster.datastructures.Resource;
 import cluster.datastructures.Resources;
@@ -11,7 +12,6 @@ import cluster.schedulers.QueueScheduler;
 import cluster.simulator.Main.Globals;
 import cluster.simulator.Simulator;
 import cluster.utils.BetaComparator;
-import cluster.utils.JobArrivalComparator;
 import cluster.utils.Utils;
 
 public class PricingScheduler implements Scheduler {
@@ -155,7 +155,7 @@ public class PricingScheduler implements Scheduler {
 			JobQueue q = runningQueues.get(i);
 			double shares[] = { finalAlloc[i].resource(0), finalAlloc[i].resource(1), finalAlloc[i].resource(2) };
 //			shares = Utils.multifly(shares, Globals.MACHINE_MAX_RESOURCE);
-			QueueScheduler.allocateResToQueue(q, shares);
+			QueueScheduler.allocateResToQueue(q, shares, true);
 		}
 	}
 

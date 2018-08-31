@@ -6,37 +6,29 @@ is_printed = false;
 %workload='BB';
 workload='SIMPLE';
 
-num_batch_queues = 3;
+num_batch_queues = 25;
 num_interactive_queue = 0;
 num_queues = num_batch_queues + num_interactive_queue;
-START_TIME = 0; END_TIME = 10;  STEP_TIME = 1;
-cluster_size = 10;
+START_TIME = 0; END_TIME = 2000;  STEP_TIME = 1;
+cluster_size = 50;
+
+CPUCap = cluster_size * 32;
+GPUCap = cluster_size;
+MemCap = cluster_size* 96;
 
 % figureSize = [1 1 2/3 2/3].* figSizeOneCol;
 figureSize = [1 1 4/5 6/5].* figSizeOneCol;
 legendSize = [1 1 4/5 1] .* legendSize;
 
-enableSeparateLegend = true;
-
-barColors = colorb3(1:num_queues);
-
+enableSeparateLegend = false;
+% barColors = colorb3(1:num_queues);
 scale_down_mem = 1;
 
 % fig_path='../IRF/figs/';
 
 %%
-
-
-
-%result_folder = ['result/20170105/' workload '/']; STEP_TIME = 1.0; output_sufix = '';
-% result_folder = ['result/20170127_multi/' workload '/'];
-
-
-%%
 result_folder= '';
-
 output_sufix = ''; 
-
 %%
 % EC
 plots=[1, 1]; 
@@ -49,7 +41,9 @@ endIdx = max_time_step*num_queues;
 num_time_steps = max_time_step-start_time_step;
 linewidth= 2;
 barwidth = 1.0;
+timeScale = 5;
 timeInSeconds = START_TIME+STEP_TIME:STEP_TIME:END_TIME;
+timeInSeconds = timeInSeconds * timeScale;
 
 lengendStr = cell(1, num_queues);
 for i=1:num_interactive_queue
@@ -64,14 +58,16 @@ end
 extraStr = ['_' int2str(num_batch_queues) '_' int2str(cluster_size)];
 
 %%
-% prefixes = {'ES', 'DRF','EDRF', 'MaxMinMem', 'SpeedUp', 'Pricing'};
-% prefixes = {'Pricing'};
-prefixes = {'MaxMinMem','SpeedUp','Pricing'};
+% prefixes = {'DRF', 'ES', 'DRFExt', 'AlloX', 'SJF'};
+% prefixes = {'ES', 'AlloX'};
+% prefixes = {'DRFExt'};
+% prefixes = {'AlloX'};
+% prefixes = {'DRF'};
+prefixes = {'DRFExt','SJF'};
 for iFile=1:length(prefixes)
   if plots(1)   
-     logFile = [ logfolder prefixes{iFile} '-output' extraStr  '.csv']
-     [queueNames, res1, res2, res3, flag] = importResUsageLog(logFile);   
-
+     logFile = [ logfolder prefixes{iFile} '-output' extraStr  '.csv'];
+     [queueNames, res1, res2, res3, flag] = importResUsageLog(logFile);
      if (flag)
         figure;
         subplot(3,1,1);   
@@ -82,13 +78,15 @@ for iFile=1:length(prefixes)
         else
            resAll = res(1:num_queues*num_time_steps);
         end
-        shapeRes = reshape(resAll,num_queues,num_time_steps);
+        shapeRes = reshape(resAll, num_queues, num_time_steps);
         shapeRes = fipQueues( shapeRes, num_interactive_queue, num_batch_queues);
 
         hBar = bar(timeInSeconds,shapeRes',barwidth,'stacked','EdgeColor','none');
-        set(hBar,{'FaceColor'},barColors);   
-        ylabel('CPU');xlabel('seconds');
-        ylim([0 cluster_size]);
+        cpuUsage = sum(shapeRes);
+        cpuMean = mean(cpuUsage(cpuUsage>0))/CPUCap;
+%         set(hBar,{'FaceColor'},barColors);   
+        ylabel('CPU');xlabel('mins');
+        ylim([0 CPUCap]);
         xlim([0 max(timeInSeconds)]);
         %legend(lengendStr,'Location','northoutside','FontSize',fontLegend,'Orientation','horizontal');
         %title('DRF - CPU','fontsize',fontLegend);
@@ -105,9 +103,11 @@ for iFile=1:length(prefixes)
         shapeRes = fipQueues( shapeRes, num_interactive_queue, num_batch_queues);
 
         hBar = bar(timeInSeconds,shapeRes',barwidth,'stacked','EdgeColor','none');
-        set(hBar,{'FaceColor'},barColors);   
-        ylabel('GPU','FontSize',fontAxis);xlabel('seconds','FontSize',fontAxis);
-        ylim([0 cluster_size]);
+        gpuUsage = sum(shapeRes);
+        gpuMean = mean(gpuUsage(gpuUsage>0))/GPUCap;
+%         set(hBar,{'FaceColor'},barColors);   
+        ylabel('GPU','FontSize',fontAxis);xlabel('mins','FontSize',fontAxis);
+        ylim([0 GPUCap]);
         xlim([0 max(timeInSeconds)]);
         %legend(lengendStr,'Location','northoutside','FontSize',fontLegend,'Orientation','horizontal');
         %title('DRF - Memory','fontsize',fontLegend);
@@ -124,9 +124,9 @@ for iFile=1:length(prefixes)
         shapeRes = fipQueues( shapeRes, num_interactive_queue, num_batch_queues);
 
         hBar = bar(timeInSeconds,shapeRes',barwidth,'stacked','EdgeColor','none');
-        set(hBar,{'FaceColor'},barColors);   
-        ylabel('memory');xlabel('seconds');
-        ylim([0 cluster_size]);
+%         set(hBar,{'FaceColor'},barColors);   
+        ylabel('memory');xlabel('mins');
+        ylim([0 MemCap]);
         xlim([0 max(timeInSeconds)]);
         %legend(lengendStr,'Location','northoutside','FontSize',fontLegend,'Orientation','horizontal');
         %title('DRF - Memory','fontsize',fontLegend);
@@ -147,7 +147,7 @@ end
 if enableSeparateLegend
   figure
   hBar = bar(timeInSeconds,shapeRes',barwidth,'stacked','EdgeColor','none');
-  set(hBar,{'FaceColor'},barColors);
+%   set(hBar,{'FaceColor'},barColors);
   legend(lengendStr,'Location','southoutside','FontSize',fontLegend,'Orientation','horizontal');
   set(gca,'FontSize',fontSize);
   axis([20000,20001,20000,20001]) %move dummy points out of view

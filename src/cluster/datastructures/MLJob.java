@@ -272,7 +272,7 @@ public class MLJob extends BaseJob implements Cloneable {
 	// end print dag //
 
 	// read dags from file //
-	public static Queue<BaseJob> readDags(String filePathString, boolean readNumIter, boolean readBeta, boolean genIteration) {
+	public static Queue<BaseJob> readDags(String filePathString) {
 		Output.debugln(DEBUG, "[readDags] read " + filePathString);
 
 		Queue<BaseJob> dags = new LinkedList<BaseJob>();
@@ -310,7 +310,7 @@ public class MLJob extends BaseJob implements Cloneable {
 					int j = 0;
 					numStages = Integer.parseInt(args[j++]);
 					ddagId = Integer.parseInt(args[j++]);
-					if (args.length > j && readNumIter) {
+					if (args.length > j) {
 						numOfIterations = Integer.parseInt(args[j++]);
 					}
 					if (args.length > j) {
@@ -334,8 +334,7 @@ public class MLJob extends BaseJob implements Cloneable {
 
 				MLJob dag = new MLJob(ddagId, arrival);
 				dag.numStages = numStages;
-				if (readNumIter)
-					dag.NUM_ITERATIONS = numOfIterations;
+				dag.NUM_ITERATIONS = numOfIterations;
 				dag.dagName = dag_name;
 				dag.setQueueName(queueName);
 				dag.sessionId = sId;
@@ -357,7 +356,7 @@ public class MLJob extends BaseJob implements Cloneable {
 					stageName = args[j++];
 					assert (stageName.length() > 0);
 
-					durV = Double.parseDouble(args[j++]);
+					durV = Double.parseDouble(args[j++]); // not used
 					assert (durV >= 0);
 
 					double cpu = Double.parseDouble(args[j++]);
@@ -370,13 +369,20 @@ public class MLJob extends BaseJob implements Cloneable {
 				// TODO: read the real demands
 					InterchangableResourceDemand demand = new InterchangableResourceDemand(cpu, mem, gpu, gpuMem, cpuComplt, gpuComplt );
 
-					numVertices = Integer.parseInt(args[args.length - 1]);
+					numVertices = Integer.parseInt(args[j++]);
+					double cpuErr = 0;
+					double gpuErr = 0;
+					if (j<args.length) {
+						cpuErr =  Double.parseDouble(args[j++]);
+						gpuErr =  Double.parseDouble(args[j++]);
+					}
+						
 					assert (numVertices >= 0);
 					vIdxEnd += numVertices;
 					SubGraph stage = new SubGraph(stageName, i, new Interval(vIdxStart, vIdxEnd - 1), durV, numVertices,
 							demand);
 					// TODO: read the report demands
-					stage.reportDemands = new InterchangableResourceDemand(0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+					stage.reportDemands = new InterchangableResourceDemand(cpu, mem, gpu, gpuMem, cpuComplt * (1+cpuErr), gpuComplt  * (1+gpuErr));
 
 					String arrivalStr = args[args.length - 2];
 					if (arrivalStr.startsWith("@"))
@@ -1018,11 +1024,7 @@ public class MLJob extends BaseJob implements Cloneable {
 
 	@Override
 	public Resource naiveRsrcDemands(int taskId) {
-		Resource res = new Resource();
 		InterchangableResourceDemand demand = rsrcDemands(taskId);
-/*		res.resources[0] = demand.convertToCPU();
-		res.resources[1] = demand.convertToGPU();
-		res.resources[2] = demand.getMemory();*/
-		return res;
+		return demand.getNaiveDemand();
 	}
 }

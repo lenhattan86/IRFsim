@@ -6,13 +6,15 @@ import java.util.List;
 
 import cluster.datastructures.BaseJob;
 import cluster.datastructures.InterchangableResourceDemand;
+import cluster.datastructures.JobArrivalComparator;
+import cluster.datastructures.JobLengthComparator;
 import cluster.datastructures.JobQueue;
 import cluster.datastructures.Resource;
 import cluster.datastructures.Resources;
 import cluster.schedulers.QueueScheduler;
 import cluster.simulator.Simulator;
 import cluster.simulator.Main.Globals;
-import cluster.utils.JobArrivalComparator;
+import cluster.simulator.Main.Globals.JobScheduling;
 import cluster.utils.Output;
 import cluster.utils.Utils;
 
@@ -35,17 +37,20 @@ public class EqualShareScheduler implements Scheduler {
 	@Override
 	public void computeResShare() {
 
-		int numQueuesRuning = Simulator.QUEUE_LIST.getRunningQueues().size();
+		List<JobQueue> runningQueues = Simulator.QUEUE_LIST.getRunningQueues();
+
+		int numQueuesRuning = runningQueues.size();
 		if (numQueuesRuning == 0) {
 			return;
 		}
 
-		for (JobQueue q : Simulator.QUEUE_LIST.getRunningQueues()) {
-			Collections.sort((List<BaseJob>) q.getRunningJobs(), new JobArrivalComparator());
-		}
-
+		if (Globals.JOB_SCHEDULER.equals(JobScheduling.FIFO))
+			for (JobQueue q : runningQueues) {
+				Collections.sort((List<BaseJob>) q.getRunningJobs(), new JobArrivalComparator());
+			}
 		// equal share all resources
-		equallyAllocate(clusterTotCapacity, Simulator.QUEUE_LIST.getRunningQueues());
+		// equallyAllocate(clusterTotCapacity, // Simulator.QUEUE_LIST.getRunningQueues());
+		onlineEqualShare(clusterTotCapacity, Simulator.QUEUE_LIST.getRunningQueues());
 	}
 
 	public static void equallyAllocate(Resource resCapacity, List<JobQueue> runningQueues2) {
@@ -66,9 +71,97 @@ public class EqualShareScheduler implements Scheduler {
 
 		for (int i = 0; i < numOfQueues; i++) {
 			JobQueue q = runningQueues.get(i);
-			double shares[] = equalShares.resources;
-			QueueScheduler.allocateResToQueue(q, shares);
+			double shares[] = Resources.clone(equalShares).resources;
+			// Allocate on GPU
+			if (Globals.JOB_SCHEDULER.equals(JobScheduling.FIFO))
+				QueueScheduler.allocateResToQueue(q, shares, false);
+			else if (Globals.JOB_SCHEDULER.equals(JobScheduling.SRPT)) {
+				double cpuShare = shares[0];
+				shares[0] = 0;
+				Collections.sort((List<BaseJob>) q.getRunningJobs(), new JobLengthComparator(2));
+				Resource remain = QueueScheduler.allocateResToQueue(q, shares, false);
+				shares[0] = cpuShare;
+				shares[2] = remain.resource(2);
+				Collections.sort((List<BaseJob>) q.getRunningJobs(), new JobLengthComparator(1));
+				remain = QueueScheduler.allocateResToQueue(q, shares, false);
+				shares[0] = 0;
+			}
 		}
+	}
+
+	public static void onlineEqualShare(Resource resCapacity, List<JobQueue> runningQueues2) {
+
+		List<JobQueue> runningQueues = new ArrayList<JobQueue>();
+
+		for (JobQueue queue : runningQueues2) {
+			if (queue.hasRunningJobs())
+				runningQueues.add(queue);
+		}
+
+		int numOfQueues = runningQueues.size();
+		if (runningQueues.isEmpty())
+			return;
+
+		// allocate on GPU
+		boolean isResAvail = true;
+		while (isResAvail) {
+			// pick the least GPU demand
+			double minGPU = Double.MAX_VALUE;
+			JobQueue qMin = null;
+			for (int i = 0; i < numOfQueues; i++) {
+				JobQueue q = runningQueues.get(i);
+				Resource usage = q.getResourceUsage();
+				BaseJob unallocJob = q.getUnallocRunningJob();
+				if (unallocJob == null)
+					continue;
+				if (minGPU > usage.resource(1)) {
+					minGPU = usage.resource(1);
+					qMin = q;
+				}
+			}
+			if (qMin==null)
+				break;
+		// allocate the job for minIdx
+			Collections.sort((List<BaseJob>) qMin.getRunningJobs(), new JobLengthComparator(2));
+			BaseJob unallocJob = qMin.getUnallocRunningJob();
+			Resource demand = unallocJob.getDemand().getGpuDemand();
+			Resource remain = QueueScheduler.allocateResToQueue(qMin, Resources.sum(demand, qMin.getResourceUsage()).resources, false);
+			Resource resAvail = Simulator.cluster.getClusterResAvail();
+			// TODO: [bug] all GPU are allocated but the log says different. 
+			if (remain.resource(1)>=0.1){
+				isResAvail = false;
+//				QueueScheduler.allocateResToQueue(qMin, Resources.sum(demand, qMin.getResourceUsage()).resources, false);
+			}
+		}
+		
+		isResAvail = true;
+		while (isResAvail) {
+			// pick the least CPU demand
+			double minCPU = Double.MAX_VALUE;
+			JobQueue qMin = null;
+			for (int i = 0; i < numOfQueues; i++) {
+				JobQueue q = runningQueues.get(i);
+				Resource usage = q.getResourceUsage();
+				BaseJob unallocJob = q.getUnallocRunningJob();
+				if (unallocJob == null)
+					continue;
+				if (minCPU > usage.resource(0)) {
+					minCPU = usage.resource(0);
+					qMin = q;
+				}
+			}
+			if (qMin==null)
+				break;
+		// allocate the job for minIdx
+			Collections.sort((List<BaseJob>) qMin.getRunningJobs(), new JobLengthComparator(1));
+			BaseJob unallocJob = qMin.getUnallocRunningJob();
+			Resource demand = unallocJob.getDemand().getCpuDemand();
+			Resource remain = QueueScheduler.allocateResToQueue(qMin, Resources.sum(demand, qMin.getResourceUsage()).resources, false);
+			Resource resAvail = Simulator.cluster.getClusterResAvail();
+			if (remain.resource(0)>=0.001)
+				isResAvail = false;
+		}
+		
 	}
 
 	public static void equallyAllocate_online(Resource resCapacity, List<JobQueue> runningQueues2) {
