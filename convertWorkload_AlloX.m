@@ -2,9 +2,9 @@
 clear; close all; clc;
 % return;
 %% load data
-
-JOB_FILE  = 'jobInfo.mat';
-JOB_USAGE = 'jobResUsageWReschedule.mat';
+google_path = 'C:\Users\Xiao_SBU\Documents\GitHub\google_trace\';
+JOB_FILE  = [google_path 'jobInfo.mat'];
+JOB_USAGE = [google_path 'jobResUsageWReschedule.mat'];
 mkdir('figs');
 
 cpuCapacity = 6600;
@@ -79,8 +79,8 @@ end
 
 %% Get the metadata for users
 
-load('plotJobDemandUser.mat');
-Folder = '/home/tanle/projects/IRFsim/input/';
+%load('plotJobDemandUser.mat');
+Folder = 'input/';
 % Folder = './';
 
 % outputFile = [Folder 'jobs_input_' num2str(length(betas)) '_Google.txt'];
