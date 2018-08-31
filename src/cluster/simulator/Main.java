@@ -6,7 +6,6 @@ import java.util.Queue;
 import java.util.Scanner;
 import java.util.logging.Logger;
 
-import com.mathworks.engine.EngineException;
 import com.mathworks.engine.MatlabEngine;
 
 import cluster.data.JobData;
@@ -15,7 +14,6 @@ import cluster.datastructures.BaseJob;
 import cluster.simulator.Main.Globals.JobScheduling;
 import cluster.simulator.Main.Globals.Method;
 import cluster.simulator.Main.Globals.Runmode;
-import cluster.simulator.Main.Globals.Scenario;
 import cluster.simulator.Main.Globals.WorkLoadType;
 import cluster.utils.GenInput;
 import cluster.utils.Randomness;
