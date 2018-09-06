@@ -38,6 +38,7 @@ public class DRFExtScheduler implements Scheduler {
 			gpuSize = demand.gpu * demand.gpuCompl;
 		}
 		this.beta = cpuSize/gpuSize;
+		System.out.println("avg. beta             = " + this.beta);
 	}
 
 	@Override

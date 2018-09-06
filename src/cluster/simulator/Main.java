@@ -56,7 +56,7 @@ public class Main {
 		public static final int TRACE_CLUSTER_SIZE = 25;
 
 		public enum WorkLoadType {
-			Google, BB, TPC_DS, TPC_H, SIMPLE, SIMPLE_GOOD, SIMPLE_BAD
+			Google, BB, TPC_DS, TPC_H, SIMPLE, SIMPLE_GOOD, SIMPLE_BAD, Google_2,
 		};
 
 		public enum JobScheduling {
@@ -74,7 +74,7 @@ public class Main {
 		};
 
 		public enum Runmode {
-			MultipleRuns, BetaErrors, Analysis_Alpha, Analysis_speedup, Analysis_mu, Analysis_misest, Analysis_capacity, NONE
+			MultipleRuns, BetaErrors, Analysis_Alpha, Analysis_speedup, Analysis_mu, Analysis_misest, Analysis_capacity, SmallScale, NONE
 		}
 
 		public static boolean USE_TRACE = false;
@@ -236,6 +236,9 @@ public class Main {
 		public static void setupParameters() {
 			
 			Globals.MACHINE_MAX_CPU = Globals.MACHINE_MAX_GPU*32;			
+			if (Globals.runmode.equals(Runmode.SmallScale))
+				Globals.MACHINE_MAX_CPU = Globals.MACHINE_MAX_GPU*16;
+			
 			Globals.MACHINE_MAX_MEM = Globals.MACHINE_MAX_CPU*2;
 			
 			COMPUTE_STATISTICS = false;
@@ -256,7 +259,10 @@ public class Main {
 				break;
 			case Google:
 				Globals.TRACE_FILE = "input/job_google.txt"; // BigBench
-				break;	
+				break;
+			case Google_2:
+				Globals.TRACE_FILE = "input/job_google_2.txt"; // BigBench
+				break;
 			case TPC_DS:
 				Globals.WORKLOAD_AVG_TASK_DURATION = 31.60574050691386;
 				Globals.TRACE_FILE = "workload/queries_tpcds_FB_distr_new.txt"; // TPC-DS
@@ -459,6 +465,7 @@ public class Main {
 
 	public static void main(String[] args) {
 		
+		Globals.MACHINE_MAX_CPU = Globals.MACHINE_MAX_GPU*32;
 		if (Globals.EnableMatlab)
 			try {
 				Globals.MATLAB = MatlabEngine.startMatlab();
@@ -466,7 +473,7 @@ public class Main {
 				System.out.println("[Error] Matlab is not supported.");
 			}
 		
-		Globals.runmode = Runmode.MultipleRuns;
+		Globals.runmode = Runmode.SmallScale;
 
 		Utils.createUserDir("log");
 		Utils.createUserDir("output");
@@ -496,6 +503,28 @@ public class Main {
 			Globals.workload = Globals.WorkLoadType.Google;
 			Globals.numQueues = 25;
 			Globals.numBatchJobs = Globals.numQueues*1000;
+
+			for (Globals.Method method : methods) {
+				Globals.METHOD = method;
+				Globals.setupParameters();
+				runSimulationScenario(false);
+				Globals.IS_GEN = false;
+				System.out.println();
+			}
+		} else if (Globals.runmode.equals(Runmode.SmallScale)) {
+			Globals.JOB_SCHEDULER = JobScheduling.SRPT; 
+			Globals.IS_GEN= true;
+			Globals.USE_TRACE=true;
+			Globals.workload = WorkLoadType.Google_2;
+			Globals.jobData = new JobData();
+			Globals.MEMORY_SCALE_DOWN = 1;
+			Globals.NUM_MACHINES = 1;
+			Globals.SIM_END_TIME = 2000.0;
+//			Globals.Method[] methods = { Method.DRF, Method.DRFExt, Method.ES, Method.AlloX, Method.SJF};
+			Globals.Method[] methods = { Method.DRF, Method.DRFExt, Method.ES, Method.AlloX};
+			Globals.MACHINE_MAX_GPU = 2;
+			Globals.numQueues = 2;
+			Globals.numBatchJobs = Globals.numQueues*10;
 
 			for (Globals.Method method : methods) {
 				Globals.METHOD = method;

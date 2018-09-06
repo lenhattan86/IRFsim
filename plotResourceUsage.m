@@ -6,11 +6,11 @@ is_printed = false;
 %workload='BB';
 workload='SIMPLE';
 
-num_batch_queues = 25;
+num_batch_queues = 2;
 num_interactive_queue = 0;
 num_queues = num_batch_queues + num_interactive_queue;
-START_TIME = 0; END_TIME = 2000;  STEP_TIME = 1;
-cluster_size = 50;
+START_TIME = 0; END_TIME = 100;  STEP_TIME = 1;
+cluster_size = 2;
 
 CPUCap = cluster_size * 32;
 GPUCap = cluster_size;
@@ -62,8 +62,8 @@ extraStr = ['_' int2str(num_batch_queues) '_' int2str(cluster_size)];
 % prefixes = {'ES', 'AlloX'};
 % prefixes = {'DRFExt'};
 % prefixes = {'AlloX'};
-% prefixes = {'DRF'};
-prefixes = {'DRFExt','SJF'};
+prefixes = {'DRF','AlloX'};
+% prefixes = {'DRFExt','SJF'};
 for iFile=1:length(prefixes)
   if plots(1)   
      logFile = [ logfolder prefixes{iFile} '-output' extraStr  '.csv'];

@@ -2,7 +2,8 @@
 clear; close all; clc;
 % return;
 %% load data
-google_path = 'C:\Users\Xiao_SBU\Documents\GitHub\google_trace\';
+%google_path = 'C:\Users\Xiao_SBU\Documents\GitHub\google_trace\';
+google_path = '/home/tanle/projects/ClusterData2011_2/';
 JOB_FILE  = [google_path 'jobInfo.mat'];
 JOB_USAGE = [google_path 'jobResUsageWReschedule.mat'];
 mkdir('figs');
@@ -51,13 +52,13 @@ END_TIME = 3600;
 MeanBeta = 32;
 
 %% Experiment case studies
-
+IS_SMALL_SCALE = true;
 % simple
 if false
     betas = [5 7 12];
     reportBetas = [5 7 12];
     numOfJobs=133*ones(size(betas));
-elseif true
+elseif ~IS_SMALL_SCALE
 % more users
     nUsers = 25;
     pd = makedist('Normal','mu',MeanBeta,'sigma',MeanBeta);
@@ -67,6 +68,25 @@ elseif true
     betas = betas / mean(betas) * MeanBeta;    
     
     NJobs = 1000;
+    numOfJobs=nUsers*NJobs;
+    BETAS = zeros(nUsers, NJobs);
+    for iUser = 1:nUsers
+        pd = makedist('Normal','mu',betas(iUser),'sigma',betas(iUser));
+        t = truncate(pd,0,inf);
+        temp = random(t, NJobs,1);          
+        BETAS(iUser,:) = temp / mean(temp) * betas(iUser); 
+    end    
+elseif IS_SMALL_SCALE
+    MeanBeta = 16;
+% more users
+    nUsers = 2;
+    pd = makedist('Normal','mu',MeanBeta,'sigma',MeanBeta);
+    t = truncate(pd,0,inf);
+    betas = random(t, nUsers,1);
+    reportBetas = betas;    
+    betas = betas / mean(betas) * MeanBeta;    
+    
+    NJobs = 10;
     numOfJobs=nUsers*NJobs;
     BETAS = zeros(nUsers, NJobs);
     for iUser = 1:nUsers
@@ -87,6 +107,10 @@ Folder = 'input/';
 % queueFile = [Folder 'queue_input_' num2str(length(betas)) '_Google.txt'];
 outputFile = [Folder 'job_google.txt'];
 queueFile = [Folder 'queue_google.txt'];
+if IS_SMALL_SCALE
+    outputFile = [Folder 'job_google_2.txt'];
+    queueFile = [Folder 'queue_google_2.txt'];
+end
 
 ARRIVAL_TIME_IGNORE = 2.4*24*3600 + 750;    
 %% Create Queue Info
@@ -161,15 +185,32 @@ for iJob=1:length(jobSet(:,1))
         memReq = 2/cpuReq*memReq;
         cpuReq = 2;        
     end
-    if (cpuReq >= 64)
-        memReq = 64/cpuReq*memReq;
-        cpuReq = 64;        
+%     if IS_SMALL_SCALE
+%         if (cpuReq <= 8)
+%             memReq = 8/cpuReq*memReq;
+%             cpuReq = 8;        
+%         end
+%     end
+    if (cpuReq >= 32)
+        memReq = 32/cpuReq*memReq;
+        cpuReq = 32;        
+    end
+    if IS_SMALL_SCALE
+        if (cpuReq >= 15)
+            memReq = 15/cpuReq*memReq;
+            cpuReq = 15;        
+        end
     end
     
 
     taskPeriod = ceil(taskPeriod);
     if taskPeriod > 200
        taskPeriod = 200 - rand(1)*100;
+    end
+    if IS_SMALL_SCALE
+        if taskPeriod > 20
+            taskPeriod = 20 - rand(1)*5;
+        end
     end
     %     numTasks = numTasks*scale;    
     %     % stage 1.0 16.0 6.0 150.0 1.0 2.0 12.5 12.0 1
@@ -181,6 +222,11 @@ for iJob=1:length(jobSet(:,1))
     
     if gpuCmplt > 200
        gpuCmplt = 200 - rand(1)*100;
+    end
+    if IS_SMALL_SCALE
+        if gpuCmplt > 20
+            gpuCmplt = 20 - rand(1)*10;
+        end
     end
     
     strTemp = sprintf('stage -1.0 %0.1f %0.0f %0.0f %0.0f %0.0f %0.0f 1\n', ...

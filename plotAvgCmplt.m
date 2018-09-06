@@ -3,14 +3,18 @@ common_settings;
 % is_printed = 1;
 %%
 barWidth = 0.5;
-queue_num = 25;
-cluster_size=100;
+queue_num = 2;
+cluster_size=2;
 figureSize = figSizeOneCol .* [1 1 2/3 2/3];
 plots  = [false, true, true, false, false, true];
+
 colorUsers = {colorUser1; colorUser2; colorUser3};
 methods = {strDRF,  strES,  'DRFExt', strAlloX, 'SJF'};
 files = {'DRF', 'ES', 'DRFExt', 'AlloX','SJF'};
 DRFId = 1; ESId = 2; AlloXId = 4; SJFId = 5;
+
+% plots  = [true, false, false, false, false, false];
+% methods = {strES,  strAlloX};
 
 methodColors = {colorES; colorDRF; colorProposed};
 extraStr = ['_' int2str(queue_num) '_' int2str(cluster_size)];
@@ -24,33 +28,34 @@ end
 
 %%
 %%
-if plots(1)     
-   avgCmplt = [315.0, 231.0, 136.5;
-       207.0, 175.1, 118.4;
-       217.5, 159.64, 90.415];
-% avgCmplt = [148.66666666666666  102.96666666666667 55.266666666666666;
-%       281.6, 178.1, 37.9;
-%       135.65384615384616, 84.4, 40.6];
-   figIdx=figIdx +1;         figures{figIdx} =figure;
+if plots(1)  
+   complTimes = [];
+  figIdx=figIdx +1;     
+  durations = {[403 103 254 155 306 353];[103 152 253 204 303 305]};
+   figures{figIdx} = figure;
+   scrsz = get(groot, 'ScreenSize');   
+%    hBar = bar(avgCmplt', barWidth);
+%    set(hBar,{'FaceColor'}, colorUsers);   
    
-   scrsz = get(groot,'ScreenSize');   
-   hBar = bar(avgCmplt', 'group');
-   set(hBar,{'FaceColor'}, methodColors);   
-%    set(gca,'yscale','log')
-   %title('Average completion time of interactive jobs','fontsize',fontLegend);
-    xLabel=strMethods;
-    yLabel=strAvgCmplt;
+    hold on
+    for i = 1:length(methods)
+        avgCmplt = mean(durations{i});
+        h=bar(i, avgCmplt, 0.2);
+%         set(h,'FaceColor', methodColors{i});
+    end
+    hold off
+
+    xLabel='methods';
+    yLabel='seconds';
     legendStr=methods;
-    xlim([0.6 length(methods)+0.4]);
-    ylim([0 max(max(avgCmplt))*1.1]);
+     xlim([0.4 length(methods)+0.6]);
+%     ylim([0 max(max(avgCmplt))*1.1]);
     xLabels={strUser1, strUser2, strUser3};
-    legend(legendStr,'Location','northoutside','FontSize',fontLegend,'Orientation','horizontal');
     set (gcf, 'Units', 'Inches', 'Position', figureSize, 'PaperUnits', 'inches', 'PaperPosition', figureSize);
 %     xlabel(xLabel,'FontSize',fontAxis);
     ylabel(yLabel,'FontSize',fontAxis);
-    set(gca,'XTickLabel', xLabels, 'FontSize', fontAxis);   
-
-    fileNames{figIdx} = 'avgCmplt_per_user';
+    set(gca,'XTickLabel', methods,'FontSize',fontAxis);
+    fileNames{figIdx} = 'avgCmplt_exp';      
 end
 
 %%
