@@ -29,13 +29,19 @@ public class AlloXScheduler implements Scheduler {
 	static double[] L;
 	private static boolean isComputed = false;
 	private static Resource computedShares[] = null;
+	private static double alphaFairness = 1;
 
 	// implementation idea:
 	// 1. for every queue, compute it's total resource demand vector
 
-	public AlloXScheduler() {
+	public AlloXScheduler(double alpha) {
 		clusterTotCapacity = Simulator.cluster.getClusterMaxResAlloc();
 		this.schedulePolicy = "AlloX";
+		alphaFairness = Globals.alpha;
+	}
+	public AlloXScheduler() {
+		clusterTotCapacity = Simulator.cluster.getClusterMaxResAlloc();
+		this.schedulePolicy = "SJF";
 	}
 
 	@Override
@@ -58,9 +64,13 @@ public class AlloXScheduler implements Scheduler {
 		List<JobQueue> activeQueues = Simulator.QUEUE_LIST.getQueuesWithQueuedJobs();
 		
 		boolean flag = true;
-		while(clusterAvailRes.resource(1)>0 && activeQueues.size() > 0){
+		if (Simulator.CURRENT_TIME == 250)
+			System.out.println("debug");
+		
+		while(activeQueues.size() > 0){
 			flag = online_allox(clusterTotCapacity, activeQueues, Globals.alpha);
-			clusterAvailRes = Simulator.cluster.getClusterResAvail();
+			if (!flag)
+				break;
 			activeQueues = Simulator.QUEUE_LIST.getQueuesWithQueuedJobs();
 		}
 		
@@ -157,7 +167,6 @@ public class AlloXScheduler implements Scheduler {
 	
 //fairnessLevel = ~0% strict fairness
 	public static boolean online_allox(Resource resCapacity, List<JobQueue> activeQueues, double fairnessRatio) {
-		boolean result = true;
 		int nQueues = activeQueues.size();
 		// Create user set U with lowest fairnessRatio
 		Collections.sort(activeQueues, new QueueComparator());
@@ -181,7 +190,8 @@ public class AlloXScheduler implements Scheduler {
 		
 		Collections.sort(W, new ProcessingTimesComparator());
 		
-		// for each job in W, update fair score for each queue
+		// for each job in W, update fair score for each queue		
+		int numScheduledJobs = 0;
 		for (ProcessingTime p : W){
 			if (p.job.wasScheduled)
 				continue;
@@ -190,15 +200,17 @@ public class AlloXScheduler implements Scheduler {
 				boolean res = QueueScheduler.allocateResToJob(p.job, false);
 				if (res) {
 					p.job.onStart(resCapacity);
+					numScheduledJobs++;
 				}
 			} else if (p.isCpu && availRes.resource(0) >= 1) {
 				boolean res = QueueScheduler.allocateResToJob(p.job, true);
 				if (res) {
 					p.job.onStart(resCapacity);
-				}
+					numScheduledJobs++;
+				} 
 			}
 		}
-		return result;
+		return (numScheduledJobs == W.size()/2);
 	}
 
 	// fairnessLevel = ~0% strict fairness

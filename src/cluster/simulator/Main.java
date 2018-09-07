@@ -56,7 +56,7 @@ public class Main {
 		public static final int TRACE_CLUSTER_SIZE = 25;
 
 		public enum WorkLoadType {
-			Google, BB, TPC_DS, TPC_H, SIMPLE, SIMPLE_GOOD, SIMPLE_BAD, Google_2,
+			Google, BB, TPC_DS, TPC_H, SIMPLE, SIMPLE_GOOD, SIMPLE_BAD, Google_2, Tensorflow,
 		};
 
 		public enum JobScheduling {
@@ -262,6 +262,9 @@ public class Main {
 				break;
 			case Google_2:
 				Globals.TRACE_FILE = "input/job_google_2.txt"; // BigBench
+				break;
+			case Tensorflow:
+				Globals.TRACE_FILE = "input/tensorflow.txt";
 				break;
 			case TPC_DS:
 				Globals.WORKLOAD_AVG_TASK_DURATION = 31.60574050691386;
@@ -515,13 +518,14 @@ public class Main {
 			Globals.JOB_SCHEDULER = JobScheduling.SRPT; 
 			Globals.IS_GEN= true;
 			Globals.USE_TRACE=true;
-			Globals.workload = WorkLoadType.Google_2;
+//			Globals.workload = WorkLoadType.Google_2;
+			Globals.workload = WorkLoadType.Tensorflow;
 			Globals.jobData = new JobData();
 			Globals.MEMORY_SCALE_DOWN = 1;
 			Globals.NUM_MACHINES = 1;
 			Globals.SIM_END_TIME = 2000.0;
 //			Globals.Method[] methods = { Method.DRF, Method.DRFExt, Method.ES, Method.AlloX, Method.SJF};
-			Globals.Method[] methods = { Method.DRF, Method.DRFExt, Method.ES, Method.AlloX};
+			Globals.Method[] methods = {Method.SJF};
 			Globals.MACHINE_MAX_GPU = 2;
 			Globals.numQueues = 2;
 			Globals.numBatchJobs = Globals.numQueues*10;

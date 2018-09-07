@@ -43,10 +43,10 @@ public class QueueScheduler {
         scheduler = new PricingScheduler();
         break;
     case AlloX:
-      scheduler = new AlloXScheduler();
+      scheduler = new AlloXScheduler(Globals.alpha);
       break;    
     case SJF:
-      scheduler = new SJFScheduler();
+      scheduler = new AlloXScheduler();
       break;  
     default:
       System.err.println("Unknown sharing policy");

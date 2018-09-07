@@ -9,7 +9,7 @@ workload='SIMPLE';
 num_batch_queues = 2;
 num_interactive_queue = 0;
 num_queues = num_batch_queues + num_interactive_queue;
-START_TIME = 0; END_TIME = 100;  STEP_TIME = 1;
+START_TIME = 0; END_TIME = 1000;  STEP_TIME = 1;
 cluster_size = 2;
 
 CPUCap = cluster_size * 32;
@@ -41,7 +41,7 @@ endIdx = max_time_step*num_queues;
 num_time_steps = max_time_step-start_time_step;
 linewidth= 2;
 barwidth = 1.0;
-timeScale = 5;
+timeScale = 1;
 timeInSeconds = START_TIME+STEP_TIME:STEP_TIME:END_TIME;
 timeInSeconds = timeInSeconds * timeScale;
 
@@ -58,11 +58,11 @@ end
 extraStr = ['_' int2str(num_batch_queues) '_' int2str(cluster_size)];
 
 %%
-% prefixes = {'DRF', 'ES', 'DRFExt', 'AlloX', 'SJF'};
+prefixes = {'DRF', 'ES', 'DRFExt', 'AlloX', 'SJF'};
 % prefixes = {'ES', 'AlloX'};
 % prefixes = {'DRFExt'};
 % prefixes = {'AlloX'};
-prefixes = {'DRF','AlloX'};
+% prefixes = {'DRF','AlloX'};
 % prefixes = {'DRFExt','SJF'};
 for iFile=1:length(prefixes)
   if plots(1)   
@@ -89,7 +89,7 @@ for iFile=1:length(prefixes)
         ylim([0 CPUCap]);
         xlim([0 max(timeInSeconds)]);
         %legend(lengendStr,'Location','northoutside','FontSize',fontLegend,'Orientation','horizontal');
-        %title('DRF - CPU','fontsize',fontLegend);
+        title(prefixes{iFile},'fontsize',fontLegend);
 
         subplot(3,1,2);
         resAll = zeros(1,num_queues*num_time_steps);
