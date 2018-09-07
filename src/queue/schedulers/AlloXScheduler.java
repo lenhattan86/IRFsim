@@ -42,6 +42,7 @@ public class AlloXScheduler implements Scheduler {
 	public AlloXScheduler() {
 		clusterTotCapacity = Simulator.cluster.getClusterMaxResAlloc();
 		this.schedulePolicy = "SJF";
+		alphaFairness = 1;
 	}
 
 	@Override
@@ -68,7 +69,7 @@ public class AlloXScheduler implements Scheduler {
 			System.out.println("debug");
 		
 		while(activeQueues.size() > 0){
-			flag = online_allox(clusterTotCapacity, activeQueues, Globals.alpha);
+			flag = online_allox(clusterTotCapacity, activeQueues, alphaFairness);
 			if (!flag)
 				break;
 			activeQueues = Simulator.QUEUE_LIST.getQueuesWithQueuedJobs();
