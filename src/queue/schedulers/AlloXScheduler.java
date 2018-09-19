@@ -53,7 +53,7 @@ public class AlloXScheduler implements Scheduler {
 		}
 
 		for (JobQueue q : Simulator.QUEUE_LIST.getQueuesWithQueuedJobs()) {
-			Collections.sort((List<BaseJob>) q.getRunningJobs(), new JobArrivalComparator());
+			Collections.sort((List<BaseJob>) q.getQueuedUpJobs(), new JobArrivalComparator());
 		}
 
 		// allox_heuristic(clusterTotCapacity,
@@ -202,16 +202,20 @@ public class AlloXScheduler implements Scheduler {
 				if (res) {
 					p.job.onStart(resCapacity);
 					numScheduledJobs++;
+					p.job.getQueue().addRunningJob(p.job);
+					break;
 				}
 			} else if (p.isCpu && availRes.resource(0) >= 1) {
 				boolean res = QueueScheduler.allocateResToJob(p.job, true);
 				if (res) {
 					p.job.onStart(resCapacity);
 					numScheduledJobs++;
+					p.job.getQueue().addRunningJob(p.job);
+					break;
 				} 
 			}
 		}
-		return (numScheduledJobs == W.size()/2);
+		return numScheduledJobs>=1;
 	}
 
 	// fairnessLevel = ~0% strict fairness

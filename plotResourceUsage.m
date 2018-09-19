@@ -9,7 +9,7 @@ workload='SIMPLE';
 num_batch_queues = 2;
 num_interactive_queue = 0;
 num_queues = num_batch_queues + num_interactive_queue;
-START_TIME = 0; END_TIME = 1000;  STEP_TIME = 1;
+START_TIME = 0; END_TIME = 1500;  STEP_TIME = 1;
 cluster_size = 2;
 
 CPUCap = cluster_size * 32;
@@ -20,7 +20,7 @@ MemCap = cluster_size* 96;
 figureSize = [1 1 4/5 6/5].* figSizeOneCol;
 legendSize = [1 1 4/5 1] .* legendSize;
 
-enableSeparateLegend = false;
+enableSeparateLegend = true;
 % barColors = colorb3(1:num_queues);
 scale_down_mem = 1;
 
@@ -59,7 +59,7 @@ extraStr = ['_' int2str(num_batch_queues) '_' int2str(cluster_size)];
 
 %%
 prefixes = {'DRF', 'ES', 'DRFExt', 'AlloX', 'SJF'};
-% prefixes = {'ES', 'AlloX'};
+% prefixes = {'DRF'};
 % prefixes = {'DRFExt'};
 % prefixes = {'AlloX'};
 % prefixes = {'DRF','AlloX'};
@@ -162,7 +162,6 @@ if enableSeparateLegend
     print ('-depsc', epsFile);
   end
 end
-
 
 % if is_printed
 %    pause(30);

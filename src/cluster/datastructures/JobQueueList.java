@@ -69,9 +69,9 @@ public class JobQueueList {
 		queue.addRunnableJob(newJob);
 	}*/
 	
-	public void addRunningJob2Queue(BaseJob newJob, String queueName) {
+	public void addRunnalbleJob2Queue(BaseJob newJob, String queueName) {
 		JobQueue queue = getJobQueue(queueName);
-		queue.addRunningJob(newJob);
+		queue.addRunnableJob(newJob);
 //		queue.removeRunnableJob(newJob);
 	}
 	
@@ -128,6 +128,15 @@ public class JobQueueList {
 		List<JobQueue> queues = new ArrayList<JobQueue>();
 		for (JobQueue q: runningQueues){
 			if (q.getQueuedUpJobs().size()>0)
+				queues.add(q);
+		}
+		return queues;
+	}
+	
+	public List<JobQueue> getQueuesWithQueuedProfilingJobs(){
+		List<JobQueue> queues = new ArrayList<JobQueue>();
+		for (JobQueue q: runningQueues){
+			if (q.getQueuedUpProfilingJobs().size()>0)
 				queues.add(q);
 		}
 		return queues;

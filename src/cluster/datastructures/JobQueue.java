@@ -5,451 +5,467 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import java.util.TreeSet;
 
 import cluster.simulator.Main.Globals;
+import cluster.simulator.Main.Globals.JobScheduling;
 import cluster.simulator.Main.Globals.Method;
 import cluster.simulator.Simulator;
 import cluster.utils.Output;
 
-public class JobQueue{
+public class JobQueue {
 
-  private static boolean DEBUG = false;
+	private static boolean DEBUG = false;
 
-  // private Queue<BaseDag> runnableJobs; // Jobs are in the queue
-  private Queue<BaseJob> runningJobs;
-  public Queue<BaseJob> completedJobs;
+	// private Queue<BaseDag> runnableJobs; // Jobs are in the queue
+	private Queue<BaseJob> runningJobs;
+	private Queue<BaseJob> runnableJobs;
+	public Queue<BaseJob> completedJobs;
 
-  public Session session = null;
+	public Session session = null;
 
-  public boolean isLQ = false;
-  
-  private double weight = 1.0;
-  
-  private double reportBeta = 1.0;
-  
-  private double beta = 1.0;
-  
-  public double L = 0.0;
-  
-  public double getBeta(){
-    return this.beta;
-  }
-  
-  public void setBeta(double beta){
-    this.beta = beta;
-  }
-  
-  public void setReportBeta(double betaVal){
-    this.reportBeta = betaVal;
-  }
-  
-  public double getReportBeta(){
-    return this.reportBeta;
-  }
+	public boolean isLQ = false;
 
-  /*
-   * public double getStartTime() { return startTime; }
-   * 
-   * public void setStartTime(double startTime) { this.startTime = startTime; }
-   */
-  // private double startTime = 0.0;
+	private double weight = 1.0;
 
-  private double speedFairWeight = 1.0;
+	private double reportBeta = 1.0;
 
-  private double startTimeOfNewJob = -1.0;
+	private double beta = 1.0;
 
-  // private ServiceRate serviceRate = new ServiceRate();
+	public double L = 0.0;
 
-  public List<Resource> receivedResourcesList = new LinkedList<Resource>();
+	public double getBeta() {
+		return this.beta;
+	}
 
-  private Resource rsrcQuota = new Resource();
+	public void setBeta(double beta) {
+		this.beta = beta;
+	}
 
-  String queueName = "";
+	public void setReportBeta(double betaVal) {
+		this.reportBeta = betaVal;
+	}
 
-  public JobQueue(String queueName) {
-    this.queueName = queueName;
-    // runnableJobs = new LinkedList<BaseDag>();
-    runningJobs = new LinkedList<BaseJob>();
-    completedJobs = new LinkedList<BaseJob>();
-  }
+	public double getReportBeta() {
+		return this.reportBeta;
+	}
 
-  public JobQueue(String queueName, Session session) {
-    this.queueName = queueName;
-    // runnableJobs = new LinkedList<BaseDag>();
-    runningJobs = new LinkedList<BaseJob>();
-    completedJobs = new LinkedList<BaseJob>();
-    this.session = session;
-  }
+	/*
+	 * public double getStartTime() { return startTime; }
+	 * 
+	 * public void setStartTime(double startTime) { this.startTime = startTime; }
+	 */
+	// private double startTime = 0.0;
 
-  public String getQueueName() {
-    return this.queueName;
-  }
+	private double speedFairWeight = 1.0;
 
-  public void updateGuartRate() {
-    // resLongTermGuartRate =
-    // Resources.divide(Simulator.cluster.getClusterMaxResAlloc(),
-    // Simulator.QUEUE_LIST.getRunningQueues().size());
-    // Output.debugln(DEBUG, "resLongTermGuartRate:" + resLongTermGuartRate);
-  }
+	private double startTimeOfNewJob = -1.0;
 
-  public double avgCompletionTime() {
-    if (completedJobs.size() <= 0) {
-      return -1.0;
-    }
+	// private ServiceRate serviceRate = new ServiceRate();
 
-    double avgTime = 0.0;
-    for (BaseJob job : completedJobs)
-      avgTime += job.getCompletionTime();
-    avgTime = avgTime / completedJobs.size();
+	public List<Resource> receivedResourcesList = new LinkedList<Resource>();
 
-    return avgTime;
-  }
+	private Resource rsrcQuota = new Resource();
 
-  /*
-   * public void admitJobs(BaseDag newArrivalJob) {
-   * runnableJobs.add(newArrivalJob); }
-   */
+	String queueName = "";
 
-  public void setRsrcQuota(Resource rsrcQuota) {
-    this.rsrcQuota = new Resource(rsrcQuota);
-  }
+	public JobQueue(String queueName) {
+		this.queueName = queueName;
+		// runnableJobs = new LinkedList<BaseDag>();
+		runningJobs = new LinkedList<BaseJob>();
+		completedJobs = new LinkedList<BaseJob>();
+   	runnableJobs = new LinkedList<BaseJob>();
+	}
 
-  public Resource getRsrcQuota() {
-    return new Resource(rsrcQuota);
-  }
+	public JobQueue(String queueName, Session session) {
+		this.queueName = queueName;
+		// runnableJobs = new LinkedList<BaseDag>();
+		runningJobs = new LinkedList<BaseJob>();
+		completedJobs = new LinkedList<BaseJob>();
+		runnableJobs = new LinkedList<BaseJob>();
+		this.session = session;
+	}
 
-  public Resource getJobsQuota() {
-    Resource res = new Resource();
-    for (BaseJob job : runningJobs) {
-      res.addWith(job.rsrcQuota);
-    }
-    return res;
-  }
+	public String getQueueName() {
+		return this.queueName;
+	}
 
-  public Resource getResRate(List<Resource> resList, double term) {
-    int timeSteps = (int) Math.round(term / Globals.STEP_TIME);
-    Resource res = new Resource();
-    Iterator<Resource> iRes = resList.iterator();
-    int i = 0;
-    while (iRes.hasNext()) {
-      if (i++ > timeSteps)
-        break;
-      res = Resources.sum(res, iRes.next());
-    }
-    return Resources.divide(res, timeSteps);
-  }
+	public void updateGuartRate() {
+		// resLongTermGuartRate =
+		// Resources.divide(Simulator.cluster.getClusterMaxResAlloc(),
+		// Simulator.QUEUE_LIST.getRunningQueues().size());
+		// Output.debugln(DEBUG, "resLongTermGuartRate:" + resLongTermGuartRate);
+	}
 
-  public Resource getReceivedRes(double term) {
-    Resource res = new Resource();
-    Iterator<Resource> iRes = this.receivedResourcesList.iterator();
-    int timeSteps = (int) Math.round(term / Globals.STEP_TIME);
-    int i = 0;
-    while (iRes.hasNext() && i++ < timeSteps) {
-      res.addWith(iRes.next());
-    }
-    return res;
-  }
+	public double avgCompletionTime() {
+		if (completedJobs.size() <= 0) {
+			return -1.0;
+		}
 
-  public Resource getResRate(double term) {
-    return this.getResRate(this.receivedResourcesList, term);
-  }
+		double avgTime = 0.0;
+		for (BaseJob job : completedJobs)
+			avgTime += job.getCompletionTime();
+		avgTime = avgTime / completedJobs.size();
 
-  public void addResourcesList(Resource res) {
-    this.receivedResourcesList.add(0, res);
-  }
+		return avgTime;
+	}
 
-/*  public Resource computeShare(double term, Resource guartRate) {
-    Resource resQuota = new Resource();
-    Resource received = this.getReceivedRes(term - Globals.STEP_TIME);
-    Resource total = Resources.multiply(guartRate,
-        (int) (Math.round(term / Globals.STEP_TIME)));
-    resQuota = Resources.subtractPositivie(total, received);
-    Resource resDemand = new Resource();
-    for (BaseJob job : runningJobs) {
-      resDemand = Resources.sum(resDemand, job.getMaxDemand());
-    }
-    return Resources.piecewiseMin(resQuota, resDemand);
-  }*/
+	/*
+	 * public void admitJobs(BaseDag newArrivalJob) {
+	 * runnableJobs.add(newArrivalJob); }
+	 */
 
-/*  public Resource getMaxDemand() {
-    Resource resDemand = new Resource();
-    for (BaseJob job : runningJobs) {
-      resDemand = Resources.sum(resDemand, job.getMaxDemand());
-    }
-    return resDemand;
-  }*/
+	public void setRsrcQuota(Resource rsrcQuota) {
+		this.rsrcQuota = new Resource(rsrcQuota);
+	}
 
-  public Resource getResourceUsage() {
-    Resource res = new Resource();
-    for (BaseJob job : this.runningJobs) {
-      res.addWith(job.getRsrcInUse());
-    }
-    return res;
-  }
-  
-  public double getNormalizedDorminantResUsage() {
-    Resource usage = this.getResourceUsage();
-    double maxVal = -1;
-    for (int i = 0; i<Simulator.Capacity.resources.length; i++){
-    	double temp = usage.resource(i)/Simulator.Capacity.resource(i);
-    	if (temp > maxVal)
-    		maxVal = temp;
-    }
-    return maxVal;
-  }
-  
-  public Resource demand = null;
-  
-  public InterchangableResourceDemand getDemand(){
-    for(BaseJob job: this.getRunningJobs()){
-      return job.getDemand();
-    }
-    return null;
-  }
-  
-  public InterchangableResourceDemand getReportDemand(){
-    Resource res = new Resource();
-    for(BaseJob job: this.getRunningJobs()){
-      return job.getReportDemand();
-    }
-    return null;
-  }
-  
-/*  public double getMemToCpuRatio(){
-    InterchangableResourceDemand demand = this.getDemand();
-    double cpu = demand.getGpuCpu();
-    double mem = demand.getMemory();
-    return mem/cpu;
-  }*/
-  
-/*  public double getReportMemToCpuRatio(){
-    InterchangableResourceDemand demand = this.getReportDemand();
-    double cpu = demand.getGpuCpu();
-    double mem = demand.getMemory();
-    return mem/cpu;
-  }*/
+	public Resource getRsrcQuota() {
+		return new Resource(rsrcQuota);
+	}
 
-  public String getResourceUsageStr() {
-    String str = this.queueName;
-    for (int i = 0; i < Globals.NUM_DIMENSIONS; i++)
-      str += "," + this.getResourceUsage().resource(i);
-    return str;
-  }
+	public Resource getJobsQuota() {
+		Resource res = new Resource();
+		for (BaseJob job : runningJobs) {
+			res.addWith(job.rsrcQuota);
+		}
+		return res;
+	}
 
-  // getters & setters
-  public double getWeight() {
-    double res = weight;
-    if (isLQ && Globals.METHOD.equals(Method.DRFW))
-      res = Globals.DRFW_weight;
-    return res;
-  }
+	public Resource getResRate(List<Resource> resList, double term) {
+		int timeSteps = (int) Math.round(term / Globals.STEP_TIME);
+		Resource res = new Resource();
+		Iterator<Resource> iRes = resList.iterator();
+		int i = 0;
+		while (iRes.hasNext()) {
+			if (i++ > timeSteps)
+				break;
+			res = Resources.sum(res, iRes.next());
+		}
+		return Resources.divide(res, timeSteps);
+	}
 
-  public void setWeight(double weight) {
-    this.weight = weight;
-  }
+	public Resource getReceivedRes(double term) {
+		Resource res = new Resource();
+		Iterator<Resource> iRes = this.receivedResourcesList.iterator();
+		int timeSteps = (int) Math.round(term / Globals.STEP_TIME);
+		int i = 0;
+		while (iRes.hasNext() && i++ < timeSteps) {
+			res.addWith(iRes.next());
+		}
+		return res;
+	}
 
-  public void setSpeedFairWeight(double weight) {
-    this.speedFairWeight = weight;
-  }
+	public Resource getResRate(double term) {
+		return this.getResRate(this.receivedResourcesList, term);
+	}
 
-  /*
-   * public double getSpeedFairWeight() { if
-   * (this.serviceRate.isBeyondGuaranteedDuration(Simulator.CURRENT_TIME,
-   * this.startTimeOfNewJob)) //add 1 condition for batch queues return
-   * this.speedFairWeight; else return 1.0; // make equal share to others. }
-   */
+	public void addResourcesList(Resource res) {
+		this.receivedResourcesList.add(0, res);
+	}
 
-  public Resource getGuaranteeRate(double currTime) {
-    Resource zero = new Resource();
-    if (isInStage1(currTime))
-      return session.getAlpha(currTime);
-    else
-      return zero;
-  }
+	/*
+	 * public Resource computeShare(double term, Resource guartRate) { Resource
+	 * resQuota = new Resource(); Resource received = this.getReceivedRes(term -
+	 * Globals.STEP_TIME); Resource total = Resources.multiply(guartRate, (int)
+	 * (Math.round(term / Globals.STEP_TIME))); resQuota =
+	 * Resources.subtractPositivie(total, received); Resource resDemand = new
+	 * Resource(); for (BaseJob job : runningJobs) { resDemand =
+	 * Resources.sum(resDemand, job.getMaxDemand()); } return
+	 * Resources.piecewiseMin(resQuota, resDemand); }
+	 */
 
-  public Session getSession() {
-    return this.session;
-  }
+	/*
+	 * public Resource getMaxDemand() { Resource resDemand = new Resource(); for
+	 * (BaseJob job : runningJobs) { resDemand = Resources.sum(resDemand,
+	 * job.getMaxDemand()); } return resDemand; }
+	 */
 
-  /*
-   * public Resource getAlpha(double currTime){ for (Session s:
-   * sessions.toList()){ double period = 0.0; if (s.isPeriodic()){ period =
-   * s.getPeriod(); }else { period = s.getAlphaDuration(); } double endTime =
-   * s.getStartTime()+s.getNumOfJobs()*period; //TODO: getGuaranteeRate may NOT
-   * be correct. if(currTime>=s.getStartTime()&& currTime< endTime) return
-   * s.getAlpha(); } return new Resource(Resources.ZEROS); }
-   */
+	public Resource getResourceUsage() {
+		Resource res = new Resource();
+		for (BaseJob job : this.runningJobs) {
+			res.addWith(job.getRsrcInUse());
+		}
+		return res;
+	}
 
-  /*
-   * public double getStage1Duration(double currTime){ for (Session s:
-   * sessions.toList()){ double period = 0.0; if (s.isPeriodic()){ period =
-   * s.getPeriod(); }else { period = s.getAlphaDuration(); } double endTime =
-   * s.getStartTime()+s.getNumOfJobs()*period;
-   * 
-   * if(currTime>=s.getStartTime()&& currTime<=endTime) return
-   * s.getAlphaDuration(); } return 0.0; }
-   */
+	public double getNormalizedDorminantResUsage() {
+		Resource usage = this.getResourceUsage();
+		double maxVal = -1;
+		for (int i = 0; i < Simulator.Capacity.resources.length; i++) {
+			double temp = usage.resource(i) / Simulator.Capacity.resource(i);
+			if (temp > maxVal)
+				maxVal = temp;
+		}
+		return maxVal;
+	}
 
-  /*
-   * public void addRunnableJob(BaseDag newJob) { this.runnableJobs.add(newJob);
-   * }
-   */
+	public Resource demand = null;
 
-  public void removeRunningJob(BaseJob newJob) {
-    this.runningJobs.remove(newJob);
-  }
+	public InterchangableResourceDemand getDemand() {
+		for (BaseJob job : this.runnableJobs) {
+			return job.getDemand();
+		}
+		return null;
+	}
 
-  public void addCompletedJob(BaseJob newJob) {
-    this.completedJobs.add(newJob);
-  }
+	public InterchangableResourceDemand getReportDemand() {
+		Resource res = new Resource();
+		for (BaseJob job : this.runnableJobs) {
+			return job.getReportDemand();
+		}
+		return null;
+	}
 
-  public boolean isActive() {
-//    if (!isLQ && this.runningJobs.size() > 0)
-    if(!isLQ)
-      return true;
+	/*
+	 * public double getMemToCpuRatio(){ InterchangableResourceDemand demand =
+	 * this.getDemand(); double cpu = demand.getGpuCpu(); double mem =
+	 * demand.getMemory(); return mem/cpu; }
+	 */
 
-    return false;
-  }
+	/*
+	 * public double getReportMemToCpuRatio(){ InterchangableResourceDemand demand
+	 * = this.getReportDemand(); double cpu = demand.getGpuCpu(); double mem =
+	 * demand.getMemory(); return mem/cpu; }
+	 */
 
-  public boolean hasRunningJobs() {
-    return this.runningJobs.size() > 0;
-  }
+	public String getResourceUsageStr() {
+		String str = this.queueName;
+		for (int i = 0; i < Globals.NUM_DIMENSIONS; i++)
+			str += "," + this.getResourceUsage().resource(i);
+		return str;
+	}
 
-  public boolean isActive(double currTime) {
-    if (!isLQ && this.runningJobs.size() > 0)
-      return true;
+	// getters & setters
+	public double getWeight() {
+		double res = weight;
+		if (isLQ && Globals.METHOD.equals(Method.DRFW))
+			res = Globals.DRFW_weight;
+		return res;
+	}
 
-    return false;
-  }
+	public void setWeight(double weight) {
+		this.weight = weight;
+	}
 
-  public Queue<BaseJob> getRunningJobs() {
-    return this.runningJobs;
-  }
-  
-  public Queue<BaseJob> getQueuedUpJobs() {
-  	Queue<BaseJob> baseJobs = new LinkedList<BaseJob>();
-  	for (BaseJob job : this.runningJobs){
-  		if (!job.isFulllyAllocated()){
-  			baseJobs.add(job);
-  		}
-  	}
-    return baseJobs;
-  }
+	public void setSpeedFairWeight(double weight) {
+		this.speedFairWeight = weight;
+	}
 
-  public int runningJobsSize() {
-    return this.runningJobs.size();
-  }
+	/*
+	 * public double getSpeedFairWeight() { if
+	 * (this.serviceRate.isBeyondGuaranteedDuration(Simulator.CURRENT_TIME,
+	 * this.startTimeOfNewJob)) //add 1 condition for batch queues return
+	 * this.speedFairWeight; else return 1.0; // make equal share to others. }
+	 */
 
-  public boolean isInStage1(double currTime) {
-    double startTime = session.getStartPeriodTime(currTime);
+	public Resource getGuaranteeRate(double currTime) {
+		Resource zero = new Resource();
+		if (isInStage1(currTime))
+			return session.getAlpha(currTime);
+		else
+			return zero;
+	}
 
-    double virtualCurrTime = currTime - startTime;
-    if (virtualCurrTime < session.getAlphaDuration(currTime))
-      return true;
-    else
-      return false;
+	public Session getSession() {
+		return this.session;
+	}
 
-  }
+	/*
+	 * public Resource getAlpha(double currTime){ for (Session s:
+	 * sessions.toList()){ double period = 0.0; if (s.isPeriodic()){ period =
+	 * s.getPeriod(); }else { period = s.getAlphaDuration(); } double endTime =
+	 * s.getStartTime()+s.getNumOfJobs()*period; //TODO: getGuaranteeRate may NOT
+	 * be correct. if(currTime>=s.getStartTime()&& currTime< endTime) return
+	 * s.getAlpha(); } return new Resource(Resources.ZEROS); }
+	 */
 
-  public Resource getInStage1Alpha(double currTime) {
-    Resource res = new Resource(Resources.ZEROS);
-    if (isInStage1(currTime))
-      return session.getAlpha(currTime);
-    return res;
-  }
+	/*
+	 * public double getStage1Duration(double currTime){ for (Session s:
+	 * sessions.toList()){ double period = 0.0; if (s.isPeriodic()){ period =
+	 * s.getPeriod(); }else { period = s.getAlphaDuration(); } double endTime =
+	 * s.getStartTime()+s.getNumOfJobs()*period;
+	 * 
+	 * if(currTime>=s.getStartTime()&& currTime<=endTime) return
+	 * s.getAlphaDuration(); } return 0.0; }
+	 */
+
+	/*
+	 * public void addRunnableJob(BaseDag newJob) { this.runnableJobs.add(newJob);
+	 * }
+	 */
+
+	public void removeRunningJob(BaseJob newJob) {
+		this.runningJobs.remove(newJob);
+	}
+
+	public void removeRunnableJob(BaseJob newJob) {
+		this.runningJobs.remove(newJob);
+	}
+
+	public void addCompletedJob(BaseJob newJob) {
+		this.completedJobs.add(newJob);
+	}
+
+	public boolean isActive() {
+		if (this.runnableJobs.size() > 0)
+			return true;
+
+		return false;
+	}
+
+	public boolean hasRunningJobs() {
+		return this.runningJobs.size() > 0;
+	}
+
+	public boolean hasRunnableJobs() {
+		return this.runnableJobs.size() > 0;
+	}
+
+	public boolean isActive(double currTime) {
+		if (!isLQ && this.runnableJobs.size() > 0)
+			return true;
+
+		return false;
+	}
+
+	public Queue<BaseJob> getRunningJobs() {
+		return this.runningJobs;
+	}
+
+	public Queue<BaseJob> getQueuedUpJobs() {
+		return this.runnableJobs;
+	}
+
+	public Queue<BaseJob> getQueuedUpProfilingJobs() {
+		Queue<BaseJob> baseJobs = new LinkedList<BaseJob>();
+		for (BaseJob job : this.runnableJobs) {
+			if (job.isProfiling) {
+				baseJobs.add(job);
+			}
+		}
+		return baseJobs;
+	}
+
+	public int runningJobsSize() {
+		return this.runningJobs.size();
+	}
+
+	public boolean isInStage1(double currTime) {
+		double startTime = session.getStartPeriodTime(currTime);
+
+		double virtualCurrTime = currTime - startTime;
+		if (virtualCurrTime < session.getAlphaDuration(currTime))
+			return true;
+		else
+			return false;
+
+	}
+
+	public Resource getInStage1Alpha(double currTime) {
+		Resource res = new Resource(Resources.ZEROS);
+		if (isInStage1(currTime))
+			return session.getAlpha(currTime);
+		return res;
+	}
+
+	public void addRunnableJob(BaseJob newJob) {
+		this.startTimeOfNewJob = Simulator.CURRENT_TIME;
+		Output.debugln(DEBUG, this.queueName + " at " + this.startTimeOfNewJob);
+		this.runnableJobs.add(newJob);
+	}
 
 	public void addRunningJob(BaseJob newJob) {
-    this.startTimeOfNewJob = Simulator.CURRENT_TIME;
-    Output.debugln(DEBUG, this.queueName + " at " + this.startTimeOfNewJob);
-    this.runningJobs.add(newJob);
-  }
+		this.startTimeOfNewJob = Simulator.CURRENT_TIME;
+		Output.debugln(DEBUG, this.queueName + " at " + this.startTimeOfNewJob);
+		this.runningJobs.add(newJob);
+		this.runnableJobs.remove(newJob);
+	}
 
-  /*
-   * public void removeRunnableJob(BaseDag oldJob) {
-   * this.runnableJobs.remove(oldJob); }
-   */
-  public double getStartTimeOfNewJob() {
-    return startTimeOfNewJob;
-  }
+	/*
+	 * public void removeRunnableJob(BaseDag oldJob) {
+	 * this.runnableJobs.remove(oldJob); }
+	 */
+	public double getStartTimeOfNewJob() {
+		return startTimeOfNewJob;
+	}
 
-  public void setStartTimeOfNewJob(double startTimeOfNewJob) {
-    this.startTimeOfNewJob = startTimeOfNewJob;
-  }
+	public void setStartTimeOfNewJob(double startTimeOfNewJob) {
+		this.startTimeOfNewJob = startTimeOfNewJob;
+	}
 
-  public Queue<BaseJob> cloneRunningJobs() {
-    Queue<BaseJob> jobs = new LinkedList<BaseJob>();
-    for (BaseJob job : this.runningJobs)
-      jobs.add(job);
-    return jobs;
-  }
+	public Queue<BaseJob> cloneRunningJobs() {
+		Queue<BaseJob> jobs = new LinkedList<BaseJob>();
+		for (BaseJob job : this.runningJobs)
+			jobs.add(job);
+		return jobs;
+	}
 
-  public Resource nextTaskRes() {
-    Resource res = new Resource();
+	public Resource nextTaskRes() {
+		Resource res = new Resource();
 
-    return res;
-  }
+		return res;
+	}
 
-  public BaseJob getUnallocRunningJob() {
-    for (BaseJob job : this.runningJobs)
-      if (!job.isFulllyAllocated()) {
-        return job;
-      }
-    return null;
-  }
+	public BaseJob getUnallocRunnableJob() {
+		// for (BaseJob job : this.runningJobs)
+		// if (!job.isFulllyAllocated()) {
+		// return job;
+		// }
+		return this.runnableJobs.peek();
+	}
 
-  public Resource assign(Resource assignedRes) {
-    Resource remain = Resources.clone(assignedRes);
-    while (true) {
-      BaseJob unallocJob = this.getUnallocRunningJob();
-      if (unallocJob == null) {
-        return remain;
-      }
-      int taskId = unallocJob.getCommingTaskId();
-      Resource allocRes = unallocJob.rsrcUsage(taskId);
-      if (remain.greaterOrEqual(allocRes)) {
-        boolean assigned = Simulator.cluster.assignTask(unallocJob.dagId,
-            taskId, unallocJob.duration(taskId), allocRes);
-        if (assigned) {
-          remain = Resources.subtract(remain, allocRes);
+	public Resource assign(Resource assignedRes) {
+		Resource remain = Resources.clone(assignedRes);
+		while (true) {
+			BaseJob unallocJob = this.getUnallocRunnableJob();
+			if (unallocJob == null) {
+				return remain;
+			}
+			int taskId = unallocJob.getCommingTaskId();
+			Resource allocRes = unallocJob.rsrcUsage(taskId);
+			if (remain.greaterOrEqual(allocRes)) {
+				boolean assigned = Simulator.cluster.assignTask(unallocJob.dagId, taskId, unallocJob.duration(taskId),
+						allocRes);
+				if (assigned) {
+					remain = Resources.subtract(remain, allocRes);
+					this.runnableJobs.remove(unallocJob);
+					this.runningJobs.add(unallocJob);
+					if (unallocJob.jobStartRunningTime < 0) {
+						unallocJob.jobStartRunningTime = Simulator.CURRENT_TIME;
+					}
+					// update userDominantShareArr
+				} else {
+					Output.debugln(DEBUG, "[DRFScheduler] Cannot assign resource to the task" + taskId + " of Job "
+							+ unallocJob.dagId + " " + allocRes);
+					break;
+				}
+			} else {
+				// do not allocate to this queue any more
+				break;
+			}
+		}
+		return remain;
+	}
 
-          if (unallocJob.jobStartRunningTime < 0) {
-            unallocJob.jobStartRunningTime = Simulator.CURRENT_TIME;
-          }
-          // update userDominantShareArr
-        } else {
-          Output.debugln(DEBUG,
-              "[DRFScheduler] Cannot assign resource to the task" + taskId
-                  + " of Job " + unallocJob.dagId + " " + allocRes);
-          break;
-        }
-      } else {
-        // do not allocate to this queue any more
-        break;
-      }
-    }
-    return remain;
-  }
+	public double getStartTime() {
+		if (session != null)
+			return session.getStartTime();
+		return 0.0;
+	}
 
-  public double getStartTime() {
-    if (session != null)
-      return session.getStartTime();
-    return 0.0;
-  }
-  
-  public double computeBetaOnRunningJobs(){
-  	double beta = 1.0;
-  	int count = 0;
-  	int N = 150;
-  	for (BaseJob job : this.runningJobs) {
-  		MLJob mJob = (MLJob) job;
-  		beta += mJob.beta; 
-  		count ++;
-  		if (count>=N)
-  			break;
-  	}
-  	beta = beta/N;
-  	return beta;
-  }
-
+	public double computeBetaOnRunningJobs() {
+		double beta = 1.0;
+		int count = 0;
+		int N = 150;
+		for (BaseJob job : this.runningJobs) {
+			MLJob mJob = (MLJob) job;
+			beta += mJob.beta;
+			count++;
+			if (count >= N)
+				break;
+		}
+		beta = beta / N;
+		return beta;
+	}
 
 }

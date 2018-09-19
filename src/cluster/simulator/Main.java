@@ -29,6 +29,11 @@ public class Main {
 	public static class Globals {
 		
 		public final static boolean EnableMatlab = false;
+		public final static boolean EnableProfiling = false;
+		public static int CPU_PROFILING_JOB1 = -100000; //-10000 -> 0
+		public static int CPU_PROFILING_JOB2 = CPU_PROFILING_JOB1*2;
+		public static int GPU_PROFILING_JOB1 = CPU_PROFILING_JOB1*3;
+		public static int GPU_PROFILING_JOB2 = CPU_PROFILING_JOB1*4;
 		
 		public static JobScheduling JOB_SCHEDULER = JobScheduling.SRPT; 
 		
@@ -153,8 +158,11 @@ public class Main {
 		public final static int NUM_DIMENSIONS = 3; // CPU, GPU ,MEM
 
 		public static double MACHINE_MAX_CPU;
+		public static double CPU_PER_NODE=32;
 		public static double MACHINE_MAX_GPU;
+		public static double GPU_PER_NODE=1;
 		public static double MACHINE_MAX_MEM;
+		public static double MEM_PER_NODE=64;
 		// public static int DagIdStart, DagIdEnd;
 
 		public static Method METHOD = Method.ES;
@@ -202,7 +210,7 @@ public class Main {
 		public static String User1Input = DataFolder + "/" + FileInput;
 		public static String User2Input = DataFolder + "/" + FileInput;
 
-		public static int numBatchJobs = 200;
+		public static int numJobs = 200;
 		public static int numQueues = 1;
 		public static int numbatchTask = 10000;
 
@@ -234,12 +242,13 @@ public class Main {
 		public static String EXTRA = "";
 
 		public static void setupParameters() {
+			if (Globals.runmode.equals(Runmode.SmallScale)) {
+				CPU_PER_NODE = 24;
+				Globals.MACHINE_MAX_CPU = Globals.MACHINE_MAX_GPU*24;
+			}
+			Globals.MACHINE_MAX_CPU = Globals.MACHINE_MAX_GPU*CPU_PER_NODE;
 			
-			Globals.MACHINE_MAX_CPU = Globals.MACHINE_MAX_GPU*32;			
-			if (Globals.runmode.equals(Runmode.SmallScale))
-				Globals.MACHINE_MAX_CPU = Globals.MACHINE_MAX_GPU*16;
-			
-			Globals.MACHINE_MAX_MEM = Globals.MACHINE_MAX_CPU*2;
+			Globals.MACHINE_MAX_MEM = Globals.MACHINE_MAX_GPU*2*MEM_PER_NODE;
 			
 			COMPUTE_STATISTICS = false;
 
@@ -288,7 +297,7 @@ public class Main {
 				Globals.jobData.reportBETAs = badBetas;
 				break;
 			default:
-				Globals.numBatchJobs = 30;
+				Globals.numJobs = 30;
 			}
 
 			Globals.CAPACITY_CPU = Globals.MACHINE_MAX_CPU * Globals.NUM_MACHINES;
@@ -300,7 +309,6 @@ public class Main {
 
 			// Globals.SCALE_UP_BATCH_JOB = Math.floor((double) 1 * scaleUp);
 		}
-
 	}
 
 	public static void runSimulationScenario(boolean genInputOnly) {
@@ -363,9 +371,9 @@ public class Main {
 		if (Globals.IS_GEN) {
 			if (Globals.USE_TRACE) {
 				Queue<BaseJob> tracedJobs = GenInput.readWorkloadTrace(Globals.TRACE_FILE);
-				GenInput.genInputFromWorkload(Globals.numQueues, Globals.numBatchJobs, tracedJobs);
+				GenInput.genInputFromWorkload(Globals.numQueues, Globals.numJobs, tracedJobs);
 			} else
-				GenInput.genInput(Globals.numQueues, Globals.numBatchJobs);
+				GenInput.genInput(Globals.numQueues, Globals.numJobs);
 		}
 
 		// print ALL parameters for the record
@@ -377,7 +385,7 @@ public class Main {
 		System.out.println("Cluster Size        = " + Globals.NUM_MACHINES);
 		System.out.println("Server Capacity     = (" + Globals.MACHINE_MAX_CPU +" cpus,"+ Globals.MACHINE_MAX_GPU+" gpus,"+ Globals.MACHINE_MAX_MEM +" Gi)");
 		System.out.println("Workload            = " + Globals.TRACE_FILE);
-		System.out.println("numBatchJobs        = " + Globals.numBatchJobs);
+		System.out.println("numJobs        = " + Globals.numJobs);
 		System.out.println("PathToInputFile     = " + Globals.PathToInputFile);
 		System.out.println("PathToQueueInputFile= " + Globals.PathToQueueInputFile);
 		System.out.println("PathToResourceLog   = " + Globals.PathToResourceLog);
@@ -476,7 +484,7 @@ public class Main {
 				System.out.println("[Error] Matlab is not supported.");
 			}
 		
-		Globals.runmode = Runmode.SmallScale;
+		Globals.runmode = Runmode.MultipleRuns;
 
 		Utils.createUserDir("log");
 		Utils.createUserDir("output");
@@ -495,17 +503,17 @@ public class Main {
 			Globals.jobData = new JobData();
 			Globals.MEMORY_SCALE_DOWN = 1;
 			Globals.NUM_MACHINES = 1;
-			Globals.SIM_END_TIME = 2000.0;
+			Globals.SIM_END_TIME = 100000.0;
 			Globals.Method[] methods = { Method.DRF, Method.DRFExt, Method.ES, Method.AlloX, Method.SJF};
 //			Globals.Method[] methods = {Method.SJF };
 //			Globals.Method[] methods = {Method.DRF };
-//			Globals.Method[] methods = {Method.ES };
+//			Globals.Method[] methods = {Method.DRF, Method.ES };
 //			Globals.Method[] methods = {Method.DRFExt};
 //			Globals.Method[] methods = {Method.ES, Method.AlloX};
 			Globals.MACHINE_MAX_GPU = 100;
 			Globals.workload = Globals.WorkLoadType.Google;
 			Globals.numQueues = 25;
-			Globals.numBatchJobs = Globals.numQueues*1000;
+			Globals.numJobs = Globals.numQueues*1000;
 
 			for (Globals.Method method : methods) {
 				Globals.METHOD = method;
@@ -513,6 +521,7 @@ public class Main {
 				runSimulationScenario(false);
 				Globals.IS_GEN = false;
 				System.out.println();
+				
 			}
 		} else if (Globals.runmode.equals(Runmode.SmallScale)) {
 			Globals.JOB_SCHEDULER = JobScheduling.SRPT; 
@@ -525,11 +534,11 @@ public class Main {
 			Globals.MEMORY_SCALE_DOWN = 1;
 			Globals.NUM_MACHINES = 1;
 			Globals.SIM_END_TIME = 4000.0;
-			Globals.Method[] methods = { Method.DRF, Method.DRFExt, Method.ES, Method.AlloX, Method.SJF};
-//			Globals.Method[] methods = {Method.SJF};
+			Globals.Method[] methods = { Method.DRF, Method.ES, Method.DRFExt,  Method.AlloX, Method.SJF};
+//			Globals.Method[] methods = {Method.ES, Method.DRFExt};
 			Globals.MACHINE_MAX_GPU = 2;
 			Globals.numQueues = 2;
-			Globals.numBatchJobs = Globals.numQueues*10;
+			Globals.numJobs = Globals.numQueues*10;
 
 			for (Globals.Method method : methods) {
 				Globals.METHOD = method;
@@ -548,7 +557,7 @@ public class Main {
 			Globals.Method[] methods = { Method.DRF, Method.DRFExt, Method.ES, Method.AlloX, Method.SJF};
 			Globals.workload = Globals.WorkLoadType.Google;
 			Globals.numQueues = 25;
-			Globals.numBatchJobs = Globals.numQueues*1000;
+			Globals.numJobs = Globals.numQueues*1000;
 			Globals.USE_TRACE=true;
 			for (double cap : caps){
 				Globals.MACHINE_MAX_GPU = cap;
@@ -572,7 +581,7 @@ public class Main {
 			
 			Globals.workload = Globals.WorkLoadType.Google;
 			Globals.numQueues = 25;
-			Globals.numBatchJobs = Globals.numQueues*1000;
+			Globals.numJobs = Globals.numQueues*1000;
 			Globals.USE_TRACE=true;
 			for (double errStd : misEst){
 				// generate beta errors:
@@ -601,7 +610,7 @@ public class Main {
 			Globals.MACHINE_MAX_GPU = 100;
 			Globals.workload = Globals.WorkLoadType.Google;
 			Globals.numQueues = 25;
-			Globals.numBatchJobs = Globals.numQueues*1000;
+			Globals.numJobs = Globals.numQueues*300;
 			
 			for (double speedUp : scales){
 				Globals.transferRateScale =  speedUp;
@@ -632,7 +641,7 @@ public class Main {
 			Globals.MACHINE_MAX_GPU = 100;
 			Globals.workload = Globals.WorkLoadType.Google;
 			Globals.numQueues = 25;
-			Globals.numBatchJobs = Globals.numQueues*1000;
+			Globals.numJobs = Globals.numQueues*100;
 			
 			for (double alpha : alphas){
 //				Globals.speedUpScale =  speedUp;
@@ -665,7 +674,7 @@ public class Main {
 			Globals.SCALE_UP_FACTOR = 1;
 			Globals.setupParameters();
 			Globals.numQueues = 3;
-			Globals.numBatchJobs = 9000;
+			Globals.numJobs = 9000;
 			runSimulationScenario(false);
 			System.out.println();
 		}

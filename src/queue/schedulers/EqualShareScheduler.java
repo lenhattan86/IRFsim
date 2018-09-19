@@ -46,7 +46,7 @@ public class EqualShareScheduler implements Scheduler {
 
 		if (Globals.JOB_SCHEDULER.equals(JobScheduling.FIFO))
 			for (JobQueue q : runningQueues) {
-				Collections.sort((List<BaseJob>) q.getRunningJobs(), new JobArrivalComparator());
+				Collections.sort((List<BaseJob>) q.getQueuedUpJobs(), new JobArrivalComparator());
 			}
 		// equal share all resources
 		// equallyAllocate(clusterTotCapacity, // Simulator.QUEUE_LIST.getRunningQueues());
@@ -78,11 +78,11 @@ public class EqualShareScheduler implements Scheduler {
 			else if (Globals.JOB_SCHEDULER.equals(JobScheduling.SRPT)) {
 				double cpuShare = shares[0];
 				shares[0] = 0;
-				Collections.sort((List<BaseJob>) q.getRunningJobs(), new JobLengthComparator(2));
+				Collections.sort((List<BaseJob>) q.getQueuedUpJobs(), new JobLengthComparator(2));
 				Resource remain = QueueScheduler.allocateResToQueue(q, shares, false);
 				shares[0] = cpuShare;
 				shares[2] = remain.resource(2);
-				Collections.sort((List<BaseJob>) q.getRunningJobs(), new JobLengthComparator(1));
+				Collections.sort((List<BaseJob>) q.getQueuedUpJobs(), new JobLengthComparator(1));
 				remain = QueueScheduler.allocateResToQueue(q, shares, false);
 				shares[0] = 0;
 			}
@@ -94,7 +94,7 @@ public class EqualShareScheduler implements Scheduler {
 		List<JobQueue> runningQueues = new ArrayList<JobQueue>();
 
 		for (JobQueue queue : runningQueues2) {
-			if (queue.hasRunningJobs())
+			if (queue.hasRunnableJobs())
 				runningQueues.add(queue);
 		}
 
@@ -111,7 +111,7 @@ public class EqualShareScheduler implements Scheduler {
 			for (int i = 0; i < numOfQueues; i++) {
 				JobQueue q = runningQueues.get(i);
 				Resource usage = q.getResourceUsage();
-				BaseJob unallocJob = q.getUnallocRunningJob();
+				BaseJob unallocJob = q.getUnallocRunnableJob();
 				if (unallocJob == null)
 					continue;
 				if (minGPU > usage.resource(1)) {
@@ -122,8 +122,8 @@ public class EqualShareScheduler implements Scheduler {
 			if (qMin==null)
 				break;
 		// allocate the job for minIdx
-			Collections.sort((List<BaseJob>) qMin.getRunningJobs(), new JobLengthComparator(2));
-			BaseJob unallocJob = qMin.getUnallocRunningJob();
+			Collections.sort((List<BaseJob>) qMin.getQueuedUpJobs(), new JobLengthComparator(2));
+			BaseJob unallocJob = qMin.getUnallocRunnableJob();
 			Resource demand = unallocJob.getDemand().getGpuDemand();
 			Resource remain = QueueScheduler.allocateResToQueue(qMin, Resources.sum(demand, qMin.getResourceUsage()).resources, false);
 			Resource resAvail = Simulator.cluster.getClusterResAvail();
@@ -142,7 +142,7 @@ public class EqualShareScheduler implements Scheduler {
 			for (int i = 0; i < numOfQueues; i++) {
 				JobQueue q = runningQueues.get(i);
 				Resource usage = q.getResourceUsage();
-				BaseJob unallocJob = q.getUnallocRunningJob();
+				BaseJob unallocJob = q.getUnallocRunnableJob();
 				if (unallocJob == null)
 					continue;
 				if (minCPU > usage.resource(0)) {
@@ -153,8 +153,8 @@ public class EqualShareScheduler implements Scheduler {
 			if (qMin==null)
 				break;
 		// allocate the job for minIdx
-			Collections.sort((List<BaseJob>) qMin.getRunningJobs(), new JobLengthComparator(1));
-			BaseJob unallocJob = qMin.getUnallocRunningJob();
+			Collections.sort((List<BaseJob>) qMin.getQueuedUpJobs(), new JobLengthComparator(1));
+			BaseJob unallocJob = qMin.getUnallocRunnableJob();
 			Resource demand = unallocJob.getDemand().getCpuDemand();
 			Resource remain = QueueScheduler.allocateResToQueue(qMin, Resources.sum(demand, qMin.getResourceUsage()).resources, false);
 			Resource resAvail = Simulator.cluster.getClusterResAvail();
@@ -194,7 +194,7 @@ public class EqualShareScheduler implements Scheduler {
 			Resource allocRes = q.getResourceUsage();
 			boolean jobAvail = true;
 			while (jobAvail) {
-				BaseJob unallocJob = q.getUnallocRunningJob();
+				BaseJob unallocJob = q.getUnallocRunnableJob();
 				if (unallocJob == null) {
 					jobAvail = false;
 					break;

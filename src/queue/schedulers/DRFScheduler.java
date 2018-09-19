@@ -9,6 +9,7 @@ import cluster.datastructures.BaseJob;
 import cluster.datastructures.InterchangableResourceDemand;
 import cluster.datastructures.JobArrivalComparator;
 import cluster.datastructures.JobLengthComparator;
+import cluster.datastructures.JobProcessingTimeComparator;
 import cluster.datastructures.JobQueue;
 import cluster.datastructures.Resource;
 import cluster.datastructures.Resources;
@@ -37,7 +38,7 @@ public class DRFScheduler implements Scheduler {
 	@Override
 	public void computeResShare() {
 		
-		List<JobQueue> runningQueues = Simulator.QUEUE_LIST.getRunningQueues();
+		List<JobQueue> runningQueues = Simulator.QUEUE_LIST.getRunningQueues(); // time comsuming
 
 		int numQueuesRuning = runningQueues.size();
 		if (numQueuesRuning == 0) {
@@ -46,12 +47,13 @@ public class DRFScheduler implements Scheduler {
 		
 		if (Globals.JOB_SCHEDULER.equals(JobScheduling.FIFO))
 			for (JobQueue q : runningQueues) {
-				Collections.sort((List<BaseJob>) q.getRunningJobs(), new JobArrivalComparator());
+				Collections.sort((List<BaseJob>) q.getQueuedUpJobs(), new JobArrivalComparator());
 			}
-		else if (Globals.JOB_SCHEDULER.equals(JobScheduling.SRPT))
-			for (JobQueue q : Simulator.QUEUE_LIST.getRunningQueues()) {
-				Collections.sort((List<BaseJob>) q.getRunningJobs(), new JobLengthComparator(0));
+		else if (Globals.JOB_SCHEDULER.equals(JobScheduling.SRPT)){
+			for (JobQueue q : runningQueues) {
+				Collections.sort((List<BaseJob>) q.getQueuedUpJobs(), new JobLengthComparator(2));
 			}
+		}
 		
 //		drf(clusterTotCapacity, Simulator.QUEUE_LIST.getRunningQueues());
 		onlineDRFShare(clusterTotCapacity, Simulator.QUEUE_LIST.getRunningQueues()); 
@@ -104,6 +106,7 @@ public class DRFScheduler implements Scheduler {
 	public static void onlineDRFShare(Resource resCapacity, List<JobQueue> runningQueues) {
 		// init
 		Resource consumedRes = new Resource();
+		
 		double[] userDominantShareArr = new double[runningQueues.size()];
 		// TODO: consider the allocated share (because of no preemption).
 		int i = 0;
@@ -116,6 +119,7 @@ public class DRFScheduler implements Scheduler {
 			i++;
 		}
 		while (true) {
+			Resource availRes = Simulator.cluster.getClusterResAvail();
 			// step 1: pick user i with lowest s_i
 			int sMinIdx = Utils.getMinValIdx(userDominantShareArr);
 			if (sMinIdx < 0) {
@@ -124,7 +128,7 @@ public class DRFScheduler implements Scheduler {
 			}
 			// D_i demand for the next task
 			JobQueue q = runningQueues.get(sMinIdx);
-			BaseJob unallocJob = q.getUnallocRunningJob();
+			BaseJob unallocJob = q.getUnallocRunnableJob(); // time consuming
 			if (unallocJob == null) {
 				userDominantShareArr[sMinIdx] = Double.MAX_VALUE;
 				// do not allocate to this queue any more
@@ -132,12 +136,13 @@ public class DRFScheduler implements Scheduler {
 			}
 
 			int taskId = unallocJob.getCommingTaskId();
-		  InterchangableResourceDemand demand = unallocJob.rsrcDemands(taskId);
+		  InterchangableResourceDemand demand = unallocJob.rsrcDemands(taskId); // time consuming?
 		  Resource allocRes = demand.isCpuJob()?demand.getCpuDemand():demand.getGpuDemand();
 			// Like Yarn, assign one single container for the task
 			// step 3: if fit, C+D_i <= R, allocate
 			Resource temp = Resources.sumRound(consumedRes, allocRes);
-			if (resCapacity.greaterOrEqual(temp)) {
+//			if (resCapacity.greaterOrEqual(temp)) {
+			if (availRes.greaterOrEqual(allocRes)) {
 				consumedRes = temp;
 				q.setRsrcQuota(Resources.sum(q.getRsrcQuota(), q.nextTaskRes()));
 				
@@ -147,6 +152,7 @@ public class DRFScheduler implements Scheduler {
 						duration, allocRes);
 				if (assigned) {
 					// update userDominantShareArr
+					unallocJob.getQueue().addRunningJob(unallocJob);
 					double maxRes = q.getNormalizedDorminantResUsage();
 					userDominantShareArr[sMinIdx] = maxRes / q.getWeight();
 					
@@ -179,7 +185,7 @@ public class DRFScheduler implements Scheduler {
 		q.receivedResourcesList.add(q.getRsrcQuota());
 
 		Resource remain = q.getRsrcQuota();
-		List<BaseJob> runningJobs = new LinkedList<BaseJob>(q.getRunningJobs());
+		List<BaseJob> runningJobs = new LinkedList<BaseJob>(q.getQueuedUpJobs());
 		Collections.sort(runningJobs, new JobArrivalComparator());
 
 		for (BaseJob job : runningJobs) {

@@ -6,6 +6,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 
 import cluster.datastructures.BaseJob;
 import cluster.datastructures.InterchangableResourceDemand;
@@ -24,242 +25,278 @@ import queue.schedulers.SJFScheduler;
 import queue.schedulers.Scheduler;
 
 public class QueueScheduler {
-  private final static boolean DEBUG = true;
+	private final static boolean DEBUG = true;
 
-  public Scheduler scheduler;
+	public Scheduler scheduler;
+	public long profilingTime = 0;
+	public long schedulingTime = 0;
 
-  public QueueScheduler() {
-    switch (Globals.QUEUE_SCHEDULER) {
-    case ES:
-      scheduler = new EqualShareScheduler();
-      break;
-    case DRF:
-        scheduler = new DRFScheduler();
-        break;
-    case DRFExt:
-    		scheduler = new DRFExtScheduler();
-    		break;
-    case Pricing:
-        scheduler = new PricingScheduler();
-        break;
-    case AlloX:
-      scheduler = new AlloXScheduler(Globals.alpha);
-      break;    
-    case SJF:
-      scheduler = new AlloXScheduler();
-      break;  
-    default:
-      System.err.println("Unknown sharing policy");
-    }
-  }
+	public QueueScheduler() {
+		profilingTime = 0;
+		schedulingTime = 0;
+		switch (Globals.QUEUE_SCHEDULER) {
+		case ES:
+			scheduler = new EqualShareScheduler();
+			break;
+		case DRF:
+			scheduler = new DRFScheduler();
+			break;
+		case DRFExt:
+			scheduler = new DRFExtScheduler();
+			break;
+		case Pricing:
+			scheduler = new PricingScheduler();
+			break;
+		case AlloX:
+			scheduler = new AlloXScheduler(Globals.alpha);
+			break;
+		case SJF:
+			scheduler = new AlloXScheduler();
+			break;
+		default:
+			System.err.println("Unknown sharing policy");
+		}
+	}
 
-  public void schedule() {
-    // compute how much share each queue should get
-    scheduler.computeResShare();
-  }
+	public void schedule() {
+		// compute how much share each queue should get
+		long startTime = System.nanoTime();
+		if (Globals.EnableProfiling) {
+			scheduleProfilingJobs();
+		}
+		profilingTime = profilingTime + System.nanoTime() - startTime;
 
-  public void adjustShares() {
-    List<Integer> unhappyDagsIds = new ArrayList<Integer>();
+		startTime = System.nanoTime();
+		scheduler.computeResShare();
+		schedulingTime = schedulingTime + System.nanoTime() - startTime;
+	}
 
-    final Map<Integer, Resource> unhappyDagsDistFromResShare = new HashMap<Integer, Resource>();
-    for (BaseJob dag : Simulator.runningJobs) {
-      if (!dag.rsrcQuota.distinct(dag.getRsrcInUse())) {
-        continue;
-      }
+	public void scheduleProfilingJobs() {
 
-      if (dag.getRsrcInUse().greaterOrEqual(dag.rsrcQuota)) {
-        // TODO: do we need to deal with this case: this dag has more resources than fairshare.
-      } else {
-        Resource farthestFromShare = Resources.subtract(dag.rsrcQuota, dag.getRsrcInUse());
-        unhappyDagsIds.add(dag.dagId);
-        unhappyDagsDistFromResShare.put(dag.dagId, farthestFromShare);
-      }
-    }
-    Collections.sort(unhappyDagsIds, new Comparator<Integer>() {
-      public int compare(Integer arg0, Integer arg1) {
-        Resource val0 = unhappyDagsDistFromResShare.get(arg0);
-        Resource val1 = unhappyDagsDistFromResShare.get(arg1);
-        return val0.compareTo(val1);
-      }
-    });
+		boolean isCpuAvailable = true;
+		boolean isGpuAvailable = true;
+		int queueId = 0;
+		while (isGpuAvailable && isCpuAvailable) {
+			List<JobQueue> activeQueues = Simulator.QUEUE_LIST.getQueuesWithQueuedProfilingJobs();
+			if (activeQueues.isEmpty())
+				break;
 
-    // now try to allocate the available resources to dags in this order
-    Resource availRes = Resources.clone(Simulator.cluster.getClusterResAvail());
+			JobQueue q = activeQueues.get(queueId % activeQueues.size());
+			Queue<BaseJob> jobs = q.getQueuedUpProfilingJobs();
+			for (BaseJob job : jobs)
+				if (!job.isCpu && isGpuAvailable) {
+					isGpuAvailable = QueueScheduler.allocateResToJob(job, false);
+					break;
+				} else if (job.isCpu && isCpuAvailable) {
+					isCpuAvailable = QueueScheduler.allocateResToJob(job, true);
+					break;
+				}
+		}
+	}
 
-    for (int dagId : unhappyDagsIds) {
-      if (!availRes.greater(new Resource(0.0))) break;
+	public void adjustShares() {
+		List<Integer> unhappyDagsIds = new ArrayList<Integer>();
 
-      MLJob dag = Simulator.getDag(dagId);
+		final Map<Integer, Resource> unhappyDagsDistFromResShare = new HashMap<Integer, Resource>();
+		for (BaseJob dag : Simulator.runningJobs) {
+			if (!dag.rsrcQuota.distinct(dag.getRsrcInUse())) {
+				continue;
+			}
 
-      Resource rsrcReqTillShare = unhappyDagsDistFromResShare.get(dagId);
+			if (dag.getRsrcInUse().greaterOrEqual(dag.rsrcQuota)) {
+				// TODO: do we need to deal with this case: this dag has more resources
+				// than fairshare.
+			} else {
+				Resource farthestFromShare = Resources.subtract(dag.rsrcQuota, dag.getRsrcInUse());
+				unhappyDagsIds.add(dag.dagId);
+				unhappyDagsDistFromResShare.put(dag.dagId, farthestFromShare);
+			}
+		}
+		Collections.sort(unhappyDagsIds, new Comparator<Integer>() {
+			public int compare(Integer arg0, Integer arg1) {
+				Resource val0 = unhappyDagsDistFromResShare.get(arg0);
+				Resource val1 = unhappyDagsDistFromResShare.get(arg1);
+				return val0.compareTo(val1);
+			}
+		});
 
-      if (availRes.greaterOrEqual(rsrcReqTillShare)) {
-        availRes.subtract(rsrcReqTillShare);
-      } else {
-        Resource toGive = Resources.piecewiseMin(availRes, rsrcReqTillShare);
-        dag.rsrcQuota.copy(toGive);
-        availRes.subtract(toGive);
-      }
-    }
-  }
-  
-  public static boolean allocateResToJob(BaseJob job, boolean isCpu){
-    int taskId = job.getCommingTaskId();
-    if (taskId < 0) return true;
-    InterchangableResourceDemand demand = job.rsrcDemands(taskId);
-    
-    double duration = isCpu?demand.cpuCompl:demand.gpuCompl;
-    Resource taskDemand = isCpu?demand.getCpuDemand():demand.getGpuDemand();
-    boolean assigned = Simulator.cluster.assignTask(job.dagId, taskId,
-    		duration, taskDemand);
-    if (assigned) {
-    	if (job.jobStartRunningTime < 0) {
-    		job.jobStartRunningTime = Simulator.CURRENT_TIME;
-      }
-    	job.isCpu = isCpu;
-    	return true;
-    }
-    else
-    	return false;
-  }
+		// now try to allocate the available resources to dags in this order
+		Resource availRes = Resources.clone(Simulator.cluster.getClusterResAvail());
 
-  public static Resource allocateResToQueue(JobQueue q, double[] shares, boolean isEstimated) {
-    Resource computedShares = new Resource(shares);
-    Resource allocRes = q.getResourceUsage();
-    boolean jobAvail = true;
-    Resource remainingRes = new Resource(shares);
-    while (jobAvail) {
-      BaseJob unallocJob = q.getUnallocRunningJob();
-      if (unallocJob == null) {
-        jobAvail = false;
-        break;
-      }
+		for (int dagId : unhappyDagsIds) {
+			if (!availRes.greater(new Resource(0.0)))
+				break;
 
-      boolean isResAvail = true;
-      while (isResAvail) {
-        // allocate resource to each task.
-        int taskId = unallocJob.getCommingTaskId();
-        if (taskId < 0) break;
+			MLJob dag = Simulator.getDag(dagId);
 
-        remainingRes = Resources.subtract(computedShares, allocRes);
+			Resource rsrcReqTillShare = unhappyDagsDistFromResShare.get(dagId);
 
-        InterchangableResourceDemand demand = unallocJob.rsrcDemands(taskId);
-        Resource gDemand = demand.getGpuDemand();
-        Resource cDemand = demand.getCpuDemand();
-        Resource taskDemand = null;
-        
-        boolean isCPU = false;
-        if (isEstimated && demand.isCpuJob())
-        	if (!cDemand.fitsIn(remainingRes)) {
-            isResAvail = false;
-            jobAvail = false;
-            break;
-          } else {
-            taskDemand = cDemand;
-            isCPU = true;
-          }
-        else
-	        if (!gDemand.fitsIn(remainingRes)) {
-	          if (!cDemand.fitsIn(remainingRes)) {
-	            isResAvail = false;
-	            jobAvail = false;
-	            break;
-	          } else {
-	            taskDemand = cDemand;
-	            isCPU = true;
-	          }
-	        } else {
-	          taskDemand = gDemand;
-	        }
-        
-        double duration = isCPU?demand.cpuCompl:demand.gpuCompl;
-        
-        //TODO: change switch the duration of the jobs.
-        boolean assigned = Simulator.cluster.assignTask(unallocJob.dagId, taskId,
-        		duration, taskDemand);
+			if (availRes.greaterOrEqual(rsrcReqTillShare)) {
+				availRes.subtract(rsrcReqTillShare);
+			} else {
+				Resource toGive = Resources.piecewiseMin(availRes, rsrcReqTillShare);
+				dag.rsrcQuota.copy(toGive);
+				availRes.subtract(toGive);
+			}
+		}
+	}
 
-        if (assigned) {
-          allocRes = Resources.sum(allocRes, taskDemand);
+	public static boolean allocateResToJob(BaseJob job, boolean isCpu) {
+		int taskId = job.getCommingTaskId();
+		if (taskId < 0)
+			return true;
+		InterchangableResourceDemand demand = job.rsrcDemands(taskId);
 
-          if (unallocJob.jobStartRunningTime < 0) {
-            unallocJob.jobStartRunningTime = Simulator.CURRENT_TIME;
-          }
-        } else {
-          isResAvail = false;
-          jobAvail = false;
-          break;
-        }
-      }
-    }
-    return remainingRes;
-  }
-  
-  public static void allocateResToSingJob(JobQueue q, double[] shares) {
-    Resource computedShares = new Resource(shares);
-    Resource allocRes = q.getResourceUsage();
-    BaseJob unallocJob = q.getUnallocRunningJob();    
-    
-    if (unallocJob == null) {
-      return;
-    }
+		double duration = isCpu ? demand.cpuCompl : demand.gpuCompl;
+		Resource taskDemand = isCpu ? demand.getCpuDemand() : demand.getGpuDemand();
+		boolean assigned = Simulator.cluster.assignTask(job.dagId, taskId, duration, taskDemand);
+		if (assigned) {
+			if (job.jobStartRunningTime < 0) {
+				job.jobStartRunningTime = Simulator.CURRENT_TIME;
+			}
+			job.isCpu = isCpu;
+			job.getQueue().addRunningJob(job);
+			return true;
+		} else
+			return false;
+	}
 
-    boolean isResAvail = true;
-    while (isResAvail) {
-      // allocate resource to each task.
-      int taskId = unallocJob.getCommingTaskId();
-      if (taskId < 0) break;
+	public static Resource allocateResToQueue(JobQueue q, double[] shares, boolean isEstimated) {
+		Resource computedShares = new Resource(shares);
+		Resource allocRes = q.getResourceUsage();
+		boolean jobAvail = true;
+		Resource remainingRes = new Resource(shares);
+		while (jobAvail) {
+			BaseJob unallocJob = q.getUnallocRunnableJob();
+			if (unallocJob == null) {
+				jobAvail = false;
+				break;
+			}
 
-      Resource remainingRes = Resources.subtract(computedShares, allocRes);
+			boolean isResAvail = true;
+			while (isResAvail) {
+				// allocate resource to each task.
+				int taskId = unallocJob.getCommingTaskId();
+				if (taskId < 0)
+					break;
 
-      InterchangableResourceDemand demand = unallocJob.rsrcDemands(taskId);
-      Resource gDemand = demand.getGpuDemand();
-      Resource cDemand = demand.getCpuDemand();
-      Resource taskDemand = null;
-      
-      boolean isCPU = false;
-      if (demand.isCpuJob())
-      	if (!cDemand.fitsIn(remainingRes)) {
-          isResAvail = false;
-          break;
-        } else {
-          taskDemand = cDemand;
-          isCPU = true;
-        }
-      else
-        if (!gDemand.fitsIn(remainingRes)) {
-          if (!cDemand.fitsIn(remainingRes)) {
-            isResAvail = false;
-            break;
-          } else {
-            taskDemand = cDemand;
-            isCPU = true;
-          }
-        } else {
-          taskDemand = gDemand;
-        }
-      
-      double duration = isCPU?demand.cpuCompl:demand.gpuCompl;
-//        unallocJob.duration(taskId) = duration;
-      
-      //TODO: change switch the duration of the jobs.
-      boolean assigned = Simulator.cluster.assignTask(unallocJob.dagId, taskId,
-      		duration, taskDemand);
+				remainingRes = Resources.subtract(computedShares, allocRes);
 
-      if (assigned) {
-        allocRes = Resources.sum(allocRes, taskDemand);
-        //TODO: add task to resource usage list.
-        /*if (isCPU) {
-          unallocJob.isCPUUsages.put(taskId, true);
-        }*/
+				InterchangableResourceDemand demand = unallocJob.rsrcDemands(taskId);
+				Resource gDemand = demand.getGpuDemand();
+				Resource cDemand = demand.getCpuDemand();
+				Resource taskDemand = null;
 
-        if (unallocJob.jobStartRunningTime < 0) {
-          unallocJob.jobStartRunningTime = Simulator.CURRENT_TIME;
-        }
-      } else {
-        isResAvail = false;
-        break;
-      }
-    }
-  }
+				boolean isCPU = false;
+				if (isEstimated && demand.isCpuJob())
+					if (!cDemand.fitsIn(remainingRes)) {
+						isResAvail = false;
+						jobAvail = false;
+						break;
+					} else {
+						taskDemand = cDemand;
+						isCPU = true;
+					}
+				else if (!gDemand.fitsIn(remainingRes)) {
+					if (!cDemand.fitsIn(remainingRes)) {
+						isResAvail = false;
+						jobAvail = false;
+						break;
+					} else {
+						taskDemand = cDemand;
+						isCPU = true;
+					}
+				} else {
+					taskDemand = gDemand;
+				}
+
+				double duration = isCPU ? demand.cpuCompl : demand.gpuCompl;
+
+				// TODO: change switch the duration of the jobs.
+				boolean assigned = Simulator.cluster.assignTask(unallocJob.dagId, taskId, duration, taskDemand);
+
+				if (assigned) {
+					allocRes = Resources.sum(allocRes, taskDemand);
+
+					if (unallocJob.jobStartRunningTime < 0) {
+						unallocJob.jobStartRunningTime = Simulator.CURRENT_TIME;
+					}
+					q.addRunningJob(unallocJob);
+				} else {
+					isResAvail = false;
+					jobAvail = false;
+					break;
+				}
+			}
+		}
+		return remainingRes;
+	}
+
+	public static void allocateResToSingJob(JobQueue q, double[] shares) {
+		Resource computedShares = new Resource(shares);
+		Resource allocRes = q.getResourceUsage();
+		BaseJob unallocJob = q.getUnallocRunnableJob();
+
+		if (unallocJob == null) {
+			return;
+		}
+
+		boolean isResAvail = true;
+		while (isResAvail) {
+			// allocate resource to each task.
+			int taskId = unallocJob.getCommingTaskId();
+			if (taskId < 0)
+				break;
+
+			Resource remainingRes = Resources.subtract(computedShares, allocRes);
+
+			InterchangableResourceDemand demand = unallocJob.rsrcDemands(taskId);
+			Resource gDemand = demand.getGpuDemand();
+			Resource cDemand = demand.getCpuDemand();
+			Resource taskDemand = null;
+
+			boolean isCPU = false;
+			if (demand.isCpuJob())
+				if (!cDemand.fitsIn(remainingRes)) {
+					isResAvail = false;
+					break;
+				} else {
+					taskDemand = cDemand;
+					isCPU = true;
+				}
+			else if (!gDemand.fitsIn(remainingRes)) {
+				if (!cDemand.fitsIn(remainingRes)) {
+					isResAvail = false;
+					break;
+				} else {
+					taskDemand = cDemand;
+					isCPU = true;
+				}
+			} else {
+				taskDemand = gDemand;
+			}
+
+			double duration = isCPU ? demand.cpuCompl : demand.gpuCompl;
+			// unallocJob.duration(taskId) = duration;
+
+			// TODO: change switch the duration of the jobs.
+			boolean assigned = Simulator.cluster.assignTask(unallocJob.dagId, taskId, duration, taskDemand);
+
+			if (assigned) {
+				allocRes = Resources.sum(allocRes, taskDemand);
+				// TODO: add task to resource usage list.
+				/*
+				 * if (isCPU) { unallocJob.isCPUUsages.put(taskId, true); }
+				 */
+
+				if (unallocJob.jobStartRunningTime < 0) {
+					unallocJob.jobStartRunningTime = Simulator.CURRENT_TIME;
+				}
+			} else {
+				isResAvail = false;
+				break;
+			}
+		}
+	}
 
 }

@@ -36,8 +36,10 @@ public class DRFExtScheduler implements Scheduler {
 			InterchangableResourceDemand demand = b.getDemand();
 			cpuSize = demand.cpu * demand.cpuCompl;
 			gpuSize = demand.gpu * demand.gpuCompl;
+			this.beta += cpuSize/gpuSize;
 		}
-		this.beta = cpuSize/gpuSize;
+		this.beta = this.beta/Simulator.runnableJobs.size();
+		
 		System.out.println("avg. beta             = " + this.beta);
 	}
 
@@ -53,7 +55,7 @@ public class DRFExtScheduler implements Scheduler {
 		
 		if (Globals.JOB_SCHEDULER.equals(JobScheduling.FIFO))
 			for (JobQueue q : runningQueues) {
-				Collections.sort((List<BaseJob>) q.getRunningJobs(), new JobArrivalComparator());
+				Collections.sort((List<BaseJob>) q.getQueuedUpJobs(), new JobArrivalComparator());
 			}
 		
 		onlineDRFShare(clusterTotCapacity, Simulator.QUEUE_LIST.getRunningQueues()); 
@@ -87,9 +89,10 @@ public class DRFExtScheduler implements Scheduler {
 			// D_i demand for the next task
 			JobQueue q = runningQueues.get(sMinIdx);			
 			if (Globals.JOB_SCHEDULER.equals(JobScheduling.SRPT))
-					Collections.sort((List<BaseJob>) q.getRunningJobs(), new JobLengthComparator(2));
+					Collections.sort((List<BaseJob>) q.getQueuedUpJobs(), new JobLengthComparator(2));
 			
-			BaseJob unallocJob = q.getUnallocRunningJob();
+			BaseJob unallocJob = q.getUnallocRunnableJob();
+
 			if (unallocJob == null) {
 				userDominantShareArr[sMinIdx] = Double.MAX_VALUE;
 				// do not allocate to this queue any more
@@ -109,16 +112,17 @@ public class DRFExtScheduler implements Scheduler {
 			// try CPU
 			if (!assigned) {
 				if (Globals.JOB_SCHEDULER.equals(JobScheduling.SRPT))
-					Collections.sort((List<BaseJob>) q.getRunningJobs(), new JobLengthComparator(1));			
-				unallocJob = q.getUnallocRunningJob();
+					Collections.sort((List<BaseJob>) q.getQueuedUpJobs(), new JobLengthComparator(1));			
+				unallocJob = q.getUnallocRunnableJob();
 				allocRes = demand.getCpuDemand();
 				duration = demand.cpuCompl;
 				assigned = Simulator.cluster.assignTask(unallocJob.dagId, taskId,
 						duration, allocRes);
-			}
+			}  
 			
 			if (assigned) {
 				// update userDominantShareArr
+				unallocJob.getQueue().addRunningJob(unallocJob);
 				double maxRes = normVirResource(q.getResourceUsage(), resCapacity);
 				userDominantShareArr[sMinIdx] = maxRes / q.getWeight();
 				if (unallocJob.jobStartRunningTime<0){
@@ -156,9 +160,9 @@ public class DRFExtScheduler implements Scheduler {
 			// D_i demand for the next task
 			JobQueue q = runningQueues.get(sMinIdx);
 			if (Globals.JOB_SCHEDULER.equals(JobScheduling.SRPT))
-				Collections.sort((List<BaseJob>) q.getRunningJobs(), new JobLengthComparator(2));
+				Collections.sort((List<BaseJob>) q.getQueuedUpJobs(), new JobLengthComparator(2));
 			
-			BaseJob unallocJob = q.getUnallocRunningJob();
+			BaseJob unallocJob = q.getUnallocRunnableJob();
 			if (unallocJob == null) {
 				userDominantShareArr[sMinIdx] = Double.MAX_VALUE;
 				// do not allocate to this queue any more

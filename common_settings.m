@@ -62,7 +62,7 @@ strCPU = 'CPU';
 strMemory= 'mem.';
 
 strJobCompleted = 'completed jobs';
-strAvgCmplt = 'avg. compl. time (mins)';
+strAvgCmplt = 'avg. compl. time';
 strMakeSpan = 'makespan';
 strImprovement = 'improvement (%)';
 

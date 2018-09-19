@@ -16,10 +16,7 @@ second = 10^6;
 
 timeScale = 60*5;
 %scaleDownArrivalTime = 10;
-scaleDownArrivalTime = 1;
-
-STEP_SECONDS = 10;% 1 time unit -- ? secs
-TIME_SCALE = timeScale/STEP_SECONDS; 
+scaleDownArrivalTime = 10;
 
 load(JOB_FILE);
 jobIds = JobInfos(:,1);
@@ -70,7 +67,7 @@ elseif ~IS_SMALL_SCALE
     reportBetas = betas;    
     betas = betas / mean(betas) * MeanBeta;    
     
-    NJobs = 100;
+    NJobs = 1000;
     numOfJobs=nUsers*NJobs;
     BETAS = zeros(nUsers, NJobs);
     for iUser = 1:nUsers
@@ -140,7 +137,7 @@ for iC = 1:length(reportBetas)
     queueID = queueID+1;
 end
 fclose(fileID);
-
+scale = 1;
 %% Job input
 fileID = fopen(outputFile,'w');
 jobIdx= 0;
@@ -162,7 +159,7 @@ for iJob=1:length(jobSet(:,1))
     arrivalTime = arrivalTime - ARRIVAL_TIME_IGNORE;
     arrivalTime = arrivalTime/timeScale;
 
-    arrivalTime = arrivalTime*TIME_SCALE/scaleDownArrivalTime;
+    arrivalTime = arrivalTime/scaleDownArrivalTime*scale;
 
     % # 2
     % 1 2 1 7 queue2
@@ -203,17 +200,13 @@ for iJob=1:length(jobSet(:,1))
             memReq = 15/cpuReq*memReq;
             cpuReq = 15;        
         end
-    end    
+    end
+    
 
     taskPeriod = ceil(taskPeriod);
     if taskPeriod > 200
-       taskPeriod = 200 - rand(1)*5;
+       taskPeriod = 200 - rand(1)*100;
     end
-    
-    if taskPeriod < 70
-       taskPeriod = 70 - rand(1)*5;
-    end
-    
     if IS_SMALL_SCALE
         if taskPeriod > 20
             taskPeriod = 20 - rand(1)*5;
@@ -228,9 +221,8 @@ for iJob=1:length(jobSet(:,1))
     gpuCmplt = taskPeriod/beta * (cpuReq/gpuReq);
     
     if gpuCmplt > 200
-       gpuCmplt = 200 - rand(1)*10;
+       gpuCmplt = 200 - rand(1)*100;
     end
-    
     if IS_SMALL_SCALE
         if gpuCmplt > 20
             gpuCmplt = 20 - rand(1)*10;
@@ -239,7 +231,7 @@ for iJob=1:length(jobSet(:,1))
     
     strTemp = sprintf('stage -1.0 %0.1f %0.0f %0.0f %0.0f %0.0f %0.0f 1\n', ...
          cpuReq, ...
-        memReq, taskPeriod*TIME_SCALE, gpuReq, gpuMem, gpuCmplt*TIME_SCALE );
+        memReq, taskPeriod*scale, gpuReq, gpuMem, gpuCmplt*scale );
 
     strJob = [strJob strTemp];
     strJob = [strJob '0\n'];
@@ -277,10 +269,10 @@ fprintf('mean(betas)= %d\n', mean(betas));
 figure; hist(betas);
 
 % figure 
-fprintf('mean(cpuCmplts)= %d\n', mean(cpuCmplts* TIME_SCALE));
-figure; hist(cpuCmplts * TIME_SCALE, 100);
+fprintf('mean(cpuCmplts)= %d\n', mean(cpuCmplts*scale));
+figure; hist(cpuCmplts * (timeScale/60), 100);
 ylabel('jobs');xlabel('mins');
 % figure 
-fprintf('mean(gpuCmplts)= %d\n', mean(gpuCmplts* TIME_SCALE));
-figure; hist(gpuCmplts * TIME_SCALE, 100);
+fprintf('mean(gpuCmplts)= %d\n', mean(gpuCmplts*scale));
+figure; hist(gpuCmplts * (timeScale/60), 100);
 ylabel('jobs');xlabel('mins');

@@ -8,10 +8,11 @@ public class QueueComparator implements Comparator<JobQueue>{
 	public int compare(JobQueue q1, JobQueue q2) {
 		int res = 0; 
 		if (q1.L > q2.L){
-			res = 1;
+			return 1;
 		}else if (q1.L < q2.L){
-			res = -1;
+			return -1;
 		}
 		return res;
+//		return -(q1.getQueueName().compareTo(q2.getQueueName()));			
 	}
 }

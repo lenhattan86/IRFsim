@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -615,6 +614,13 @@ public class MLJob extends BaseJob implements Cloneable {
 	}
 
 	// end DAG traversals //
+	@Override
+	public void setTaskDemand(InterchangableResourceDemand demand) {
+		for (SubGraph stage: stages.values()) {
+			stage.vDemands = demand;
+			stage.reportDemands = demand;
+		}
+	}
 
 	@Override
 	public InterchangableResourceDemand rsrcDemands(int taskId) {
@@ -622,6 +628,7 @@ public class MLJob extends BaseJob implements Cloneable {
 			// TODO: compute the real demands for this.
 			return adjustedTaskDemands.get(taskId).demand;
 		}
+		int a = this.dagId;
 		return stages.get(vertexToStage.get(taskId)).rsrcDemands(taskId);
 	}
 

@@ -1,29 +1,36 @@
 addpath('matlab_func');
 common_settings;
 % is_printed = 1;
+fig_path = ['figs/'];
 %%
 barWidth = 0.5;
-queue_num = 2;
-cluster_size=2;
+queue_num = 25;
+cluster_size=100;
 figureSize = figSizeOneCol .* [1 1 2/3 2/3];
-plots  = [false, true, true, false, false, true];
+plots  = [false, true, true, false, true, false];
 
 colorUsers = {colorUser1; colorUser2; colorUser3};
 methods = {strDRF,  strES,  'DRFExt', strAlloX, 'SJF'};
 files = {'DRF', 'ES', 'DRFExt', 'AlloX','SJF'};
-DRFId = 1; ESId = 2; AlloXId = 4; SJFId = 5;
+DRFId = 1; ESId = 2; DRFExtId = 3; AlloXId = 4; SJFId = 5;
 
 % plots  = [true, false, false, false, false, false];
 % methods = {strES,  strAlloX};
 
 methodColors = {colorES; colorDRF; colorProposed};
 extraStr = ['_' int2str(queue_num) '_' int2str(cluster_size)];
+% EXTRA='_s';
+EXTRA='_w_prof';
 
-scaleTime = 5; % minutes
+scaleTime = 1; % minutes
 %% load data
+
 for i=1:length(methods)
     outputFile = [ 'output/' files{i} '-output' extraStr  '.csv'];
     [JobIds{i}, startTimes{i}, endTimes{i}, durations{i}, queueNames{i}] = import_compl_time(outputFile);
+    fullJobsIndices{i} = find(JobIds{i}>=0);
+    durations{i} = durations{i}(fullJobsIndices{i});
+    JobIds{i} = JobIds{i}(fullJobsIndices{i});    
 end
 
 %%
@@ -178,6 +185,7 @@ if plots(5)
     [~, DRFSortIds] = sort(JobIds{DRFId});
     [~, ESSortIds] = sort(JobIds{ESId});
     [~, AlloXSortIds] = sort(JobIds{AlloXId});
+    [~, DRFExtSortIds] = sort(JobIds{DRFExtId});
     
     
 
@@ -190,14 +198,20 @@ if plots(5)
 %     slowDownVals = max (slowDownVals, 0);
     [f,x]=ecdf(slowDownVals);
     plot(x,f, 'LineWidth',LineWidth);
+    hold on;
+    slowDownVals = (durations{AlloXId}(AlloXSortIds) - durations{DRFExtId}(DRFExtSortIds))./durations{DRFExtId}(DRFExtSortIds)*100;
+%     slowDownVals = max (slowDownVals, 0);
+    [f,x]=ecdf(slowDownVals);
+    plot(x,f, 'LineWidth',LineWidth);
 
 %     xLabel='slowdown (s)';
     xLabel='slowdown (%)';
     yLabel=strCdf;    
-    xlim([0.6 length(methods)+0.4]);
+    xlim([-100 200]);
+    
     set (gcf, 'Units', 'Inches', 'Position', figureSize, 'PaperUnits', 'inches', 'PaperPosition', figureSize);
-    legendStr = {'vs. ES+RP', 'vs. DRF'};
-    legend(legendStr,'Location','best','FontSize',fontLegend,'Orientation','horizontal');
+    legendStr = {'vs. ES+RP', 'vs. DRF', 'vs. DRFExt'};
+    legend(legendStr,'Location','best','FontSize',fontLegend,'Orientation','vertical');
     xlabel(xLabel,'FontSize',fontAxis);
     ylabel(yLabel,'FontSize',fontAxis);    
     fileNames{figIdx} = 'slowdown';
@@ -267,12 +281,12 @@ end
 
 return;
 %%
-extra='';
+
 for i=1:length(fileNames)
     fileName = fileNames{i};
     epsFile = [ LOCAL_FIG fileName '.eps'];
     print (figures{i}, '-depsc', epsFile);    
-    pdfFile = [ fig_path fileName '.pdf']  
+    pdfFile = [ fig_path fileName EXTRA '.pdf']  
     cmd = sprintf(PS_CMD_FORMAT, epsFile, pdfFile);
     status = system(cmd);
 end

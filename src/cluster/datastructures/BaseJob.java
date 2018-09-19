@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Set;
 
 import cluster.simulator.Simulator;
+import cluster.simulator.Main.Globals;
 import cluster.speedfair.ServiceCurve;
 import cluster.utils.Interval;
 
@@ -22,6 +23,9 @@ public abstract class BaseJob implements Cloneable {
   private int curr_iter = 0;
   public boolean isCpu = false;
   public boolean isCompleted = false;
+  public boolean isProfiling = false;
+  public boolean isProfiled = false;
+  public ArrayList<BaseJob> profilingJobs = new ArrayList<BaseJob>();
   
   private boolean fullyAllocated = false;
   
@@ -63,6 +67,8 @@ public abstract class BaseJob implements Cloneable {
 
   public abstract InterchangableResourceDemand rsrcDemands(int task_id); // demand of from a task at
                                                      // a certain time step
+  
+  public abstract void setTaskDemand(InterchangableResourceDemand demand);
   
   public abstract Resource naiveRsrcDemands(int task_id); // demand of from a task at
   // a certain time step
@@ -277,7 +283,24 @@ public abstract class BaseJob implements Cloneable {
 	}
 	
 	public void onFinish(){
-		this.getQueue().L -= this.fairVal;
+		if(!this.isProfiling)
+			this.getQueue().L -= this.fairVal;
+		
 		this.isCompleted = true;
   }
+	
+	public boolean isReady(){
+		if (!Globals.EnableProfiling)
+			return true;
+		
+		if(this.profilingJobs.isEmpty())
+			return false;
+		
+		for (BaseJob job: this.profilingJobs){
+			if (!job.isCompleted)
+				return false;
+		}
+		
+		return true;
+	}
 }
