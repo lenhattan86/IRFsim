@@ -1,11 +1,11 @@
 addpath('matlab_func');
 common_settings;
 % is_printed = 1;
-fig_path = ['figs/'];
+% fig_path = ['figs/'];
 %%
 barWidth = 0.5;
-queue_num = 25;
-cluster_size=100;
+queue_num = 2;
+cluster_size=2;
 figureSize = figSizeOneCol .* [1 1 2/3 2/3];
 plots  = [false, true, true, false, true, false];
 
@@ -19,8 +19,8 @@ DRFId = 1; ESId = 2; DRFExtId = 3; AlloXId = 4; SJFId = 5;
 
 methodColors = {colorES; colorDRF; colorProposed};
 extraStr = ['_' int2str(queue_num) '_' int2str(cluster_size)];
-% EXTRA='_s';
-EXTRA='_w_prof';
+EXTRA='_s';
+% EXTRA='_w_prof';
 
 scaleTime = 1; % minutes
 %% load data

@@ -196,13 +196,13 @@ public class AlloXScheduler implements Scheduler {
 		for (ProcessingTime p : W){
 			if (p.job.wasScheduled)
 				continue;
+			int jobId = p.job.dagId;
 			Resource availRes = Simulator.cluster.getClusterResAvail();
 			if (!p.isCpu && availRes.resource(1) >= 1) {
 				boolean res = QueueScheduler.allocateResToJob(p.job, false);
-				if (res) {
+				if (res) {					
 					p.job.onStart(resCapacity);
 					numScheduledJobs++;
-					p.job.getQueue().addRunningJob(p.job);
 					break;
 				}
 			} else if (p.isCpu && availRes.resource(0) >= 1) {
@@ -210,7 +210,6 @@ public class AlloXScheduler implements Scheduler {
 				if (res) {
 					p.job.onStart(resCapacity);
 					numScheduledJobs++;
-					p.job.getQueue().addRunningJob(p.job);
 					break;
 				} 
 			}

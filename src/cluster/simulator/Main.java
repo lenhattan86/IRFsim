@@ -273,7 +273,7 @@ public class Main {
 				Globals.TRACE_FILE = "input/job_google_2.txt"; // BigBench
 				break;
 			case Tensorflow:
-				Globals.TRACE_FILE = "input/tensorflow.txt";
+				Globals.TRACE_FILE = "input/tf_8.txt";
 				break;
 			case TPC_DS:
 				Globals.WORKLOAD_AVG_TASK_DURATION = 31.60574050691386;
@@ -484,7 +484,7 @@ public class Main {
 				System.out.println("[Error] Matlab is not supported.");
 			}
 		
-		Globals.runmode = Runmode.MultipleRuns;
+		Globals.runmode = Runmode.SmallScale;
 
 		Utils.createUserDir("log");
 		Utils.createUserDir("output");
@@ -533,12 +533,12 @@ public class Main {
 			Globals.jobData = new JobData();
 			Globals.MEMORY_SCALE_DOWN = 1;
 			Globals.NUM_MACHINES = 1;
-			Globals.SIM_END_TIME = 4000.0;
+			Globals.SIM_END_TIME = 20000.0;
 			Globals.Method[] methods = { Method.DRF, Method.ES, Method.DRFExt,  Method.AlloX, Method.SJF};
-//			Globals.Method[] methods = {Method.ES, Method.DRFExt};
+//			Globals.Method[] methods = {Method.AlloX};
 			Globals.MACHINE_MAX_GPU = 2;
 			Globals.numQueues = 2;
-			Globals.numJobs = Globals.numQueues*10;
+			Globals.numJobs = Globals.numQueues*4;
 
 			for (Globals.Method method : methods) {
 				Globals.METHOD = method;
