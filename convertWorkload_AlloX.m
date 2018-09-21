@@ -16,9 +16,11 @@ second = 10^6;
 
 timeScale = 60*5;
 %scaleDownArrivalTime = 10;
+% scaleDownArrivalTime = 1;
 scaleDownArrivalTime = 1;
 
-STEP_SECONDS = 10;% 1 time unit -- ? secs
+% STEP_SECONDS = 10;% 1 time unit -- ? secs
+STEP_SECONDS = 300;% 1 time unit -- ? secs
 TIME_SCALE = timeScale/STEP_SECONDS; 
 
 load(JOB_FILE);
@@ -63,14 +65,14 @@ if false
     numOfJobs=133*ones(size(betas));
 elseif ~IS_SMALL_SCALE
 % more users
-    nUsers = 25;
+    nUsers = 5;
     pd = makedist('Normal','mu',MeanBeta,'sigma',MeanBeta);
     t = truncate(pd,0,inf);
     betas = random(t, nUsers,1);
     reportBetas = betas;    
     betas = betas / mean(betas) * MeanBeta;    
     
-    NJobs = 100;
+    NJobs = 50;
     numOfJobs=nUsers*NJobs;
     BETAS = zeros(nUsers, NJobs);
     for iUser = 1:nUsers
@@ -184,20 +186,23 @@ for iJob=1:length(jobSet(:,1))
         continue
     end
     
-    if (cpuReq <= 2)
-        memReq = 2/cpuReq*memReq;
-        cpuReq = 2;        
-    end
+%     if (cpuReq <= 2)
+%         memReq = 2/cpuReq*memReq;
+%         cpuReq = 2;        
+%     end
 %     if IS_SMALL_SCALE
 %         if (cpuReq <= 8)
 %             memReq = 8/cpuReq*memReq;
 %             cpuReq = 8;        
 %         end
 %     end
-    if (cpuReq >= 32)
-        memReq = 32/cpuReq*memReq;
-        cpuReq = 32;        
-    end
+%     if (cpuReq >= 32)
+%         memReq = 32/cpuReq*memReq;
+%         cpuReq = 32;        
+%     end
+    memReq = 32/cpuReq*memReq;
+    cpuReq = 32;        
+
     if IS_SMALL_SCALE
         if (cpuReq >= 15)
             memReq = 15/cpuReq*memReq;

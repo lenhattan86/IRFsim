@@ -161,7 +161,7 @@ public class Simulator {
 			}
 
 			QUEUE_LIST.updateRunningQueues();
-
+		
 			 if (!jobCompleted && !newJobArrivals && finishedTasks.isEmpty()){
 //			if (false)
 				Output.debugln(DEBUG, "----- Do nothing ----");
@@ -359,7 +359,16 @@ public class Simulator {
 		// start all batch jobs at time = 0
 		if (Globals.JOBS_ARRIVAL_POLICY == JobsArrivalPolicy.All) {
 			for (BaseJob newJob : runnableJobs) {
-				if (!Globals.EnableProfiling || newJob.isReady()) {
+				boolean isReady = newJob.isReady();
+				for (BaseJob jb : runnableJobs) {
+					if (jb.arrivalTime == newJob.arrivalTime){
+						if(!jb.isReady()) {
+							isReady = false;
+							break;
+						}
+					}
+				}
+				if (!Globals.EnableProfiling || isReady) {
 					newlyStartedJobs.add(newJob);
 					Simulator.QUEUE_LIST.addRunnalbleJob2Queue(newJob, newJob.getQueueName());
 					newJob.jobStartTime = Simulator.CURRENT_TIME;
@@ -377,7 +386,17 @@ public class Simulator {
 		} else if (Globals.JOBS_ARRIVAL_POLICY == JobsArrivalPolicy.Trace) {
 			for (BaseJob dag : runnableJobs) {
 				if (dag.arrivalTime <= Simulator.CURRENT_TIME) {
-					if (!Globals.EnableProfiling || dag.isReady()) {
+					boolean isReady = dag.isReady();
+					for (BaseJob jb : runnableJobs) {
+						if (jb.arrivalTime == dag.arrivalTime){
+							if(!jb.isReady()) {
+								isReady = false;
+								break;
+							} 
+						}
+					}
+					
+					if (!Globals.EnableProfiling || isReady) {
 						dag.jobStartTime = dag.arrivalTime;
 						// dag.jobStartRunningTime = dag.jobStartTime;
 						newlyStartedJobs.add(dag);

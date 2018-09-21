@@ -65,8 +65,6 @@ public class AlloXScheduler implements Scheduler {
 		List<JobQueue> activeQueues = Simulator.QUEUE_LIST.getQueuesWithQueuedJobs();
 		
 		boolean flag = true;
-		if (Simulator.CURRENT_TIME == 250)
-			System.out.println("debug");
 		
 		while(activeQueues.size() > 0){
 			flag = online_allox(clusterTotCapacity, activeQueues, alphaFairness);
@@ -179,7 +177,7 @@ public class AlloXScheduler implements Scheduler {
 		// Create set W of processing times
 		List<ProcessingTime> W = new ArrayList<ProcessingTime>();
 		for (JobQueue jobQueue : queuesWithLowestFairness) {
-			for (BaseJob job: jobQueue.getQueuedUpJobs()){
+			for (BaseJob job: jobQueue.getQueuedUpFullJobs()){
 				W.add(new ProcessingTime(true, job)); // reported processing time on CPU
 				W.add(new ProcessingTime(false, job)); // reported processing time on GPU
 			}
@@ -197,9 +195,11 @@ public class AlloXScheduler implements Scheduler {
 			if (p.job.wasScheduled)
 				continue;
 			int jobId = p.job.dagId;
-			Resource availRes = Simulator.cluster.getClusterResAvail();
+			Resource availRes = Simulator.cluster.getClusterResAvail(); // todo: bug
 			if (!p.isCpu && availRes.resource(1) >= 1) {
+				
 				boolean res = QueueScheduler.allocateResToJob(p.job, false);
+				availRes = Simulator.cluster.getClusterResAvail(); 
 				if (res) {					
 					p.job.onStart(resCapacity);
 					numScheduledJobs++;

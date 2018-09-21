@@ -20,6 +20,7 @@ import queue.schedulers.AlloXScheduler;
 import queue.schedulers.DRFExtScheduler;
 import queue.schedulers.DRFScheduler;
 import queue.schedulers.EqualShareScheduler;
+import queue.schedulers.FlowScheduler;
 import queue.schedulers.PricingScheduler;
 import queue.schedulers.SJFScheduler;
 import queue.schedulers.Scheduler;
@@ -50,6 +51,9 @@ public class QueueScheduler {
 		case AlloX:
 			scheduler = new AlloXScheduler(Globals.alpha);
 			break;
+		case FS:
+			scheduler = new FlowScheduler(Globals.alpha);
+			break;	
 		case SJF:
 			scheduler = new AlloXScheduler();
 			break;
@@ -61,37 +65,57 @@ public class QueueScheduler {
 	public void schedule() {
 		// compute how much share each queue should get
 		long startTime = System.nanoTime();
+		boolean coninueSchedule = true;
 		if (Globals.EnableProfiling) {
-			scheduleProfilingJobs();
+			coninueSchedule = scheduleProfilingJobs();
 		}
 		profilingTime = profilingTime + System.nanoTime() - startTime;
-
-		startTime = System.nanoTime();
-		scheduler.computeResShare();
-		schedulingTime = schedulingTime + System.nanoTime() - startTime;
+		if (coninueSchedule) {
+			startTime = System.nanoTime();
+			scheduler.computeResShare();
+			schedulingTime = schedulingTime + System.nanoTime() - startTime;
+		}
 	}
 
-	public void scheduleProfilingJobs() {
+	public boolean  scheduleProfilingJobs() {
 
 		boolean isCpuAvailable = true;
 		boolean isGpuAvailable = true;
+		if(Simulator.CURRENT_TIME >= 301){
+			int a = 0;
+		}
+		
+		int round = 0;
 		int queueId = 0;
-		while (isGpuAvailable && isCpuAvailable) {
-			List<JobQueue> activeQueues = Simulator.QUEUE_LIST.getQueuesWithQueuedProfilingJobs();
+		int maxRound = Integer.MIN_VALUE;
+		List<JobQueue> activeQueues = Simulator.QUEUE_LIST.getQueuesWithQueuedProfilingJobs();
+		while (isGpuAvailable || isCpuAvailable) {
 			if (activeQueues.isEmpty())
-				break;
-
+				return true;
 			JobQueue q = activeQueues.get(queueId % activeQueues.size());
-			Queue<BaseJob> jobs = q.getQueuedUpProfilingJobs();
-			for (BaseJob job : jobs)
+			ArrayList<BaseJob> jobs = new ArrayList<BaseJob>(q.getQueuedUpProfilingJobs());
+			int size = jobs.size();
+			if (round<1)
+				if (maxRound< size)
+					maxRound= size;
+			
+			if (round < size){
+				BaseJob job = jobs.get(round);
 				if (!job.isCpu && isGpuAvailable) {
 					isGpuAvailable = QueueScheduler.allocateResToJob(job, false);
-					break;
 				} else if (job.isCpu && isCpuAvailable) {
 					isCpuAvailable = QueueScheduler.allocateResToJob(job, true);
-					break;
 				}
+			}
+			
+			queueId++;
+			if (queueId%activeQueues.size() == 0){
+				round++;
+				if (round > maxRound)
+					return true;
+			}
 		}
+		return false;
 	}
 
 	public void adjustShares() {
@@ -142,6 +166,26 @@ public class QueueScheduler {
 	}
 
 	public static boolean allocateResToJob(BaseJob job, boolean isCpu) {
+		int taskId = job.getCommingTaskId();
+		if (taskId < 0)
+			return true;
+		InterchangableResourceDemand demand = job.rsrcDemands(taskId);
+
+		double duration = isCpu ? demand.cpuCompl : demand.gpuCompl;
+		Resource taskDemand = isCpu ? demand.getCpuDemand() : demand.getGpuDemand();
+		boolean assigned = Simulator.cluster.assignTask(job.dagId, taskId, duration, taskDemand);
+		if (assigned) {
+			if (job.jobStartRunningTime < 0) {
+				job.jobStartRunningTime = Simulator.CURRENT_TIME;
+			}
+			job.isCpu = isCpu;
+			job.getQueue().addRunningJob(job);
+			return true;
+		} else
+			return false;
+	}
+	
+	public static boolean allocateResToJobOnMachine(BaseJob job, boolean isCpu, int machineId) {
 		int taskId = job.getCommingTaskId();
 		if (taskId < 0)
 			return true;

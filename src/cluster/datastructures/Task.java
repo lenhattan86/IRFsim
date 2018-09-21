@@ -5,6 +5,7 @@ public class Task implements Comparable<Task> {
 	private static final boolean DEBUG = true;
   public int taskId;
   public int dagId;
+  public int machineId=-1;
   public double taskDuration;
   public InterchangableResourceDemand demand;
   public Resource usage;
@@ -14,6 +15,11 @@ public class Task implements Comparable<Task> {
   public Task(int dagId, int taskId) {
     this.dagId = dagId;
     this.taskId = taskId;
+  }
+  
+  public boolean isOnGpu()
+  {
+  	return usage.resource(1) > 0;
   }
 
   public Task(int dagId, int taskId, double taskDuration, InterchangableResourceDemand demand) {

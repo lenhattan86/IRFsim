@@ -335,6 +335,31 @@ public class JobQueue {
 	public Queue<BaseJob> getQueuedUpJobs() {
 		return this.runnableJobs;
 	}
+	
+	public Queue<BaseJob> getQueuedUpFullJobs() {
+		Queue<BaseJob> baseJobs = new LinkedList<BaseJob>();
+		for (BaseJob job : this.runnableJobs) {
+			if (!job.isProfiling) {
+				baseJobs.add(job);
+			}
+		}
+		return baseJobs;
+	}
+	
+	public Queue<BaseJob> getActiveJobs() {
+		Queue<BaseJob> baseJobs = new LinkedList<BaseJob>();
+		for (BaseJob job : this.runnableJobs) {
+			if (!job.isProfiling) {
+				baseJobs.add(job);
+			}
+		}
+		for (BaseJob job : this.runningJobs) {
+			if (!job.isProfiling) {
+				baseJobs.add(job);
+			}
+		}
+		return baseJobs;
+	}
 
 	public Queue<BaseJob> getQueuedUpProfilingJobs() {
 		Queue<BaseJob> baseJobs = new LinkedList<BaseJob>();

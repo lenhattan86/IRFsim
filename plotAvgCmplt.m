@@ -4,15 +4,15 @@ common_settings;
 % fig_path = ['figs/'];
 %%
 barWidth = 0.5;
-queue_num = 2;
-cluster_size=2;
+queue_num = 5;
+cluster_size=10;
 figureSize = figSizeOneCol .* [1 1 2/3 2/3];
-plots  = [false, true, true, false, true, false];
+plots  = [true, true, false, false, false];
 
 colorUsers = {colorUser1; colorUser2; colorUser3};
-methods = {strDRF,  strES,  'DRFExt', strAlloX, 'SJF'};
-files = {'DRF', 'ES', 'DRFExt', 'AlloX','SJF'};
-DRFId = 1; ESId = 2; DRFExtId = 3; AlloXId = 4; SJFId = 5;
+methods = {strDRF,  strES,  'DRFExt', strAlloX, 'SJF', 'FS'};
+files = {'DRF', 'ES', 'DRFExt', 'AlloX','SJF', 'FS'};
+DRFId = 1; ESId = 2; DRFExtId = 3; AlloXId = 4; SJFId = 5; FSId = 6;
 
 % plots  = [true, false, false, false, false, false];
 % methods = {strES,  strAlloX};
@@ -34,39 +34,9 @@ for i=1:length(methods)
 end
 
 %%
-%%
-if plots(1)  
-   complTimes = [];
-  figIdx=figIdx +1;     
-  durations = {[403 103 254 155 306 353];[103 152 253 204 303 305]};
-   figures{figIdx} = figure;
-   scrsz = get(groot, 'ScreenSize');   
-%    hBar = bar(avgCmplt', barWidth);
-%    set(hBar,{'FaceColor'}, colorUsers);   
-   
-    hold on
-    for i = 1:length(methods)
-        avgCmplt = mean(durations{i});
-        h=bar(i, avgCmplt, 0.2);
-%         set(h,'FaceColor', methodColors{i});
-    end
-    hold off
-
-    xLabel='methods';
-    yLabel='seconds';
-    legendStr=methods;
-     xlim([0.4 length(methods)+0.6]);
-%     ylim([0 max(max(avgCmplt))*1.1]);
-    xLabels={strUser1, strUser2, strUser3};
-    set (gcf, 'Units', 'Inches', 'Position', figureSize, 'PaperUnits', 'inches', 'PaperPosition', figureSize);
-%     xlabel(xLabel,'FontSize',fontAxis);
-    ylabel(yLabel,'FontSize',fontAxis);
-    set(gca,'XTickLabel', methods,'FontSize',fontAxis);
-    fileNames{figIdx} = 'avgCmplt_exp';      
-end
 
 %%
-if plots(2)    
+if plots(1)    
    figIdx=figIdx +1;         
    figures{figIdx} = figure;
    scrsz = get(groot, 'ScreenSize');   
@@ -123,7 +93,7 @@ if false
     fileNames{figIdx} = 'makespan';
 end
 
-if plots(3)    
+if plots(2)    
    figIdx=figIdx +1;         
    figures{figIdx} = figure;
    scrsz = get(groot, 'ScreenSize');  
@@ -150,7 +120,7 @@ if plots(3)
 end
 
 %%
-if plots(4) 
+if plots(3) 
    STOP_TIME = 300;
    figIdx=figIdx +1;         
    figures{figIdx} = figure;
@@ -176,7 +146,7 @@ if plots(4)
 end
 
 %%
-if plots(5)    
+if plots(4)    
     figIdx=figIdx +1;         
     figures{figIdx} = figure;
     scrsz = get(groot, 'ScreenSize');     
@@ -217,7 +187,7 @@ if plots(5)
     fileNames{figIdx} = 'slowdown';
 end
 %%
-if plots(6)
+if plots(5)
     figIdx=figIdx +1;         
     figures{figIdx} = figure;
     scrsz = get(groot, 'ScreenSize');     

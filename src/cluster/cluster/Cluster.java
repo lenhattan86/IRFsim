@@ -3,6 +3,7 @@ package cluster.cluster;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -10,6 +11,7 @@ import java.util.logging.Logger;
 
 import cluster.datastructures.BaseJob;
 import cluster.datastructures.Resource;
+import cluster.datastructures.Task;
 import cluster.simulator.Simulator;
 import cluster.simulator.Main.Globals;
 
@@ -25,6 +27,7 @@ public class Cluster {
   public Map<Integer, Machine> machines;
 
   private static Logger LOG = Logger.getLogger(Cluster.class.getName());
+  public Map<Integer, Double> availableTimes = null;
 
   public Cluster(boolean state, Resource res) {
     execMode = state;
@@ -32,6 +35,11 @@ public class Cluster {
     int numberMachines = execMode ? Globals.NUM_MACHINES : 1;
     for (int i = 0; i < numberMachines; ++i) {
       machines.put(i, new Machine(i, res, execMode));
+    }
+    availableTimes = new HashMap<Integer, Double>();
+    int numberOfNodes = (int) (Globals.MACHINE_MAX_GPU + (Globals.MACHINE_MAX_CPU/Globals.CPU_PER_NODE) );
+    for (int i=0; i< numberOfNodes; i++){
+    	availableTimes.put(i, 0.0);
     }
   }
 
@@ -53,6 +61,30 @@ public class Cluster {
   // checks for fitting in resShare should already be done
   public boolean assignTask(int dagId, int taskId, double taskDuration,
       Resource taskResources) {
+
+    // find the first machine where the task can fit
+    // put it there
+    for (Machine machine : machines.values()) {
+      boolean fit = machine.getTotalResAvail().greaterOrEqual(taskResources);
+      if (!fit)
+        continue;
+      machine.assignTask(dagId, taskId, taskDuration, taskResources);
+      
+      // update resource allocated to the corresponding job
+      BaseJob dag = Simulator.getDag(dagId);
+      dag.getRsrcInUse().addWith(taskResources);
+      
+   // remove the task from runnable and put it in running
+  		dag.runningTasks.add(taskId);
+  		// unallocJob.launchedTasksNow.add(taskId);
+  		dag.runnableTasks.remove(taskId);
+			
+      return true;
+    }
+    return false;
+  }
+  public boolean assignTask(int dagId, int taskId, double taskDuration,
+      Resource taskResources, int machineId) {
 
     // find the first machine where the task can fit
     // put it there
@@ -113,6 +145,14 @@ public class Cluster {
 
     // update the currentTime with the earliestFinishTime on every machine
     return finishedTasks;
+  }
+  
+  public Map<Task, Double> getCurrentRunningTasks() {
+  	Map<Task, Double> runningTasks = new HashMap<Task, Double>();
+    for (Machine machine : machines.values()) {
+    	runningTasks.putAll(machine.runningTasks);
+    }
+    return runningTasks;
   }
   
   public Map<Integer, List<Integer>> finishTasksPrev(double... earliestFinishTime) {

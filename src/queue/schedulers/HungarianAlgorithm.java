@@ -1,3 +1,5 @@
+package queue.schedulers;
+
 import java.util.Arrays;
 
 /* Copyright (c) 2012 Kevin L. Stern
@@ -334,11 +336,14 @@ public class HungarianAlgorithm {
   }
   
   public static void main(String[] args) {
-	  double [ ] [ ] scores = {   { 20, 18, 22 },
-              { 18, 20, 18},
-              { 16, 18, 16},
-              {  25, 24, 22 }
+	  double [ ] [ ] scores = {   { 5, 4 },
+              { 11, 10},
+              { 13, 12},
+              { 6, 5 },
+              {21, 20},
+              {23, 22}
           };
+//	  double [ ] [ ] scores = {{ 5, 11, 13, 6, 21, 23},{4, 10, 12, 12, 5, 20}};
 	  
 	  HungarianAlgorithm runner = new HungarianAlgorithm(scores);
 	  int[] results = runner.execute();

@@ -9,7 +9,7 @@ workload='SIMPLE';
 num_batch_queues = 2;
 num_interactive_queue = 0;
 num_queues = num_batch_queues + num_interactive_queue;
-START_TIME = 0; END_TIME = 20000;  STEP_TIME = 1;
+START_TIME = 0; END_TIME = 50;  STEP_TIME = 1;
 cluster_size = 2;
 
 CPUCap = cluster_size * 32;
@@ -58,8 +58,8 @@ end
 extraStr = ['_' int2str(num_batch_queues) '_' int2str(cluster_size)];
 
 %%
-prefixes = {'DRF', 'ES', 'DRFExt', 'AlloX', 'SJF'};
-% prefixes = {'DRF'};
+% prefixes = {'DRF', 'ES', 'DRFExt', 'AlloX', 'SJF'};
+prefixes = {'FS'};
 % prefixes = {'DRFExt'};
 % prefixes = {'AlloX'};
 % prefixes = {'DRF','AlloX'};

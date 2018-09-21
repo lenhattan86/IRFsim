@@ -1,8 +1,13 @@
 package queue.schedulers;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 
 import cluster.datastructures.BaseJob;
@@ -10,6 +15,8 @@ import cluster.datastructures.JobArrivalComparator;
 import cluster.datastructures.JobQueue;
 import cluster.datastructures.QueueComparator;
 import cluster.datastructures.Resource;
+import cluster.datastructures.Task;
+import cluster.schedulers.QueueScheduler;
 import cluster.simulator.Simulator;
 import cluster.simulator.Main.Globals;
 
@@ -19,17 +26,11 @@ public class FlowScheduler implements Scheduler {
 	static Resource clusterTotCapacity = null;
 	static Resource clusterAvailRes = null;
 	static double[] L;
-	static ArrayList<Queue<BaseJob>> machineCpuQueues;
-	static ArrayList<Queue<BaseJob>> machineGpuQueues;
 	private static double alphaFairness = 1;
 	
 	public FlowScheduler(double alpha) {
 		clusterTotCapacity = Simulator.cluster.getClusterMaxResAlloc();
-		this.schedulePolicy = "FS";
-		int numOfQueue = (int) (clusterTotCapacity.resource(0)/24);
-		machineGpuQueues = new ArrayList<Queue<BaseJob>>(numOfQueue);
-		machineCpuQueues = new ArrayList<Queue<BaseJob>>(numOfQueue);
-		alphaFairness = Globals.alpha;
+//		alphaFairness = Globals.alpha;
 	}
 
 	@Override
@@ -38,30 +39,54 @@ public class FlowScheduler implements Scheduler {
 		if (numQueuesRuning == 0) {
 			return;
 		}
-
-		for (JobQueue q : Simulator.QUEUE_LIST.getQueuesWithQueuedJobs()) {
-			Collections.sort((List<BaseJob>) q.getRunningJobs(), new JobArrivalComparator());
-		}
-
-		clusterAvailRes = Simulator.cluster.getClusterResAvail();
+		
 		List<JobQueue> activeQueues = Simulator.QUEUE_LIST.getQueuesWithQueuedJobs();
 		
-		online_fs();
+		while (isResourceAvailable()){
+			boolean isExit = online_fs(clusterTotCapacity, activeQueues, alphaFairness);
+			if (isExit)
+				break;
+		}
+	}
+	
+	private boolean isResourceAvailable(){
+		clusterAvailRes = Simulator.cluster.getClusterResAvail();
+		if (clusterAvailRes.resource(0)> 0 || clusterAvailRes.resource(1)> 0)
+			return true;
+		return false;
 	}
 	
 	// trigger only when a job finishes
-	private static void online_fs() {
+	private static boolean online_fs(Resource clusterTotCapacity, List<JobQueue>activeQueues, double alphaFairness) {
 		// step 1: Get current time and a time array where each element represents the time when 
 		// that machine finishes its current job
 		// 
 		// no definition yet, assume AvailTime[i] = max(current_time, time when current job will be finished on i) for all
 		// i in machineCpuQueues and machineGpuQueues
+		Map<Task, Double> runningTasks = Simulator.cluster.getCurrentRunningTasks(); 
+		int numberOfNodes = (int) (Globals.MACHINE_MAX_GPU + (Globals.MACHINE_MAX_CPU/Globals.CPU_PER_NODE) );
+		// Globals.MACHINE_MAX_GPU first nodes are GPUs, later are CPUs
+		Map<Integer, Double> availableTimes = Simulator.cluster.availableTimes;
+
+		for (Map.Entry<Task, Double> entry : runningTasks.entrySet()) {
+			Task t = entry.getKey();
+			int machineId = Simulator.getDag(t.dagId).machineId;
+			availableTimes.put(machineId, entry.getValue());
+		}
 		
-				
+		List<Integer> availableMachines = new LinkedList<Integer>();
+		for (int machine: availableTimes.keySet()){
+			if (availableTimes.get(machine) <= Simulator.CURRENT_TIME)
+				availableMachines.add(machine);
+			double aTime = Math.max(availableTimes.get(machine), Simulator.CURRENT_TIME);
+			availableTimes.put(machine, aTime);
+		}		
+		Collections.sort(availableMachines, Collections.reverseOrder());
+		
 		// step 2: Consider all jobs from the activeQueues where the fairness score of the owner falls
 		// within $\alpha$ percent. 		
 		Collections.sort(activeQueues, new QueueComparator());
-		int lowestFairNQueues = (int) Math.ceil(fairnessRatio * nQueues);
+		int lowestFairNQueues = (int) Math.ceil(alphaFairness * activeQueues.size());
 		List<JobQueue> queuesWithLowestFairness = new ArrayList<JobQueue>();
 		for (int i = 0; i < lowestFairNQueues; i++)
 			queuesWithLowestFairness.add(activeQueues.get(i));
@@ -70,9 +95,33 @@ public class FlowScheduler implements Scheduler {
 		List<BaseJob> jobs = new ArrayList<BaseJob>();
 		for (JobQueue jobQueue : queuesWithLowestFairness) {
 			jobs.addAll(jobQueue.getQueuedUpJobs());
+		}	
+		int numOfJobs = jobs.size();
+		if (numOfJobs ==0) 
+				return true;
+		
+		// Create Delay Matrix & Create processing time matrix
+		double[][] D = new double[numberOfNodes][numOfJobs];
+		double[][] P = new double[numberOfNodes][numOfJobs];
+		for (int i=0; i<numberOfNodes; i++){
+			for (int j=0; j<numOfJobs; j++){
+				D[i][j] = availableTimes.get(i) - jobs.get(j).arrivalTime;
+				if (i< Globals.MACHINE_MAX_GPU ){
+					P[i][j] = jobs.get(j).getDemand().gpuCompl;
+				} else {
+					P[i][j] = jobs.get(j).getDemand().cpuCompl;
+				}
+			}
 		}
 		
-		
+		// create input matrix Q
+		double[][] Q = new double[numOfJobs*numberOfNodes][numOfJobs];
+		for (int i=0; i<numOfJobs*numberOfNodes; i++){
+			for (int j=0; j<numOfJobs; j++){
+				int iN = i/numberOfNodes + 1;
+				Q[i][j] = D[i%numberOfNodes][j] + iN* P[i%numberOfNodes][j];
+			}
+		}
 		
 		// step 3: solve an assignment problem based on hungarian method, generate the matrix Q:
 		// size(Q) = size(size(jobs) * 2*numOfQueue), jobs)
@@ -89,44 +138,36 @@ public class FlowScheduler implements Scheduler {
 		// update fairness score[i];
 		// if all entries are (-1), skip until a new arrival or a job finishes
 		
+		// cares about the available nodes
 		
 		
-	}
-
-	public static void onJobStart(BaseJob job, int iQueue) {
-		// find the owner of the job
-		double p1 = job.getDemand().cpuCompl;
-		double p2 = job.getDemand().gpuCompl;
-		if (p1 < p2) {
-			if (job.isOnCPU()) {
-				job.fairVal = Math.max(job.getDemand().cpu / clusterTotCapacity.resource(0),
-						job.getDemand().mem / clusterTotCapacity.resource(2));
-			} else {
-				job.fairVal = p1 / p2 * Math.max(job.getDemand().cpu / clusterTotCapacity.resource(0),
-						job.getDemand().mem / clusterTotCapacity.resource(2));
-			}
-		} else {
-			if (job.isOnCPU()) {
-				job.fairVal = p2 / p1 * Math.max(job.getDemand().gpu / clusterTotCapacity.resource(1),
-						job.getDemand().gpuMem / clusterTotCapacity.resource(2));
-			} else {
-				job.fairVal = Math.max(job.getDemand().gpu / clusterTotCapacity.resource(1),
-						job.getDemand().gpuMem / clusterTotCapacity.resource(2));
+		int[] sols = new HungarianAlgorithm(Q).execute();
+		//TODO: how to decide CPU or GPU for a job as 2 configurations may be selected on either CPU or GPU. 
+		
+		// allocate jobs to the available machines only
+		boolean isExit = true;
+		for (Integer iM : availableMachines ){
+//			for (int k=numOfJobs-1; k>=0; k--){
+			for (int k=numOfJobs-1; k>=0; k--){
+				// if job k is chosen on iM and machine iM is available.  
+				if(sols[k*numberOfNodes +iM] >= 0){
+					BaseJob job = jobs.get(sols[k*numberOfNodes +iM]);
+					if (iM < Globals.MACHINE_MAX_GPU){
+						QueueScheduler.allocateResToJob(job, false);
+						job.machineId = iM;
+						job.onStart(clusterTotCapacity);
+						return false;
+					} else {
+						QueueScheduler.allocateResToJob(job, true);
+						job.machineId = iM;
+						job.onStart(clusterTotCapacity);
+						return false;
+					}
+				}
 			}
 		}
-		L[iQueue] += job.fairVal;
+		return true;
 	}
-
-	public static void onJobFinished(BaseJob job, int iQueue) {
-		L[iQueue] -= job.fairVal;
-	}
-	
-	
-	
-	
-	
-	
-	
 	
 	@Override
 	public String getSchedulePolicy() {

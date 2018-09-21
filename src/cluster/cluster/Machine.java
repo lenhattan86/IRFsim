@@ -3,6 +3,7 @@ package cluster.cluster;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -123,7 +124,17 @@ public class Machine {
     }
     return tasksFinished;
   }
-
+  
+  public List<Task> getRunningTasks() {
+    List<Task> runTasks = new LinkedList<Task>();
+    Iterator<Map.Entry<Task, Double>> iter = runningTasks.entrySet().iterator();
+    while (iter.hasNext()) {
+      Map.Entry<Task, Double> entry = iter.next();
+      runTasks.add(entry.getKey());
+    }
+    return runTasks;
+  }
+  
   public Resource getTotalResAvail() {
     return Resources.subtract(maxResAlloc, totalResAlloc);
   }

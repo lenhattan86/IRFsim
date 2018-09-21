@@ -26,6 +26,7 @@ public abstract class BaseJob implements Cloneable {
   public boolean isProfiling = false;
   public boolean isProfiled = false;
   public ArrayList<BaseJob> profilingJobs = new ArrayList<BaseJob>();
+  public int machineId = -1;
   
   private boolean fullyAllocated = false;
   

@@ -121,7 +121,7 @@ public class Main {
 		public static int SCALE_UP_FACTOR = 1;
 
 		public static enum Method {
-			DRF, DRFExt, FDRF, DRFW, ES, MaxMinMem, SpeedUp, Pricing, AlloX, SJF,
+			DRF, DRFExt, FDRF, DRFW, ES, MaxMinMem, SpeedUp, Pricing, AlloX, SJF, FS
 		}
 		
 		public static enum DemandChangeType {
@@ -133,7 +133,7 @@ public class Main {
 		}
 
 		public static enum QueueSchedulerPolicy {
-			DRF, DRFExt, ES, MaxMinMem, SpeedUp, Pricing, AlloX, SJF
+			DRF, DRFExt, ES, MaxMinMem, SpeedUp, Pricing, AlloX, SJF, FS
 		};
 
 		public static QueueSchedulerPolicy QUEUE_SCHEDULER = QueueSchedulerPolicy.ES;
@@ -243,8 +243,7 @@ public class Main {
 
 		public static void setupParameters() {
 			if (Globals.runmode.equals(Runmode.SmallScale)) {
-				CPU_PER_NODE = 24;
-				Globals.MACHINE_MAX_CPU = Globals.MACHINE_MAX_GPU*24;
+				CPU_PER_NODE = 20;
 			}
 			Globals.MACHINE_MAX_CPU = Globals.MACHINE_MAX_GPU*CPU_PER_NODE;
 			
@@ -284,7 +283,7 @@ public class Main {
 				Globals.TRACE_FILE = "workload/queries_tpch_FB_distr.txt"; // TPC-H -->
 				break;
 			case SIMPLE:
-				Globals.TRACE_FILE = "workload/simple.txt";
+				Globals.TRACE_FILE = "input/simple.txt";
 				break;
 			case SIMPLE_GOOD:
 				Globals.TRACE_FILE = "workload/simple_good.txt";
@@ -355,7 +354,10 @@ public class Main {
 		} else if (Globals.METHOD.equals(Method.AlloX)) {
 			Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.AlloX;
 			Globals.FileOutput = "AlloX-output" + extraName + ".csv";
-		}else if (Globals.METHOD.equals(Method.SJF)) {
+		} else if (Globals.METHOD.equals(Method.FS)) {
+			Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.FS;
+			Globals.FileOutput = "FS-output" + extraName + ".csv";
+		} else if (Globals.METHOD.equals(Method.SJF)) {
 			Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.SJF;
 			Globals.FileOutput = "SJF-output" + extraName + ".csv";
 		}else {
@@ -484,7 +486,7 @@ public class Main {
 				System.out.println("[Error] Matlab is not supported.");
 			}
 		
-		Globals.runmode = Runmode.SmallScale;
+		Globals.runmode = Runmode.MultipleRuns;
 
 		Utils.createUserDir("log");
 		Utils.createUserDir("output");
@@ -503,17 +505,18 @@ public class Main {
 			Globals.jobData = new JobData();
 			Globals.MEMORY_SCALE_DOWN = 1;
 			Globals.NUM_MACHINES = 1;
-			Globals.SIM_END_TIME = 100000.0;
+			Globals.SIM_END_TIME = 100.0;
+//			Globals.Method[] methods = { Method.DRF, Method.DRFExt, Method.ES, Method.AlloX, Method.SJF, Method.FS};
 			Globals.Method[] methods = { Method.DRF, Method.DRFExt, Method.ES, Method.AlloX, Method.SJF};
-//			Globals.Method[] methods = {Method.SJF };
+//			Globals.Method[] methods = {Method.FS };
 //			Globals.Method[] methods = {Method.DRF };
 //			Globals.Method[] methods = {Method.DRF, Method.ES };
 //			Globals.Method[] methods = {Method.DRFExt};
 //			Globals.Method[] methods = {Method.ES, Method.AlloX};
-			Globals.MACHINE_MAX_GPU = 100;
+			Globals.MACHINE_MAX_GPU = 10;
 			Globals.workload = Globals.WorkLoadType.Google;
-			Globals.numQueues = 25;
-			Globals.numJobs = Globals.numQueues*1000;
+			Globals.numQueues = 5;
+			Globals.numJobs = Globals.numQueues*50;
 
 			for (Globals.Method method : methods) {
 				Globals.METHOD = method;
@@ -529,13 +532,13 @@ public class Main {
 			Globals.USE_TRACE=true;
 //			Globals.workload = WorkLoadType.Google_2;
 			Globals.alpha = 0.5;
-			Globals.workload = WorkLoadType.Tensorflow;
+			Globals.workload = WorkLoadType.SIMPLE;
 			Globals.jobData = new JobData();
 			Globals.MEMORY_SCALE_DOWN = 1;
 			Globals.NUM_MACHINES = 1;
-			Globals.SIM_END_TIME = 20000.0;
-			Globals.Method[] methods = { Method.DRF, Method.ES, Method.DRFExt,  Method.AlloX, Method.SJF};
-//			Globals.Method[] methods = {Method.AlloX};
+			Globals.SIM_END_TIME = 20.0;
+			Globals.Method[] methods = { Method.DRF, Method.ES, Method.DRFExt,  Method.AlloX, Method.SJF, Method.FS};
+//			Globals.Method[] methods = {Method.FS};
 			Globals.MACHINE_MAX_GPU = 2;
 			Globals.numQueues = 2;
 			Globals.numJobs = Globals.numQueues*4;
