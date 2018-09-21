@@ -486,7 +486,7 @@ public class Main {
 				System.out.println("[Error] Matlab is not supported.");
 			}
 		
-		Globals.runmode = Runmode.MultipleRuns;
+		Globals.runmode = Runmode.SmallScale;
 
 		Utils.createUserDir("log");
 		Utils.createUserDir("output");

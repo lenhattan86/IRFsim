@@ -14,14 +14,14 @@ import cluster.datastructures.Resource;
 import cluster.schedulers.QueueScheduler;
 import cluster.simulator.Simulator;
 
-public class SJFScheduler implements Scheduler {
+public class SRPTScheduler implements Scheduler {
 	private String schedulePolicy;
 
 	static Resource clusterTotCapacity = null;
 	static Resource clusterAvailRes = null;
 	static double[] L;
 
-	public SJFScheduler() {
+	public SRPTScheduler() {
 		clusterTotCapacity = Simulator.cluster.getClusterMaxResAlloc();
 		this.schedulePolicy = "SJF";
 	}
@@ -41,7 +41,7 @@ public class SJFScheduler implements Scheduler {
 		List<JobQueue> activeQueues = Simulator.QUEUE_LIST.getQueuesWithQueuedJobs();
 		
 		while(activeQueues.size() > 0){
-			boolean flag = AlloXScheduler.online_allox(clusterTotCapacity, activeQueues, 1.0);
+			boolean flag = online_srpt(clusterTotCapacity, activeQueues);
 			if (!flag)
 				break;
 			activeQueues = Simulator.QUEUE_LIST.getQueuesWithQueuedJobs();

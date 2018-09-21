@@ -4,8 +4,8 @@ common_settings;
 % fig_path = ['figs/'];
 %%
 barWidth = 0.5;
-queue_num = 5;
-cluster_size=10;
+queue_num = 2;
+cluster_size= 2;
 figureSize = figSizeOneCol .* [1 1 2/3 2/3];
 plots  = [true, true, false, false, false];
 
