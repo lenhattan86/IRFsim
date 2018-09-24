@@ -150,9 +150,8 @@ public class FlowScheduler implements Scheduler {
 		
 		// add to the scheduled jobs to the queues for scheduling later.
 		boolean isExit = true;
-//		for (Integer iM : availableMachines ){
-		for (int iM=numberOfNodes-1; iM>=0; iM--){
-//		for (int k=numOfJobs-1; k>=0; k--){
+		for (Integer iM : availableMachines ){
+//		for (int iM=numberOfNodes-1; iM>=0; iM--){
 			for (int k=numOfJobs-1; k>=0; k--){
 				// if job k is chosen on iM and machine iM is available.  
 				if(sols[k*numberOfNodes +iM] >= 0){
