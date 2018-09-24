@@ -88,7 +88,7 @@ public class DRFExtScheduler implements Scheduler {
 			}
 			// D_i demand for the next task
 			JobQueue q = runningQueues.get(sMinIdx);			
-			if (Globals.JOB_SCHEDULER.equals(JobScheduling.SRPT))
+			if (Globals.JOB_SCHEDULER.equals(JobScheduling.SJF))
 					Collections.sort((List<BaseJob>) q.getQueuedUpJobs(), new JobLengthComparator(2));
 			
 			BaseJob unallocJob = q.getUnallocRunnableJob();
@@ -111,7 +111,7 @@ public class DRFExtScheduler implements Scheduler {
 			
 			// try CPU
 			if (!assigned) {
-				if (Globals.JOB_SCHEDULER.equals(JobScheduling.SRPT))
+				if (Globals.JOB_SCHEDULER.equals(JobScheduling.SJF))
 					Collections.sort((List<BaseJob>) q.getQueuedUpJobs(), new JobLengthComparator(1));			
 				unallocJob = q.getUnallocRunnableJob();
 				allocRes = demand.getCpuDemand();
@@ -159,7 +159,7 @@ public class DRFExtScheduler implements Scheduler {
 			}
 			// D_i demand for the next task
 			JobQueue q = runningQueues.get(sMinIdx);
-			if (Globals.JOB_SCHEDULER.equals(JobScheduling.SRPT))
+			if (Globals.JOB_SCHEDULER.equals(JobScheduling.SJF))
 				Collections.sort((List<BaseJob>) q.getQueuedUpJobs(), new JobLengthComparator(2));
 			
 			BaseJob unallocJob = q.getUnallocRunnableJob();

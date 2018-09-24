@@ -10,8 +10,8 @@ figureSize = figSizeOneCol .* [1 1 2/3 2/3];
 plots  = [true, true, false, false, false];
 
 colorUsers = {colorUser1; colorUser2; colorUser3};
-methods = {strDRF,  strES,  'DRFExt', strAlloX, 'SJF', 'FS'};
-files = {'DRF', 'ES', 'DRFExt', 'AlloX','SJF', 'FS'};
+methods = {strDRF,  strES,  'DRFExt', strAlloX, 'SJF', 'FS','SRPT'};
+files = {'DRF', 'ES', 'DRFExt', 'AlloX','SJF', 'FS','SRPT'};
 DRFId = 1; ESId = 2; DRFExtId = 3; AlloXId = 4; SJFId = 5; FSId = 6;
 
 % plots  = [true, false, false, false, false, false];

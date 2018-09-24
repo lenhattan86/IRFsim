@@ -49,7 +49,7 @@ public class DRFScheduler implements Scheduler {
 			for (JobQueue q : runningQueues) {
 				Collections.sort((List<BaseJob>) q.getQueuedUpJobs(), new JobArrivalComparator());
 			}
-		else if (Globals.JOB_SCHEDULER.equals(JobScheduling.SRPT)){
+		else if (Globals.JOB_SCHEDULER.equals(JobScheduling.SJF)){
 			for (JobQueue q : runningQueues) {
 				Collections.sort((List<BaseJob>) q.getQueuedUpJobs(), new JobLengthComparator(2));
 			}

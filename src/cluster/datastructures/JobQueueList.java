@@ -112,9 +112,13 @@ public class JobQueueList {
 	public List<JobQueue> updateRunningQueues(){
 		this.runningQueues = new LinkedList<JobQueue>();
 		for (JobQueue q:jobQueues){
-			if (q.isActive()){
+			if (Globals.EnablePreemption){
+				if (q.hasRunnableJobs()||q.hasRunningJobs())
 				this.addRunningQueue(q);
-			}
+			} else 
+				if (q.hasRunnableJobs()){
+					this.addRunningQueue(q);
+				}
 		}
 		sortRunningQueues();
 		return this.runningQueues;

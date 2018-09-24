@@ -12,6 +12,7 @@ import cluster.datastructures.ProcessingTimesComparator;
 import cluster.datastructures.QueueComparator;
 import cluster.datastructures.Resource;
 import cluster.schedulers.QueueScheduler;
+import cluster.simulator.Main.Globals;
 import cluster.simulator.Simulator;
 
 public class SRPTScheduler implements Scheduler {
@@ -23,7 +24,7 @@ public class SRPTScheduler implements Scheduler {
 
 	public SRPTScheduler() {
 		clusterTotCapacity = Simulator.cluster.getClusterMaxResAlloc();
-		this.schedulePolicy = "SJF";
+		this.schedulePolicy = "SRPT";
 	}
 
 	@Override
@@ -36,23 +37,19 @@ public class SRPTScheduler implements Scheduler {
 		for (JobQueue q : Simulator.QUEUE_LIST.getQueuesWithQueuedJobs()) {
 			Collections.sort((List<BaseJob>) q.getRunningJobs(), new JobArrivalComparator());
 		}
-
-		clusterAvailRes = Simulator.cluster.getClusterResAvail();
-		List<JobQueue> activeQueues = Simulator.QUEUE_LIST.getQueuesWithQueuedJobs();
-		
-		while(activeQueues.size() > 0){
-			boolean flag = online_srpt(clusterTotCapacity, activeQueues);
-			if (!flag)
-				break;
-			activeQueues = Simulator.QUEUE_LIST.getQueuesWithQueuedJobs();
-		}
+		online_srpt();
 	}
 	
-	public static boolean online_srpt(Resource resCapacity, List<JobQueue> activeQueues) {
-		Collections.sort(activeQueues, new QueueComparator());
+	public static void online_srpt() {
+		// preempt all the jobs.
+		if (Globals.EnablePreemption)
+			Simulator.cluster.preemptAllTasks();
+		List<JobQueue> runningQueues = Simulator.QUEUE_LIST.getRunningQueues();
+		
+		Collections.sort(runningQueues, new QueueComparator());
 		// Create set W of remaining processing times.
 		List<ProcessingTime> W = new ArrayList<ProcessingTime>();
-		for (JobQueue jobQueue : activeQueues) {
+		for (JobQueue jobQueue : runningQueues) {
 			for (BaseJob job: jobQueue.getActiveJobs()){
 				W.add(new ProcessingTime(true, job)); // reported processing time on CPU
 				W.add(new ProcessingTime(false, job)); // reported processing time on GPU
@@ -61,10 +58,9 @@ public class SRPTScheduler implements Scheduler {
 		
 		int nJobs = W.size();
 		if (nJobs <= 0)
-			return false;
+			return;
 		
 		Collections.sort(W, new ProcessingTimesComparator());		
-		// preempt all the jobs.
 		
 		// then schedule all jobs to the servers.	
 		// for each job in W, update fair score for each queue		
@@ -75,47 +71,25 @@ public class SRPTScheduler implements Scheduler {
 			int jobId = p.job.dagId;
 			Resource availRes = Simulator.cluster.getClusterResAvail();
 			if (!p.isCpu && availRes.resource(1) >= 1) {
-				
 				boolean res = QueueScheduler.allocateResToJob(p.job, false);
 				availRes = Simulator.cluster.getClusterResAvail(); 
-				if (res) {					
-					p.job.onStart(resCapacity);
+				if (res) {			
+					System.out.println("[INFO] place job "+ p.job.dagId + " at " + Simulator.CURRENT_TIME + " on GPU");
+					p.job.wasScheduled = true;
 					numScheduledJobs++;
-					break;
-				}
+				} 
 			} else if (p.isCpu && availRes.resource(0) >= 1) {
 				boolean res = QueueScheduler.allocateResToJob(p.job, true);
 				if (res) {
-					p.job.onStart(resCapacity);
+					System.out.println("[INFO] place job "+ p.job.dagId + " at " + Simulator.CURRENT_TIME + " on CPU");
+					p.job.wasScheduled = true;
 					numScheduledJobs++;
-					break;
 				} 
 			}
 		}
-		return numScheduledJobs>=1;
 	}
 
 	
-	public void computeResShare_prev() {
-		int numQueuesRuning = Simulator.QUEUE_LIST.getQueuesWithQueuedJobs().size();
-		if (numQueuesRuning == 0) {
-			return;
-		}
-
-		for (JobQueue q : Simulator.QUEUE_LIST.getQueuesWithQueuedJobs()) {
-			Collections.sort((List<BaseJob>) q.getRunningJobs(), new JobArrivalComparator());
-		}
-
-		clusterAvailRes = Simulator.cluster.getClusterResAvail();
-		List<JobQueue> activeQueues = Simulator.QUEUE_LIST.getQueuesWithQueuedJobs();
-		
-		while(clusterAvailRes.resource(1)>0 && activeQueues.size() > 0){
-			AlloXScheduler.online_allox(clusterTotCapacity, activeQueues, 1);
-			clusterAvailRes = Simulator.cluster.getClusterResAvail();
-			activeQueues = Simulator.QUEUE_LIST.getQueuesWithQueuedJobs();
-		}
-	}
-
 	@Override
 	public String getSchedulePolicy() {
 		return this.schedulePolicy;

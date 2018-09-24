@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Queue;
 
 import cluster.datastructures.BaseJob;
+import cluster.datastructures.InterchangableResourceDemand;
 import cluster.datastructures.JobArrivalComparator;
 import cluster.datastructures.JobQueue;
 import cluster.datastructures.QueueComparator;
@@ -153,12 +154,16 @@ public class FlowScheduler implements Scheduler {
 				if(sols[k*numberOfNodes +iM] >= 0){
 					BaseJob job = jobs.get(sols[k*numberOfNodes +iM]);
 					if (iM < Globals.MACHINE_MAX_GPU){
-						QueueScheduler.allocateResToJob(job, false);
+						boolean res = QueueScheduler.allocateResToJob(job, false);
+						if (!res)
+							System.out.println("[ERROR] cannot allocate resources to job "+job.dagId + " on " + iM);
 						job.machineId = iM;
 						job.onStart(clusterTotCapacity);
 						return false;
 					} else {
-						QueueScheduler.allocateResToJob(job, true);
+						boolean res = QueueScheduler.allocateResToJob(job, true);
+						if (!res)
+							System.out.println("[ERROR] cannot allocate resources to job "+job.dagId + " on " + iM);
 						job.machineId = iM;
 						job.onStart(clusterTotCapacity);
 						return false;

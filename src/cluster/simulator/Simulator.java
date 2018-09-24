@@ -24,6 +24,7 @@ import cluster.datastructures.Resources;
 import cluster.schedulers.QueueScheduler;
 import cluster.simulator.Main.Globals;
 import cluster.simulator.Main.Globals.JobsArrivalPolicy;
+import cluster.simulator.Main.Globals.Method;
 import cluster.simulator.Main.Globals.QueueSchedulerPolicy;
 import cluster.utils.Output;
 import cluster.utils.Randomness;
@@ -35,7 +36,7 @@ public class Simulator {
 	public static boolean DEBUG = false;
 
 	public static double CURRENT_TIME = 0;
-	
+
 	public static Resource Capacity = null;
 
 	public static Queue<BaseJob> runnableJobs = null;
@@ -95,7 +96,6 @@ public class Simulator {
 	public Simulator() {
 		CURRENT_TIME = 0;
 		STOP_CMD = false;
-		
 
 		QUEUE_LIST = new JobQueueList();
 
@@ -113,7 +113,7 @@ public class Simulator {
 
 		double capacity[] = { Globals.MACHINE_MAX_CPU, Globals.MACHINE_MAX_GPU, Globals.MACHINE_MAX_MEM };
 		cluster = new Cluster(true, new Resource(capacity));
-		Capacity = cluster.getClusterMaxResAlloc(); 
+		Capacity = cluster.getClusterMaxResAlloc();
 
 		totalReplayedJobs = runnableJobs.size();
 		runningJobs = new LinkedList<BaseJob>();
@@ -161,11 +161,10 @@ public class Simulator {
 			}
 
 			QUEUE_LIST.updateRunningQueues();
-		
-			 if (!jobCompleted && !newJobArrivals && finishedTasks.isEmpty()){
-//			if (false)
+
+			if (!jobCompleted && !newJobArrivals && finishedTasks.isEmpty()) {
 				Output.debugln(DEBUG, "----- Do nothing ----");
-			 } else {
+			} else {
 				Output.debugln(DEBUG,
 						"[Simulator]: START work conserving; clusterAvail:" + Simulator.cluster.getClusterResAvail());
 				queueSched.schedule();
@@ -173,19 +172,19 @@ public class Simulator {
 						"[Simulator]: END work conserving; clusterAvail:" + Simulator.cluster.getClusterResAvail());
 			}
 
-//			for (BaseJob dag : Simulator.runningJobs) {
-//				dag.receivedService.addUsage(dag.getRsrcInUse());
-//				Resource usage = new Resource(dag.getRsrcInUse());
-//				dag.usedReses.add(usage);
-//				// System.out.println(usage);
-//			}
+			// for (BaseJob dag : Simulator.runningJobs) {
+			// dag.receivedService.addUsage(dag.getRsrcInUse());
+			// Resource usage = new Resource(dag.getRsrcInUse());
+			// dag.usedReses.add(usage);
+			// // System.out.println(usage);
+			// }
 
-//			Simulator.printUsedResources();
+			// Simulator.printUsedResources();
 			Simulator.writeResourceUsage();
 			Simulator.CURRENT_TIME += Globals.STEP_TIME;
 		}
-		System.out.println("schedulingTime: " + queueSched.schedulingTime/(1000000) + " mili seconds");
-		System.out.println("profilingTime: " + queueSched.profilingTime/1000000 + " mili seconds");
+		System.out.println("schedulingTime: " + queueSched.schedulingTime / (1000000) + " mili seconds");
+		System.out.println("profilingTime: " + queueSched.profilingTime / 1000000 + " mili seconds");
 		System.out.println("\n==== END STEP_TIME:" + Simulator.CURRENT_TIME + " ====\n");
 	}
 
@@ -204,9 +203,9 @@ public class Simulator {
 		int numFullJobs = 0;
 		for (BaseJob dag : completedJobs) {
 			makespan = Math.max(makespan, dag.jobEndTime);
-			if(!dag.isProfiling){
+			if (!dag.isProfiling) {
 				average = average + dag.getCompletionTime();
-				numFullJobs ++;
+				numFullJobs++;
 			}
 		}
 		average /= numFullJobs;
@@ -215,7 +214,7 @@ public class Simulator {
 		System.out.println("Jobs completed: " + completedJobs.size());
 		System.out.println("Full Jobs completed: " + numFullJobs);
 		System.out.println("Makespan:" + makespan);
-		
+
 		for (JobQueue queue : QUEUE_LIST.getJobQueues()) {
 			double avg = 0.0;
 			int count = 0;
@@ -242,8 +241,8 @@ public class Simulator {
 			double dagDuration = dag.getCompletionTime();
 			makespan = Math.max(makespan, dagDuration);
 			results.put(dag.dagId, dagDuration);
-			Output.writeln(dag.dagId + "," + dag.jobStartTime + "," + dag.jobEndTime + "," + dagDuration + ","
-					+ dag.getQueueName());
+			Output.writeln(
+					dag.dagId + "," + dag.jobStartTime + "," + dag.jobEndTime + "," + dagDuration + "," + dag.getQueueName());
 		}
 	}
 
@@ -361,8 +360,8 @@ public class Simulator {
 			for (BaseJob newJob : runnableJobs) {
 				boolean isReady = newJob.isReady();
 				for (BaseJob jb : runnableJobs) {
-					if (jb.arrivalTime == newJob.arrivalTime){
-						if(!jb.isReady()) {
+					if (jb.arrivalTime == newJob.arrivalTime) {
+						if (!jb.isReady()) {
 							isReady = false;
 							break;
 						}
@@ -372,7 +371,8 @@ public class Simulator {
 					newlyStartedJobs.add(newJob);
 					Simulator.QUEUE_LIST.addRunnalbleJob2Queue(newJob, newJob.getQueueName());
 					newJob.jobStartTime = Simulator.CURRENT_TIME;
-//					Output.debugln(DEBUG, "Started job:" + newJob.dagId + " at time:" + Simulator.CURRENT_TIME);
+					// Output.debugln(DEBUG, "Started job:" + newJob.dagId + " at time:" +
+					// Simulator.CURRENT_TIME);
 					existNewJob = true;
 				} else {
 					if (newJob.profilingJobs.isEmpty()) {
@@ -388,24 +388,25 @@ public class Simulator {
 				if (dag.arrivalTime <= Simulator.CURRENT_TIME) {
 					boolean isReady = dag.isReady();
 					for (BaseJob jb : runnableJobs) {
-						if (jb.arrivalTime == dag.arrivalTime){
-							if(!jb.isReady()) {
+						if (jb.arrivalTime == dag.arrivalTime) {
+							if (!jb.isReady()) {
 								isReady = false;
 								break;
-							} 
+							}
 						}
 					}
-					
+
 					if (!Globals.EnableProfiling || isReady) {
 						dag.jobStartTime = dag.arrivalTime;
 						// dag.jobStartRunningTime = dag.jobStartTime;
 						newlyStartedJobs.add(dag);
 						Simulator.QUEUE_LIST.addRunnalbleJob2Queue(dag, dag.getQueueName());
-//						Output.debugln(DEBUG, "Started job:" + dag.dagId + " at time:" + Simulator.CURRENT_TIME);
+						// Output.debugln(DEBUG, "Started job:" + dag.dagId + " at time:" +
+						// Simulator.CURRENT_TIME);
 						existNewJob = true;
 					} else {
 						if (dag.profilingJobs.isEmpty()) {
-							addProfilingJobs((MLJob) dag,  runningJobs);
+							addProfilingJobs((MLJob) dag, runningJobs);
 							existNewJob = true;
 						}
 					}
@@ -420,65 +421,68 @@ public class Simulator {
 
 		return existNewJob;
 	}
-	
-	public void addProfilingJobs(BaseJob job, Queue<BaseJob> runningJobs){
+
+	public void addProfilingJobs(BaseJob job, Queue<BaseJob> runningJobs) {
 		if (Globals.EnableProfiling) {
 			Set<BaseJob> profilingJobs = new HashSet<BaseJob>();
-			//TODOs: generate the profiling jobs
-//			for (BaseJob job: newlyStartedJobs){
-				MLJob cpuJob1 = createProfilingJob((MLJob)job, 0.01, false, Globals.CPU_PROFILING_JOB1 + job.dagId);
-				MLJob cpuJob2 = createProfilingJob((MLJob)job, 0.02, false, Globals.CPU_PROFILING_JOB2 + job.dagId);
-				MLJob gpuJob1 = createProfilingJob((MLJob)job, 0.01, true, Globals.GPU_PROFILING_JOB1 + job.dagId);
-				MLJob gpuJob2 = createProfilingJob((MLJob)job, 0.02, true, Globals.GPU_PROFILING_JOB2 + job.dagId);
-				
-//				if (Globals.QUEUE_SCHEDULER.equals(QueueSchedulerPolicy.DRF)){
-//					if (job.getDemand().isCpuJob()) {
-//						Simulator.QUEUE_LIST.addRunningJob2Queue(cpuJob1, cpuJob1.getQueueName());
-//						Simulator.QUEUE_LIST.addRunningJob2Queue(cpuJob2, cpuJob2.getQueueName());
-//						profilingJobs.add(cpuJob1);
-//						profilingJobs.add(cpuJob2);
-//					} else {
-//						Simulator.QUEUE_LIST.addRunningJob2Queue(gpuJob1, gpuJob1.getQueueName());
-//						Simulator.QUEUE_LIST.addRunningJob2Queue(gpuJob2, gpuJob2.getQueueName());
-//						profilingJobs.add(gpuJob1);
-//						profilingJobs.add(gpuJob2);
-//					}
-//				} 
-//				else {
-					Simulator.QUEUE_LIST.addRunnalbleJob2Queue(cpuJob1, cpuJob1.getQueueName());
-					Simulator.QUEUE_LIST.addRunnalbleJob2Queue(cpuJob2, cpuJob2.getQueueName());
-					Simulator.QUEUE_LIST.addRunnalbleJob2Queue(gpuJob1, gpuJob1.getQueueName());
-					Simulator.QUEUE_LIST.addRunnalbleJob2Queue(gpuJob2, gpuJob2.getQueueName());
-					profilingJobs.add(cpuJob1);
-					profilingJobs.add(cpuJob2);
-					profilingJobs.add(gpuJob1);
-					profilingJobs.add(gpuJob2);
-//				}
-				
-				
-//			}
+			// TODOs: generate the profiling jobs
+			// for (BaseJob job: newlyStartedJobs){
+			MLJob cpuJob1 = createProfilingJob((MLJob) job, 0.01, false, Globals.CPU_PROFILING_JOB1 + job.dagId);
+			MLJob cpuJob2 = createProfilingJob((MLJob) job, 0.02, false, Globals.CPU_PROFILING_JOB2 + job.dagId);
+			MLJob gpuJob1 = createProfilingJob((MLJob) job, 0.01, true, Globals.GPU_PROFILING_JOB1 + job.dagId);
+			MLJob gpuJob2 = createProfilingJob((MLJob) job, 0.02, true, Globals.GPU_PROFILING_JOB2 + job.dagId);
+
+			// if (Globals.QUEUE_SCHEDULER.equals(QueueSchedulerPolicy.DRF)){
+			// if (job.getDemand().isCpuJob()) {
+			// Simulator.QUEUE_LIST.addRunningJob2Queue(cpuJob1,
+			// cpuJob1.getQueueName());
+			// Simulator.QUEUE_LIST.addRunningJob2Queue(cpuJob2,
+			// cpuJob2.getQueueName());
+			// profilingJobs.add(cpuJob1);
+			// profilingJobs.add(cpuJob2);
+			// } else {
+			// Simulator.QUEUE_LIST.addRunningJob2Queue(gpuJob1,
+			// gpuJob1.getQueueName());
+			// Simulator.QUEUE_LIST.addRunningJob2Queue(gpuJob2,
+			// gpuJob2.getQueueName());
+			// profilingJobs.add(gpuJob1);
+			// profilingJobs.add(gpuJob2);
+			// }
+			// }
+			// else {
+			Simulator.QUEUE_LIST.addRunnalbleJob2Queue(cpuJob1, cpuJob1.getQueueName());
+			Simulator.QUEUE_LIST.addRunnalbleJob2Queue(cpuJob2, cpuJob2.getQueueName());
+			Simulator.QUEUE_LIST.addRunnalbleJob2Queue(gpuJob1, gpuJob1.getQueueName());
+			Simulator.QUEUE_LIST.addRunnalbleJob2Queue(gpuJob2, gpuJob2.getQueueName());
+			profilingJobs.add(cpuJob1);
+			profilingJobs.add(cpuJob2);
+			profilingJobs.add(gpuJob1);
+			profilingJobs.add(gpuJob2);
+			// }
+
+			// }
 			runningJobs.addAll(profilingJobs);
 			job.profilingJobs = new ArrayList(profilingJobs);
 		}
 	}
-	
+
 	public MLJob createProfilingJob(MLJob job, double scale, boolean isGpu, int newJobId) {
-		
+
 		MLJob profilingJob = MLJob.clone(job);
 		profilingJob.isProfiling = true;
 		profilingJob.dagId = newJobId;
-		
+
 		InterchangableResourceDemand mDemand = profilingJob.getDemand();
 		mDemand.cpu = Globals.CPU_PER_NODE;
 		mDemand.mem = Globals.MEM_PER_NODE;
 		mDemand.gpu = Globals.GPU_PER_NODE;
-		mDemand.gpuMem= Globals.MEM_PER_NODE;
+		mDemand.gpuMem = Globals.MEM_PER_NODE;
 		mDemand.gpuCompl = Math.max(mDemand.gpuCompl * scale, 1);
 		mDemand.cpuCompl = Math.max(mDemand.cpuCompl * scale, 1);
 		profilingJob.setTaskDemand(mDemand);
-		
+
 		profilingJob.isCpu = !isGpu;
-		
+
 		job.profilingJobs.add(profilingJob);
 		return profilingJob;
 	}

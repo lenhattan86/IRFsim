@@ -147,6 +147,37 @@ public class Cluster {
     return finishedTasks;
   }
   
+  public void preemptAllTasks() {
+
+    // finish any task on this machine at the current time
+    for (Machine machine : machines.values()) {
+    	Map<Task, Double> runningTasks = machine.runningTasks;
+    	List<Task> tasksToBeRemove = new LinkedList<Task>();
+      for (Map.Entry<Task, Double> entry : runningTasks.entrySet()) {
+        // remove task from running tasks
+      	Task t = entry.getKey();
+      	BaseJob dag = Simulator.getDag(t.dagId);
+      	if(!dag.isProfiling) { // not profiling jobs
+	//      	machine.runningTasks.remove(t);      	
+	      	tasksToBeRemove.add(t);
+	      	machine.totalResAlloc.subtract(t.usage);
+	        // update resource freed from corresponding job
+	        
+	//        System.out.println("[INFO] preempt job "+ t.dagId + " at " + Simulator.CURRENT_TIME);
+	        dag.runnableTasks.add(t.taskId);
+	        dag.runningTasks.remove(t.taskId);
+	        dag.preempt();
+	        //remove job from running queues
+	        dag.getQueue().addRunnableJob(dag);
+	        dag.getQueue().removeRunningJob(dag);
+      	}
+      }
+      for (Task t: tasksToBeRemove){
+      	runningTasks.remove(t);
+      }
+    }
+  }
+  
   public Map<Task, Double> getCurrentRunningTasks() {
   	Map<Task, Double> runningTasks = new HashMap<Task, Double>();
     for (Machine machine : machines.values()) {
@@ -154,6 +185,7 @@ public class Cluster {
     }
     return runningTasks;
   }
+  
   
   public Map<Integer, List<Integer>> finishTasksPrev(double... earliestFinishTime) {
 

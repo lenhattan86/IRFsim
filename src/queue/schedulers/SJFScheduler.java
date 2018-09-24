@@ -48,54 +48,6 @@ public class SJFScheduler implements Scheduler {
 		}
 	}
 	
-	public static boolean online_srpt(Resource resCapacity, List<JobQueue> activeQueues) {
-		Collections.sort(activeQueues, new QueueComparator());
-		// Create set W of remaining processing times.
-		List<ProcessingTime> W = new ArrayList<ProcessingTime>();
-		for (JobQueue jobQueue : activeQueues) {
-			for (BaseJob job: jobQueue.getActiveJobs()){
-				W.add(new ProcessingTime(true, job)); // reported processing time on CPU
-				W.add(new ProcessingTime(false, job)); // reported processing time on GPU
-			}
-		}
-		
-		int nJobs = W.size();
-		if (nJobs <= 0)
-			return false;
-		
-		Collections.sort(W, new ProcessingTimesComparator());		
-		// preempt all the jobs.
-		
-		// then schedule all jobs to the servers.	
-		// for each job in W, update fair score for each queue		
-		int numScheduledJobs = 0;
-		for (ProcessingTime p : W){
-			if (p.job.wasScheduled)
-				continue;
-			int jobId = p.job.dagId;
-			Resource availRes = Simulator.cluster.getClusterResAvail();
-			if (!p.isCpu && availRes.resource(1) >= 1) {
-				
-				boolean res = QueueScheduler.allocateResToJob(p.job, false);
-				availRes = Simulator.cluster.getClusterResAvail(); 
-				if (res) {					
-					p.job.onStart(resCapacity);
-					numScheduledJobs++;
-					break;
-				}
-			} else if (p.isCpu && availRes.resource(0) >= 1) {
-				boolean res = QueueScheduler.allocateResToJob(p.job, true);
-				if (res) {
-					p.job.onStart(resCapacity);
-					numScheduledJobs++;
-					break;
-				} 
-			}
-		}
-		return numScheduledJobs>=1;
-	}
-
-	
 	public void computeResShare_prev() {
 		int numQueuesRuning = Simulator.QUEUE_LIST.getQueuesWithQueuedJobs().size();
 		if (numQueuesRuning == 0) {

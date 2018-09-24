@@ -75,7 +75,7 @@ public class EqualShareScheduler implements Scheduler {
 			// Allocate on GPU
 			if (Globals.JOB_SCHEDULER.equals(JobScheduling.FIFO))
 				QueueScheduler.allocateResToQueue(q, shares, false);
-			else if (Globals.JOB_SCHEDULER.equals(JobScheduling.SRPT)) {
+			else if (Globals.JOB_SCHEDULER.equals(JobScheduling.SJF)) {
 				double cpuShare = shares[0];
 				shares[0] = 0;
 				Collections.sort((List<BaseJob>) q.getQueuedUpJobs(), new JobLengthComparator(2));

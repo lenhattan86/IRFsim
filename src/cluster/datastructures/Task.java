@@ -17,6 +17,7 @@ public class Task implements Comparable<Task> {
     this.taskId = taskId;
   }
   
+   
   public boolean isOnGpu()
   {
   	return usage.resource(1) > 0;
