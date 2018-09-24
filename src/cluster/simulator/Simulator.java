@@ -161,8 +161,11 @@ public class Simulator {
 			}
 
 			QUEUE_LIST.updateRunningQueues();
-
+			if (CURRENT_TIME >= 20)
+				CURRENT_TIME = CURRENT_TIME;
 			if (!jobCompleted && !newJobArrivals && finishedTasks.isEmpty()) {
+//			if (!jobCompleted && !newJobArrivals) {
+//			if (false){
 				Output.debugln(DEBUG, "----- Do nothing ----");
 			} else {
 				Output.debugln(DEBUG,
@@ -332,7 +335,7 @@ public class Simulator {
 				boolean thisDagFinished = ((MLJob) crdag).finishTasks(finishedTasks.get(crdag.dagId), false);
 
 				if (thisDagFinished) {
-					Output.debugln(DEBUG, "DAG:" + crdag.dagId + " finished at time:" + Simulator.CURRENT_TIME);
+					Output.debugln(true, "DAG:" + crdag.dagId + " finished at time:" + Simulator.CURRENT_TIME);
 					finJobs.add(crdag);
 					completedJobs.add(crdag);
 					QUEUE_LIST.addCompletionJob2Queue(crdag, crdag.getQueueName());

@@ -11,6 +11,7 @@ import cluster.datastructures.ProcessingTime;
 import cluster.datastructures.ProcessingTimesComparator;
 import cluster.datastructures.QueueComparator;
 import cluster.datastructures.Resource;
+import cluster.datastructures.Resources;
 import cluster.schedulers.QueueScheduler;
 import cluster.simulator.Main.Globals;
 import cluster.simulator.Simulator;
@@ -29,14 +30,6 @@ public class SRPTScheduler implements Scheduler {
 
 	@Override
 	public void computeResShare() {
-		int numQueuesRuning = Simulator.QUEUE_LIST.getQueuesWithQueuedJobs().size();
-		if (numQueuesRuning == 0) {
-			return;
-		}
-
-		for (JobQueue q : Simulator.QUEUE_LIST.getQueuesWithQueuedJobs()) {
-			Collections.sort((List<BaseJob>) q.getRunningJobs(), new JobArrivalComparator());
-		}
 		online_srpt();
 	}
 	
@@ -44,6 +37,7 @@ public class SRPTScheduler implements Scheduler {
 		// preempt all the jobs.
 		if (Globals.EnablePreemption)
 			Simulator.cluster.preemptAllTasks();
+		
 		List<JobQueue> runningQueues = Simulator.QUEUE_LIST.getRunningQueues();
 		
 		Collections.sort(runningQueues, new QueueComparator());
@@ -71,17 +65,18 @@ public class SRPTScheduler implements Scheduler {
 			int jobId = p.job.dagId;
 			Resource availRes = Simulator.cluster.getClusterResAvail();
 			if (!p.isCpu && availRes.resource(1) >= 1) {
+//				p.job.setRsrcInUse(Resources.ZEROS); //TODO: work around to preempt all resources
 				boolean res = QueueScheduler.allocateResToJob(p.job, false);
 				availRes = Simulator.cluster.getClusterResAvail(); 
 				if (res) {			
-					System.out.println("[INFO] place job "+ p.job.dagId + " at " + Simulator.CURRENT_TIME + " on GPU");
+					System.out.println("[INFO] place job "+ p.job.dagId + " at " + Simulator.CURRENT_TIME + " on GPU "+ p.job.getRsrcInUse());
 					p.job.wasScheduled = true;
 					numScheduledJobs++;
 				} 
 			} else if (p.isCpu && availRes.resource(0) >= 1) {
 				boolean res = QueueScheduler.allocateResToJob(p.job, true);
 				if (res) {
-					System.out.println("[INFO] place job "+ p.job.dagId + " at " + Simulator.CURRENT_TIME + " on CPU");
+					System.out.println("[INFO] place job "+ p.job.dagId + " at " + Simulator.CURRENT_TIME + " on CPU " + p.job.getRsrcInUse());
 					p.job.wasScheduled = true;
 					numScheduledJobs++;
 				} 

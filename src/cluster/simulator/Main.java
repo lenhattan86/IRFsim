@@ -125,6 +125,8 @@ public class Main {
 			DRF, DRFExt, FDRF, DRFW, ES, MaxMinMem, SpeedUp, Pricing, AlloX, SJF, FS, SRPT
 		}
 		
+		public static int PERIOD_T = 10; 
+		
 		public static enum DemandChangeType {
 			Running, Arrival, Total
 		}
@@ -490,7 +492,7 @@ public class Main {
 				System.out.println("[Error] Matlab is not supported.");
 			}
 		
-		Globals.runmode = Runmode.MultipleRuns;
+		Globals.runmode = Runmode.SmallScale;
 
 		Utils.createUserDir("log");
 		Utils.createUserDir("output");
@@ -512,7 +514,8 @@ public class Main {
 			Globals.SIM_END_TIME = 10000.0;
 //			Globals.Method[] methods = { Method.DRF, Method.DRFExt, Method.ES, Method.AlloX, Method.SJF, Method.FS};
 //			Globals.Method[] methods = { Method.DRF, Method.DRFExt, Method.ES, Method.AlloX, Method.SJF, Method.SRPT};
-			Globals.Method[] methods = {Method.FS };
+//			Globals.Method[] methods = {Method.FS };
+			Globals.Method[] methods = {Method.SRPT };
 //			Globals.Method[] methods = {Method.DRF };
 //			Globals.Method[] methods = {Method.DRF, Method.ES };
 //			Globals.Method[] methods = {Method.DRFExt};
@@ -540,7 +543,7 @@ public class Main {
 			Globals.jobData = new JobData();
 			Globals.MEMORY_SCALE_DOWN = 1;
 			Globals.NUM_MACHINES = 1;
-			Globals.SIM_END_TIME = 40.0;
+			Globals.SIM_END_TIME = 400.0;
 //			Globals.Method[] methods = { Method.DRF, Method.ES, Method.DRFExt,  Method.AlloX, Method.SJF, Method.FS, Method.SRPT};
 			Globals.Method[] methods = {Method.SRPT};
 			Globals.MACHINE_MAX_GPU = 2;

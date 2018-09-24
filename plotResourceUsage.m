@@ -9,7 +9,7 @@ workload='SIMPLE';
 num_batch_queues = 2;
 num_interactive_queue = 0;
 num_queues = num_batch_queues + num_interactive_queue;
-START_TIME = 0; END_TIME = 50;  STEP_TIME = 1;
+START_TIME = 0; END_TIME = 400;  STEP_TIME = 1;
 cluster_size = 2;
 
 CPUCap = cluster_size * 32;

@@ -314,9 +314,12 @@ public abstract class BaseJob implements Cloneable {
 	
 	public void preempt(){
 		double progress = this.getProgress();
-		this.getDemand().cpuCompl = progress*this.getDemand().cpuCompl;
-		this.getDemand().gpuCompl = progress*this.getDemand().gpuCompl;
-		this.rsrcInUse = Resources.ZEROS;
+		System.out.println(this.dagId + " : remain " + (1-progress));
+		this.getDemand().cpuCompl = (1-progress)*this.getDemand().cpuCompl;
+		this.getDemand().gpuCompl = (1-progress)*this.getDemand().gpuCompl;
+		this.rsrcInUse = new Resource(0);
+		this.rsrcQuota = new Resource(0);
 		this.wasScheduled = false;
+		this.jobStartRunningTime = -1;
 	}
 }

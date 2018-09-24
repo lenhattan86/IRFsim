@@ -339,7 +339,7 @@ public class HungarianAlgorithm {
 	  double [ ] [ ] scores = {   { 5, 4 },
               { 11, 10},
               { 13, 12},
-              { 6, 5 },
+              { 6, 3 },
               {21, 20},
               {23, 22}
           };
@@ -347,6 +347,7 @@ public class HungarianAlgorithm {
 	  
 	  HungarianAlgorithm runner = new HungarianAlgorithm(scores);
 	  int[] results = runner.execute();
+	  
 	  for (int i =0; i<results.length; i++)
 		  System.out.print(results[i] + ",");
   }

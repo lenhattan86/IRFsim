@@ -27,11 +27,13 @@ public class FlowScheduler implements Scheduler {
 	static Resource clusterTotCapacity = null;
 	static Resource clusterAvailRes = null;
 	static double[] L;
+	static int numberOfNodes = 0;
 	private static double alphaFairness = 1;
 	
 	public FlowScheduler(double alpha) {
 		clusterTotCapacity = Simulator.cluster.getClusterMaxResAlloc();
 //		alphaFairness = Globals.alpha;
+		numberOfNodes = (int) (Globals.MACHINE_MAX_GPU + (Globals.MACHINE_MAX_CPU/Globals.CPU_PER_NODE) );
 	}
 
 	@Override
@@ -44,7 +46,8 @@ public class FlowScheduler implements Scheduler {
 		List<JobQueue> activeQueues = Simulator.QUEUE_LIST.getQueuesWithQueuedJobs();
 		
 		while (isResourceAvailable()){
-			boolean isExit = online_fs(clusterTotCapacity, activeQueues, alphaFairness);
+			boolean isExit = compute_fs(clusterTotCapacity, activeQueues, alphaFairness);
+//			allocate_fs();
 			if (isExit)
 				break;
 		}
@@ -58,14 +61,14 @@ public class FlowScheduler implements Scheduler {
 	}
 	
 	// trigger only when a job finishes
-	private static boolean online_fs(Resource clusterTotCapacity, List<JobQueue>activeQueues, double alphaFairness) {
+	private static boolean compute_fs(Resource clusterTotCapacity, List<JobQueue>activeQueues, double alphaFairness) {
 		// step 1: Get current time and a time array where each element represents the time when 
 		// that machine finishes its current job
 		// 
 		// no definition yet, assume AvailTime[i] = max(current_time, time when current job will be finished on i) for all
 		// i in machineCpuQueues and machineGpuQueues
 		Map<Task, Double> runningTasks = Simulator.cluster.getCurrentRunningTasks(); 
-		int numberOfNodes = (int) (Globals.MACHINE_MAX_GPU + (Globals.MACHINE_MAX_CPU/Globals.CPU_PER_NODE) );
+		
 		// Globals.MACHINE_MAX_GPU first nodes are GPUs, later are CPUs
 		Map<Integer, Double> availableTimes = Simulator.cluster.availableTimes;
 
@@ -145,10 +148,11 @@ public class FlowScheduler implements Scheduler {
 		int[] sols = new HungarianAlgorithm(Q).execute();
 		//TODO: how to decide CPU or GPU for a job as 2 configurations may be selected on either CPU or GPU. 
 		
-		// allocate jobs to the available machines only
+		// add to the scheduled jobs to the queues for scheduling later.
 		boolean isExit = true;
-		for (Integer iM : availableMachines ){
-//			for (int k=numOfJobs-1; k>=0; k--){
+//		for (Integer iM : availableMachines ){
+		for (int iM=numberOfNodes-1; iM>=0; iM--){
+//		for (int k=numOfJobs-1; k>=0; k--){
 			for (int k=numOfJobs-1; k>=0; k--){
 				// if job k is chosen on iM and machine iM is available.  
 				if(sols[k*numberOfNodes +iM] >= 0){
@@ -173,6 +177,43 @@ public class FlowScheduler implements Scheduler {
 		}
 		return true;
 	}
+	
+//	private static boolean allocate_fs(){
+//		int numOfJobs = 10;
+//		List<Integer> availableMachines = new LinkedList<Integer>();
+//		Map<Integer, Double> availableTimes = Simulator.cluster.availableTimes;
+//		for (int machine: availableTimes.keySet()){
+//			if (availableTimes.get(machine) <= Simulator.CURRENT_TIME)
+//				availableMachines.add(machine);
+//			double aTime = Math.max(availableTimes.get(machine), Simulator.CURRENT_TIME);
+//			availableTimes.put(machine, aTime);
+//		}		
+//		Collections.sort(availableMachines, Collections.reverseOrder());
+//		for (Integer iM : availableMachines ){
+////		for (int k=numOfJobs-1; k>=0; k--){
+//			for (int k=numOfJobs-1; k>=0; k--){
+//				// if job k is chosen on iM and machine iM is available.  
+//				if(sols[k*numberOfNodes +iM] >= 0){
+//					BaseJob job = jobs.get(sols[k*numberOfNodes +iM]);
+//					if (iM < Globals.MACHINE_MAX_GPU){
+//						boolean res = QueueScheduler.allocateResToJob(job, false);
+//						if (!res)
+//							System.out.println("[ERROR] cannot allocate resources to job "+job.dagId + " on " + iM);
+//						job.machineId = iM;
+//						job.onStart(clusterTotCapacity);
+//						return false;
+//					} else {
+//						boolean res = QueueScheduler.allocateResToJob(job, true);
+//						if (!res)
+//							System.out.println("[ERROR] cannot allocate resources to job "+job.dagId + " on " + iM);
+//						job.machineId = iM;
+//						job.onStart(clusterTotCapacity);
+//						return false;
+//					}
+//				}
+//			}
+//		}
+//	}
 	
 	@Override
 	public String getSchedulePolicy() {
