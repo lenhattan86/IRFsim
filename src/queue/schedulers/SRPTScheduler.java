@@ -69,14 +69,14 @@ public class SRPTScheduler implements Scheduler {
 				boolean res = QueueScheduler.allocateResToJob(p.job, false);
 				availRes = Simulator.cluster.getClusterResAvail(); 
 				if (res) {			
-					System.out.println("[INFO] place job "+ p.job.dagId + " at " + Simulator.CURRENT_TIME + " on GPU "+ p.job.getRsrcInUse());
+//					System.out.println("[INFO] place job "+ p.job.dagId + " at " + Simulator.CURRENT_TIME + " on GPU "+ p.job.getRsrcInUse());
 					p.job.wasScheduled = true;
 					numScheduledJobs++;
 				} 
 			} else if (p.isCpu && availRes.resource(0) >= 1) {
 				boolean res = QueueScheduler.allocateResToJob(p.job, true);
 				if (res) {
-					System.out.println("[INFO] place job "+ p.job.dagId + " at " + Simulator.CURRENT_TIME + " on CPU " + p.job.getRsrcInUse());
+//					System.out.println("[INFO] place job "+ p.job.dagId + " at " + Simulator.CURRENT_TIME + " on CPU " + p.job.getRsrcInUse());
 					p.job.wasScheduled = true;
 					numScheduledJobs++;
 				} 

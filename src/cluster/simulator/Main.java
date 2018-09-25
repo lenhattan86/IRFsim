@@ -496,7 +496,7 @@ public class Main {
 				System.out.println("[Error] Matlab is not supported.");
 			}
 		
-		Globals.runmode = Runmode.SmallScale;
+		Globals.runmode = Runmode.MultipleRuns;
 
 		Utils.createUserDir("log");
 		Utils.createUserDir("output");
@@ -517,17 +517,17 @@ public class Main {
 			Globals.NUM_MACHINES = 1;
 			Globals.SIM_END_TIME = 10000.0;
 //			Globals.Method[] methods = { Method.DRF, Method.DRFExt, Method.ES, Method.AlloX, Method.SJF, Method.FS};
-//			Globals.Method[] methods = { Method.DRF, Method.DRFExt, Method.ES, Method.AlloX, Method.SJF, Method.SRPT};
+			Globals.Method[] methods = { Method.DRF, Method.DRFExt, Method.ES, Method.AlloX, Method.SJF, Method.SRPT};
 //			Globals.Method[] methods = {Method.FS };
-			Globals.Method[] methods = {Method.SRPT };
+//			Globals.Method[] methods = {Method.SRPT };
 //			Globals.Method[] methods = {Method.DRF };
 //			Globals.Method[] methods = {Method.DRF, Method.ES };
 //			Globals.Method[] methods = {Method.DRFExt};
 //			Globals.Method[] methods = {Method.ES, Method.AlloX};
 			Globals.MACHINE_MAX_GPU = 10;
 			Globals.workload = Globals.WorkLoadType.Google;
-			Globals.numQueues = 5;
-			Globals.numJobs = Globals.numQueues*50;
+			Globals.numQueues = 15;
+			Globals.numJobs = Globals.numQueues*60;
 
 			for (Globals.Method method : methods) {
 				Globals.METHOD = method;

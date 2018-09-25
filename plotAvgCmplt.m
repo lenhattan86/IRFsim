@@ -4,10 +4,10 @@ common_settings;
 % fig_path = ['figs/'];
 %%
 barWidth = 0.5;
-queue_num = 2;
-cluster_size= 2;
+queue_num = 15;
+cluster_size= 10;
 figureSize = figSizeOneCol .* [1 1 2/3 2/3];
-plots  = [true, true, false, false, false];
+plots  = [true, true, false, true, true];
 
 colorUsers = {colorUser1; colorUser2; colorUser3};
 methods = {strDRF,  strES,  'DRFExt', strAlloX, 'SJF', 'FS','SRPT'};

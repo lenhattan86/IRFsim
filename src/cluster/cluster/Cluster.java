@@ -175,7 +175,7 @@ public class Cluster {
 	        //remove job from running queues
 	        dag.getQueue().addRunnableJob(dag);
 	        dag.getQueue().removeRunningJob(dag);
-	        System.out.println("[INFO] preempt job "+ t.dagId + " at " + Simulator.CURRENT_TIME + " " + dag.getRsrcInUse());
+//	        System.out.println("[INFO] preempt job "+ t.dagId + " at " + Simulator.CURRENT_TIME + " " + dag.getRsrcInUse());
       	}
       }
       for (Task t: tasksToBeRemove){
