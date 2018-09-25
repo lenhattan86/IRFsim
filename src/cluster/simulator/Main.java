@@ -29,12 +29,16 @@ public class Main {
 	public static class Globals {
 		
 		public final static boolean EnableMatlab = false;
-		public final static boolean EnableProfiling = false;
+		public final static boolean EnableProfiling = true;
 		public final static boolean EnablePreemption = true;
 		public static int CPU_PROFILING_JOB1 = -100000; //-10000 -> 0
 		public static int CPU_PROFILING_JOB2 = CPU_PROFILING_JOB1*2;
 		public static int GPU_PROFILING_JOB1 = CPU_PROFILING_JOB1*3;
 		public static int GPU_PROFILING_JOB2 = CPU_PROFILING_JOB1*4;
+		public static double cpu_prof_1 = 0.02;
+		public static double cpu_prof_2 = 0.04;
+		public static double gpu_prof_1 = 0.02;
+		public static double gpu_prof_2 = 0.04;
 		
 		public static JobScheduling JOB_SCHEDULER = JobScheduling.SJF; 
 		
@@ -275,7 +279,7 @@ public class Main {
 				Globals.TRACE_FILE = "input/job_google_2.txt"; // BigBench
 				break;
 			case Tensorflow:
-				Globals.TRACE_FILE = "input/tf_8.txt";
+				Globals.TRACE_FILE = "input/tf_8_p100.txt";
 				break;
 			case TPC_DS:
 				Globals.WORKLOAD_AVG_TASK_DURATION = 31.60574050691386;
@@ -539,13 +543,14 @@ public class Main {
 			Globals.USE_TRACE=true;
 //			Globals.workload = WorkLoadType.Google_2;
 			Globals.alpha = 0.5;
-			Globals.workload = WorkLoadType.SIMPLE;
+//			Globals.workload = WorkLoadType.SIMPLE;
+			Globals.workload = WorkLoadType.Tensorflow;
 			Globals.jobData = new JobData();
 			Globals.MEMORY_SCALE_DOWN = 1;
 			Globals.NUM_MACHINES = 1;
-			Globals.SIM_END_TIME = 400.0;
-//			Globals.Method[] methods = { Method.DRF, Method.ES, Method.DRFExt,  Method.AlloX, Method.SJF, Method.FS, Method.SRPT};
-			Globals.Method[] methods = {Method.FS};
+			Globals.SIM_END_TIME = 10000.0;
+			Globals.Method[] methods = { Method.DRF, Method.ES, Method.DRFExt,  Method.AlloX, Method.SJF, Method.FS, Method.SRPT};
+//			Globals.Method[] methods = {Method.DRF, Method.SJF};
 			Globals.MACHINE_MAX_GPU = 2;
 			Globals.numQueues = 2;
 			Globals.numJobs = Globals.numQueues*4;

@@ -438,6 +438,14 @@ public class JobQueue {
 		// }
 		return this.runnableJobs.peek();
 	}
+	
+	public BaseJob getNonProfilingRunnableJob() {
+		for (BaseJob job : this.runnableJobs)
+			 if (!job.isProfiling) {
+				 return job;
+			 }
+		return null;
+	}
 
 	public Resource assign(Resource assignedRes) {
 		Resource remain = Resources.clone(assignedRes);

@@ -428,10 +428,10 @@ public class Simulator {
 			Set<BaseJob> profilingJobs = new HashSet<BaseJob>();
 			// TODOs: generate the profiling jobs
 			// for (BaseJob job: newlyStartedJobs){
-			MLJob cpuJob1 = createProfilingJob((MLJob) job, 0.01, false, Globals.CPU_PROFILING_JOB1 + job.dagId);
-			MLJob cpuJob2 = createProfilingJob((MLJob) job, 0.02, false, Globals.CPU_PROFILING_JOB2 + job.dagId);
-			MLJob gpuJob1 = createProfilingJob((MLJob) job, 0.01, true, Globals.GPU_PROFILING_JOB1 + job.dagId);
-			MLJob gpuJob2 = createProfilingJob((MLJob) job, 0.02, true, Globals.GPU_PROFILING_JOB2 + job.dagId);
+			MLJob cpuJob1 = createProfilingJob((MLJob) job, Globals.cpu_prof_1, false, Globals.CPU_PROFILING_JOB1 + job.dagId);
+			MLJob cpuJob2 = createProfilingJob((MLJob) job, Globals.cpu_prof_2, false, Globals.CPU_PROFILING_JOB2 + job.dagId);
+			MLJob gpuJob1 = createProfilingJob((MLJob) job, Globals.gpu_prof_1, true, Globals.GPU_PROFILING_JOB1 + job.dagId);
+			MLJob gpuJob2 = createProfilingJob((MLJob) job, Globals.gpu_prof_2, true, Globals.GPU_PROFILING_JOB2 + job.dagId);
 
 			// if (Globals.QUEUE_SCHEDULER.equals(QueueSchedulerPolicy.DRF)){
 			// if (job.getDemand().isCpuJob()) {

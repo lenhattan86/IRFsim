@@ -78,6 +78,7 @@ public class QueueScheduler {
 			startTime = System.nanoTime();
 			scheduler.computeResShare();
 			schedulingTime = schedulingTime + System.nanoTime() - startTime;
+//			System.out.println(" SCHEDULE AT " + Simulator.CURRENT_TIME);
 		}
 	}
 
@@ -85,9 +86,6 @@ public class QueueScheduler {
 
 		boolean isCpuAvailable = true;
 		boolean isGpuAvailable = true;
-		if(Simulator.CURRENT_TIME >= 301){
-			int a = 0;
-		}
 		
 		int round = 0;
 		int queueId = 0;

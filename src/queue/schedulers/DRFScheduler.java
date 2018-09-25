@@ -128,7 +128,7 @@ public class DRFScheduler implements Scheduler {
 			}
 			// D_i demand for the next task
 			JobQueue q = runningQueues.get(sMinIdx);
-			BaseJob unallocJob = q.getUnallocRunnableJob(); // time consuming
+			BaseJob unallocJob = q.getNonProfilingRunnableJob(); // time consuming
 			if (unallocJob == null) {
 				userDominantShareArr[sMinIdx] = Double.MAX_VALUE;
 				// do not allocate to this queue any more

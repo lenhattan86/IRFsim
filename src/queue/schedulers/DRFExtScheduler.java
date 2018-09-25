@@ -91,7 +91,7 @@ public class DRFExtScheduler implements Scheduler {
 			if (Globals.JOB_SCHEDULER.equals(JobScheduling.SJF))
 					Collections.sort((List<BaseJob>) q.getQueuedUpJobs(), new JobLengthComparator(2));
 			
-			BaseJob unallocJob = q.getUnallocRunnableJob();
+			BaseJob unallocJob = q.getNonProfilingRunnableJob();
 
 			if (unallocJob == null) {
 				userDominantShareArr[sMinIdx] = Double.MAX_VALUE;
@@ -113,7 +113,7 @@ public class DRFExtScheduler implements Scheduler {
 			if (!assigned) {
 				if (Globals.JOB_SCHEDULER.equals(JobScheduling.SJF))
 					Collections.sort((List<BaseJob>) q.getQueuedUpJobs(), new JobLengthComparator(1));			
-				unallocJob = q.getUnallocRunnableJob();
+				unallocJob = q.getNonProfilingRunnableJob();
 				allocRes = demand.getCpuDemand();
 				duration = demand.cpuCompl;
 				assigned = Simulator.cluster.assignTask(unallocJob.dagId, taskId,
