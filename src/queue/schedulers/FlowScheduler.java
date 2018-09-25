@@ -136,7 +136,7 @@ public class FlowScheduler implements Scheduler {
 		// Add all jobs from queue to job set W
 		List<BaseJob> jobs = new ArrayList<BaseJob>();
 		for (JobQueue jobQueue : queuesWithLowestFairness) {
-			jobs.addAll(jobQueue.getQueuedUpJobs());
+			jobs.addAll(jobQueue.getQueuedUpFullJobs());
 		}	
 		int numOfJobs = jobs.size();
 		if (numOfJobs ==0) 

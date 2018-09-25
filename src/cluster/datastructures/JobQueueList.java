@@ -128,10 +128,19 @@ public class JobQueueList {
 		return runningQueues;
 	}
 	
-	public List<JobQueue> getQueuesWithQueuedJobs(){
+	/*public List<JobQueue> getQueuesWithQueuedJobs(){
 		List<JobQueue> queues = new ArrayList<JobQueue>();
 		for (JobQueue q: runningQueues){
 			if (q.getQueuedUpJobs().size()>0)
+				queues.add(q);
+		}
+		return queues;
+	}*/
+	
+	public List<JobQueue> getQueuesWithQueuedJobs(){
+		List<JobQueue> queues = new ArrayList<JobQueue>();
+		for (JobQueue q: runningQueues){
+			if (q.getQueuedUpFullJobs().size()>0)
 				queues.add(q);
 		}
 		return queues;

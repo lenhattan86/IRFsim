@@ -545,7 +545,6 @@ public class Main {
 			Globals.USE_TRACE=true;
 //			Globals.workload = WorkLoadType.Google_2;
 			Globals.alpha = 0.5;
-//			Globals.workload = WorkLoadType.SIMPLE;
 			Globals.workload = WorkLoadType.Tensorflow;
 			Globals.jobData = new JobData();
 			double errStd = 0.0;

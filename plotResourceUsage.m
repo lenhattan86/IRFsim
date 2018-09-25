@@ -57,7 +57,7 @@ extraStr = ['_' int2str(num_batch_queues) '_' int2str(cluster_size)];
 %%
 % prefixes = {'DRF', 'ES', 'DRFExt', 'AlloX', 'SJF'};
 % prefixes = {'FS','SRPT'};
-prefixes = {'DRF','SJF'};
+prefixes = {'DRF','FS'};
 % prefixes = {'AlloX'};
 % prefixes = {'DRF','AlloX'};
 % prefixes = {'DRFExt','SJF'};
