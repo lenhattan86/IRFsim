@@ -70,8 +70,8 @@ public class FlowScheduler implements Scheduler {
 //		System.out.println("[INFO] available machines " + availableMachines + " at " + Simulator.CURRENT_TIME);
 		
 		boolean isReschedule = false;
-//		if (minAvailableTime <= Simulator.CURRENT_TIME)
-//			isReschedule = true;
+		if (minAvailableTime <= Simulator.CURRENT_TIME)
+			isReschedule = true;
 		if (Simulator.CURRENT_TIME % Globals.PERIOD_FS == 0)
 			isReschedule = true;
 		
