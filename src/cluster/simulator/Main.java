@@ -496,7 +496,7 @@ public class Main {
 				System.out.println("[Error] Matlab is not supported.");
 			}
 		
-		Globals.runmode = Runmode.MultipleRuns;
+		Globals.runmode = Runmode.SmallScale;
 
 		Utils.createUserDir("log");
 		Utils.createUserDir("output");
@@ -516,6 +516,8 @@ public class Main {
 			Globals.MEMORY_SCALE_DOWN = 1;
 			Globals.NUM_MACHINES = 1;
 			Globals.SIM_END_TIME = 10000.0;
+			double errStd = 0.1;
+			Globals.jobData.errs = Randomness.getNormalDistribution(Globals.NumRandomSamples , 0, errStd, -1, 1);
 //			Globals.Method[] methods = { Method.DRF, Method.DRFExt, Method.ES, Method.AlloX, Method.SJF, Method.FS};
 			Globals.Method[] methods = { Method.DRF, Method.DRFExt, Method.ES, Method.AlloX, Method.SJF, Method.SRPT};
 //			Globals.Method[] methods = {Method.FS };
@@ -546,11 +548,13 @@ public class Main {
 //			Globals.workload = WorkLoadType.SIMPLE;
 			Globals.workload = WorkLoadType.Tensorflow;
 			Globals.jobData = new JobData();
+			double errStd = 0.0;
+			Globals.jobData.errs = Randomness.getNormalDistribution(Globals.NumRandomSamples , 0, errStd, -1, 1);
 			Globals.MEMORY_SCALE_DOWN = 1;
 			Globals.NUM_MACHINES = 1;
 			Globals.SIM_END_TIME = 10000.0;
-			Globals.Method[] methods = { Method.DRF, Method.ES, Method.DRFExt,  Method.AlloX, Method.SJF, Method.FS, Method.SRPT};
-//			Globals.Method[] methods = {Method.DRF, Method.SJF};
+//			Globals.Method[] methods = { Method.DRF, Method.ES, Method.DRFExt,  Method.AlloX, Method.SJF, Method.FS, Method.SRPT};
+			Globals.Method[] methods = {Method.FS};
 			Globals.MACHINE_MAX_GPU = 2;
 			Globals.numQueues = 2;
 			Globals.numJobs = Globals.numQueues*4;

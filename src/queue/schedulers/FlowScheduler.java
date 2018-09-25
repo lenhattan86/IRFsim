@@ -29,7 +29,6 @@ public class FlowScheduler implements Scheduler {
 	static double[] L;
 	static int numberOfNodes = 0;
 	private static double alphaFairness = 1;
-	private static int numSchedule = 0;
 	
 	public FlowScheduler(double alpha) {
 		clusterTotCapacity = Simulator.cluster.getClusterMaxResAlloc();
@@ -107,8 +106,18 @@ public class FlowScheduler implements Scheduler {
 
 		for (Map.Entry<Task, Double> entry : runningTasks.entrySet()) {
 			Task t = entry.getKey();
-			int machineId = Simulator.getDag(t.dagId).machineId;
-			availableTimes.put(machineId, entry.getValue());
+			BaseJob job = Simulator.getDag(t.dagId);
+			int machineId = job.machineId;
+			InterchangableResourceDemand reportDemand = job.getReportDemand();
+			InterchangableResourceDemand demand = job.getReportDemand();
+			
+			if(machineId < Globals.MACHINE_MAX_GPU){
+				double err = reportDemand.gpuCompl -demand.cpuCompl;  
+				availableTimes.put(machineId, Math.max(0, entry.getValue()-err));
+			} else {
+				double err = reportDemand.cpuCompl -demand.cpuCompl;
+				availableTimes.put(machineId, Math.max(0, entry.getValue()-err));
+			}
 		}
 		
 //		for (int machine: availableTimes.keySet()){
@@ -140,9 +149,9 @@ public class FlowScheduler implements Scheduler {
 			for (int j=0; j<numOfJobs; j++){
 				D[i][j] = availableTimes.get(i) - jobs.get(j).arrivalTime;
 				if (i< Globals.MACHINE_MAX_GPU ){
-					P[i][j] = jobs.get(j).getDemand().gpuCompl;
+					P[i][j] = jobs.get(j).getReportDemand().gpuCompl;
 				} else {
-					P[i][j] = jobs.get(j).getDemand().cpuCompl;
+					P[i][j] = jobs.get(j).getReportDemand().cpuCompl;
 				}
 			}
 		}
@@ -186,7 +195,7 @@ public class FlowScheduler implements Scheduler {
 					BaseJob job = jobs.get(sols[k*numberOfNodes +iM]);
 					Simulator.cluster.scheduledJobs.get(iM).add(job);
 					boolean isGpu = iM < Globals.MACHINE_MAX_GPU;
-					double processingTime = isGpu?job.getDemand().gpuCompl:job.getDemand().cpuCompl;
+					double processingTime = isGpu?job.getReportDemand().gpuCompl:job.getReportDemand().cpuCompl;
 					double currentAvailTime = availableTimes.get(iM);
 					availableTimes.put(iM, currentAvailTime+processingTime);
 				}
