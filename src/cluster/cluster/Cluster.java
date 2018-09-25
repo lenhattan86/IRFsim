@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.TreeMap;
 import java.util.logging.Logger;
 
@@ -28,6 +29,7 @@ public class Cluster {
 
   private static Logger LOG = Logger.getLogger(Cluster.class.getName());
   public Map<Integer, Double> availableTimes = null;
+  public Map<Integer, Queue<BaseJob>> scheduledJobs = null;
 
   public Cluster(boolean state, Resource res) {
     execMode = state;
@@ -40,6 +42,10 @@ public class Cluster {
     int numberOfNodes = (int) (Globals.MACHINE_MAX_GPU + (Globals.MACHINE_MAX_CPU/Globals.CPU_PER_NODE) );
     for (int i=0; i< numberOfNodes; i++){
     	availableTimes.put(i, 0.0);
+    }
+    scheduledJobs = new HashMap<Integer, Queue<BaseJob>>();
+    for (int i=0; i< numberOfNodes; i++){
+    	scheduledJobs.put(i, new LinkedList<BaseJob>());
     }
   }
 

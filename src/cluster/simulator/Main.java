@@ -125,7 +125,7 @@ public class Main {
 			DRF, DRFExt, FDRF, DRFW, ES, MaxMinMem, SpeedUp, Pricing, AlloX, SJF, FS, SRPT
 		}
 		
-		public static int PERIOD_T = 10; 
+		public static int PERIOD_FS = 50; 
 		
 		public static enum DemandChangeType {
 			Running, Arrival, Total
@@ -545,7 +545,7 @@ public class Main {
 			Globals.NUM_MACHINES = 1;
 			Globals.SIM_END_TIME = 400.0;
 //			Globals.Method[] methods = { Method.DRF, Method.ES, Method.DRFExt,  Method.AlloX, Method.SJF, Method.FS, Method.SRPT};
-			Globals.Method[] methods = {Method.SRPT};
+			Globals.Method[] methods = {Method.FS};
 			Globals.MACHINE_MAX_GPU = 2;
 			Globals.numQueues = 2;
 			Globals.numJobs = Globals.numQueues*4;

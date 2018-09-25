@@ -29,6 +29,7 @@ public class FlowScheduler implements Scheduler {
 	static double[] L;
 	static int numberOfNodes = 0;
 	private static double alphaFairness = 1;
+	private static int numSchedule = 0;
 	
 	public FlowScheduler(double alpha) {
 		clusterTotCapacity = Simulator.cluster.getClusterMaxResAlloc();
@@ -45,12 +46,40 @@ public class FlowScheduler implements Scheduler {
 		
 		List<JobQueue> activeQueues = Simulator.QUEUE_LIST.getQueuesWithQueuedJobs();
 		
-		while (isResourceAvailable()){
-			boolean isExit = compute_fs(clusterTotCapacity, activeQueues, alphaFairness);
-//			allocate_fs();
-			if (isExit)
-				break;
+		List<Integer> availableMachines = new LinkedList<Integer>();
+		List<Integer> busyMachines = new LinkedList<Integer>();
+		Map<Integer, Double> availableTimes = Simulator.cluster.availableTimes;
+		
+		double minAvailableTime = Integer.MAX_VALUE;
+		for (double availTime : availableTimes.values()) {
+			if(availTime < minAvailableTime)
+				minAvailableTime = availTime;
 		}
+		
+		Map<Task, Double> runningTasks = Simulator.cluster.getCurrentRunningTasks(); 
+		for (Map.Entry<Task, Double> entry : runningTasks.entrySet()) {
+			Task t = entry.getKey();
+			int machineId = Simulator.getDag(t.dagId).machineId;
+			busyMachines.add(machineId);
+		}
+		for (int i=0; i<numberOfNodes; i++){
+			if (!busyMachines.contains(i))
+				availableMachines.add(i);
+		}
+			
+//		System.out.println("[INFO] available machines " + availableMachines + " at " + Simulator.CURRENT_TIME);
+		
+		boolean isReschedule = false;
+//		if (minAvailableTime <= Simulator.CURRENT_TIME)
+//			isReschedule = true;
+		if (Simulator.CURRENT_TIME % Globals.PERIOD_FS == 0)
+			isReschedule = true;
+		
+		if (isReschedule){
+			compute_fs(clusterTotCapacity, activeQueues, alphaFairness);
+//			System.out.println("number of FS schedule "+numSchedule++);
+		}
+		allocate_fs(availableMachines);
 	}
 	
 	private boolean isResourceAvailable(){
@@ -62,15 +91,19 @@ public class FlowScheduler implements Scheduler {
 	
 	// trigger only when a job finishes
 	private static boolean compute_fs(Resource clusterTotCapacity, List<JobQueue>activeQueues, double alphaFairness) {
+	// Globals.MACHINE_MAX_GPU first nodes are GPUs, later are CPUs
+		Map<Integer, Double> availableTimes = Simulator.cluster.availableTimes;
+		for (int iM=numberOfNodes-1; iM>=0; iM--) {
+				Simulator.cluster.scheduledJobs.put(iM, new LinkedList<BaseJob>());
+				availableTimes.put(iM, Simulator.CURRENT_TIME);
+		}
+		
 		// step 1: Get current time and a time array where each element represents the time when 
 		// that machine finishes its current job
 		// 
 		// no definition yet, assume AvailTime[i] = max(current_time, time when current job will be finished on i) for all
 		// i in machineCpuQueues and machineGpuQueues
 		Map<Task, Double> runningTasks = Simulator.cluster.getCurrentRunningTasks(); 
-		
-		// Globals.MACHINE_MAX_GPU first nodes are GPUs, later are CPUs
-		Map<Integer, Double> availableTimes = Simulator.cluster.availableTimes;
 
 		for (Map.Entry<Task, Double> entry : runningTasks.entrySet()) {
 			Task t = entry.getKey();
@@ -78,14 +111,10 @@ public class FlowScheduler implements Scheduler {
 			availableTimes.put(machineId, entry.getValue());
 		}
 		
-		List<Integer> availableMachines = new LinkedList<Integer>();
-		for (int machine: availableTimes.keySet()){
-			if (availableTimes.get(machine) <= Simulator.CURRENT_TIME)
-				availableMachines.add(machine);
-			double aTime = Math.max(availableTimes.get(machine), Simulator.CURRENT_TIME);
-			availableTimes.put(machine, aTime);
-		}		
-		Collections.sort(availableMachines, Collections.reverseOrder());
+//		for (int machine: availableTimes.keySet()){
+//			double aTime = Math.max(availableTimes.get(machine), Simulator.CURRENT_TIME);
+//			availableTimes.put(machine, aTime);
+//		}		
 		
 		// step 2: Consider all jobs from the activeQueues where the fairness score of the owner falls
 		// within $\alpha$ percent. 		
@@ -149,70 +178,44 @@ public class FlowScheduler implements Scheduler {
 		//TODO: how to decide CPU or GPU for a job as 2 configurations may be selected on either CPU or GPU. 
 		
 		// add to the scheduled jobs to the queues for scheduling later.
-		boolean isExit = true;
-		for (Integer iM : availableMachines ){
-//		for (int iM=numberOfNodes-1; iM>=0; iM--){
+//		for (Integer iM : availableMachines ){
+		for (int iM=numberOfNodes-1; iM>=0; iM--){
 			for (int k=numOfJobs-1; k>=0; k--){
 				// if job k is chosen on iM and machine iM is available.  
 				if(sols[k*numberOfNodes +iM] >= 0){
 					BaseJob job = jobs.get(sols[k*numberOfNodes +iM]);
-					if (iM < Globals.MACHINE_MAX_GPU){
-						boolean res = QueueScheduler.allocateResToJob(job, false);
-						if (!res)
-							System.out.println("[ERROR] cannot allocate resources to job "+job.dagId + " on " + iM);
-						job.machineId = iM;
-						job.onStart(clusterTotCapacity);
-						return false;
-					} else {
-						boolean res = QueueScheduler.allocateResToJob(job, true);
-						if (!res)
-							System.out.println("[ERROR] cannot allocate resources to job "+job.dagId + " on " + iM);
-						job.machineId = iM;
-						job.onStart(clusterTotCapacity);
-						return false;
-					}
+					Simulator.cluster.scheduledJobs.get(iM).add(job);
+					boolean isGpu = iM < Globals.MACHINE_MAX_GPU;
+					double processingTime = isGpu?job.getDemand().gpuCompl:job.getDemand().cpuCompl;
+					double currentAvailTime = availableTimes.get(iM);
+					availableTimes.put(iM, currentAvailTime+processingTime);
 				}
 			}
 		}
 		return true;
 	}
 	
-//	private static boolean allocate_fs(){
-//		int numOfJobs = 10;
-//		List<Integer> availableMachines = new LinkedList<Integer>();
-//		Map<Integer, Double> availableTimes = Simulator.cluster.availableTimes;
-//		for (int machine: availableTimes.keySet()){
-//			if (availableTimes.get(machine) <= Simulator.CURRENT_TIME)
-//				availableMachines.add(machine);
-//			double aTime = Math.max(availableTimes.get(machine), Simulator.CURRENT_TIME);
-//			availableTimes.put(machine, aTime);
-//		}		
-//		Collections.sort(availableMachines, Collections.reverseOrder());
-//		for (Integer iM : availableMachines ){
-////		for (int k=numOfJobs-1; k>=0; k--){
-//			for (int k=numOfJobs-1; k>=0; k--){
-//				// if job k is chosen on iM and machine iM is available.  
-//				if(sols[k*numberOfNodes +iM] >= 0){
-//					BaseJob job = jobs.get(sols[k*numberOfNodes +iM]);
-//					if (iM < Globals.MACHINE_MAX_GPU){
-//						boolean res = QueueScheduler.allocateResToJob(job, false);
-//						if (!res)
-//							System.out.println("[ERROR] cannot allocate resources to job "+job.dagId + " on " + iM);
-//						job.machineId = iM;
-//						job.onStart(clusterTotCapacity);
-//						return false;
-//					} else {
-//						boolean res = QueueScheduler.allocateResToJob(job, true);
-//						if (!res)
-//							System.out.println("[ERROR] cannot allocate resources to job "+job.dagId + " on " + iM);
-//						job.machineId = iM;
-//						job.onStart(clusterTotCapacity);
-//						return false;
-//					}
-//				}
-//			}
-//		}
-//	}
+	private static void allocate_fs(List<Integer> availableMachines){
+		for (Integer iM : availableMachines ){
+			BaseJob job = Simulator.cluster.scheduledJobs.get(iM).poll();
+			if (job != null)
+				if (iM < Globals.MACHINE_MAX_GPU){
+					boolean res = QueueScheduler.allocateResToJob(job, false);
+//					System.out.println("[INFO] "+job.dagId + " starts on " + iM + " at " + Simulator.CURRENT_TIME);
+					if (!res)
+						System.out.println("[ERROR] cannot allocate resources to job "+job.dagId + " on " + iM);
+					job.machineId = iM;
+					job.onStart(clusterTotCapacity);
+				} else {
+					boolean res = QueueScheduler.allocateResToJob(job, true);
+//					System.out.println("[INFO] "+job.dagId + " starts on " + iM + " at " + Simulator.CURRENT_TIME);
+					if (!res)
+						System.out.println("[ERROR] cannot allocate resources to job "+job.dagId + " on " + iM);
+					job.machineId = iM;
+					job.onStart(clusterTotCapacity);
+				}
+		}
+	}
 	
 	@Override
 	public String getSchedulePolicy() {
