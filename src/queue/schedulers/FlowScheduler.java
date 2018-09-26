@@ -32,7 +32,7 @@ public class FlowScheduler implements Scheduler {
 	
 	public FlowScheduler(double alpha) {
 		clusterTotCapacity = Simulator.cluster.getClusterMaxResAlloc();
-//		alphaFairness = Globals.alpha;
+		alphaFairness = Globals.alpha;
 		numberOfNodes = (int) (Globals.MACHINE_MAX_GPU + (Globals.MACHINE_MAX_CPU/Globals.CPU_PER_NODE) );
 	}
 
@@ -112,7 +112,7 @@ public class FlowScheduler implements Scheduler {
 			InterchangableResourceDemand demand = job.getReportDemand();
 			
 			if(machineId < Globals.MACHINE_MAX_GPU){
-				double err = reportDemand.gpuCompl -demand.cpuCompl;  
+				double err = reportDemand.gpuCompl -demand.gpuCompl;  
 				availableTimes.put(machineId, Math.max(0, entry.getValue()-err));
 			} else {
 				double err = reportDemand.cpuCompl -demand.cpuCompl;

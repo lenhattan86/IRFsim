@@ -338,9 +338,14 @@ public class Main {
 				+ Globals.workload + Globals.EXTRA + ".txt";
 
 		if (Globals.METHOD.equals(Method.DRF)) {
+			if (Globals.JOB_SCHEDULER.equals(JobScheduling.SJF)) {
 			Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.DRF;
 			Globals.FileOutput = "DRF-output" + extraName + ".csv";
-		} else if (Globals.METHOD.equals(Method.DRFExt)) {
+			} else  {
+				Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.DRF;
+				Globals.FileOutput = "DRFFIFO-output" + extraName + ".csv";
+			}
+		}	else if (Globals.METHOD.equals(Method.DRFExt)) {
 			Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.DRFExt;
 			Globals.FileOutput = "DRFExt-output" + extraName + ".csv";
 		}  else if (Globals.METHOD.equals(Method.FDRF)) {
@@ -496,7 +501,7 @@ public class Main {
 				System.out.println("[Error] Matlab is not supported.");
 			}
 		
-		Globals.runmode = Runmode.SmallScale;
+		Globals.runmode = Runmode.MultipleRuns;
 
 		Utils.createUserDir("log");
 		Utils.createUserDir("output");
@@ -511,19 +516,20 @@ public class Main {
 			Globals.JOB_SCHEDULER = JobScheduling.SJF; 
 			Globals.IS_GEN= true;
 			Globals.USE_TRACE=true;
+			Globals.alpha = 0.3;
 			Globals.workload = WorkLoadType.Google;
 			Globals.jobData = new JobData();
 			Globals.MEMORY_SCALE_DOWN = 1;
 			Globals.NUM_MACHINES = 1;
 			Globals.SIM_END_TIME = 10000.0;
-			double errStd = 0.1;
+			double errStd = 0;
 			Globals.jobData.errs = Randomness.getNormalDistribution(Globals.NumRandomSamples , 0, errStd, -1, 1);
-//			Globals.Method[] methods = { Method.DRF, Method.DRFExt, Method.ES, Method.AlloX, Method.SJF, Method.FS};
-			Globals.Method[] methods = { Method.DRF, Method.DRFExt, Method.ES, Method.AlloX, Method.SJF, Method.SRPT};
-//			Globals.Method[] methods = {Method.FS };
+	//	Globals.Method[] methods = {Method.DRF, Method.DRFExt, Method.ES, Method.FS, Method.SRPT};
+	//		Globals.Method[] methods = { Method.DRF, Method.DRFExt, Method.ES, Method.FS, Method.SRPT};
+			Globals.Method[] methods = {Method.FS };
 //			Globals.Method[] methods = {Method.SRPT };
-//			Globals.Method[] methods = {Method.DRF };
-//			Globals.Method[] methods = {Method.DRF, Method.ES };
+	//		Globals.Method[] methods = {Method.DRF };
+	//		Globals.Method[] methods = {Method.DRF};
 //			Globals.Method[] methods = {Method.DRFExt};
 //			Globals.Method[] methods = {Method.ES, Method.AlloX};
 			Globals.MACHINE_MAX_GPU = 10;

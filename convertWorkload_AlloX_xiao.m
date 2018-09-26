@@ -3,7 +3,8 @@ clear; close all; clc;
 % return;
 %% load data
 %google_path = 'C:\Users\edelw\Documents\GitHub\google_trace\';
-google_path = '/home/tanle/projects/ClusterData2011_2/';
+google_path = 'C:\Users\gabri\Documents\GitHub\google_trace\';
+% google_path = '/home/tanle/projects/ClusterData2011_2/';
 JOB_FILE  = [google_path 'jobInfo.mat'];
 JOB_USAGE = [google_path 'jobResUsageWReschedule.mat'];
 mkdir('figs');
@@ -21,7 +22,8 @@ scaleDownArrivalTime = 1;
 
 % STEP_SECONDS = 10;% 1 time unit -- ? secs
 STEP_SECONDS = 300;% 1 time unit -- ? secs
-TIME_SCALE = timeScale/STEP_SECONDS; 
+xiao_scale = 1;
+TIME_SCALE = timeScale/STEP_SECONDS*xiao_scale; 
 
 load(JOB_FILE);
 jobIds = JobInfos(:,1);
@@ -82,7 +84,7 @@ elseif ~IS_SMALL_SCALE
 %         BETAS(iUser,:) = temp / mean(temp) * betas(iUser); 
 %     end  
     nUsers = 15;
-    betas = [ 12*ones(3,1); 40*ones(6,1); 96*ones(3,1); 512*ones(3,1)];
+    betas = [ 12*ones(3,1);  40*ones(6,1); 96*ones(3,1); 512*ones(3,1)];
     reportBetas = betas; 
     NJobs = 60;
     numOfJobs=nUsers*NJobs;
@@ -186,7 +188,7 @@ for iJob=1:length(jobSet(:,1))
     arrivalTime = arrivalTime - ARRIVAL_TIME_IGNORE;
     arrivalTime = arrivalTime/timeScale;
 
-    arrivalTime = arrivalTime*TIME_SCALE/scaleDownArrivalTime*30;
+    arrivalTime = arrivalTime*TIME_SCALE/scaleDownArrivalTime*30*xiao_scale;
 
     % # 2
     % 1 2 1 7 queue2

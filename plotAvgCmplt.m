@@ -7,13 +7,16 @@ barWidth = 0.5;
 queue_num = 15;
 cluster_size= 10;
 figureSize = figSizeOneCol .* [1 1 2/3 2/3];
-plots  = [true, true, false, true, true];
+plots  = [true, false, false, false, false];
 
 colorUsers = {colorUser1; colorUser2; colorUser3};
-methods = {strDRF,  strES,  'DRFExt', strAlloX, 'SJF', 'FS','SRPT'};
-files = {'DRF', 'ES', 'DRFExt', 'AlloX','SJF', 'FS','SRPT'};
-DRFId = 1; ESId = 2; DRFExtId = 3; AlloXId = 4; SJFId = 5; FSId = 6;
+% methods = {strDRF,  strES,  'DRFE', strAlloX, 'SJF', 'FS','SRPT'};
+% files = {'DRF', 'ES', 'DRFExt', 'AlloX','SJF', 'FS','SRPT'};
+% DRFId = 1; ESId = 2; DRFExtId = 3; AlloXId = 4; SJFId = 5; FSId = 6;
 
+methods = {'DRFF', 'DRFS', strES, 'DRFE', 'AlloX', 'SRPT'};
+files = {'DRFFIFO', 'DRF', 'ES', 'DRFExt', 'FS', 'SRPT'};
+DRFFIFOId = 1; DRFId = 2; ESId = 3; DRFExt = 4; SJFId = 5; FSId = 6;
 % plots  = [true, false, false, false, false, false];
 % methods = {strES,  strAlloX};
 
@@ -249,8 +252,8 @@ if plots(5)
     fileNames{figIdx} = 'degradation';
 end
 
-return;
-%%
+
+
 
 for i=1:length(fileNames)
     fileName = fileNames{i};
@@ -260,3 +263,4 @@ for i=1:length(fileNames)
     cmd = sprintf(PS_CMD_FORMAT, epsFile, pdfFile);
     status = system(cmd);
 end
+return;
