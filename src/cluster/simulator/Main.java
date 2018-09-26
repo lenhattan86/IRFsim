@@ -126,7 +126,7 @@ public class Main {
 		public static int SCALE_UP_FACTOR = 1;
 
 		public static enum Method {
-			DRF, DRFExt, FDRF, DRFW, ES, MaxMinMem, SpeedUp, Pricing, AlloX, SJF, FS, SRPT
+			DRFFIFO, DRF, DRFExt, FDRF, DRFW, ES, MaxMinMem, SpeedUp, Pricing, AlloX, SJF, FS, SRPT
 		}
 		
 		public static int PERIOD_FS = 50; 
@@ -336,16 +336,16 @@ public class Main {
 				+ Globals.workload + extra + Globals.EXTRA + ".txt";
 		Globals.QueueInput = "queue_input_" + Globals.numQueues+ '_'
 				+ Globals.workload + Globals.EXTRA + ".txt";
-
+		
+		Globals.JOB_SCHEDULER = JobScheduling.SJF;
 		if (Globals.METHOD.equals(Method.DRF)) {
-			if (Globals.JOB_SCHEDULER.equals(JobScheduling.SJF)) {
 			Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.DRF;
-			Globals.FileOutput = "DRF-output" + extraName + ".csv";
-			} else  {
-				Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.DRF;
-				Globals.FileOutput = "DRFFIFO-output" + extraName + ".csv";
-			}
-		}	else if (Globals.METHOD.equals(Method.DRFExt)) {
+			Globals.FileOutput = "DRFFIFO-output" + extraName + ".csv";
+		} else if (Globals.METHOD.equals(Method.DRFFIFO)) {
+			Globals.JOB_SCHEDULER = JobScheduling.FIFO;
+			Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.DRF;
+			Globals.FileOutput = "DRFFIFO-output" + extraName + ".csv";
+		} else if (Globals.METHOD.equals(Method.DRFExt)) {
 			Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.DRFExt;
 			Globals.FileOutput = "DRFExt-output" + extraName + ".csv";
 		}  else if (Globals.METHOD.equals(Method.FDRF)) {
