@@ -20,6 +20,7 @@ import cluster.datastructures.Task;
 import cluster.schedulers.QueueScheduler;
 import cluster.simulator.Simulator;
 import cluster.simulator.Main.Globals;
+import cluster.utils.Output;
 
 public class FlowScheduler implements Scheduler {
 	private String schedulePolicy;
@@ -29,6 +30,7 @@ public class FlowScheduler implements Scheduler {
 	static double[] L;
 	static int numberOfNodes = 0;
 	private static double alphaFairness = 1;
+	static boolean DEBUG = false;
 	
 	public FlowScheduler(double alpha) {
 		clusterTotCapacity = Simulator.cluster.getClusterMaxResAlloc();
@@ -120,10 +122,10 @@ public class FlowScheduler implements Scheduler {
 			}
 		}
 		
-//		for (int machine: availableTimes.keySet()){
-//			double aTime = Math.max(availableTimes.get(machine), Simulator.CURRENT_TIME);
-//			availableTimes.put(machine, aTime);
-//		}		
+		for (int machine: availableTimes.keySet()){
+			double aTime = Math.max(availableTimes.get(machine), Simulator.CURRENT_TIME);
+			availableTimes.put(machine, aTime);
+		}		
 		
 		// step 2: Consider all jobs from the activeQueues where the fairness score of the owner falls
 		// within $\alpha$ percent. 		
@@ -206,22 +208,29 @@ public class FlowScheduler implements Scheduler {
 	
 	private static void allocate_fs(List<Integer> availableMachines){
 		for (Integer iM : availableMachines ){
-			BaseJob job = Simulator.cluster.scheduledJobs.get(iM).poll();
+			Queue<BaseJob> jobs = Simulator.cluster.scheduledJobs.get(iM);
+			BaseJob job = jobs.peek();
 			if (job != null)
 				if (iM < Globals.MACHINE_MAX_GPU){
 					boolean res = QueueScheduler.allocateResToJob(job, false);
 //					System.out.println("[INFO] "+job.dagId + " starts on " + iM + " at " + Simulator.CURRENT_TIME);
 					if (!res)
-						System.out.println("[ERROR] cannot allocate resources to job "+job.dagId + " on " + iM);
-					job.machineId = iM;
-					job.onStart(clusterTotCapacity);
+						Output.debugln(DEBUG,"[ERROR] cannot allocate resources to job "+job.dagId + " on " + iM);
+					else {
+						job.machineId = iM;
+						job.onStart(clusterTotCapacity);
+						jobs.remove(job);
+					}
 				} else {
 					boolean res = QueueScheduler.allocateResToJob(job, true);
 //					System.out.println("[INFO] "+job.dagId + " starts on " + iM + " at " + Simulator.CURRENT_TIME);
 					if (!res)
-						System.out.println("[ERROR] cannot allocate resources to job "+job.dagId + " on " + iM);
-					job.machineId = iM;
-					job.onStart(clusterTotCapacity);
+						Output.debugln(DEBUG,"[ERROR] cannot allocate resources to job "+job.dagId + " on " + iM);
+					else {
+						job.machineId = iM;
+						job.onStart(clusterTotCapacity);
+						jobs.remove(job);
+					}
 				}
 		}
 	}

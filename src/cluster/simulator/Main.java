@@ -340,7 +340,7 @@ public class Main {
 		Globals.JOB_SCHEDULER = JobScheduling.SJF;
 		if (Globals.METHOD.equals(Method.DRF)) {
 			Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.DRF;
-			Globals.FileOutput = "DRFFIFO-output" + extraName + ".csv";
+			Globals.FileOutput = "DRF-output" + extraName + ".csv";
 		} else if (Globals.METHOD.equals(Method.DRFFIFO)) {
 			Globals.JOB_SCHEDULER = JobScheduling.FIFO;
 			Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.DRF;
@@ -516,16 +516,16 @@ public class Main {
 			Globals.JOB_SCHEDULER = JobScheduling.SJF; 
 			Globals.IS_GEN= true;
 			Globals.USE_TRACE=true;
-			Globals.alpha = 0.3;
+			Globals.alpha = 0.7;
 			Globals.workload = WorkLoadType.Google;
 			Globals.jobData = new JobData();
 			Globals.MEMORY_SCALE_DOWN = 1;
 			Globals.NUM_MACHINES = 1;
-			Globals.SIM_END_TIME = 10000.0;
-			double errStd = 0;
+			Globals.SIM_END_TIME = 20000.0;
+			double errStd = 0.1;
 			Globals.jobData.errs = Randomness.getNormalDistribution(Globals.NumRandomSamples , 0, errStd, -1, 1);
-	//	Globals.Method[] methods = {Method.DRF, Method.DRFExt, Method.ES, Method.FS, Method.SRPT};
-	//		Globals.Method[] methods = { Method.DRF, Method.DRFExt, Method.ES, Method.FS, Method.SRPT};
+		//	Globals.Method[] methods = {Method.DRFFIFO, Method.DRF, Method.ES,Method.DRFExt, Method.SRPT};
+		//	Globals.Method[] methods = { Method.DRF, Method.DRFExt, Method.ES, Method.FS, Method.SRPT};
 			Globals.Method[] methods = {Method.FS };
 //			Globals.Method[] methods = {Method.SRPT };
 	//		Globals.Method[] methods = {Method.DRF };
