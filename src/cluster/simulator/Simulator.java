@@ -475,9 +475,11 @@ public class Simulator {
 
 		InterchangableResourceDemand mDemand = profilingJob.getDemand();
 		mDemand.cpu = Globals.CPU_PER_NODE;
-		mDemand.mem = Globals.MEM_PER_NODE;
+//		mDemand.mem = Globals.MEM_PER_NODE;
+		mDemand.mem = 12;
 		mDemand.gpu = Globals.GPU_PER_NODE;
-		mDemand.gpuMem = Globals.MEM_PER_NODE;
+//		mDemand.gpuMem = Globals.MEM_PER_NODE;
+		mDemand.gpuMem = 12;
 		mDemand.gpuCompl = Math.max(mDemand.gpuCompl * scale, 1);
 		mDemand.cpuCompl = Math.max(mDemand.cpuCompl * scale, 1);
 		profilingJob.setTaskDemand(mDemand);

@@ -528,8 +528,8 @@ public class Main {
 			Globals.SIM_END_TIME = 20000.0;
 			
 //			Globals.Method[] methods = {Method.DRFFIFO, Method.DRF, Method.ES,Method.DRFExt, Method.SRPT,Method.FS};
-			Globals.Method[] methods = {Method.DRFFIFO, Method.DRF, Method.ES,Method.DRFExt, Method.SRPT};
-//			Globals.Method[] methods = {Method.FS };
+//			Globals.Method[] methods = {Method.DRFFIFO, Method.DRF, Method.ES,Method.DRFExt, Method.SRPT};
+			Globals.Method[] methods = {Method.FS };
 //			Globals.Method[] methods = {Method.SRPT };
 	//		Globals.Method[] methods = {Method.DRF };
 	//		Globals.Method[] methods = {Method.DRF};
@@ -639,21 +639,23 @@ public class Main {
 		} else if (Globals.runmode.equals(Runmode.Analysis_misest)) {
 			// TODO: not done yet
 			double misEst[] = {0.0, 0.1, 0.2, 0.3, 0.4, 0.5};
-//			double misEst[] = {0.1, 0.5};
-			Globals.jobData = new JobData();
+			
+			Globals.IS_GEN= true;
+			Globals.USE_TRACE=true;
+			Globals.alpha = 0.3;
+			Globals.workload = WorkLoadType.MayBeGood;
+			
 			Globals.MEMORY_SCALE_DOWN = 1;
 			Globals.NUM_MACHINES = 1;
-			Globals.SIM_END_TIME = 2000.0;
-			Globals.Method[] methods = { Method.AlloX };
-			Globals.MACHINE_MAX_GPU = 100;
+			Globals.SIM_END_TIME = 20000.0;
+			Globals.Method[] methods = {Method.DRFFIFO,Method.DRF, Method.ES,Method.FS };
+			Globals.MACHINE_MAX_GPU = 10;
+			Globals.numQueues = 15;
+			Globals.numJobs = Globals.numQueues*60;
 			
-			Globals.workload = Globals.WorkLoadType.Google;
-			Globals.numQueues = 25;
-			Globals.numJobs = Globals.numQueues*1000;
-			Globals.USE_TRACE=true;
 			for (double errStd : misEst){
 				// generate beta errors:
-				Globals.jobData.errs = Randomness.getNormalDistribution(Globals.NumRandomSamples , 0, errStd, -1, 1);
+				Globals.jobData.errs = Randomness.getNormalDistribution(Globals.numJobs , 0, errStd, -1, 1);
 				Globals.EXTRA = "_e"+errStd;
 				for (Globals.Method method : methods) {
 					Globals.METHOD = method;
