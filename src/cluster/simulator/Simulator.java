@@ -161,8 +161,8 @@ public class Simulator {
 			}
 
 			QUEUE_LIST.updateRunningQueues();
-			if (!jobCompleted && !newJobArrivals && finishedTasks.isEmpty()) {
-//			if (!jobCompleted && !newJobArrivals) {
+//			if (!jobCompleted && !newJobArrivals && finishedTasks.isEmpty()) {
+			if (!jobCompleted && !newJobArrivals) {
 //			if (false){
 				Output.debugln(DEBUG, "----- Do nothing ----");
 			} else {
@@ -475,10 +475,9 @@ public class Simulator {
 
 		InterchangableResourceDemand mDemand = profilingJob.getDemand();
 		mDemand.cpu = Globals.CPU_PER_NODE;
-//		mDemand.mem = Globals.MEM_PER_NODE;
-		mDemand.mem = 12;
+		mDemand.mem = Globals.GPU_MEM_MAX;
 		mDemand.gpu = Globals.GPU_PER_NODE;
-//		mDemand.gpuMem = Globals.MEM_PER_NODE;
+		mDemand.gpuMem = Globals.GPU_MEM_MAX;
 		mDemand.gpuMem = 12;
 		mDemand.gpuCompl = Math.max(mDemand.gpuCompl * scale, 1);
 		mDemand.cpuCompl = Math.max(mDemand.cpuCompl * scale, 1);

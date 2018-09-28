@@ -6,10 +6,10 @@ is_printed = false;
 num_batch_queues = 4;
 num_interactive_queue = 0;
 num_queues = num_batch_queues + num_interactive_queue;
-START_TIME = 0; END_TIME = 2000;  STEP_TIME = 1;
+START_TIME = 0; END_TIME = 10000;  STEP_TIME = 1;
 cluster_size = 4;
 
-CPUCap = cluster_size * 40;
+CPUCap = cluster_size * 32;
 GPUCap = cluster_size;
 MemCap = cluster_size* 128;
 
@@ -17,7 +17,7 @@ MemCap = cluster_size* 128;
 figureSize = [1 1 4/5 6/5].* figSizeOneCol;
 legendSize = [1 1 4/5 1] .* legendSize;
 
-enableSeparateLegend = true;
+enableSeparateLegend = false;
 % barColors = colorb3(1:num_queues);
 scale_down_mem = 1;
 
@@ -53,11 +53,12 @@ end
 %%
 % extraStr = '';
 extraStr = ['_' int2str(num_batch_queues) '_' int2str(cluster_size)];
+% extraStr = ['_' int2str(num_batch_queues) '_' int2str(cluster_size) '_c'];
 
 %%
 % prefixes = {'DRF', 'ES', 'DRFExt', 'AlloX', 'SJF'};
-% prefixes = {'FS','SRPT'};
-prefixes = {'DRF','FS'};
+prefixes = {'FS','SRPT'};
+% prefixes = {'DRFFIFO'};
 % prefixes = {'AlloX'};
 % prefixes = {'DRF','AlloX'};
 % prefixes = {'DRFExt','SJF'};

@@ -3,20 +3,24 @@ common_settings;
 % is_printed = 1;
 %%
 barWidth = 0.5;
-queue_num = 25;
-cluster_size=100;
-figureSize = figSizeOneCol .* [1 1 2/3 2/3];
-plots  = [false true];
-methods = {strDRF,  strES,  'DRFExt', strAlloX, 'SJF'};
-files = {'DRF', 'ES', 'DRFExt', 'AlloX','SJF'};
-ESId = 2;
-AlloXId = 4;
+queue_num = 15;
+figureSize = figSizeThreeFourth;
+plots  = [true false];
+% methods = {'DRFF', strDRF,  strES,  'DRFExt', strAlloX, 'SRPT'};
+% files = {'DRFFIFO', 'DRF', 'ES', 'DRFExt', 'FS','SRPT'};
+methods = {'DRFF', strDRF,  strES, strAlloX};
+files = {'DRFFIFO', 'DRF', 'ES', 'FS'};
+% methods = {'DRFF'};
+% files = {'DRFFIFO'};
+ESId = 1;
+AlloXId = 1;
 % methods = {strES,  'DRFExt', strAlloX, 'SJF'};
 % files = {'ES', 'DRFExt', 'AlloX','SJF'};
 % ESId = 1;
 % speedups = [0.1, 0.5, 1.0]
 % caps = [75 100 125 150];
-caps = [50 75 100 125 150];
+% caps = [50 75 100 125 150];
+caps = [5, 7, 9, 10, 12, 15];
 load = zeros(size(caps));
 timeScale = 5;
 
@@ -27,7 +31,7 @@ resVals = zeros(length(methods),length(caps));
 loads = zeros(1, length(caps));
 for i=1:length(methods)
     for j=1:length(caps)
-        extraStr = ['_' int2str(queue_num) '_' int2str(caps(j))];
+        extraStr = ['_' int2str(queue_num) '_' int2str(caps(j)) '_c'];
         outputFile = [ 'output/' files{i} '-output' extraStr  '.csv'];
         [JobIds, startTimes, endTimes, durations, queueNames] = import_compl_time(outputFile);
         if(~isnan(durations))
@@ -36,7 +40,7 @@ for i=1:length(methods)
         
         if (i==ESId)
             logFile = [ 'log/' files{i} '-output' extraStr  '.csv'];
-            [queueNames, res1, res2, res3, flag] = importResUsageLog(logFile);            
+            [queueNames, res1, res2, res3, fairScores, flag] = importResUsageLog(logFile);          
             num_time_steps = length(res1)/queue_num;
             resAll = zeros(1,queue_num*num_time_steps);
             res = res1(1:length(res1));
@@ -117,7 +121,7 @@ for i=1:length(fileNames)
     fileName = fileNames{i};
     epsFile = [ LOCAL_FIG fileName '.eps'];
     print (figures{i}, '-depsc', epsFile);    
-    pdfFile = [ fig_path fileName '.pdf']  
+    pdfFile = [ fig_path fileName '.pdf'];
     cmd = sprintf(PS_CMD_FORMAT, epsFile, pdfFile);
     status = system(cmd);
 end

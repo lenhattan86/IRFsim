@@ -85,15 +85,15 @@ strBudget='norm. budget';
 strFairScore = 'fair score';
 
 %% line specs
-lineProposed = '-';
-lineStrict = '+:';
-lineDRF = '-.';
-lineDRFW = '--';
+lineAlloX = '-';
+lineDRF = '--';
+lineSRPT = '-.';
 
 lineBB = '-';
 lineTPCDS = '--';
 lineTPCH = '-.';
 workloadLineStyles = {lineBB, lineTPCDS, lineTPCH};
+fairscoreLineStyles = {lineDRF, lineAlloX, lineSRPT};
 
 %%
 
