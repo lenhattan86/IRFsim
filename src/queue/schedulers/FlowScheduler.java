@@ -247,6 +247,7 @@ public class FlowScheduler implements Scheduler {
 			//TODO: how to decide CPU or GPU for a job as 2 configurations may be selected on either CPU or GPU. 
 			
 			// add to the scheduled jobs to the queues for scheduling later.
+			Collections.sort(availableMachines, Collections.reverseOrder());
 			for (Integer iM : availableMachines ){
 //			for (int iM=numberOfNodes-1; iM>=0; iM--){
 				for (int k=numOfJobs-1; k>=0; k--){
@@ -278,6 +279,7 @@ public class FlowScheduler implements Scheduler {
 			if (job != null)
 				usersWantResources.add(job.getQueue());
 		}
+		Collections.sort(availableMachines, Collections.reverseOrder());
 		for (Integer iM : availableMachines ){
 			Queue<BaseJob> jobs = Simulator.cluster.scheduledJobs.get(iM);
 			BaseJob job = jobs.peek();

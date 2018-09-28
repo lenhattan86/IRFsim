@@ -9,7 +9,7 @@ num_queues = num_batch_queues + num_interactive_queue;
 START_TIME = 0; END_TIME = 10000;  STEP_TIME = 1;
 cluster_size = 4;
 
-CPUCap = cluster_size * 32;
+CPUCap = cluster_size * 40;
 GPUCap = cluster_size;
 MemCap = cluster_size* 128;
 

@@ -29,7 +29,7 @@ public class Main {
 	public static class Globals {
 		
 		public final static boolean EnableMatlab = false;
-		public final static boolean EnableProfiling = true;
+		public final static boolean EnableProfiling = false;
 		public final static boolean EnablePreemption = true;
 		public static int CPU_PROFILING_JOB1 = -100000; //-10000 -> 0
 		public static int CPU_PROFILING_JOB2 = CPU_PROFILING_JOB1*2;
@@ -165,10 +165,10 @@ public class Main {
 		public final static int NUM_DIMENSIONS = 3; // CPU, GPU ,MEM
 
 		public static double MACHINE_MAX_CPU;
-		public static double CPU_PER_NODE=32;
+		public static double CPU_PER_NODE=20;
 		public static double GPU_MEM_MAX = 16;
 		public static double MACHINE_MAX_GPU;
-		public static double CPU_TO_GPU_RATIO = 1;
+		public static double CPU_TO_GPU_RATIO = 2;
 		public static double GPU_PER_NODE=1;
 		public static double MACHINE_MAX_MEM;
 		public static double MEM_PER_NODE=64;
@@ -513,20 +513,20 @@ public class Main {
 		System.out.println("........" + now() + ".....");
 
 //		Globals.workload = Globals.WorkLoadType.SIMPLE;
-		Globals.runmode = Runmode.Analysis_Alpha;
+		Globals.runmode = Runmode.MultipleRuns;
 		Globals.ENABLE_CPU_CMPT_ERROR = false;
 		if (Globals.runmode.equals(Runmode.MultipleRuns)) {			
 			Globals.JOB_SCHEDULER = JobScheduling.SJF; 
 			Globals.IS_GEN= true;
 			Globals.USE_TRACE=true;
-			Globals.alpha = 0.3;
-			Globals.workload = WorkLoadType.MayBeGood;
+			Globals.alpha = 1;
+			Globals.workload = WorkLoadType.Google;
 			
 			Globals.MEMORY_SCALE_DOWN = 1;
 			Globals.NUM_MACHINES = 1;
 			Globals.SIM_END_TIME = 20000.0;
 			
-//			Globals.Method[] methods = {Method.DRFFIFO, Method.DRF, Method.ES,Method.DRFExt, Method.SRPT,Method.FS};
+		//	Globals.Method[] methods = {Method.DRFFIFO, Method.DRF, Method.ES,Method.DRFExt, Method.SRPT,Method.FS};
 //			Globals.Method[] methods = {Method.DRFFIFO, Method.DRF, Method.ES,Method.DRFExt, Method.SRPT};
 			Globals.Method[] methods = {Method.FS};
 //			Globals.Method[] methods = {Method.SRPT};
@@ -534,11 +534,11 @@ public class Main {
 //			Globals.Method[] methods = {Method.DRF};
 //			Globals.Method[] methods = {Method.DRFExt};
 //			Globals.Method[] methods = {Method.ES, Method.AlloX};
-			Globals.MACHINE_MAX_GPU = 10;
-			Globals.numQueues = 15;
-			Globals.numJobs = Globals.numQueues*60;
+			Globals.MACHINE_MAX_GPU = 4;
+			Globals.numQueues = 4;
+			Globals.numJobs = Globals.numQueues*10;
 			
-			double errStd = 0.1;
+			double errStd = 0;
 			Globals.jobData = new JobData();
 			Globals.jobData.errs = Randomness.getNormalDistribution(Globals.numJobs , 0, errStd, -1, 1);
 
