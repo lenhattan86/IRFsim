@@ -4,9 +4,9 @@ common_settings;
 % fig_path = ['figs/'];
 %%
 barWidth = 0.5;
-queue_num = 15;
-cluster_size= 10;
-figureSize = figSizeOneCol .* [1 1 2/3 2/3];
+queue_num = 4;
+cluster_size= 4;
+figureSize = figSizeThreeFourth;
 plots  = [true, false, false, false, false];
 
 colorUsers = {colorUser1; colorUser2; colorUser3};
@@ -17,12 +17,12 @@ colorUsers = {colorUser1; colorUser2; colorUser3};
 methods = {'DRFF', 'DRFS', strES, 'DRFE', 'AlloX', 'SRPT'};
 files = {'DRFFIFO', 'DRF', 'ES', 'DRFExt', 'FS', 'SRPT'};
 DRFFIFOId = 1; DRFId = 2; ESId = 3; DRFExt = 4; SJFId = 5; FSId = 6;
-% plots  = [true, false, false, false, false, false];
-% methods = {strES,  strAlloX};
+
+alphas = [0.1 0.3];
 
 methodColors = {colorES; colorDRF; colorProposed};
 extraStr = ['_' int2str(queue_num) '_' int2str(cluster_size)];
-EXTRA='_s';
+EXTRA='';
 % EXTRA='_w_prof';
 
 scaleTime = 1; % minutes
@@ -125,7 +125,40 @@ end
 %%
 if plots(3) 
    STOP_TIME = 300;
-   figIdx=figIdx +1;         
+   figIdx=figIdx +1;         [~, DRFSortIds] = sort(JobIds{DRFId});
+    [~, ESSortIds] = sort(JobIds{ESId});
+    [~, AlloXSortIds] = sort(JobIds{AlloXId});
+    
+    DRFQueues = queueNames{DRFId}(DRFSortIds);
+    ESQueues = queueNames{ESId}(ESSortIds);
+    AlloXQueues = queueNames{AlloXId}(AlloXSortIds);
+    
+    ESTotalCompltTime = [];
+    DRFTotalCompltTime = [];
+    AlloXTotalCompltTime = [];
+    
+    ESDurations = durations{ESId}(ESSortIds);
+    DRFDurations = durations{DRFId}(DRFSortIds);
+    AlloXDurations = durations{AlloXId}(AlloXSortIds);
+    
+    
+    queueSet = {};
+    for i=1:length(ESQueues)
+        queueName = ESQueues{i};
+        idx = 0;        
+        if ~any(strcmp(queueSet,queueName))
+            queueSet{length(queueSet)+1} = queueName;
+            idx = length(queueSet);
+            ESTotalCompltTime = [ESTotalCompltTime  ESDurations(i)];
+            DRFTotalCompltTime = [DRFTotalCompltTime  DRFDurations(i)];
+            AlloXTotalCompltTime = [AlloXTotalCompltTime  AlloXDurations(i)];
+        else            
+            idx = strcmp(queueSet,queueName);
+            ESTotalCompltTime(idx) = ESTotalCompltTime(idx) + ESDurations(i);
+            DRFTotalCompltTime(idx) = DRFTotalCompltTime(idx) + DRFDurations(i);
+            AlloXTotalCompltTime(idx) = AlloXTotalCompltTime(idx) + AlloXDurations(i);
+        end        
+    end
    figures{figIdx} = figure;
    scrsz = get(groot, 'ScreenSize');  
    
@@ -252,8 +285,70 @@ if plots(5)
     fileNames{figIdx} = 'degradation';
 end
 
+%%
+if plots(5)
+    figIdx=figIdx +1;         
+    figures{figIdx} = figure;
+    scrsz = get(groot, 'ScreenSize');     
+    hold on;
 
+    [~, DRFSortIds] = sort(JobIds{DRFId});
+    [~, ESSortIds] = sort(JobIds{ESId});
+    [~, AlloXSortIds] = sort(JobIds{AlloXId});
+    
+    DRFQueues = queueNames{DRFId}(DRFSortIds);
+    ESQueues = queueNames{ESId}(ESSortIds);
+    AlloXQueues = queueNames{AlloXId}(AlloXSortIds);
+    
+    ESTotalCompltTime = [];
+    DRFTotalCompltTime = [];
+    AlloXTotalCompltTime = [];
+    
+    ESDurations = durations{ESId}(ESSortIds);
+    DRFDurations = durations{DRFId}(DRFSortIds);
+    AlloXDurations = durations{AlloXId}(AlloXSortIds);
+    
+    
+    queueSet = {};
+    for i=1:length(ESQueues)
+        queueName = ESQueues{i};
+        idx = 0;        
+        if ~any(strcmp(queueSet,queueName))
+            queueSet{length(queueSet)+1} = queueName;
+            idx = length(queueSet);
+            ESTotalCompltTime = [ESTotalCompltTime  ESDurations(i)];
+            DRFTotalCompltTime = [DRFTotalCompltTime  DRFDurations(i)];
+            AlloXTotalCompltTime = [AlloXTotalCompltTime  AlloXDurations(i)];
+        else            
+            idx = strcmp(queueSet,queueName);
+            ESTotalCompltTime(idx) = ESTotalCompltTime(idx) + ESDurations(i);
+            DRFTotalCompltTime(idx) = DRFTotalCompltTime(idx) + DRFDurations(i);
+            AlloXTotalCompltTime(idx) = AlloXTotalCompltTime(idx) + AlloXDurations(i);
+        end        
+    end
+    
+    slowdown = (AlloXTotalCompltTime - ESTotalCompltTime)./ESTotalCompltTime * 100;    
+    slowdown2 = (AlloXTotalCompltTime - DRFTotalCompltTime)./DRFTotalCompltTime * 100;    
+    slowDownVals = (durations{AlloXId}(AlloXSortIds) - durations{ESId}(ESSortIds))./durations{ESId}(ESSortIds)*100;
+    
+    [f,x]=ecdf(slowdown);
+    plot(x,f, 'LineWidth',LineWidth);
+    hold on;    
+    [f,x]=ecdf(slowdown2);
+    plot(x,f, 'LineWidth',LineWidth);
 
+    xLabel='degradation (%)';
+    yLabel=strCdf;    
+    xlim([-100 100]);
+    set (gcf, 'Units', 'Inches', 'Position', figureSize, 'PaperUnits', 'inches', 'PaperPosition', figureSize);
+    legendStr = {'vs. ES+RP', 'vs. DRF'};
+    legend(legendStr,'Location','best','FontSize',fontLegend,'Orientation','vertical');
+    xlabel(xLabel,'FontSize',fontAxis);
+    ylabel(yLabel,'FontSize',fontAxis);    
+    fileNames{figIdx} = 'degradation';
+end
+return;
+%%
 
 for i=1:length(fileNames)
     fileName = fileNames{i};

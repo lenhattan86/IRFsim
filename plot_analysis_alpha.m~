@@ -10,7 +10,7 @@ plots  = [false true];
 methods = {strDRF, strES,  strAlloX};
 % files = {'DRF', 'ES',  'AlloX'};
 % speedups = [0.1, 0.5, 1.0]
-alphas = [0.1 0.2 0.3 0.4 0.5 0.6];
+alphas = [0.1 0.2 0.3];
 files = {'DRF', 'ES',  'FS'};
 DRFId = 1; ESId = 2; AlloXId = 3;
 methodColors = {colorES; colorDRF; colorProposed};
@@ -57,8 +57,7 @@ if plots(1)
 end
 %
 %%
-minImproveVsES = zeros(size(alphas));
-maxImproveVsES = zeros(size(alphas));
+stdVsES = zeros(size(alphas));
 for i=1:length(alphas)
     [~, DRFSortIds] = sort(JobIds{DRFId,i});
     [~, ESSortIds] = sort(JobIds{ESId,i});
@@ -77,26 +76,24 @@ for i=1:length(alphas)
     AlloXDurations = durations{AlloXId,i}(AlloXSortIds);
 
     queueSet = {};
-    for q=1:length(ESQueues)
-        queueName = ESQueues{q};
+    for i=1:length(ESQueues)
+        queueName = ESQueues{i};
         idx = 0;        
         if ~any(strcmp(queueSet,queueName))
             queueSet{length(queueSet)+1} = queueName;
             idx = length(queueSet);
-            ESTotalCompltTime = [ESTotalCompltTime  ESDurations(q)];
-            DRFTotalCompltTime = [DRFTotalCompltTime  DRFDurations(q)];
-            AlloXTotalCompltTime = [AlloXTotalCompltTime  AlloXDurations(q)];
+            ESTotalCompltTime = [ESTotalCompltTime  ESDurations(i)];
+            DRFTotalCompltTime = [DRFTotalCompltTime  DRFDurations(i)];
+            AlloXTotalCompltTime = [AlloXTotalCompltTime  AlloXDurations(i)];
         else            
             idx = strcmp(queueSet,queueName);
-            ESTotalCompltTime(idx) = ESTotalCompltTime(idx) + ESDurations(q);
-            DRFTotalCompltTime(idx) = DRFTotalCompltTime(idx) + DRFDurations(q);
-            AlloXTotalCompltTime(idx) = AlloXTotalCompltTime(idx) + AlloXDurations(q);
+            ESTotalCompltTime(idx) = ESTotalCompltTime(idx) + ESDurations(i);
+            DRFTotalCompltTime(idx) = DRFTotalCompltTime(idx) + DRFDurations(i);
+            AlloXTotalCompltTime(idx) = AlloXTotalCompltTime(idx) + AlloXDurations(i);
         end        
     end
     improvement = (ESTotalCompltTime./AlloXTotalCompltTime - 1)*100;
-    minImproveVsES(i) = min(improvement);
-    maxImproveVsES(i) = max(improvement);
-    stdVsES(i) = std(improvement);
+    stdVsES() = std(improvement);
 end
 
     
@@ -108,12 +105,11 @@ if plots(2)
     bar(alphas, improvePercent, barWidth);  
     hold on;
     improveStd = 0.0*improvePercent;
-    errorbar(alphas,improvePercent,minImproveVsES, maxImproveVsES, '.');
-%     errorbar(alphas, improvePercent, stdVsES,'.');
+    errorbar(alphas,improvePercent, improveStd ,'.');
     xLabel='fairness parameter \alpha';
     yLabel=strImprovement;
     legendStr=methods;        
-    xlim([0.06 (length(alphas)+0.4)/10]);
+    xlim([0.04 0.5]);
     set (gcf, 'Units', 'Inches', 'Position', figureSize, 'PaperUnits', 'inches', 'PaperPosition', figureSize);
     %     xlabel(xLabel,'FontSize',fontAxis);
     ylabel(yLabel,'FontSize',fontAxis);    

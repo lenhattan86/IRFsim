@@ -73,9 +73,9 @@ public class FlowScheduler implements Scheduler {
 		boolean isReschedule = false;
 		if (minAvailableTime <= Simulator.CURRENT_TIME)
 			isReschedule = true;
-		if (Simulator.CURRENT_TIME % Globals.PERIOD_FS == 0)
-			isReschedule = true;
-		
+//		if (Simulator.CURRENT_TIME % Globals.PERIOD_FS == 0)
+//			isReschedule = true;
+//		isReschedule = true;
 		if (isReschedule){
 			compute_fs(clusterTotCapacity, activeQueues, alphaFairness);
 //			System.out.println("number of FS schedule "+numSchedule++);

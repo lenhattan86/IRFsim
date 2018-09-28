@@ -19,6 +19,7 @@ figSizeTwoCol = 2*figSizeOneCol;
 figSizeOneThirdCol = 1/3*figSizeOneCol;
 figSizeHalfCol = 1/2*figSizeOneCol;
 figSizeTwothirdCol = 2/3*figSizeOneCol;
+figSizeThreeFourth = 3/4*figSizeOneCol;
 figSizeFourFifthCol = 4/5*figSizeOneCol;
 
 %%
@@ -26,6 +27,7 @@ figSizeFourFifthCol = 4/5*figSizeOneCol;
 barLineWidth=0;
 groupBarSize = 0.9;
 barSize = 0.5;
+barWidth = 0.5;
 lineWidth = 2;
 
 %%
@@ -49,13 +51,14 @@ strUser3 = 'User 3';
 strUser4 = 'User 4';
 strUnalloc = 'unallocated';
 
-strES = 'ES+RP';
+strES = 'ES';
 strDRF = 'DRF';
 strFDRF = 'FDRF';
 strMP = 'MP';
 strMSR = 'MSR';
 strPricing = 'Pricing';
 strAlloX = 'AlloX';
+strDRFF = 'DRFF';
 
 strGPU = 'GPU';
 strCPU = 'CPU';
@@ -75,7 +78,11 @@ strAvgComplTime = 'avg. compl. (secs)';
 
 strMethods='methods';
 
+strTime = 'secs';
+
 strBudget='norm. budget';
+
+strFairScore = 'fair score';
 
 %% line specs
 lineProposed = '-';

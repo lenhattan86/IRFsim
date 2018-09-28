@@ -321,5 +321,6 @@ public abstract class BaseJob implements Cloneable {
 		this.rsrcQuota = new Resource(0);
 		this.wasScheduled = false;
 		this.jobStartRunningTime = -1;
+		this.onFinish();
 	}
 }

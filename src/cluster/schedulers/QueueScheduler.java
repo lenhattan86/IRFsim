@@ -263,7 +263,7 @@ public class QueueScheduler {
 
 				if (assigned) {
 					allocRes = Resources.sum(allocRes, taskDemand);
-
+					unallocJob.onStart(Simulator.cluster.getClusterMaxResAlloc());
 					if (unallocJob.jobStartRunningTime < 0) {
 						unallocJob.jobStartRunningTime = Simulator.CURRENT_TIME;
 					}

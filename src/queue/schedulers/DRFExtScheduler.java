@@ -125,6 +125,7 @@ public class DRFExtScheduler implements Scheduler {
 				unallocJob.getQueue().addRunningJob(unallocJob);
 				double maxRes = normVirResource(q.getResourceUsage(), resCapacity);
 				userDominantShareArr[sMinIdx] = maxRes / q.getWeight();
+				unallocJob.onStart(clusterTotCapacity);
 				if (unallocJob.jobStartRunningTime<0){
 				  unallocJob.jobStartRunningTime = Simulator.CURRENT_TIME;
 				}
