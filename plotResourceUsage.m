@@ -3,15 +3,15 @@ addpath('matlab_func');
 common_settings;
 is_printed = false;
 
-num_batch_queues = 2;
+num_batch_queues = 4;
 num_interactive_queue = 0;
 num_queues = num_batch_queues + num_interactive_queue;
 START_TIME = 0; END_TIME = 2000;  STEP_TIME = 1;
-cluster_size = 2;
+cluster_size = 4;
 
-CPUCap = cluster_size * 32;
+CPUCap = cluster_size * 40;
 GPUCap = cluster_size;
-MemCap = cluster_size* 96;
+MemCap = cluster_size* 128;
 
 % figureSize = [1 1 2/3 2/3].* figSizeOneCol;
 figureSize = [1 1 4/5 6/5].* figSizeOneCol;
@@ -64,7 +64,7 @@ prefixes = {'DRF','FS'};
 for iFile=1:length(prefixes)
   if plots(1)   
      logFile = [ logfolder prefixes{iFile} '-output' extraStr  '.csv'];
-     [queueNames, res1, res2, res3, flag] = importResUsageLog(logFile);
+     [queueNames, res1, res2, res3, fairScores, flag] = importResUsageLog(logFile);
      if (flag)
         figure;
         subplot(3,1,1);   

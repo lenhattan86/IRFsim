@@ -193,8 +193,6 @@ if plots(4)
     [~, AlloXSortIds] = sort(JobIds{AlloXId});
     [~, DRFExtSortIds] = sort(JobIds{DRFExtId});
     
-    
-
     slowDownVals = (durations{AlloXId}(AlloXSortIds) - durations{ESId}(ESSortIds))./durations{ESId}(ESSortIds)*100;
 %     slowDownVals = max (slowDownVals, 0);
     [f,x]=ecdf(slowDownVals);
