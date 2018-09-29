@@ -161,8 +161,8 @@ public class Simulator {
 			}
 
 			QUEUE_LIST.updateRunningQueues();
-			if (!jobCompleted && !newJobArrivals && finishedTasks.isEmpty()) {
-//			if (!jobCompleted && !newJobArrivals) {
+//			if (!jobCompleted && !newJobArrivals && finishedTasks.isEmpty()) {
+			if (!jobCompleted && !newJobArrivals) {
 //			if (false){
 				Output.debugln(DEBUG, "----- Do nothing ----");
 			} else {
@@ -234,7 +234,8 @@ public class Simulator {
 	}
 
 	private void writeReport() {
-		Output.writeln("JobId, startTime, endTime, duration, queueName", false);
+//		Output.writeln("JobId, startTime, endTime, duration, queueName", false);
+		Output.writeln("JobId, startTime, endTime, duration, queueName, startRunning, isCPU", false);
 		System.out.println("===== Final Report: Completed Jobs =====");
 		TreeMap<Integer, Double> results = new TreeMap<Integer, Double>();
 		double makespan = Double.MIN_VALUE;
@@ -242,8 +243,11 @@ public class Simulator {
 			double dagDuration = dag.getCompletionTime();
 			makespan = Math.max(makespan, dagDuration);
 			results.put(dag.dagId, dagDuration);
+//			Output.writeln(
+//					dag.dagId + "," + dag.jobStartTime + "," + dag.jobEndTime + "," + dagDuration + "," + dag.getQueueName());
 			Output.writeln(
-					dag.dagId + "," + dag.jobStartTime + "," + dag.jobEndTime + "," + dagDuration + "," + dag.getQueueName());
+					dag.dagId + "," + dag.jobStartTime  + "," + dag.jobEndTime + "," + dagDuration + "," + dag.getQueueName()+ "," + dag.jobStartRunningTime + "," + dag.isCpu);
+		
 		}
 	}
 
@@ -475,10 +479,9 @@ public class Simulator {
 
 		InterchangableResourceDemand mDemand = profilingJob.getDemand();
 		mDemand.cpu = Globals.CPU_PER_NODE;
-//		mDemand.mem = Globals.MEM_PER_NODE;
-		mDemand.mem = 12;
+		mDemand.mem = Globals.GPU_MEM_MAX;
 		mDemand.gpu = Globals.GPU_PER_NODE;
-//		mDemand.gpuMem = Globals.MEM_PER_NODE;
+		mDemand.gpuMem = Globals.GPU_MEM_MAX;
 		mDemand.gpuMem = 12;
 		mDemand.gpuCompl = Math.max(mDemand.gpuCompl * scale, 1);
 		mDemand.cpuCompl = Math.max(mDemand.cpuCompl * scale, 1);

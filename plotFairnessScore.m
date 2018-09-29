@@ -12,6 +12,8 @@ cluster_size = 10;
 
 enableSeparateLegend = false;
 scale_down_mem = 1;
+USER_SET = 1:3;
+USER_ID = 3;
 
 % fig_path='../IRF/figs/';
 
@@ -20,7 +22,7 @@ result_folder= '';
 output_sufix = ''; 
 %%
 % EC
-plots=[1, 1]; 
+plots=[0, 0, 1]; 
 logfolder = [result_folder 'log/'];
 
 start_time_step = START_TIME/STEP_TIME;
@@ -42,15 +44,20 @@ end
 for i=1:num_batch_queues
     lengendStr{i+num_interactive_queue} = ['User ' int2str(i-1)];
 end
+MAX_SCORE = 1;
 %%
 % extraStr = '';
 extraStr = ['_' int2str(num_batch_queues) '_' int2str(cluster_size)];
 
 %%
 % prefixes = {'DRF', 'ES', 'DRFExt', 'AlloX', 'SJF'};
-prefixes = {'DRFFIFO','DRF','ES', 'DRFExt', 'FS', 'SRPT'};
-methods = {'DRFF','DRF','ES', 'DRFExt', 'AlloX', 'SRPT'};
+% prefixes = {'DRFFIFO','DRF','ES', 'DRFExt', 'FS', 'SRPT'};
+% methods = {'DRFF','DRF','ES', 'DRFExt', 'AlloX', 'SRPT'};
+prefixes = {'DRFFIFO','SRPT', 'FS'};
+methods = {'DRFF', 'SRPT','AlloX'};
+fairscoreLineStyles = {lineDRF, lineSRPT, lineAlloX};
 JFIs = zeros(1,length(prefixes));
+FAIR_SCORES ={};
 for iFile=1:length(prefixes)
   if plots(1)   
      logFile = [ logfolder prefixes{iFile} '-output' extraStr  '.csv'];
@@ -65,12 +72,15 @@ for iFile=1:length(prefixes)
            resAll = temp(1:num_queues*num_time_steps);
         end
         fairScoreUsers = reshape(resAll, num_queues, num_time_steps);        
+        FAIR_SCORES{iFile} = fairScoreUsers;
         meanFairScore = mean(fairScoreUsers');
         JFIs(iFile) = sum(meanFairScore)^2 / (num_queues*sum(meanFairScore.^2));
-        hBar = bar(timeInSeconds,fairScoreUsers',barwidth,'stacked','EdgeColor','none');        
+        % hBar = bar(timeInSeconds,fairScoreUsers',barwidth,'stacked','EdgeColor','none');      
+        hBar = plot(timeInSeconds,fairScoreUsers(USER_SET, :)');  
         ylabel(strFairScore);
         xlabel(strTime);
         xlim([0 max(timeInSeconds)]);
+        ylim([0 MAX_SCORE]);
         %legend(lengendStr,'Location','northoutside','FontSize',fontLegend,'Orientation','horizontal');
 %         title(prefixes{iFile},'fontsize',fontLegend);
         
@@ -86,7 +96,7 @@ for iFile=1:length(prefixes)
 end
 %%
 % plot Jain's fairness index
- if plots(1)   
+ if plots(2)   
     
     figure;        
     hold on
@@ -106,6 +116,47 @@ end
       print ('-depsc', epsFile);
     end
  end
+ %%
+ if plots(3)   
+     figure;   
+ hold on;  
+
+    for iFile=1:length(prefixes)
+  
+     logFile = [ logfolder prefixes{iFile} '-output' extraStr  '.csv'];
+     [queueNames, res1, res2, res3, fairScores, flag] = importResUsageLog(logFile);
+     if (flag)             
+        resAll = zeros(1,num_queues*num_time_steps);
+        temp = fairScores(startIdx:length(fairScores));
+        if(length(resAll)>length(temp))
+           resAll(1:length(temp)) = temp;
+        else
+           resAll = temp(1:num_queues*num_time_steps);
+        end
+        fairScoreUsers = reshape(resAll, num_queues, num_time_steps);
+        if (iFile == length(prefixes))
+            w = lineWidth;
+        else
+            w = lineWidth*0.7;
+        end
+        hBar = plot(timeInSeconds, fairScoreUsers(USER_ID, :)', fairscoreLineStyles{iFile},'LineWidth',w);
+     end
+    end
+  hold off;
+    ylabel(strFairScore);
+    xlabel(strTime);
+    xlim([0 max(timeInSeconds)]);
+    ylim([0 MAX_SCORE]);
+    legendStr = methods;
+    legend(legendStr,'Location','best','FontSize',fontLegend,'Orientation','vertical');
+    set (gcf, 'Units', 'Inches', 'Position', figureSize, 'PaperUnits', 'inches', 'PaperPosition', figureSize);
+    if is_printed         
+      figIdx=figIdx +1;
+      fileNames{figIdx} = ['fairness_score'];         
+      epsFile = [ LOCAL_FIG fileNames{figIdx} '.eps'];
+      print ('-depsc', epsFile);
+    end
+end
 %%
 
 %% create dummy graph with legends

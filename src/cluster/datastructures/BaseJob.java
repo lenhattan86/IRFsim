@@ -28,6 +28,9 @@ public abstract class BaseJob implements Cloneable {
   public ArrayList<BaseJob> profilingJobs = new ArrayList<BaseJob>();
   public int machineId = -1;
   
+  public String profileJobName ="";
+  public float profileJobScale =-1;
+  
   private boolean fullyAllocated = false;
   
   public ArrayList<Resource> usedReses = new ArrayList<Resource>();

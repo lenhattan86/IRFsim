@@ -27,6 +27,7 @@ if ~exist(filename, 'file')
    res1 = 0;
    res2 = 0;
    res3 = 0;
+   fairScores = 0;
    flag = false;
    return;
 end
