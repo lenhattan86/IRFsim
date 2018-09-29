@@ -284,12 +284,17 @@ public class MLJob extends BaseJob implements Cloneable {
 			int dagsReadSoFar = 0;
 			int vIdxStart, vIdxEnd;
 			String dag_name = "";
+			String jobProfileName = "";
+			float profileScale = 1;
 
 			while ((line = br.readLine()) != null) {
 				line = line.trim();
 				if (line.startsWith("#")) {
+					String[] args = line.split(" "); 
 					dag_name = line.split("#")[1];
 					dag_name = dag_name.trim();
+					jobProfileName = args[2];
+					profileScale = Float.parseFloat(args[3]);
 					jobNum++;
 					continue;
 				}
@@ -332,6 +337,8 @@ public class MLJob extends BaseJob implements Cloneable {
 				}
 
 				MLJob dag = new MLJob(ddagId, arrival);
+				dag.profileJobName = jobProfileName;
+				dag.profileJobScale = profileScale;
 				dag.numStages = numStages;
 				dag.NUM_ITERATIONS = numOfIterations;
 				dag.dagName = dag_name;

@@ -513,7 +513,7 @@ public class Main {
 		System.out.println("........" + now() + ".....");
 
 //		Globals.workload = Globals.WorkLoadType.SIMPLE;
-		Globals.runmode = Runmode.MultipleRuns;
+		Globals.runmode = Runmode.SmallScale;
 		Globals.ENABLE_CPU_CMPT_ERROR = false;
 		if (Globals.runmode.equals(Runmode.MultipleRuns)) {			
 			Globals.JOB_SCHEDULER = JobScheduling.SJF; 
@@ -645,18 +645,19 @@ public class Main {
 			}
 		} else if (Globals.runmode.equals(Runmode.Analysis_misest)) {
 			// TODO: not done yet
-			double misEst[] = {0.0, 0.1, 0.2, 0.3, 0.4, 0.5};
+			double misEst[] = {0.0, 0.5};
 			
 			Globals.IS_GEN= true;
 			Globals.USE_TRACE=true;
-			Globals.alpha = 0.3;
+			Globals.alpha = 0.1;
 			Globals.workload = WorkLoadType.MayBeGood;
 			
 			Globals.MEMORY_SCALE_DOWN = 1;
 			Globals.NUM_MACHINES = 1;
 			Globals.SIM_END_TIME = 20000.0;
 //			Globals.Method[] methods = {Method.DRFFIFO,Method.DRF, Method.ES, Method.FS };
-			Globals.Method[] methods = {Method.DRFFIFO, Method.DRF, Method.ES};
+//			Globals.Method[] methods = {Method.DRFFIFO, Method.DRF, Method.ES};
+			Globals.Method[] methods = {Method.FS};
 			Globals.MACHINE_MAX_GPU = 10;
 			Globals.numQueues = 15;
 			Globals.numJobs = Globals.numQueues*60;
