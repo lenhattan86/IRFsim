@@ -61,23 +61,25 @@ public class ConvertToExperimentInput {
 			
 			ProfiledJob jData = getJob(profileData, fileId, jobId);
 			
-			double scale = job.getDemand().cpuCompl/jData.cpuCmpl;
+			double scale1 = job.getDemand().cpuCompl/jData.cpuCmpl;
 			
-			if (Math.abs((scale - job.profileJobScale)/scale) > 0.1)
+			if (Math.abs((scale1 - job.profileJobScale)/scale1) > 0.1)
 				System.err.println("Wrong cpu compl. scale at job " + job.dagId);
-			scale = job.getDemand().gpuCompl/jData.gpuCmpl;
-			if (Math.abs((scale - job.profileJobScale)/scale) > 0.1)
+			double scale2 = job.getDemand().gpuCompl/jData.gpuCmpl;
+			if (Math.abs((scale2 - job.profileJobScale)/scale2) > 0.1)
+				System.err.println("Wrong cpu compl. scale at job " + job.dagId);
+			if (Math.abs((scale2 - scale1)/scale2) > 0.1)
 				System.err.println("Wrong cpu compl. scale at job " + job.dagId);
 			
 			Output.writeln(profile.cpuDemand, true, fileToWrite);
 			Output.writeln(profile.gpuDemand, true, fileToWrite);
 			
-			int numBatches =  1;
+			int numBatches =  -1;
 			
 			if (job.profileJobScale > 0)
 				numBatches = (int) (profile.numBatches*job.profileJobScale);
 			else 
-				numBatches = (int) (profile.numBatches*scale);
+				numBatches = (int) (profile.numBatches*(scale1+scale2)/2);
 			
 			Output.writeln(profile.cpuCmd+"--num_batches="+numBatches, true, fileToWrite);
 			Output.writeln(profile.gpuCmd+"--num_batches="+numBatches, true, fileToWrite);
