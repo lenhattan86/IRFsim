@@ -70,8 +70,12 @@ public class ConvertToExperimentInput {
 				System.err.println("Wrong cpu compl. scale at job " + job.dagId);
 			if (Math.abs((scale2 - scale1)/scale2) > 0.1)
 				System.err.println("Wrong cpu compl. scale at job " + job.dagId);
-			
+			double scale = (scale1+scale2)/2;
+			String[] temp = profile.cpuDemand.split(" "); 
+			profile.cpuDemand = temp[0]+" " + temp[1]+" " + temp[2]+ " " + (int)(jData.cpuCmpl*scale); 
 			Output.writeln(profile.cpuDemand, true, fileToWrite);
+			temp = profile.gpuDemand.split(" ");
+			profile.gpuDemand = temp[0]+" " + temp[1]+" " + temp[2]+ " " + (int)(jData.gpuCmpl*scale);
 			Output.writeln(profile.gpuDemand, true, fileToWrite);
 			
 			int numBatches =  -1;
@@ -79,7 +83,7 @@ public class ConvertToExperimentInput {
 			if (job.profileJobScale > 0)
 				numBatches = (int) (profile.numBatches*job.profileJobScale);
 			else 
-				numBatches = (int) (profile.numBatches*(scale1+scale2)/2);
+				numBatches = (int) (profile.numBatches*scale);
 			
 			Output.writeln(profile.cpuCmd+"--num_batches="+numBatches, true, fileToWrite);
 			Output.writeln(profile.gpuCmd+"--num_batches="+numBatches, true, fileToWrite);
