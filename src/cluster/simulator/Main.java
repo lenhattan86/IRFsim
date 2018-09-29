@@ -29,7 +29,7 @@ public class Main {
 	public static class Globals {
 		
 		public final static boolean EnableMatlab = false;
-		public final static boolean EnableProfiling = false;
+		public final static boolean EnableProfiling = true;
 		public final static boolean EnablePreemption = true;
 		public static int CPU_PROFILING_JOB1 = -100000; //-10000 -> 0
 		public static int CPU_PROFILING_JOB2 = CPU_PROFILING_JOB1*2;
@@ -527,8 +527,8 @@ public class Main {
 			Globals.SIM_END_TIME = 20000.0;
 			
 		//	Globals.Method[] methods = {Method.DRFFIFO, Method.DRF, Method.ES,Method.DRFExt, Method.SRPT,Method.FS};
-//			Globals.Method[] methods = {Method.DRFFIFO, Method.DRF, Method.ES,Method.DRFExt, Method.SRPT};
-			Globals.Method[] methods = {Method.FS};
+			Globals.Method[] methods = {Method.DRFFIFO, Method.DRF, Method.ES,Method.DRFExt,Method.FS, Method.SRPT};
+	//		Globals.Method[] methods = {Method.FS};
 //			Globals.Method[] methods = {Method.SRPT};
 //			Globals.Method[] methods = {Method.DRF };
 //			Globals.Method[] methods = {Method.DRF};

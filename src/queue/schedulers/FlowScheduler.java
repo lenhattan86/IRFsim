@@ -112,20 +112,28 @@ public class FlowScheduler implements Scheduler {
 			
 //		System.out.println("[INFO] available machines " + availableMachines + " at " + Simulator.CURRENT_TIME);
 		boolean isReschedule = true;
+		double alpha = alphaFairness;
 		while (isReschedule){
 			Resource avail = Simulator.cluster.getClusterResAvail();
 			isReschedule = isResourceAvailable();
-			List<JobQueue> pickUsers = compute_fs(availableMachines, clusterTotCapacity, activeQueues, alphaFairness);
+			List<JobQueue> pickUsers = compute_fs(availableMachines, clusterTotCapacity, activeQueues, alpha);
 			List<JobQueue> usersWantResources = new LinkedList<JobQueue>();
-			isReschedule = allocate_fs(availableMachines, usersWantResources);
+			boolean isAllocatable = allocate_fs(availableMachines, usersWantResources);
+			if (alpha > 1 && !isAllocatable)
+				break;
 			
-			// remove the users don't want resources.
-			for (JobQueue user:pickUsers){
-				if(!usersWantResources.contains(user)){
-					activeQueues.remove(user);
-				}
+			else if (!isAllocatable) {				
+				alpha = alpha * 2;
 			}
-			isReschedule = !activeQueues.isEmpty();
+			
+//			boolean isAllocatable = allocate_fs(availableMachines, usersWantResources);
+//			// remove the users don't want resources.
+//			for (JobQueue user:pickUsers){
+//				if(!usersWantResources.contains(user)){
+//					activeQueues.remove(user);
+//				}
+//			}
+//			isReschedule = !activeQueues.isEmpty();
 		}
 		
 	}
@@ -189,6 +197,7 @@ public class FlowScheduler implements Scheduler {
 			// within $\alpha$ percent. 		
 			Collections.sort(activeQueues, new QueueComparator());
 			int lowestFairNQueues = (int) Math.ceil(alphaFairness * activeQueues.size());
+			lowestFairNQueues = Math.min(lowestFairNQueues, activeQueues.size());
 			List<JobQueue> queuesWithLowestFairness = new ArrayList<JobQueue>();
 			for (int i = 0; i < lowestFairNQueues; i++)
 				queuesWithLowestFairness.add(activeQueues.get(i));
@@ -248,6 +257,7 @@ public class FlowScheduler implements Scheduler {
 			
 			// add to the scheduled jobs to the queues for scheduling later.
 			Collections.sort(availableMachines, Collections.reverseOrder());
+			boolean isAllocatable = false;
 			for (Integer iM : availableMachines ){
 //			for (int iM=numberOfNodes-1; iM>=0; iM--){
 				for (int k=numOfJobs-1; k>=0; k--){
@@ -259,6 +269,7 @@ public class FlowScheduler implements Scheduler {
 						double processingTime = isGpu?job.getReportDemand().gpuCompl:job.getReportDemand().cpuCompl;
 						double currentAvailTime = availableTimes.get(iM);
 						availableTimes.put(iM, currentAvailTime+processingTime);
+						isAllocatable = true;
 					}
 				}
 			}
@@ -273,12 +284,18 @@ public class FlowScheduler implements Scheduler {
 			return false;
 		
 		List<Integer> busyMachines = new LinkedList<Integer>();
+		boolean isAllocable = false;
 		for (Integer iM : availableMachines ){
 			Queue<BaseJob> jobs = Simulator.cluster.scheduledJobs.get(iM);
 			BaseJob job = jobs.peek();
-			if (job != null)
+			if (job != null) {
 				usersWantResources.add(job.getQueue());
+				isAllocable = true;
+			}
 		}
+		if(!isAllocable)
+			return false;
+		
 		Collections.sort(availableMachines, Collections.reverseOrder());
 		for (Integer iM : availableMachines ){
 			Queue<BaseJob> jobs = Simulator.cluster.scheduledJobs.get(iM);
@@ -311,7 +328,7 @@ public class FlowScheduler implements Scheduler {
 				}
 		}
 		availableMachines.removeAll(busyMachines);
-		return true;
+		return isAllocable;
 	}
 	
 	// trigger only when a job finishes
