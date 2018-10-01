@@ -16,11 +16,11 @@ import cluster.datastructures.Resource;
 import cluster.datastructures.Resources;
 import cluster.simulator.Main.Globals;
 import cluster.simulator.Simulator;
-import queue.schedulers.AlloXScheduler;
+import queue.schedulers.SJFScheduler;
 import queue.schedulers.DRFExtScheduler;
 import queue.schedulers.DRFScheduler;
 import queue.schedulers.EqualShareScheduler;
-import queue.schedulers.FlowScheduler;
+import queue.schedulers.AlloXScheduler;
 import queue.schedulers.PricingScheduler;
 import queue.schedulers.SJFScheduler;
 import queue.schedulers.SRPTScheduler;
@@ -52,11 +52,8 @@ public class QueueScheduler {
 		case AlloX:
 			scheduler = new AlloXScheduler(Globals.alpha);
 			break;
-		case FS:
-			scheduler = new FlowScheduler(Globals.alpha);
-			break;	
 		case SJF:
-			scheduler = new AlloXScheduler();
+			scheduler = new SJFScheduler();
 			break;
 		case SRPT:
 			scheduler = new SRPTScheduler();
@@ -83,10 +80,8 @@ public class QueueScheduler {
 	}
 
 	public boolean  scheduleProfilingJobs() {
-
 		boolean isCpuAvailable = true;
 		boolean isGpuAvailable = true;
-		
 		int round = 0;
 		int queueId = 0;
 		int maxRound = Integer.MIN_VALUE;

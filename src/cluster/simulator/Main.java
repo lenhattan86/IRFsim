@@ -6,7 +6,7 @@ import java.util.Queue;
 import java.util.Scanner;
 import java.util.logging.Logger;
 
-import com.mathworks.engine.MatlabEngine;
+//import com.mathworks.engine.MatlabEngine;
 
 import cluster.data.JobData;
 import cluster.data.SessionData;
@@ -42,7 +42,7 @@ public class Main {
 		
 		public static JobScheduling JOB_SCHEDULER = JobScheduling.SJF; 
 		
-		public static MatlabEngine MATLAB = null;
+//		public static MatlabEngine MATLAB = null;
 		
 		public static double transferRateScale = 1;
 
@@ -126,7 +126,7 @@ public class Main {
 		public static int SCALE_UP_FACTOR = 1;
 
 		public static enum Method {
-			DRFFIFO, DRF, DRFExt, FDRF, DRFW, ES, MaxMinMem, SpeedUp, Pricing, AlloX, SJF, FS, SRPT
+			DRFFIFO, DRF, DRFExt, FDRF, DRFW, ES, MaxMinMem, SpeedUp, Pricing, SJF, AlloX, SRPT
 		}
 		
 		public static int PERIOD_FS = 1; 
@@ -276,10 +276,11 @@ public class Main {
 				Globals.TRACE_FILE = "input/job_google.txt"; 
 				break;
 			case MayBeGood:
-				Globals.TRACE_FILE = "input/job_maybegood.txt"; 
+//				Globals.TRACE_FILE = "input/job_maybegood.txt";
+				Globals.TRACE_FILE = "input/good_setup_40_maybe.txt"; 
 				break;
 			case Experiment:
-				Globals.TRACE_FILE = "input/eurosys4.2_est_drf.txt";
+				Globals.TRACE_FILE = "input/experiment.txt";
 				break;
 			case Google_2:
 				Globals.TRACE_FILE = "input/job_google_2.txt"; 
@@ -342,6 +343,7 @@ public class Main {
 				+ Globals.workload + Globals.EXTRA + ".txt";
 		
 		Globals.JOB_SCHEDULER = JobScheduling.SJF;
+		Globals.EnableProfiling = true;
 		if (Globals.METHOD.equals(Method.DRF)) {
 			Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.DRF;
 			Globals.FileOutput = "DRF-output" + extraName + ".csv";
@@ -353,30 +355,15 @@ public class Main {
 		} else if (Globals.METHOD.equals(Method.DRFExt)) {
 			Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.DRFExt;
 			Globals.FileOutput = "DRFExt-output" + extraName + ".csv";
-		}  else if (Globals.METHOD.equals(Method.FDRF)) {
-			Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.DRF;
-			Globals.FileOutput = "FDRF-output" + extraName + ".csv";
-		} else if (Globals.METHOD.equals(Method.ES)) {
+		}  else if (Globals.METHOD.equals(Method.ES)) {
 			Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.ES;
 			Globals.FileOutput = "ES-output" + extraName + ".csv";
-		} else if (Globals.METHOD.equals(Method.MaxMinMem)) {
-			Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.MaxMinMem;
-			Globals.FileOutput = "MaxMinMem-output" + extraName + ".csv";
-		} else if (Globals.METHOD.equals(Method.SpeedUp)) {
-			Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.SpeedUp;
-			Globals.FileOutput = "SpeedUp-output" + extraName + ".csv";
-		} else if (Globals.METHOD.equals(Method.Pricing)) {
-			Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.Pricing;
-			Globals.FileOutput = "Pricing-output" + extraName + ".csv";
 		} else if (Globals.METHOD.equals(Method.AlloX)) {
 			Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.AlloX;
 			Globals.FileOutput = "AlloX-output" + extraName + ".csv";
 		} else if (Globals.METHOD.equals(Method.SRPT)) {
 			Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.SRPT;
 			Globals.FileOutput = "SRPT-output" + extraName + ".csv";
-		} else if (Globals.METHOD.equals(Method.FS)) {
-			Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.FS;
-			Globals.FileOutput = "FS-output" + extraName + ".csv";
 		} else if (Globals.METHOD.equals(Method.SJF)) {
 			Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.SJF;
 			Globals.FileOutput = "SJF-output" + extraName + ".csv";
@@ -499,12 +486,12 @@ public class Main {
 	public static void main(String[] args) {
 		
 		Globals.MACHINE_MAX_CPU = Globals.MACHINE_MAX_GPU*32;
-		if (Globals.EnableMatlab)
-			try {
-				Globals.MATLAB = MatlabEngine.startMatlab();
-			} catch (Exception e) {
-				System.out.println("[Error] Matlab is not supported.");
-			}
+//		if (Globals.EnableMatlab)
+//			try {
+//				Globals.MATLAB = MatlabEngine.startMatlab();
+//			} catch (Exception e) {
+//				System.out.println("[Error] Matlab is not supported.");
+//			}
 
 		Utils.createUserDir("log");
 		Utils.createUserDir("output");
@@ -514,31 +501,25 @@ public class Main {
 		System.out.println("........" + now() + ".....");
 
 //		Globals.workload = Globals.WorkLoadType.SIMPLE;
-		Globals.runmode = Runmode.Experiment;
+		Globals.runmode = Runmode.MultipleRuns;
 		Globals.ENABLE_CPU_CMPT_ERROR = false;
 		if (Globals.runmode.equals(Runmode.MultipleRuns)) {			
 			Globals.JOB_SCHEDULER = JobScheduling.SJF; 
 			Globals.IS_GEN= true;
 			Globals.USE_TRACE=true;
-			Globals.alpha = 1;
-			Globals.workload = WorkLoadType.Google;
+			Globals.alpha = 0.05;
+			Globals.workload = WorkLoadType.MayBeGood;
 			
 			Globals.MEMORY_SCALE_DOWN = 1;
 			Globals.NUM_MACHINES = 1;
 			Globals.SIM_END_TIME = 20000.0;
 			
-		//	Globals.Method[] methods = {Method.DRFFIFO, Method.DRF, Method.ES,Method.DRFExt, Method.SRPT,Method.FS};
+			Globals.Method[] methods = {Method.DRFFIFO, Method.DRF, Method.ES,Method.DRFExt, Method.SRPT,Method.AlloX};
 //			Globals.Method[] methods = {Method.DRFFIFO};
-			Globals.Method[] methods = {Method.DRF, Method.ES,Method.DRFExt,Method.FS, Method.SRPT};
-	//		Globals.Method[] methods = {Method.FS};
-//			Globals.Method[] methods = {Method.SRPT};
-//			Globals.Method[] methods = {Method.DRF };
-//			Globals.Method[] methods = {Method.DRF};
-//			Globals.Method[] methods = {Method.DRFExt};
-//			Globals.Method[] methods = {Method.ES, Method.AlloX};
-			Globals.MACHINE_MAX_GPU = 4;
-			Globals.numQueues = 4;
-			Globals.numJobs = Globals.numQueues*10;
+//			Globals.Method[] methods = {Method.DRF, Method.ES,Method.DRFExt,Method.SRPT};
+			Globals.MACHINE_MAX_GPU = 20;
+			Globals.numQueues = 20;
+			Globals.numJobs = Globals.numQueues*50;
 			
 			double errStd = 0;
 			Globals.jobData = new JobData();
@@ -564,8 +545,8 @@ public class Main {
 			Globals.MEMORY_SCALE_DOWN = 1;
 			Globals.NUM_MACHINES = 1;
 			Globals.SIM_END_TIME = 10000.0;
-//			Globals.Method[] methods = { Method.DRF, Method.ES, Method.DRFExt,  Method.AlloX, Method.SJF, Method.FS, Method.SRPT};
-			Globals.Method[] methods = {Method.FS};
+//			Globals.Method[] methods = { Method.DRF, Method.ES, Method.DRFExt,  Method.SJF, Method.FS, Method.SRPT};
+			Globals.Method[] methods = {Method.AlloX};
 			Globals.MACHINE_MAX_GPU = 2;
 			Globals.CPU_PER_NODE = 20;
 			Globals.numQueues = 2;
@@ -593,7 +574,7 @@ public class Main {
 			Globals.NUM_MACHINES = 1;
 			Globals.SIM_END_TIME = 20000.0;
 
-			Globals.Method[] methods = {Method.DRF, Method.ES, Method.FS};
+			Globals.Method[] methods = {Method.DRF, Method.ES, Method.AlloX};
 			Globals.MACHINE_MAX_GPU = 10;
 			Globals.numQueues = 15;
 			Globals.numJobs = Globals.numQueues*60;
@@ -626,7 +607,7 @@ public class Main {
 			Globals.NUM_MACHINES = 1;
 			Globals.SIM_END_TIME = 20000.0;
 //			Globals.Method[] methods = {Method.DRFFIFO,Method.DRF, Method.ES, Method.DRFExt, Method.SRPT};
-			Globals.Method[] methods = {Method.FS };
+			Globals.Method[] methods = {Method.AlloX };
 			Globals.numQueues = 15;
 			Globals.numJobs = Globals.numQueues*60;
 			double errStd = 0.1;
@@ -659,7 +640,7 @@ public class Main {
 			Globals.SIM_END_TIME = 20000.0;
 //			Globals.Method[] methods = {Method.DRFFIFO,Method.DRF, Method.ES, Method.FS };
 //			Globals.Method[] methods = {Method.DRFFIFO, Method.DRF, Method.ES};
-			Globals.Method[] methods = {Method.FS};
+			Globals.Method[] methods = {Method.AlloX};
 			Globals.MACHINE_MAX_GPU = 10;
 			Globals.numQueues = 15;
 			Globals.numJobs = Globals.numQueues*60;
@@ -690,7 +671,7 @@ public class Main {
 			Globals.MEMORY_SCALE_DOWN = 1;
 			Globals.NUM_MACHINES = 1;
 			Globals.SIM_END_TIME = 20000.0;
-			Globals.Method[] methods = {Method.DRFFIFO,Method.DRF, Method.ES, Method.FS };
+			Globals.Method[] methods = {Method.DRFFIFO,Method.DRF, Method.ES, Method.AlloX };
 			Globals.MACHINE_MAX_GPU = 10;
 			Globals.numQueues = 15;
 			Globals.numJobs = Globals.numQueues*60;
@@ -752,11 +733,12 @@ public class Main {
 			Globals.MEMORY_SCALE_DOWN = 1;
 			Globals.NUM_MACHINES = 1;
 			Globals.SIM_END_TIME = 20000.0;
-//			Globals.Method[] methods = {Method.DRFFIFO, Method.DRF, Method.ES,Method.DRFExt, Method.SRPT, Method.FS};
+//			Globals.Method[] methods = {Method.DRFFIFO, Method.DRF, Method.ES,Method.DRFExt, Method.SRPT, Method.AlloX};
 //			Globals.Method[] methods = {Method.DRF, Method.ES,Method.DRFExt, Method.SRPT}; Globals.CPU_PER_NODE = 25; 
-			Globals.Method[] methods = {Method.DRFFIFO}; Globals.CPU_PER_NODE = 25; Globals.EnableProfiling = false;
-//			Globals.Method[] methods = {Method.FS}; Globals.CPU_PER_NODE = 20; 
+//			Globals.Method[] methods = {Method.DRFFIFO}; Globals.CPU_PER_NODE = 25; Globals.EnableProfiling = false;
+			Globals.Method[] methods = {Method.AlloX}; Globals.CPU_PER_NODE = 20; 
 			Globals.MACHINE_MAX_GPU = 4;			
+			 Globals.CPU_PER_NODE = 20; 
 			Globals.CPU_TO_GPU_RATIO = 2;
 			Globals.numQueues = 4;
 			Globals.numJobs = Globals.numQueues*10;
@@ -801,12 +783,12 @@ public class Main {
 	}
 	
 	public static void endEndSimulation(){
-		if (Globals.EnableMatlab)
-			try {
-				Globals.MATLAB.close();
-			} catch (Exception e) {
-				System.out.println("[Error] Matlab is not supported.");
-			}
+//		if (Globals.EnableMatlab)
+//			try {
+//				Globals.MATLAB.close();
+//			} catch (Exception e) {
+//				System.out.println("[Error] Matlab is not supported.");
+//			}
 		freeMemory();
 	}
 

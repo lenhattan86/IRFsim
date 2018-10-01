@@ -1,25 +1,27 @@
 package queue.schedulers;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Queue;
 
 import cluster.datastructures.BaseJob;
+import cluster.datastructures.InterchangableResourceDemand;
 import cluster.datastructures.JobArrivalComparator;
-import cluster.datastructures.JobProcessingTimeComparator;
 import cluster.datastructures.JobQueue;
-import cluster.datastructures.ProcessingTime;
-import cluster.datastructures.ProcessingTimesComparator;
 import cluster.datastructures.QueueComparator;
 import cluster.datastructures.Resource;
-import cluster.datastructures.Resources;
+import cluster.datastructures.Task;
 import cluster.schedulers.QueueScheduler;
 import cluster.simulator.Simulator;
 import cluster.simulator.Main.Globals;
-import cluster.utils.BetaComparator;
-import cluster.utils.Utils;
+import cluster.utils.HungarianAlgorithm;
+import cluster.utils.Output;
 
 public class AlloXScheduler implements Scheduler {
 	private String schedulePolicy;
@@ -27,22 +29,15 @@ public class AlloXScheduler implements Scheduler {
 	static Resource clusterTotCapacity = null;
 	static Resource clusterAvailRes = null;
 	static double[] L;
-	private static boolean isComputed = false;
-	private static Resource computedShares[] = null;
+	static int numberOfNodes = 0;
 	private static double alphaFairness = 1;
-
-	// implementation idea:
-	// 1. for every queue, compute it's total resource demand vector
-
+	static boolean DEBUG = false;
+	
 	public AlloXScheduler(double alpha) {
+		schedulePolicy = "AlloX";
 		clusterTotCapacity = Simulator.cluster.getClusterMaxResAlloc();
-		this.schedulePolicy = "AlloX";
 		alphaFairness = Globals.alpha;
-	}
-	public AlloXScheduler() {
-		clusterTotCapacity = Simulator.cluster.getClusterMaxResAlloc();
-		this.schedulePolicy = "SJF";
-		alphaFairness = 1;
+		numberOfNodes = (int) (Globals.MACHINE_MAX_GPU + (Globals.MACHINE_MAX_CPU/Globals.CPU_PER_NODE) );
 	}
 
 	@Override
@@ -51,504 +46,431 @@ public class AlloXScheduler implements Scheduler {
 		if (numQueuesRuning == 0) {
 			return;
 		}
-
-		for (JobQueue q : Simulator.QUEUE_LIST.getQueuesWithQueuedJobs()) {
-			Collections.sort((List<BaseJob>) q.getQueuedUpJobs(), new JobArrivalComparator());
-		}
-
-		// allox_heuristic(clusterTotCapacity,
-		// Simulator.QUEUE_LIST.getRunningQueues());
-		// allox(clusterTotCapacity, Simulator.QUEUE_LIST.getRunningQueues());
-		// allox_heuristic(clusterTotCapacity,
-		// Simulator.QUEUE_LIST.getRunningQueues());
-		clusterAvailRes = Simulator.cluster.getClusterResAvail();
+		
 		List<JobQueue> activeQueues = Simulator.QUEUE_LIST.getQueuesWithQueuedJobs();
 		
-		boolean flag = true;
+		List<Integer> availableMachines = new LinkedList<Integer>();
+		List<Integer> busyMachines = new LinkedList<Integer>();
+		Map<Integer, Double> availableTimes = Simulator.cluster.availableTimes;
 		
-		while(activeQueues.size() > 0){
-			flag = online_allox(clusterTotCapacity, activeQueues, alphaFairness);
-			if (!flag)
+		double minAvailableTime = Integer.MAX_VALUE;
+		for (double availTime : availableTimes.values()) {
+			if(availTime < minAvailableTime)
+				minAvailableTime = availTime;
+		}
+		
+		Map<Task, Double> runningTasks = Simulator.cluster.getCurrentRunningTasks();
+		int numCpuBusyForProfiling = 0;
+		int numGpuBusyForProfiling = 0;
+		for (Map.Entry<Task, Double> entry : runningTasks.entrySet()) {
+			Task t = entry.getKey();
+			BaseJob job = Simulator.getDag(t.dagId);
+			int machineId = job.machineId;
+			if (machineId>=0)
+				busyMachines.add(machineId);
+			else {
+				if (job.isCpu) {
+					numCpuBusyForProfiling++;
+				} else {
+					numGpuBusyForProfiling++;
+				}
+			}
+		}
+		
+		for (int i=0; i<numberOfNodes; i++){
+			if (!busyMachines.contains(i))
+				availableMachines.add(i);
+		}
+		
+		//remove busy CPU machines
+		if(numCpuBusyForProfiling>0){
+			busyMachines = new LinkedList<Integer>();
+			int i = 0;
+			for (Integer machine: availableMachines){
+					if(machine >= Globals.MACHINE_MAX_GPU){
+						busyMachines.add(machine);
+						i++;
+					}
+					if (i>=numCpuBusyForProfiling)
+						break;
+			}
+			availableMachines.removeAll(busyMachines);
+		}
+		
+		//remove busy GPU machines
+		if (numGpuBusyForProfiling > 0) {
+			busyMachines = new LinkedList<Integer>();
+			int i = 0;
+			for (Integer machine: availableMachines){
+					if(machine < Globals.MACHINE_MAX_GPU){
+						busyMachines.add(machine);
+						i++;
+					}
+					if (i>=numGpuBusyForProfiling)
+						break;
+			}
+			availableMachines.removeAll(busyMachines);
+		}
+			
+//		System.out.println("[INFO] available machines " + availableMachines + " at " + Simulator.CURRENT_TIME);
+		boolean isReschedule = true;
+		double alpha = alphaFairness;
+		while (isReschedule){
+			Resource avail = Simulator.cluster.getClusterResAvail();
+			isReschedule = isResourceAvailable();
+			List<JobQueue> pickUsers = compute_fs(availableMachines, clusterTotCapacity, activeQueues, alpha);
+			List<JobQueue> usersWantResources = new LinkedList<JobQueue>();
+			// TODO Main bottleneck
+			boolean isAllocatable = allocate_fs(availableMachines, usersWantResources);
+			if (alpha > 1 && !isAllocatable)
 				break;
-			activeQueues = Simulator.QUEUE_LIST.getQueuesWithQueuedJobs();
+			
+			else if (!isAllocatable) {				
+				alpha = alpha * 2;
+			}
+			
 		}
 		
-//		online_allox_ilp(clusterTotCapacity, Simulator.QUEUE_LIST.getQueuesWithQueuedJobs(), Globals.alpha);
 	}
 	
-//fairnessLevel = ~0% strict fairness
-	public static void online_allox_ilp(Resource resCapacity, List<JobQueue> activeQueues, double fairnessRatio) {
-		// Create user set U with lowest fairnessRatio
-		Collections.sort(activeQueues, new QueueComparator());
-		int lowestFairNQueues = (int) Math.ceil(fairnessRatio * Globals.numQueues);
-		List<JobQueue> queuesWithLowestFairness = new ArrayList<JobQueue>();
-		for (int i = 0; i < lowestFairNQueues; i++)
-			queuesWithLowestFairness.add(activeQueues.get(i));
-
-		// Add all jobs from queue to job set W
-		List<BaseJob> jobs = new ArrayList<BaseJob>();
-		for (JobQueue jobQueue : queuesWithLowestFairness) {
-			jobs.addAll(jobQueue.getQueuedUpJobs());
-		}
-		int nJobs = jobs.size();
-		
-		if (nJobs <= 0)
-			return;
-
-		// solve ILP problem to schedule jobs in W
-		double M = Double.MIN_VALUE;
-		for (BaseJob job : jobs) {
-			double temp = Math.max(job.getDemand().cpuCompl, job.getDemand().gpuCompl);
-			M = Math.max(temp, M);
-		}
-		M = 2 * M;
-
-		double[] c = new double[3 * nJobs];
-		double[][] A = new double[1 + 1 + 1 + nJobs][3 * nJobs];
-		double[] b = new double[1 + 1 + 1 + nJobs];
-		double[][] Aeq = new double[nJobs][3 * nJobs];
-		double[] beq = new double[nJobs];
-
-		for (int i = 0; i < nJobs; i++) {
-			c[i] = jobs.get(i).getDemand().cpuCompl;
-			c[i + nJobs] = jobs.get(i).getDemand().gpuCompl;
-			c[i + 2 * nJobs] = M;
-		}
-
-		for (int i = 0; i < nJobs; i++) {
-			// constraint 1: sum(x*c) <= C1-A1
-			A[0][i] = jobs.get(i).getDemand().cpu;
-			b[0] = clusterAvailRes.resource(0);
-
-			// constraint 2: sum(x*c) <= C2-A2
-			A[1][i + nJobs] = jobs.get(i).getDemand().gpu;
-			b[1] = clusterAvailRes.resource(1);
-
-			// constraint 3: sum(x*c) <= C1-A1
-			A[2][i] = jobs.get(i).getDemand().mem;
-			A[2][i + nJobs] = jobs.get(i).getDemand().gpuMem;
-			b[2] = clusterAvailRes.resource(2);
-
-			// constraint 4: xi + yi <=1
-			A[3 + i][i] = 1;
-			A[3 + i][i + nJobs] = 1;
-			b[3 + i] = 1;
-			// constraint 5: xi + yi + zi = 1
-			Aeq[i][i] = 1;
-			Aeq[i][i + nJobs] = 1;
-			Aeq[i][i + 2 * nJobs] = 1;
-			beq[i] = 1;
-		}
-
-		int[] sols  = null; 
-		if (Globals.EnableMatlab)
-			sols = Utils.biprog_matlab(c, A, b, Aeq, beq); 
-		else
-			sols = Utils.biprog_joptimizer(c, A, b, Aeq, beq);
-		
-		if (sols != null)
-			// for each job in W, update fair score for each queue
-			for (int i = 0; i < nJobs; i++) {
-				BaseJob job = jobs.get(i);
-				if (sols[i] == 1) {
-					// schedule job i on CPU
-					QueueScheduler.allocateResToJob(job, true);
-					job.onStart(clusterTotCapacity);
-				}
-				if (sols[i + nJobs] == 1) {
-					// schedule job i on GPU
-					QueueScheduler.allocateResToJob(jobs.get(i), false);
-					job.onStart(clusterTotCapacity);
-				}
-			}
-		sols = null;
+//	boolean isReschedule = false;
+//	if (minAvailableTime <= Simulator.CURRENT_TIME)
+//		isReschedule = true;
+//	if (Simulator.CURRENT_TIME % Globals.PERIOD_FS == 0)
+//		isReschedule = true;
+//	
+//	if (isReschedule){
+//		compute_fs(clusterTotCapacity, activeQueues, alphaFairness);
+////		System.out.println("number of FS schedule "+numSchedule++);
+//	}
+//	allocate_fs(availableMachines);
+	
+	private boolean isResourceAvailable(){
+		clusterAvailRes = Simulator.cluster.getClusterResAvail();
+		if (clusterAvailRes.resource(0)> 0 || clusterAvailRes.resource(1)> 0)
+			return true;
+		return false;
 	}
 	
-//fairnessLevel = ~0% strict fairness
-	public static boolean online_allox(Resource resCapacity, List<JobQueue> activeQueues, double fairnessRatio) {
-		int nQueues = activeQueues.size();
-		// Create user set U with lowest fairnessRatio
-		Collections.sort(activeQueues, new QueueComparator());
-		int lowestFairNQueues = (int) Math.ceil(fairnessRatio * nQueues);
-		List<JobQueue> queuesWithLowestFairness = new ArrayList<JobQueue>();
-		for (int i = 0; i < lowestFairNQueues; i++)
-			queuesWithLowestFairness.add(activeQueues.get(i));
-
-		// Create set W of processing times
-		List<ProcessingTime> W = new ArrayList<ProcessingTime>();
-		for (JobQueue jobQueue : queuesWithLowestFairness) {
-			for (BaseJob job: jobQueue.getQueuedUpFullJobs()){
-				W.add(new ProcessingTime(true, job)); // reported processing time on CPU
-				W.add(new ProcessingTime(false, job)); // reported processing time on GPU
+	private static List<JobQueue> compute_fs(List<Integer> availableMachines, Resource clusterTotCapacity, List<JobQueue>activeQueues, double alphaFairness) {
+		// Globals.MACHINE_MAX_GPU first nodes are GPUs, later are CPUs
+			Map<Integer, Double> availableTimes = Simulator.cluster.availableTimes;
+			for (int iM=numberOfNodes-1; iM>=0; iM--) {
+					Simulator.cluster.scheduledJobs.put(iM, new LinkedList<BaseJob>());
+					availableTimes.put(iM, Simulator.CURRENT_TIME);
 			}
+			
+			// step 1: Get current time and a time array where each element represents the time when 
+			// that machine finishes its current job
+			// 
+			// no definition yet, assume AvailTime[i] = max(current_time, time when current job will be finished on i) for all
+			// i in machineCpuQueues and machineGpuQueues
+			Map<Task, Double> runningTasks = Simulator.cluster.getCurrentRunningTasks(); 
+
+			for (Map.Entry<Task, Double> entry : runningTasks.entrySet()) {
+				Task t = entry.getKey();
+				BaseJob job = Simulator.getDag(t.dagId);
+				int machineId = job.machineId;
+				InterchangableResourceDemand reportDemand = job.getReportDemand();
+				InterchangableResourceDemand demand = job.getReportDemand();
+				
+				if(machineId < Globals.MACHINE_MAX_GPU){
+					double err = reportDemand.gpuCompl -demand.gpuCompl;  
+					availableTimes.put(machineId, Math.max(0, entry.getValue()-err));
+				} else {
+					double err = reportDemand.cpuCompl -demand.cpuCompl;
+					availableTimes.put(machineId, Math.max(0, entry.getValue()-err));
+				}
+			}
+			
+			for (int machine: availableTimes.keySet()){
+				double aTime = Math.max(availableTimes.get(machine), Simulator.CURRENT_TIME);
+				availableTimes.put(machine, aTime);
+			}		
+			
+			// step 2: Consider all jobs from the activeQueues where the fairness score of the owner falls
+			// within $\alpha$ percent. 		
+			Collections.sort(activeQueues, new QueueComparator());
+			int lowestFairNQueues = (int) Math.ceil(alphaFairness * activeQueues.size());
+			lowestFairNQueues = Math.min(lowestFairNQueues, activeQueues.size());
+			List<JobQueue> queuesWithLowestFairness = new ArrayList<JobQueue>();
+			for (int i = 0; i < lowestFairNQueues; i++)
+				queuesWithLowestFairness.add(activeQueues.get(i));
+			
+			// Add all jobs from queue to job set W
+			List<BaseJob> jobs = new ArrayList<BaseJob>();
+			for (JobQueue jobQueue : queuesWithLowestFairness) {
+				jobs.addAll(jobQueue.getQueuedUpFullJobs());
+			}	
+			int numOfJobs = jobs.size();
+			if (numOfJobs ==0) 
+					return queuesWithLowestFairness;
+			
+			// Create Delay Matrix & Create processing time matrix
+			double[][] D = new double[numberOfNodes][numOfJobs];
+			double[][] P = new double[numberOfNodes][numOfJobs];
+			for (int i=0; i<numberOfNodes; i++){
+				for (int j=0; j<numOfJobs; j++){
+					D[i][j] = availableTimes.get(i) - jobs.get(j).arrivalTime;
+					if (i< Globals.MACHINE_MAX_GPU ){
+						P[i][j] = jobs.get(j).getReportDemand().gpuCompl;
+					} else {
+						P[i][j] = jobs.get(j).getReportDemand().cpuCompl;
+					}
+				}
+			}
+			
+			// create input matrix Q
+			double[][] Q = new double[numOfJobs*numberOfNodes][numOfJobs];
+			for (int i=0; i<numOfJobs*numberOfNodes; i++){
+				for (int j=0; j<numOfJobs; j++){
+					int iN = i/numberOfNodes + 1;
+					Q[i][j] = D[i%numberOfNodes][j] + iN* P[i%numberOfNodes][j];
+				}
+			}
+			
+			// step 3: solve an assignment problem based on hungarian method, generate the matrix Q:
+			// size(Q) = size(size(jobs) * 2*numOfQueue), jobs)
+			// Delay matrix: current delay of machine $i$ to schedule job $j$ immediately, so it is a (2*numOfQueue,size(jobs)) matrix,
+			// D(i,j) =  AvailTime[i] - Arrival_time(j);
+			
+			// Processing time matrix, size is also (2*numOfQueue,size(jobs))
+			// Q = [D;D;D;...] + [P;2P;3P;...nP] where n is size(jobs)
+			// solve Q based on blablabla method;
+			// from results Q: if machine $i$ is available, then we look back to scan row from 2*(y-1)+i where y starts from 2*numOfQueue to 1
+			// until we have a non (-1) solution
+			// if so, we just schedule that job (start from 0, so if number is 4, schedule job 5 on machine i)
+			// update AvailTime[i]
+			// update fairness score[i];
+			// if all entries are (-1), skip until a new arrival or a job finishes
+			
+			// cares about the available nodes
+			
+			
+			int[] sols = new HungarianAlgorithm(Q).execute();
+			//TODO: how to decide CPU or GPU for a job as 2 configurations may be selected on either CPU or GPU. 
+			
+			// add to the scheduled jobs to the queues for scheduling later.
+			Collections.sort(availableMachines, Collections.reverseOrder());
+			boolean isAllocatable = false;
+			for (Integer iM : availableMachines ){
+//			for (int iM=numberOfNodes-1; iM>=0; iM--){
+				for (int k=numOfJobs-1; k>=0; k--){
+					// if job k is chosen on iM and machine iM is available.  
+					if(sols[k*numberOfNodes +iM] >= 0){
+						BaseJob job = jobs.get(sols[k*numberOfNodes +iM]);
+						Simulator.cluster.scheduledJobs.get(iM).add(job);
+						boolean isGpu = iM < Globals.MACHINE_MAX_GPU;
+						double processingTime = isGpu?job.getReportDemand().gpuCompl:job.getReportDemand().cpuCompl;
+						double currentAvailTime = availableTimes.get(iM);
+						availableTimes.put(iM, currentAvailTime+processingTime);
+						isAllocatable = true;
+					}
+				}
+			}
+			return queuesWithLowestFairness;
 		}
-		
-		int nJobs = W.size();
-		if (nJobs <= 0)
+	
+	private static boolean allocate_fs(List<Integer> availableMachines, List<JobQueue>usersWantResources ){
+		if (availableMachines.isEmpty())
+			return false;
+		Resource avail = Simulator.cluster.getClusterResAvail();
+		if (avail.resource(0)<1 && avail.resource(1)<1 )
 			return false;
 		
-		Collections.sort(W, new ProcessingTimesComparator());
+		List<Integer> busyMachines = new LinkedList<Integer>();
+		boolean isAllocable = false;
+		for (Integer iM : availableMachines ){
+			Queue<BaseJob> jobs = Simulator.cluster.scheduledJobs.get(iM);
+			BaseJob job = jobs.peek();
+			if (job != null) {
+				usersWantResources.add(job.getQueue());
+				isAllocable = true;
+			}
+		}
+		if(!isAllocable)
+			return false;
 		
-		// for each job in W, update fair score for each queue		
-		int numScheduledJobs = 0;
-		for (ProcessingTime p : W){
-			if (p.job.wasScheduled)
-				continue;
-			int jobId = p.job.dagId;
-			Resource availRes = Simulator.cluster.getClusterResAvail(); // todo: bug
-			if (!p.isCpu && availRes.resource(1) >= 1) {
-				
-				boolean res = QueueScheduler.allocateResToJob(p.job, false);
-				availRes = Simulator.cluster.getClusterResAvail(); 
-				if (res) {					
-					p.job.onStart(resCapacity);
-					numScheduledJobs++;
-					break;
-				}
-			} else if (p.isCpu && availRes.resource(0) >= 1) {
-				boolean res = QueueScheduler.allocateResToJob(p.job, true);
-				if (res) {
-					p.job.onStart(resCapacity);
-					numScheduledJobs++;
-					break;
-				} 
-			}
-		}
-		return numScheduledJobs>=1;
-	}
-
-	// fairnessLevel = ~0% strict fairness
-	public static void online_allox_v01(Resource resCapacity, List<JobQueue> activeQueues, double fairnessRatio) {
-		int nQueues = activeQueues.size();
-		// Create user set U with lowest fairnessRatio
-		Collections.sort(activeQueues, new QueueComparator());
-		int lowestFairNQueues = (int) Math.ceil(fairnessRatio * nQueues);
-		List<JobQueue> queuesWithLowestFairness = new ArrayList<JobQueue>();
-		for (int i = 0; i < lowestFairNQueues; i++)
-			queuesWithLowestFairness.add(activeQueues.get(i));
-
-		// Add all jobs from queue to job set W
-		List<BaseJob> jobs = new ArrayList<BaseJob>();
-		for (JobQueue jobQueue : queuesWithLowestFairness) {
-			jobs.addAll(jobQueue.getQueuedUpJobs());
-		}
-		
-		Collections.sort(jobs, new JobProcessingTimeComparator());
-		int nJobs = jobs.size();
-		
-		if (nJobs <= 0)
-			return;
-
-		double M = Double.MIN_VALUE;
-		
-		// for each job in W, update fair score for each queue
-		LinkedList<BaseJob> job2BeOnGPU = new LinkedList<BaseJob>();
-		for (int i = 0; i < nJobs; i++) {
-			BaseJob job = jobs.get(i);
-	    Resource availRes = Simulator.cluster.getClusterResAvail();
-			if (availRes.resource(1) >= 1) {
-				// schedule job i on GPU
-				boolean res = QueueScheduler.allocateResToJob(job, false);
-				if (res) {
-					job.onStart(clusterTotCapacity);
-					job2BeOnGPU.add(job);
-				}
-			} 
-		}
-		jobs.removeAll(job2BeOnGPU);
-		nJobs = jobs.size();
-		for (int i = nJobs; i > 0; i--) {
-			BaseJob job = jobs.get(i-1);
-	    Resource availRes = Simulator.cluster.getClusterResAvail();
-	    double smallVal = 1;
-			if (availRes.resource(0) > smallVal) {
-				// schedule job i on CPU
-				boolean res =QueueScheduler.allocateResToJob(job, true);
-				if (res)
-					job.onStart(clusterTotCapacity);
-			}
-		}
-	}
-
-	public static void onJobStart(BaseJob job, int iQueue) {
-		// find the owner of the job
-		double p1 = job.getDemand().cpuCompl;
-		double p2 = job.getDemand().gpuCompl;
-		if (p1 < p2) {
-			if (job.isOnCPU()) {
-				job.fairVal = Math.max(job.getDemand().cpu / clusterTotCapacity.resource(0),
-						job.getDemand().mem / clusterTotCapacity.resource(2));
-			} else {
-				job.fairVal = p1 / p2 * Math.max(job.getDemand().cpu / clusterTotCapacity.resource(0),
-						job.getDemand().mem / clusterTotCapacity.resource(2));
-			}
-		} else {
-			if (job.isOnCPU()) {
-				job.fairVal = p2 / p1 * Math.max(job.getDemand().gpu / clusterTotCapacity.resource(1),
-						job.getDemand().gpuMem / clusterTotCapacity.resource(2));
-			} else {
-				job.fairVal = Math.max(job.getDemand().gpu / clusterTotCapacity.resource(1),
-						job.getDemand().gpuMem / clusterTotCapacity.resource(2));
-			}
-		}
-		L[iQueue] += job.fairVal;
-	}
-
-	public static void onJobFinished(BaseJob job, int iQueue) {
-		L[iQueue] -= job.fairVal;
-	}
-
-	public static void allox_static(Resource resCapacity, List<JobQueue> runningQueues) {
-		// sort queues based on beta
-		int numberOfQueues = runningQueues.size();
-		// double SHARES[][] = { { 3520, 0, 880 }, { 320, 28.57, 217.14 }, { 0,
-		// 31.43, 62.86 } };
-		// double SHARES[][] = { { 35200, 0, 8800 }, { 3200, 285.7, 2171.4 }, { 0,
-		// 314.3, 628.6 } };
-		double SHARES[][] = { { 3520, 0, 880 }, { 320, 28.57, 217.14 }, { 0, 31.43, 62.86 } };
-		for (int i = 0; i < numberOfQueues; i++) {
-			JobQueue q = runningQueues.get(i);
-			double shares[] = SHARES[i];
-			if (!isComputed) {
-				System.out.println("i=" + i + "(" + shares[0] + "," + shares[1] + "," + shares[2] + ")");
-			}
-			QueueScheduler.allocateResToQueue(q, shares, true);
-		}
-		isComputed = true;
-	}
-
-	// resources: cpu : gpu : mem
-	// TODO: debug this function
-	public static void allox(Resource resCapacity, List<JobQueue> runningQueues) {
-		// sort queues based on beta
-		Collections.sort((List<JobQueue>) runningQueues, new BetaComparator());
-		int N = runningQueues.size();
-		// data processing
-		double ratio_cm[] = new double[N];
-		double ratio_gm[] = new double[N];
-		double betas[] = new double[N];
-		double pg[] = new double[N + 1];
-		for (int i = 1; i < N; i++) {
-			// cpu/mem
-			ratio_cm[i] = runningQueues.get(i).getDemand().cpu / runningQueues.get(i).getDemand().mem;
-			ratio_cm[i] = ratio_cm[i] * resCapacity.resource(2) / resCapacity.resource(0);
-			// gpu/mem
-			ratio_gm[i] = runningQueues.get(i).getDemand().gpu / runningQueues.get(i).getDemand().mem;
-			ratio_gm[i] = ratio_cm[i] * resCapacity.resource(2) / resCapacity.resource(1);
-			// beta
-			betas[i] = runningQueues.get(i).getReportBeta() * resCapacity.resource(1) / resCapacity.resource(0);
-			pg[i + 1] = betas[i];
-		}
-
-		int count = 0;
-		double[][] alloc = new double[N][3];
-		int flag = N;
-		double budget = 0;
-		double[] final_price = new double[3];
-		while (flag >= 0) {
-			double price = pg[flag];
-			double[] lb = new double[] { 0, 0 };
-			// double[] ub = new double[]{Double.MAX_VALUE, Double.MAX_VALUE};
-			double[] x_up = new double[N];
-			double[] x_lo = new double[N];
-			double[] y_up = new double[N];
-			double[] y_lo = new double[N];
-			double[] value = new double[N];
-			double[] payment = new double[N];
-			for (int i = 1; i < N; i++) {
-				double[][] A = new double[][] { { 1, price }, { 1.0 / ratio_cm[i] * (1 + price), 1 / ratio_gm[i] } };
-				double[] b = new double[] { 1, 1 };
-				double[] f = new double[] { -1, -betas[i] };
-				double[] gcAlloc = Utils.linprog(f, A, b, null, null, lb, null);
-				alloc[i][0] = gcAlloc[0];
-				alloc[i][1] = gcAlloc[1];
-				alloc[i][2] = alloc[i][0] / ratio_cm[i] + alloc[i][1] / ratio_gm[i];
-				payment[i] = Math.max(alloc[i][0] + price * alloc[i][1], (1 + price) * alloc[i][2]);
-				value[i] = alloc[i][1] + betas[i] * alloc[i][1];
-
-				//
-				if (ratio_cm[i] == betas[i] * ratio_gm[i] || price == betas[i]) {
-					f = new double[] { -1, 0 };
-					A = new double[][] { { 1, price }, { 1.0 / ratio_cm[i] * (1 + price), 1 / ratio_gm[i] * (1 + price) } };
-					double[][] Aeq = new double[][] { { 1, betas[i] } };
-					double[] beq = new double[] { value[i] };
-					count = count + 1;
-					double[] sol = Utils.linprog(f, A, b, Aeq, beq, lb, null);
-					x_lo[i] = sol[0] - alloc[i][0];
-					y_up[i] = -1 * x_lo[i] / betas[i];
-				}
-			}
-
-			double[] cur_load = Utils.sum(alloc);
-			if (cur_load[2] > (cur_load[0] + cur_load[1])) { // mem is bottleneck
-				budget = cur_load[2];
-				final_price = new double[] { 1 / budget, price / budget, (1 + price) / budget };
-				break;
-			}
-			double[] load_up = new double[] { cur_load[0] + Utils.sum(x_up), cur_load[1] + Utils.sum(y_lo) };
-			double[] load_down = new double[] { cur_load[0] + Utils.sum(x_lo), cur_load[1] + Utils.sum(y_up) };
-
-			if (load_up[0] < load_up[1]) {
-				flag = flag + 1;
-				continue;
-			} else { // optimal price between some beta
-				double step = 0.01;
-				for (double k = pg[flag - 1]; k < pg[flag]; k += step) {
-					for (int i = 1; i < N; i++) {
-						double[][] A = new double[][] { { 1, k }, { 1.0 / ratio_cm[i] * (1 + k) },
-								{ 1.0 / ratio_gm[i] * (1 + k) } };
-						double[] b = new double[] { 1, 1 };
-						double[] f = new double[] { -1, -betas[i] };
-						// solving LP
-						count++;
-						double[] gcAlloc = Utils.linprog(f, A, b, null, null, lb, null);
-						alloc[i][0] = gcAlloc[0];
-						alloc[i][1] = gcAlloc[1];
-						alloc[i][2] = alloc[i][0] / ratio_cm[i] + alloc[i][1] / ratio_gm[i];
+		Collections.sort(availableMachines, Collections.reverseOrder());
+		for (Integer iM : availableMachines ){
+			Queue<BaseJob> jobs = Simulator.cluster.scheduledJobs.get(iM);
+			BaseJob job = jobs.peek();
+			if (job != null)
+				if (iM < Globals.MACHINE_MAX_GPU){
+					boolean res = QueueScheduler.allocateResToJob(job, false);
+//					System.out.println("[INFO] "+job.dagId + " starts on " + iM + " at " + Simulator.CURRENT_TIME);
+					if (!res)
+						Output.debugln(DEBUG,"[ERROR] cannot allocate resources to job "+job.dagId + " on " + iM);
+					else {
+						job.machineId = iM;
+						job.onStart(clusterTotCapacity);
+						jobs.remove(job);
+						busyMachines.add(iM);
+						break;
 					}
-
-					cur_load = Utils.sum(alloc);
-					if (Math.abs(cur_load[0] - cur_load[1]) < 0.001) {
-						budget = Math.max(cur_load[0], cur_load[2]);
-						final_price = new double[] { 1 / budget, k / budget, (1 + k) / budget };
-						flag = -1;
+				} else {
+					boolean res = QueueScheduler.allocateResToJob(job, true);
+//					System.out.println("[INFO] "+job.dagId + " starts on " + iM + " at " + Simulator.CURRENT_TIME);
+					if (!res)
+						Output.debugln(DEBUG,"[ERROR] cannot allocate resources to job "+job.dagId + " on " + iM);
+					else {
+						job.machineId = iM;
+						job.onStart(clusterTotCapacity);
+						jobs.remove(job);
+						busyMachines.add(iM);
 						break;
 					}
 				}
+		}
+		availableMachines.removeAll(busyMachines);
+		return isAllocable;
+	}
+	
+	// trigger only when a job finishes
+	private static boolean compute_fs_queue(Resource clusterTotCapacity, List<JobQueue>activeQueues, double alphaFairness) {
+	// Globals.MACHINE_MAX_GPU first nodes are GPUs, later are CPUs
+		Map<Integer, Double> availableTimes = Simulator.cluster.availableTimes;
+		for (int iM=numberOfNodes-1; iM>=0; iM--) {
+				Simulator.cluster.scheduledJobs.put(iM, new LinkedList<BaseJob>());
+				availableTimes.put(iM, Simulator.CURRENT_TIME);
+		}
+		
+		// step 1: Get current time and a time array where each element represents the time when 
+		// that machine finishes its current job
+		// 
+		// no definition yet, assume AvailTime[i] = max(current_time, time when current job will be finished on i) for all
+		// i in machineCpuQueues and machineGpuQueues
+		Map<Task, Double> runningTasks = Simulator.cluster.getCurrentRunningTasks(); 
 
-				if (flag > 0) {
-					int i = flag - 1;
-					cur_load = Utils.substract(cur_load, alloc[i]);
-					double[] f = new double[] { 0, -1 };
-					double[][] A = new double[][] { { 1, betas[i] }, { (1 + betas[i]), 1 / ratio_cm[i] * (1 + betas[i]) } };
-					double[] b = new double[] { 1, 1 };
-					double[][] Aeq = new double[][] { { 1, betas[i] }, { 1, -1 } };
-					double[] beq = new double[] { value[i], cur_load[1] - cur_load[0] };
-					count = count++;
-					double[] gcAlloc = Utils.linprog(f, A, b, Aeq, beq, lb, null);
-					alloc[i][0] = gcAlloc[0];
-					alloc[i][1] = gcAlloc[1];
-					alloc[i][2] = alloc[i][0] / ratio_cm[i] + alloc[i][1] / ratio_gm[i];
-					budget = Math.max(cur_load[0], cur_load[2]);
-					final_price = new double[] { 1 / budget, betas[i] / budget, (1 + betas[i]) / budget };
-					flag = -1;
+		for (Map.Entry<Task, Double> entry : runningTasks.entrySet()) {
+			Task t = entry.getKey();
+			BaseJob job = Simulator.getDag(t.dagId);
+			int machineId = job.machineId;
+			InterchangableResourceDemand reportDemand = job.getReportDemand();
+			InterchangableResourceDemand demand = job.getReportDemand();
+			
+			if(machineId < Globals.MACHINE_MAX_GPU){
+				double err = reportDemand.gpuCompl -demand.gpuCompl;  
+				availableTimes.put(machineId, Math.max(0, entry.getValue()-err));
+			} else {
+				double err = reportDemand.cpuCompl -demand.cpuCompl;
+				availableTimes.put(machineId, Math.max(0, entry.getValue()-err));
+			}
+		}
+		
+		for (int machine: availableTimes.keySet()){
+			double aTime = Math.max(availableTimes.get(machine), Simulator.CURRENT_TIME);
+			availableTimes.put(machine, aTime);
+		}		
+		
+		// step 2: Consider all jobs from the activeQueues where the fairness score of the owner falls
+		// within $\alpha$ percent. 		
+		Collections.sort(activeQueues, new QueueComparator());
+		int lowestFairNQueues = (int) Math.ceil(alphaFairness * activeQueues.size());
+		List<JobQueue> queuesWithLowestFairness = new ArrayList<JobQueue>();
+		for (int i = 0; i < lowestFairNQueues; i++)
+			queuesWithLowestFairness.add(activeQueues.get(i));
+
+		// Add all jobs from queue to job set W
+		List<BaseJob> jobs = new ArrayList<BaseJob>();
+		for (JobQueue jobQueue : queuesWithLowestFairness) {
+			jobs.addAll(jobQueue.getQueuedUpFullJobs());
+		}	
+		int numOfJobs = jobs.size();
+		if (numOfJobs ==0) 
+				return true;
+		
+		// Create Delay Matrix & Create processing time matrix
+		double[][] D = new double[numberOfNodes][numOfJobs];
+		double[][] P = new double[numberOfNodes][numOfJobs];
+		for (int i=0; i<numberOfNodes; i++){
+			for (int j=0; j<numOfJobs; j++){
+				D[i][j] = availableTimes.get(i) - jobs.get(j).arrivalTime;
+				if (i< Globals.MACHINE_MAX_GPU ){
+					P[i][j] = jobs.get(j).getReportDemand().gpuCompl;
+				} else {
+					P[i][j] = jobs.get(j).getReportDemand().cpuCompl;
 				}
 			}
 		}
-
-		double[][] final_alloc = new double[N][3];
-		for (int i = 0; i < N; i++) {
-			for (int iRes = 0; iRes < 3; iRes++) {
-				final_alloc[i][iRes] = alloc[i][iRes] / budget * resCapacity.resource(iRes);
+		
+		// create input matrix Q
+		double[][] Q = new double[numOfJobs*numberOfNodes][numOfJobs];
+		for (int i=0; i<numOfJobs*numberOfNodes; i++){
+			for (int j=0; j<numOfJobs; j++){
+				int iN = i/numberOfNodes + 1;
+				Q[i][j] = D[i%numberOfNodes][j] + iN* P[i%numberOfNodes][j];
 			}
 		}
-
-		// double final_alloc[][] = { { 3520, 0, 880 }, { 320, 28.57, 217.14 }, { 0,
-		// 31.43, 62.86 } };
-		for (int i = 0; i < N; i++) {
-			JobQueue q = runningQueues.get(i);
-			double shares[] = final_alloc[i];
-			if (!isComputed) {
-				System.out.println("i=" + i + "(" + shares[0] + "," + shares[1] + "," + shares[2] + ")");
+		
+		// step 3: solve an assignment problem based on hungarian method, generate the matrix Q:
+		// size(Q) = size(size(jobs) * 2*numOfQueue), jobs)
+		// Delay matrix: current delay of machine $i$ to schedule job $j$ immediately, so it is a (2*numOfQueue,size(jobs)) matrix,
+		// D(i,j) =  AvailTime[i] - Arrival_time(j);
+		
+		// Processing time matrix, size is also (2*numOfQueue,size(jobs))
+		// Q = [D;D;D;...] + [P;2P;3P;...nP] where n is size(jobs)
+		// solve Q based on blablabla method;
+		// from results Q: if machine $i$ is available, then we look back to scan row from 2*(y-1)+i where y starts from 2*numOfQueue to 1
+		// until we have a non (-1) solution
+		// if so, we just schedule that job (start from 0, so if number is 4, schedule job 5 on machine i)
+		// update AvailTime[i]
+		// update fairness score[i];
+		// if all entries are (-1), skip until a new arrival or a job finishes
+		
+		// cares about the available nodes
+		
+		
+		int[] sols = new HungarianAlgorithm(Q).execute();
+		//TODO: how to decide CPU or GPU for a job as 2 configurations may be selected on either CPU or GPU. 
+		
+		// add to the scheduled jobs to the queues for scheduling later.
+//		for (Integer iM : availableMachines ){
+		for (int iM=numberOfNodes-1; iM>=0; iM--){
+			for (int k=numOfJobs-1; k>=0; k--){
+				// if job k is chosen on iM and machine iM is available.  
+				if(sols[k*numberOfNodes +iM] >= 0){
+					BaseJob job = jobs.get(sols[k*numberOfNodes +iM]);
+					Simulator.cluster.scheduledJobs.get(iM).add(job);
+					boolean isGpu = iM < Globals.MACHINE_MAX_GPU;
+					double processingTime = isGpu?job.getReportDemand().gpuCompl:job.getReportDemand().cpuCompl;
+					double currentAvailTime = availableTimes.get(iM);
+					availableTimes.put(iM, currentAvailTime+processingTime);
+				}
 			}
-			QueueScheduler.allocateResToQueue(q, shares, true);
 		}
-		isComputed = true;
+		return true;
 	}
-
-	public static void allox_heuristic(Resource resCapacity, List<JobQueue> runningQueues) {
-		// sort queues based on beta
-		int numberOfQueues = runningQueues.size();
-		Collections.sort((List<JobQueue>) runningQueues, new BetaComparator());
-		double[] betas = new double[runningQueues.size()];
-		for (int i = 0; i < runningQueues.size(); i++) {
-			betas[i] = runningQueues.get(i).getReportBeta();
-			// betas[i] = runningQueues.get(i).computeBetaOnRunningJobs();
+	
+	private static void allocate_fs_queue(List<Integer> availableMachines){
+		for (Integer iM : availableMachines ){
+			Queue<BaseJob> jobs = Simulator.cluster.scheduledJobs.get(iM);
+			BaseJob job = jobs.peek();
+			if (job != null)
+				if (iM < Globals.MACHINE_MAX_GPU){
+					boolean res = QueueScheduler.allocateResToJob(job, false);
+//					System.out.println("[INFO] "+job.dagId + " starts on " + iM + " at " + Simulator.CURRENT_TIME);
+					if (!res)
+						Output.debugln(DEBUG,"[ERROR] cannot allocate resources to job "+job.dagId + " on " + iM);
+					else {
+						job.machineId = iM;
+						job.onStart(clusterTotCapacity);
+						jobs.remove(job);
+					}
+				} else {
+					boolean res = QueueScheduler.allocateResToJob(job, true);
+//					System.out.println("[INFO] "+job.dagId + " starts on " + iM + " at " + Simulator.CURRENT_TIME);
+					if (!res)
+						Output.debugln(DEBUG,"[ERROR] cannot allocate resources to job "+job.dagId + " on " + iM);
+					else {
+						job.machineId = iM;
+						job.onStart(clusterTotCapacity);
+						jobs.remove(job);
+					}
+				}
 		}
-
-		// initialization
-		double price[] = new double[2];
-		JobQueue lastQueue = runningQueues.get(numberOfQueues - 1);
-		price[0] = 1;
-		price[1] = betas[numberOfQueues - 1];
-		Resource useralloc[] = userAlloc(betas, price);
-		Resource currLoad = Resources.sum(useralloc);
-		currLoad = Resources.divideVector(currLoad, resCapacity);
-
-		int gpumin = numberOfQueues - 1;
-		boolean flag = true;
-
-		if (numberOfQueues == 0) {
-			System.err.println("numberOfQueues is too small");
-			return;
-		} else if (numberOfQueues == 1) {
-			flag = false;
-		}
-
-		while (flag) {
-			if (currLoad.resources[0] <= currLoad.resource(1)) {
-				double Y = (currLoad.resource(1) - currLoad.resource(0))
-						/ (betas[gpumin] / resCapacity.resource(0) + 1.0 / resCapacity.resource(1));
-				Y = Math.min(1 / betas[gpumin], Y);
-				useralloc[gpumin].resources[1] = useralloc[gpumin].resources[1] - Y;
-				useralloc[gpumin].resources[0] = betas[gpumin] * Y;
-				currLoad = Resources.sum(useralloc);
-				currLoad = Resources.divideVector(currLoad, resCapacity);
-				break;
-			}
-
-			gpumin = gpumin - 1;
-			if (gpumin < 0)
-				System.err.println("gpumin is negative");
-
-			price[0] = 1;
-			price[1] = betas[gpumin];
-
-			useralloc = userAlloc(betas, price);
-			currLoad = Resources.sum(useralloc);
-			currLoad = Resources.divideVector(currLoad, resCapacity);
-		}
-
-		Resource sumAlloc = Resources.sum(useralloc);
-		// step 3: allocate the resources.
-		if (!isComputed) {
-			System.out.println("betas=(" + betas[0] + "," + betas[1] + "," + betas[2] + ")");
-		}
-		for (int i = 0; i < numberOfQueues; i++) {
-			JobQueue q = runningQueues.get(i);
-			double shares[] = { 0, 0, 0 };
-			shares[0] = Utils.roundBase(useralloc[i].resource(0) * resCapacity.resource(0) / sumAlloc.resource(0), 2);
-			shares[1] = Utils.roundBase(useralloc[i].resource(1) * resCapacity.resource(1) / sumAlloc.resource(1), 2);
-			// shares[0] = useralloc[i].resource(0) * resCapacity.resource(0) /
-			// sumAlloc.resource(0);
-			// shares[1] = useralloc[i].resource(1) * resCapacity.resource(1) /
-			// sumAlloc.resource(1);
-			shares[2] = shares[0] / q.getDemand().cpu * q.getDemand().mem
-					+ shares[1] / q.getDemand().gpu * q.getDemand().gpuMem;
-			if (!isComputed) {
-				System.out.println("i=" + i + "(" + shares[0] + "," + shares[1] + "," + shares[2] + ")");
-			}
-			QueueScheduler.allocateResToQueue(q, shares, true);
-		}
-		isComputed = true;
 	}
-
-	private static Resource[] userAlloc(double[] betas, double currentPrices[]) {
-		Resource userAlloc[] = Resources.NONEs(betas.length);
-
-		for (int j = 0; j < betas.length; j++) {
-			double beta = betas[j];
-			if (beta < currentPrices[1]) {
-				userAlloc[j].resources[0] = 1;
-				userAlloc[j].resources[1] = 0;
-			} else { // if beta = price, put it in GPU.
-				userAlloc[j].resources[0] = 0;
-				userAlloc[j].resources[1] = 1 / currentPrices[1];
-			}
-		}
-		return userAlloc;
-	}
-
+	
 	@Override
 	public String getSchedulePolicy() {
 		return this.schedulePolicy;

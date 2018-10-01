@@ -6,24 +6,18 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.RejectedExecutionException;
 
-import com.joptimizer.exception.IterationsLimitException;
 import com.joptimizer.exception.JOptimizerException;
-import com.joptimizer.optimizers.BIPBfMethod;
 import com.joptimizer.optimizers.BIPLokbaTableMethod;
 import com.joptimizer.optimizers.BIPOptimizationRequest;
-import com.joptimizer.optimizers.JOptimizer;
 import com.joptimizer.optimizers.LPOptimizationRequest;
 import com.joptimizer.optimizers.LPPrimalDualMethod;
-import com.mathworks.engine.EngineException;
-import com.mathworks.engine.MatlabEngine;
+//import com.mathworks.engine.EngineException;
+//import com.mathworks.engine.MatlabEngine;
 
 import cern.colt.matrix.tdouble.DoubleFactory1D;
 import cern.colt.matrix.tdouble.DoubleFactory2D;
@@ -288,7 +282,7 @@ public class Utils {
 	
 	
 	
-	public static int[] biprog_matlab(double[] c, double[][] A, double[] b, double[][] Aeq, double[] beq){
+	/*public static int[] biprog_matlab(double[] c, double[][] A, double[] b, double[][] Aeq, double[] beq){
 		double[] intcon = new double[c.length];
 		double[] lb = new double[c.length];
 		double[] ub = new double[c.length];
@@ -319,7 +313,7 @@ public class Utils {
 			
 		return sols;
 	}
-  
+  */
   public static double sum(double[] values){
   	int n = values.length;
   	double res = 0;

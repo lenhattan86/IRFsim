@@ -38,8 +38,8 @@ public class DRFExtScheduler implements Scheduler {
 			gpuSize = demand.gpu * demand.gpuCompl;
 			this.beta += cpuSize/gpuSize;
 		}
-//		this.beta = this.beta/Simulator.runnableJobs.size();
-		this.beta = 69;
+		this.beta = this.beta/Simulator.runnableJobs.size();
+//		this.beta = 69;
 		
 		System.out.println("avg. beta             = " + this.beta);
 	}
