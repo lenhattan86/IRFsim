@@ -293,8 +293,10 @@ public class MLJob extends BaseJob implements Cloneable {
 					String[] args = line.split(" "); 
 					dag_name = line.split("#")[1];
 					dag_name = dag_name.trim();
-					jobProfileName = args[2];
-					profileScale = Float.parseFloat(args[3]);
+					if (args.length>2){
+						jobProfileName = args[2];
+						profileScale = Float.parseFloat(args[3]);
+					}
 					jobNum++;
 					continue;
 				}

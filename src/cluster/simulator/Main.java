@@ -29,7 +29,7 @@ public class Main {
 	public static class Globals {
 		
 		public final static boolean EnableMatlab = false;
-		public final static boolean EnableProfiling = true;
+		public static boolean EnableProfiling = true;
 		public final static boolean EnablePreemption = true;
 		public static int CPU_PROFILING_JOB1 = -100000; //-10000 -> 0
 		public static int CPU_PROFILING_JOB2 = CPU_PROFILING_JOB1*2;
@@ -279,7 +279,7 @@ public class Main {
 				Globals.TRACE_FILE = "input/job_maybegood.txt"; 
 				break;
 			case Experiment:
-				Globals.TRACE_FILE = "input/experiment.txt";
+				Globals.TRACE_FILE = "input/eurosys4.2_est_drf.txt";
 				break;
 			case Google_2:
 				Globals.TRACE_FILE = "input/job_google_2.txt"; 
@@ -347,6 +347,7 @@ public class Main {
 			Globals.FileOutput = "DRF-output" + extraName + ".csv";
 		} else if (Globals.METHOD.equals(Method.DRFFIFO)) {
 			Globals.JOB_SCHEDULER = JobScheduling.FIFO;
+			Globals.EnableProfiling = false;
 			Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.DRF;
 			Globals.FileOutput = "DRFFIFO-output" + extraName + ".csv";
 		} else if (Globals.METHOD.equals(Method.DRFExt)) {
@@ -513,7 +514,7 @@ public class Main {
 		System.out.println("........" + now() + ".....");
 
 //		Globals.workload = Globals.WorkLoadType.SIMPLE;
-		Globals.runmode = Runmode.SmallScale;
+		Globals.runmode = Runmode.Experiment;
 		Globals.ENABLE_CPU_CMPT_ERROR = false;
 		if (Globals.runmode.equals(Runmode.MultipleRuns)) {			
 			Globals.JOB_SCHEDULER = JobScheduling.SJF; 
@@ -527,7 +528,8 @@ public class Main {
 			Globals.SIM_END_TIME = 20000.0;
 			
 		//	Globals.Method[] methods = {Method.DRFFIFO, Method.DRF, Method.ES,Method.DRFExt, Method.SRPT,Method.FS};
-			Globals.Method[] methods = {Method.DRFFIFO, Method.DRF, Method.ES,Method.DRFExt,Method.FS, Method.SRPT};
+//			Globals.Method[] methods = {Method.DRFFIFO};
+			Globals.Method[] methods = {Method.DRF, Method.ES,Method.DRFExt,Method.FS, Method.SRPT};
 	//		Globals.Method[] methods = {Method.FS};
 //			Globals.Method[] methods = {Method.SRPT};
 //			Globals.Method[] methods = {Method.DRF };
@@ -743,7 +745,7 @@ public class Main {
 			}
 		} else if (Globals.runmode.equals(Runmode.Experiment)) {			
 			Globals.JOB_SCHEDULER = JobScheduling.SJF; 
-			Globals.IS_GEN= true;
+			Globals.IS_GEN= false;
 			Globals.USE_TRACE=true;
 			Globals.alpha = 0.1;
 			Globals.workload = WorkLoadType.Experiment;
@@ -751,13 +753,13 @@ public class Main {
 			Globals.NUM_MACHINES = 1;
 			Globals.SIM_END_TIME = 20000.0;
 //			Globals.Method[] methods = {Method.DRFFIFO, Method.DRF, Method.ES,Method.DRFExt, Method.SRPT, Method.FS};
-			Globals.Method[] methods = {Method.FS};
-			Globals.MACHINE_MAX_GPU = 4;
-			Globals.CPU_PER_NODE = 20; 
+//			Globals.Method[] methods = {Method.DRF, Method.ES,Method.DRFExt, Method.SRPT}; Globals.CPU_PER_NODE = 25; 
+			Globals.Method[] methods = {Method.DRFFIFO}; Globals.CPU_PER_NODE = 25; Globals.EnableProfiling = false;
+//			Globals.Method[] methods = {Method.FS}; Globals.CPU_PER_NODE = 20; 
+			Globals.MACHINE_MAX_GPU = 4;			
 			Globals.CPU_TO_GPU_RATIO = 2;
 			Globals.numQueues = 4;
 			Globals.numJobs = Globals.numQueues*10;
-			
 			double errStd = 0.15;
 			Globals.jobData = new JobData();
 			Globals.jobData.errs = Randomness.getNormalDistribution(Globals.numJobs , 0, errStd, -1, 1);

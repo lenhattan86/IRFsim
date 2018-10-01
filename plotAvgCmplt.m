@@ -14,8 +14,10 @@ colorUsers = {colorUser1; colorUser2; colorUser3};
 % files = {'DRF', 'ES', 'DRFExt', 'AlloX','SJF', 'FS','SRPT'};
 % DRFId = 1; ESId = 2; DRFExtId = 3; AlloXId = 4; SJFId = 5; FSId = 6;
 
-methods = {'DRFF', 'DRFS', strES, 'DRFE', 'AlloX', 'SRPT'};
-files = {'DRFFIFO', 'DRF', 'ES', 'DRFExt', 'FS', 'SRPT'};
+% methods = {'DRFF', 'DRFS', strES, 'DRFE', 'AlloX', 'SRPT'};
+% files = {'DRFFIFO', 'DRF', 'ES', 'DRFExt', 'FS', 'SRPT'};
+methods = {'DRFF', 'DRFS', strES, 'DRFE', 'AlloX'};
+files = {'DRFFIFO', 'DRF', 'ES', 'DRFExt', 'FS'};
 DRFFIFOId = 1; DRFId = 2; ESId = 3; DRFExt = 4; SJFId = 5; FSId = 6;
 
 alphas = [0.1 0.3];
@@ -48,8 +50,8 @@ if plots(1)
    
     hold on
     for i = 1:length(methods)
-        avgCmplt = mean(durations{i}) * scaleTime;
-        h=bar(i, avgCmplt, barWidth);
+        avgCmplt(i) = mean(durations{i}) * scaleTime;
+        h=bar(i, avgCmplt(i), barWidth);
 %         set(h,'FaceColor', methodColors{i});
     end
     hold off
@@ -58,7 +60,7 @@ if plots(1)
     yLabel=strAvgCmplt;
     legendStr=methods;
      xlim([0.6 length(methods)+0.4]);
-%     ylim([0 max(max(avgCmplt))*1.1]);
+    ylim([0 7000]);
     xLabels={strUser1, strUser2, strUser3};
     set (gcf, 'Units', 'Inches', 'Position', figureSize, 'PaperUnits', 'inches', 'PaperPosition', figureSize);
 %     xlabel(xLabel,'FontSize',fontAxis);
@@ -66,6 +68,26 @@ if plots(1)
     set(gca,'XTickLabel', methods,'FontSize',fontAxis);
     fileNames{figIdx} = 'avgCmplt';
 end
+
+if plots(1)    
+    % compare
+    ClusterAvg =  [5.3396    5.0837    4.8939    4.8312    4.4267]*1000;
+    figIdx=figIdx +1;         
+    figures{figIdx} = figure;
+    scrsz = get(groot, 'ScreenSize');   
+    bar([ClusterAvg' avgCmplt'], 'group');
+    xLabel=strMethods;
+    yLabel=strAvgCmplt;
+    legendStr=methods;
+    xlim([0.6 length(methods)+0.4]);
+%     ylim([0 6000]);
+    legend('cluster', 'simulator');
+    set (gcf, 'Units', 'Inches', 'Position', figureSize, 'PaperUnits', 'inches', 'PaperPosition', figureSize);
+    ylabel(yLabel,'FontSize',fontAxis);
+    set(gca,'XTickLabel', methods,'FontSize',fontAxis);
+    fileNames{figIdx} = 'avg_comparison';
+end
+
 
 %%
 if false    

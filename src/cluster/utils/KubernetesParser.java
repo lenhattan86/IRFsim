@@ -6,9 +6,15 @@ import java.io.FileReader;
 
 public class KubernetesParser {
 	public static void main(String[] args) {
-		String inputFile = "/home/tanle/projects/IRFsim/src/cluster/utils/scheduler.log";
-		String outputFile = "/home/tanle/projects/IRFsim/src/cluster/utils/scheduler.csv";
-		parseSchedulerLog(inputFile, outputFile);
+		String[] INPUT_FOLDER ={"/home/tanle/projects/IRFsim/src/cluster/utils/"};
+		String inputFile = "scheduler.log";
+		String[] OUTPUT_FOLDER = {"/home/tanle/projects/IRFsim/src/cluster/utils/"};
+		String outputFile = "fairness.csv";
+		int i = 0;
+		for (String input : INPUT_FOLDER){
+			parseSchedulerLog(INPUT_FOLDER[i] + inputFile, OUTPUT_FOLDER[i] + outputFile);
+			i++;
+		}
 	}
 	
 	public static void parseSchedulerLog(String filepath, String output){

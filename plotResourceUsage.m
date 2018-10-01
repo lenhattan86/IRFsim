@@ -9,7 +9,7 @@ num_queues = num_batch_queues + num_interactive_queue;
 START_TIME = 0; END_TIME = 10000;  STEP_TIME = 1;
 cluster_size = 4;
 
-CPUCap = cluster_size * 40;
+CPUCap = cluster_size * 50;
 GPUCap = cluster_size;
 MemCap = cluster_size* 128;
 
@@ -57,8 +57,8 @@ extraStr = ['_' int2str(num_batch_queues) '_' int2str(cluster_size)];
 
 %%
 % prefixes = {'DRF', 'ES', 'DRFExt', 'AlloX', 'SJF'};
-prefixes = {'FS','SRPT'};
-% prefixes = {'DRFFIFO'};
+% prefixes = {'FS','SRPT'};
+prefixes = {'ES'};
 % prefixes = {'AlloX'};
 % prefixes = {'DRF','AlloX'};
 % prefixes = {'DRFExt','SJF'};

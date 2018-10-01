@@ -13,22 +13,23 @@ import cluster.datastructures.MLJob;
 public class ConvertToExperimentInput {
 	public static void main(String[] args) {
 		int numberOfUsers = 4;
-		int numberOfProfiledFiles = 3;
-		String traceFile = "/ssd/projects/IRFevaluation/awscloudlab/eurosys3.0/automation_prof/sample_experiment.txt";
-		String profileFolder = "/ssd/projects/IRFimpl/experiments/traces/profiling";
+		int numberOfProfiledFiles = 4;
+		String traceFile = "/ssd/projects/IRFimpl/experiments/traces/large_23p/experiment_23percent.txt";
+		String profileFolder = "/ssd/projects/IRFimpl/experiments/traces/large_23p";
 		String outputFolder = "/ssd/projects/IRFimpl/experiments/traces/large/";
-		String profileDataCsv = "/ssd/projects/IRFevaluation/awscloudlab/eurosys3.0/automation_prof/fullJobs.csv";
+		String profileDataCsv = "/ssd/projects/IRFimpl/experiments/traces/large_23p/fix_estimated_job.csv";
 		Queue<BaseJob> tracedJobs = MLJob.readDags(traceFile);
 		for (int i = 0; i<numberOfUsers ; i++){
 			String toWrite = "# Generated workload for user"+(i+1);
 			Output.writeln(toWrite, false, outputFolder + "/user"+(i+1)+".txt");
 		}
 		
-		List<List<ProfiledJob>>  profiledFiles = new LinkedList<List<ProfiledJob>>();
+//		List<List<ProfiledJob>>  profiledFiles = new LinkedList<List<ProfiledJob>>();
+		List<ProfiledJob> profileFile = new LinkedList<ProfiledJob>();
 		for (int i=0; i<numberOfProfiledFiles; i++){
-		  List<ProfiledJob> profileFile = new LinkedList<ProfiledJob>();
-		  profileFile = ProfiledJob.readJobInfo(profileFolder + "/user"+(i+1)+".txt");
-			profiledFiles.add(profileFile);
+		  List<ProfiledJob> temp = ProfiledJob.readJobInfo(profileFolder + "/user"+(i+1)+".txt");
+		  profileFile.addAll(temp);
+//			profiledFiles.add(profileFile);
 		}
 		
 	  List<ProfiledJob> profileData = new LinkedList<ProfiledJob>();
@@ -41,8 +42,8 @@ public class ConvertToExperimentInput {
 				String[] temp = line.trim().split(",");
 				ProfiledJob profiledItem =  new ProfiledJob();
 				profiledItem.jobName  = temp[1];
-				profiledItem.cpuCmpl = (int)(Float.parseFloat(temp[5]));
-				profiledItem.gpuCmpl = (int)(Float.parseFloat(temp[6]));
+				profiledItem.cpuCmpl = (int)(Float.parseFloat(temp[3]));
+				profiledItem.gpuCmpl = (int)(Float.parseFloat(temp[4]));
 				profileData.add(profiledItem);
 			}
 			br.close();
@@ -53,9 +54,10 @@ public class ConvertToExperimentInput {
 		
 		
 		for (BaseJob job:tracedJobs){
+			float scaleUp = (float) 1.0; 
 			int fileId = Integer.parseInt(job.profileJobName.substring(4, 5)); 
 			int jobId = Integer.parseInt(job.profileJobName.split("-")[1]);			
-			ProfiledJob profile = profiledFiles.get(fileId).get(jobId);			
+			ProfiledJob profile = profileFile.get(jobId-1);			
 			int userId = Integer.parseInt(job.getQueueName().substring(5,6))+1;
 			String fileToWrite = outputFolder + "user"+userId+ ".txt";
 			
@@ -69,7 +71,8 @@ public class ConvertToExperimentInput {
 			if (Math.abs((scale2 - job.profileJobScale)/scale2) > 0.1)
 				System.err.println("Wrong cpu compl. scale at job " + job.dagId);
 			if (Math.abs((scale2 - scale1)/scale2) > 0.1)
-				System.err.println("Wrong cpu compl. scale at job " + job.dagId);
+				System.err.println("Wrong gpu compl. scale at job " + job.dagId);
+			
 			double scale = (scale1+scale2)/2;
 			String[] temp = profile.cpuDemand.split(" "); 
 			profile.cpuDemand = temp[0]+" " + temp[1]+" " + temp[2]+ " " + (int)(jData.cpuCmpl*scale); 
@@ -81,9 +84,9 @@ public class ConvertToExperimentInput {
 			int numBatches =  -1;
 			
 			if (job.profileJobScale > 0)
-				numBatches = (int) (profile.numBatches*job.profileJobScale);
+				numBatches = (int) (profile.numBatches*job.profileJobScale*scaleUp);
 			else 
-				numBatches = (int) (profile.numBatches*scale);
+				numBatches = (int) (profile.numBatches*scale*scaleUp);
 			
 			Output.writeln(profile.cpuCmd+"--num_batches="+numBatches, true, fileToWrite);
 			Output.writeln(profile.gpuCmd+"--num_batches="+numBatches, true, fileToWrite);
