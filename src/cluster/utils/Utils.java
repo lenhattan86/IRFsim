@@ -11,11 +11,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
-import com.joptimizer.exception.JOptimizerException;
-import com.joptimizer.optimizers.BIPLokbaTableMethod;
-import com.joptimizer.optimizers.BIPOptimizationRequest;
-import com.joptimizer.optimizers.LPOptimizationRequest;
-import com.joptimizer.optimizers.LPPrimalDualMethod;
+//import com.joptimizer.exception.JOptimizerException;
+//import com.joptimizer.optimizers.BIPLokbaTableMethod;
+//import com.joptimizer.optimizers.BIPOptimizationRequest;
+//import com.joptimizer.optimizers.LPOptimizationRequest;
+//import com.joptimizer.optimizers.LPPrimalDualMethod;
 //import com.mathworks.engine.EngineException;
 //import com.mathworks.engine.MatlabEngine;
 
@@ -219,101 +219,100 @@ public class Utils {
 	  return result;
   }
   
-  public static double[] linprog(double[] f, double[][] A, double[] b, double[][] Aeq, double[] beq, double[] lb, double[] ub){
-		LPOptimizationRequest or = new LPOptimizationRequest(); 
-		or.setC(f);
-		if(A!=null){
-			or.setG(A);
-			or.setH(b);
-		}
-		if(Aeq!=null){
-			or.setA(Aeq);
-			or.setB(beq);
-		}
-		if(lb!=null)
-			or.setLb(lb);
-		if(ub!=null)
-			or.setUb(ub);
-		
-		or.setDumpProblem(true);
-		LPPrimalDualMethod opt = new LPPrimalDualMethod();
-		opt.setLPOptimizationRequest(or);
-		try {
-			opt.optimize();
-		} catch (JOptimizerException e) {
-			e.printStackTrace();
-		}
-		return opt.getOptimizationResponse().getSolution();
-	}
-  
+//  public static double[] linprog(double[] f, double[][] A, double[] b, double[][] Aeq, double[] beq, double[] lb, double[] ub){
+//		LPOptimizationRequest or = new LPOptimizationRequest(); 
+//		or.setC(f);
+//		if(A!=null){
+//			or.setG(A);
+//			or.setH(b);
+//		}
+//		if(Aeq!=null){
+//			or.setA(Aeq);
+//			or.setB(beq);
+//		}
+//		if(lb!=null)
+//			or.setLb(lb);
+//		if(ub!=null)
+//			or.setUb(ub);
+//		
+//		or.setDumpProblem(true);
+//		LPPrimalDualMethod opt = new LPPrimalDualMethod();
+//		opt.setLPOptimizationRequest(or);
+//		try {
+//			opt.optimize();
+//		} catch (JOptimizerException e) {
+//			e.printStackTrace();
+//		}
+//		return opt.getOptimizationResponse().getSolution();
+//	}
+//  
+//	
+//	public static int[] biprog_joptimizer(double[] c, double[][] A, double[] b, double[][] Aeq, double[] beq){
+//		DoubleMatrix1D C = DoubleFactory1D.dense.make(c);
+//		DoubleMatrix2D Amat = DoubleFactory2D.dense.make(A);
+//		
+//		DoubleMatrix1D B = DoubleFactory1D.dense.make(b);
+//		
+//	
+//		DoubleMatrix2D AeqMat = DoubleFactory2D.dense.make(Aeq);
+//		DoubleMatrix1D Beq = DoubleFactory1D.dense.make(beq);
+//		
+//		BIPOptimizationRequest or = new BIPOptimizationRequest();
+//		or.setC(C);
+//		
+//		or.setG(Amat);
+//		or.setH(B);
+//		
+//		or.setA(AeqMat);
+//		or.setB(Beq);
+//		
+//		or.setDumpProblem(true);
+//		int[] sol = null;
+//		//optimization
+//		BIPLokbaTableMethod opt = new BIPLokbaTableMethod();
+//		opt.setBIPOptimizationRequest(or);
+//		try {
+//				opt.optimize();
+//				sol = opt.getBIPOptimizationResponse().getSolution();
+//		} catch (JOptimizerException e) {
+//			e.printStackTrace();
+//		}
+//		return sol;
+//	}
 	
-	public static int[] biprog_joptimizer(double[] c, double[][] A, double[] b, double[][] Aeq, double[] beq){
-		DoubleMatrix1D C = DoubleFactory1D.dense.make(c);
-		DoubleMatrix2D Amat = DoubleFactory2D.dense.make(A);
-		
-		DoubleMatrix1D B = DoubleFactory1D.dense.make(b);
-		
-	
-		DoubleMatrix2D AeqMat = DoubleFactory2D.dense.make(Aeq);
-		DoubleMatrix1D Beq = DoubleFactory1D.dense.make(beq);
-		
-		BIPOptimizationRequest or = new BIPOptimizationRequest();
-		or.setC(C);
-		
-		or.setG(Amat);
-		or.setH(B);
-		
-		or.setA(AeqMat);
-		or.setB(Beq);
-		
-		or.setDumpProblem(true);
-		int[] sol = null;
-		//optimization
-		BIPLokbaTableMethod opt = new BIPLokbaTableMethod();
-		opt.setBIPOptimizationRequest(or);
-		try {
-				opt.optimize();
-				sol = opt.getBIPOptimizationResponse().getSolution();
-		} catch (JOptimizerException e) {
-			e.printStackTrace();
-		}
-		return sol;
-	}
 	
 	
-	
-	/*public static int[] biprog_matlab(double[] c, double[][] A, double[] b, double[][] Aeq, double[] beq){
-		double[] intcon = new double[c.length];
-		double[] lb = new double[c.length];
-		double[] ub = new double[c.length];
-		for (int i = 0; i< intcon.length; i++){
-			intcon[i] = i+1;
-			ub[i] = 1;
-			lb[i] = 0;
-		}
-		
-
-		int[] sols = new int[c.length];
-		double[] temp;
-		Object results;
-		try {
-			results = Globals.MATLAB.feval("intlinprog", MatlabEngine.NULL_WRITER,  MatlabEngine.NULL_WRITER, c, intcon, A, b, Aeq, beq, lb, ub);
-//			results = Globals.MATLAB.feval("intlinprog",  c, intcon, A, b, Aeq, beq, lb, ub);
-			temp = (double[]) results;
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		}
-		
-		if (temp==null)
-			return null;
-		
-		for (int i = 0; i< sols.length; i++)
-			sols[i] = (int) Math.round(temp[i]);
-			
-		return sols;
-	}
-  */
+//	public static int[] biprog_matlab(double[] c, double[][] A, double[] b, double[][] Aeq, double[] beq){
+//		double[] intcon = new double[c.length];
+//		double[] lb = new double[c.length];
+//		double[] ub = new double[c.length];
+//		for (int i = 0; i< intcon.length; i++){
+//			intcon[i] = i+1;
+//			ub[i] = 1;
+//			lb[i] = 0;
+//		}
+//		
+//
+//		int[] sols = new int[c.length];
+//		double[] temp;
+//		Object results;
+//		try {
+//			results = Globals.MATLAB.feval("intlinprog", MatlabEngine.NULL_WRITER,  MatlabEngine.NULL_WRITER, c, intcon, A, b, Aeq, beq, lb, ub);
+////			results = Globals.MATLAB.feval("intlinprog",  c, intcon, A, b, Aeq, beq, lb, ub);
+//			temp = (double[]) results;
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//			return null;
+//		}
+//		
+//		if (temp==null)
+//			return null;
+//		
+//		for (int i = 0; i< sols.length; i++)
+//			sols[i] = (int) Math.round(temp[i]);
+//			
+//		return sols;
+//	}
   public static double sum(double[] values){
   	int n = values.length;
   	double res = 0;
@@ -361,22 +360,22 @@ public class Utils {
   	return res;
   }
   
-  public static void main(String[] args) {
-		double[] c = new double[] { 1, 4, 0, 7, 0, 0, 8, 6, 0, 4 }; 
-		double[][] A = new double[][] { 
-				{ -3, -1, -4, -4, -1, -5, -4, -4, -1, -1 },
-				{  0,  0, -3, -1, -5, -5, -5, -1,  0, 0 }, 
-				{ -4, -1, -5, -2, -4, -3, -2, -4, -4, 0 },
-				{ -3, -4, -3, -5, -3, -1, -4, -5, -1, -4 } };
-				double[] b = new double[] { 0, -2, -2, -8 };
-		
-				double[][] Aeq = new double[][] { 
-			{ 0, 1, 1, 0, 0, 0, 0, 0, 0, 0 },
-			{  0,  0, 0, 1, 1, 0, 0, 0, 0, 0 }};
-			double[] beq = new double[] { 0, 1};
-  	int[] sol = biprog_joptimizer(c, A, b, Aeq, beq);
-  	double[] Arow = A[0];
-		System.out.println(sol[1] + " " + sol[2]+ " " + sol[3]+ " " + sol[4]);
-	}
+//  public static void main(String[] args) {
+//		double[] c = new double[] { 1, 4, 0, 7, 0, 0, 8, 6, 0, 4 }; 
+//		double[][] A = new double[][] { 
+//				{ -3, -1, -4, -4, -1, -5, -4, -4, -1, -1 },
+//				{  0,  0, -3, -1, -5, -5, -5, -1,  0, 0 }, 
+//				{ -4, -1, -5, -2, -4, -3, -2, -4, -4, 0 },
+//				{ -3, -4, -3, -5, -3, -1, -4, -5, -1, -4 } };
+//				double[] b = new double[] { 0, -2, -2, -8 };
+//		
+//				double[][] Aeq = new double[][] { 
+//			{ 0, 1, 1, 0, 0, 0, 0, 0, 0, 0 },
+//			{  0,  0, 0, 1, 1, 0, 0, 0, 0, 0 }};
+//			double[] beq = new double[] { 0, 1};
+//  	int[] sol = biprog_joptimizer(c, A, b, Aeq, beq);
+//  	double[] Arow = A[0];
+//		System.out.println(sol[1] + " " + sol[2]+ " " + sol[3]+ " " + sol[4]);
+//	}
   
 }

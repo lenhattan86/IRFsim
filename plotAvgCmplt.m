@@ -3,9 +3,18 @@ common_settings;
 % is_printed = 1;
 % fig_path = ['figs/'];
 %%
-barWidth = 0.5;
-queue_num = 4;
-cluster_size= 4;
+simulation = false;
+if simulation 
+    queue_num = 20;
+    cluster_size= 10;
+else 
+    fprintf('Verify the experiment results');
+    queue_num = 4;
+    cluster_size= 4;
+    % ClusterAvg =  [5.3396    5.0837    4.8939    4.8312    4.4267]*1000; % eurosys 4.2
+    ClusterAvg = [3.8899    3.3052    3.3247    3.4347    2.5079] * 1000;% eurosys 4.3
+end
+
 figureSize = figSizeThreeFourth;
 plots  = [true, false, false, false, false];
 
@@ -14,10 +23,10 @@ colorUsers = {colorUser1; colorUser2; colorUser3};
 % files = {'DRF', 'ES', 'DRFExt', 'AlloX','SJF', 'FS','SRPT'};
 % DRFId = 1; ESId = 2; DRFExtId = 3; AlloXId = 4; SJFId = 5; FSId = 6;
 
-% methods = {'DRFF', 'DRFS', strES, 'DRFE', 'AlloX', 'SRPT'};
-% files = {'DRFFIFO', 'DRF', 'ES', 'DRFExt', 'FS', 'SRPT'};
-methods = {'DRFF', 'DRFS', strES, 'DRFE', 'AlloX'};
-files = {'DRFFIFO', 'DRF', 'ES', 'DRFExt', 'FS'};
+methods = {strDRFFIFO, strDRFSJF, strES, strDRFExt, strAlloX, strSRPT};
+files = {'DRFFIFO', 'DRF', 'ES', 'DRFExt', 'AlloX', 'SRPT'};
+% methods = {'DRFF', 'DRFS', strES, 'DRFE', 'AlloX'};
+% files = {'DRFFIFO', 'DRF', 'ES', 'DRFExt', 'FS'};
 DRFFIFOId = 1; DRFId = 2; ESId = 3; DRFExt = 4; SJFId = 5; FSId = 6;
 
 alphas = [0.1 0.3];
@@ -60,7 +69,7 @@ if plots(1)
     yLabel=strAvgCmplt;
     legendStr=methods;
      xlim([0.6 length(methods)+0.4]);
-    ylim([0 7000]);
+%     ylim([0 7000]);
     xLabels={strUser1, strUser2, strUser3};
     set (gcf, 'Units', 'Inches', 'Position', figureSize, 'PaperUnits', 'inches', 'PaperPosition', figureSize);
 %     xlabel(xLabel,'FontSize',fontAxis);
@@ -69,17 +78,17 @@ if plots(1)
     fileNames{figIdx} = 'avgCmplt';
 end
 
-if plots(1)    
+if ~simulation
     % compare
-    ClusterAvg =  [5.3396    5.0837    4.8939    4.8312    4.4267]*1000;
+
     figIdx=figIdx +1;         
     figures{figIdx} = figure;
     scrsz = get(groot, 'ScreenSize');   
-    bar([ClusterAvg' avgCmplt'], 'group');
+    bar([ClusterAvg' avgCmplt(1:5)'], 'group');
     xLabel=strMethods;
     yLabel=strAvgCmplt;
     legendStr=methods;
-    xlim([0.6 length(methods)+0.4]);
+    xlim([0.6 length(ClusterAvg)+0.4]);
 %     ylim([0 6000]);
     legend('cluster', 'simulator');
     set (gcf, 'Units', 'Inches', 'Position', figureSize, 'PaperUnits', 'inches', 'PaperPosition', figureSize);
@@ -87,7 +96,6 @@ if plots(1)
     set(gca,'XTickLabel', methods,'FontSize',fontAxis);
     fileNames{figIdx} = 'avg_comparison';
 end
-
 
 %%
 if false    

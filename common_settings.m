@@ -53,12 +53,12 @@ strUnalloc = 'unallocated';
 
 strES = 'ES';
 strDRF = 'DRF';
-strFDRF = 'FDRF';
-strMP = 'MP';
-strMSR = 'MSR';
-strPricing = 'Pricing';
 strAlloX = 'AlloX';
-strDRFF = 'DRFF';
+strDRFFIFO = 'DRFF';
+strDRFSJF = 'DRFS';
+strSJF = 'SJF';
+strDRFExt = 'DRFE';
+strSRPT = 'SRPT';
 
 strGPU = 'GPU';
 strCPU = 'CPU';
