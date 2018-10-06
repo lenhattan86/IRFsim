@@ -1,19 +1,18 @@
 addpath('matlab_func');
 common_settings;
-% is_printed = 1;
+is_printed = 1;
 %%
 barWidth = 0.5;
-queue_num = 15;
+queue_num = 20;
 cluster_size=10;
 figureSize = figSizeThreeFourth;
 plots  = [true false];
 
 % files = {'DRF', 'ES',  'AlloX'};
 % speedups = [0.1, 0.5, 1.0]
-errs = 0:0.1:0.5;
+errs = 0:0.1:0.6;
 files = {'DRFFIFO','DRF', 'ES',  'AlloX'};
-% methods = {'DRFF',strDRF, strES,  strAlloX};
-methods = {'DRFF', strAlloX};
+methods = {'DRFF', strDRF, strES,  strAlloX};
 DRFFIFOId = 1; ESId = 2; AlloXId = 4;
 methodColors = {colorES; colorDRF; colorProposed};
 
@@ -23,7 +22,7 @@ for i=1:length(files)
     for j=1:length(errs)
         extraStr = ['_' int2str(queue_num) '_' int2str(cluster_size) '_e' sprintf('%1.1f',errs(j))];
         outputFile = [ 'output/' files{i} '-output' extraStr  '.csv'];
-        [JobIds, startTimes, endTimes, durations, queueNames] = import_compl_time(outputFile);
+        [JobIds, startTimes, endTimes, durations, queueNames] = import_compl_time_real_job(outputFile);
         if(~isnan(durations))
             resVals(i,j) = mean(durations);
         end
@@ -36,20 +35,21 @@ if plots(1)
    figures{figIdx} = figure;
    scrsz = get(groot, 'ScreenSize');       
     
-    plot(errs, resVals(DRFFIFOId,1)./resVals(DRFFIFOId,:) , 'LineWidth', lineWidth);
+%    plot(errs, resVals(DRFFIFOId,1)./resVals(AlloXId,:) , 'LineWidth', lineWidth);
 %     hold on;
-%     plot(errs, resVals(AlloXId,1)./resVals(AlloXId,:) , 'LineWidth', lineWidth);
+    yValues = (resVals(ESId,:)-resVals(AlloXId,:))./resVals(ESId,:) * 100;
+    plot(errs*100, yValues , 'LineWidth', lineWidth);
     
-    xLabel='std of errors';
-    yLabel=strFactorImprove;
-    legendStr=methods;    
-    ylim([0 1.1]);
+   xLabel=strErrorStd;
+   yLabel='improvement vs. DRFFIFO (%)';
+   legendStr=methods;    
+   ylim([0 max(yValues)]);
 %     ylim([0 0.4]);
-    set (gcf, 'Units', 'Inches', 'Position', figureSize, 'PaperUnits', 'inches', 'PaperPosition', figureSize);
+   set (gcf, 'Units', 'Inches', 'Position', figureSize, 'PaperUnits', 'inches', 'PaperPosition', figureSize);
 %     xlabel(xLabel,'FontSize',fontAxis);
-    ylabel(yLabel,'FontSize', fontAxis);    
-    xlabel(xLabel,'FontSize', fontAxis);   
-    fileNames{figIdx} = 'analysis_err';
+   ylabel(yLabel,'FontSize', fontAxis);    
+   xlabel(xLabel,'FontSize', fontAxis);   
+   fileNames{figIdx} = 'analysis_err';
 end
 
 %%

@@ -1,4 +1,4 @@
-function [JobId,startTime,endTime,duration,queueName] = import_compl_time(filename, startRow, endRow)
+function [JobId, startTime, endTime, duration, queueName, startRunningTimes, runningTimes] = import_compl_time(filename, startRow, endRow)
 %IMPORTFILE Import numeric data from a text file as column vectors.
 %   [JOBID,STARTTIME,ENDTIME,DURATION,QUEUENAME] = IMPORTFILE(FILENAME)
 %   Reads data from text file FILENAME for the default selection.
@@ -27,8 +27,9 @@ end
 %   column3: double (%f)
 %	column4: double (%f)
 %   column5: text (%s)
+%   column6: text (%f)
 % For more information, see the TEXTSCAN documentation.
-formatSpec = '%f%f%f%f%s%[^\n\r]';
+formatSpec = '%f%f%f%f%s%f%f%[^\n\r]';
 
 if ~exist(filename, 'file')
     
@@ -37,6 +38,8 @@ if ~exist(filename, 'file')
     endTime = nan;
     duration = nan;
     queueName = nan;
+    startRunningTimes=nan;
+    runningTimes = nan;
     return;
 end
 %% Open the text file.
@@ -72,5 +75,5 @@ startTime = dataArray{:, 2};
 endTime = dataArray{:, 3};
 duration = dataArray{:, 4};
 queueName = dataArray{:, 5};
-
-
+startRunningTimes = dataArray{:, 6};
+runningTimes = dataArray{:, 6};

@@ -234,8 +234,7 @@ public class Simulator {
 	}
 
 	private void writeReport() {
-//		Output.writeln("JobId, startTime, endTime, duration, queueName", false);
-		Output.writeln("JobId, startTime, endTime, duration, queueName, startRunning, isCPU", false);
+		Output.writeln("JobId, startTime, endTime, duration, queueName, startRunning, runningTime, isCPU", false);
 		System.out.println("===== Final Report: Completed Jobs =====");
 		TreeMap<Integer, Double> results = new TreeMap<Integer, Double>();
 		double makespan = Double.MIN_VALUE;
@@ -243,10 +242,8 @@ public class Simulator {
 			double dagDuration = dag.getCompletionTime();
 			makespan = Math.max(makespan, dagDuration);
 			results.put(dag.dagId, dagDuration);
-//			Output.writeln(
-//					dag.dagId + "," + dag.jobStartTime + "," + dag.jobEndTime + "," + dagDuration + "," + dag.getQueueName());
 			Output.writeln(
-					dag.dagId + "," + dag.jobStartTime  + "," + dag.jobEndTime + "," + dagDuration + "," + dag.getQueueName()+ "," + dag.jobStartRunningTime + "," + dag.isCpu);
+					dag.dagId + "," + dag.jobStartTime  + "," + dag.jobEndTime + "," + dagDuration + "," + dag.getQueueName()+ "," + dag.jobStartRunningTime + "," + dag.runningTime + "," + dag.isCpu);
 		
 		}
 	}

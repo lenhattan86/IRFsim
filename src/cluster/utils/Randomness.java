@@ -135,13 +135,48 @@ public class Randomness {
   	double res[] = new double[n];
   	Random r = new Random();
 //  	double sum = 0.0; 
+  	double meanVal = 0;
   	for (int i=0; i< n; i++){
   		double val = r.nextGaussian() * std + mean;
   		val = Math.max(val, min);
   		res[i] = Math.min(val, max);
   		res[i] = Utils.roundBase(val, 2);
+  		meanVal += res[i];
 //  		sum += val;
   	}
+  	meanVal /= n;
+  	System.out.println("mean of error: " + meanVal);
   	return res;
+  }
+  
+  public static double calculateSD(double numArray[])
+  {
+      double sum = 0.0, standardDeviation = 0.0;
+      int length = numArray.length;
+
+      for(double num : numArray) {
+          sum += num;
+      }
+
+      double mean = sum/length;
+
+      for(double num: numArray) {
+          standardDeviation += Math.pow(num - mean, 2);
+      }
+
+      return Math.sqrt(standardDeviation/length);
+  }
+  
+  public static double[] scaleErr(double[] errs, double std, double min, double max) {
+  	double oldStd = calculateSD(errs);
+  	double[] newErrs = new double[errs.length];
+  	for (int i=0; i< errs.length; i++){
+  		double err = errs[i];
+  		err = err/oldStd*std;
+  		err = Math.min(err, max);
+  		err = Math.max(err, min);
+  		newErrs[i] = err;
+  	}
+  	return newErrs;
   }
 }

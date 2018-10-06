@@ -1,25 +1,31 @@
 addpath('matlab_func');
 common_settings;
 barWidth = 0.5;
-figureSize = figSizeThreeFourth;
-plots  = [0, 0, 0, 0, 0,true ];
+figureSize = figSizeOneCol;
+
+plots  = [1, 1, 1, 1, 1, 1 ];
 
 machines = {'G1','G2','C3', 'C4'};
 if plots(1)    
    figIdx=figIdx +1;         
    figures{figIdx} = figure;
+   
    scrsz = get(groot, 'ScreenSize');      
     hold on   
-        h(1)= fill([15 15 0 0],[0.5 1.5 1.5 0.5],colorUser1);
-       h(2)= fill([15 15 0 0],[1.5 2.5 2.5 1.5],colorUser2);
-        h(3)= fill([10 10 0 0],[2.5 3.5 3.5 2.5],colorUser3);
-        h(4)= fill([10 10 0 0],[3.5 4.5 4.5 3.5],colorUser4);
-        
-        legend([h(1) h(2) h(3) h(4)],{'Job 1', 'Job 2','Job 3','Job 4'},'Location','northeast')
+    h(1)= fill([15 15 0 0],[0.5 1.5 1.5 0.5],colorUser1);
+    h(2)= fill([15 15 0 0],[1.5 2.5 2.5 1.5],colorUser2);
+    h(3)= fill([10 10 0 0],[2.5 3.5 3.5 2.5],colorUser3);
+    h(4)= fill([10 10 0 0],[3.5 4.5 4.5 3.5],colorUser4);
+
+    legend([h(1) h(2) h(3) h(4)],{'Job 1', 'Job 2','Job 3','Job 4'},'Location','northoutside' ...
+        ,'Orientation', 'horizontal','FontSize', fontLegend)
     hold off
-     xlim([0 18]);
-     ylim([0.5 4.5]);
-    set (gcf, 'Units', 'Inches', 'Position', figureSize, 'PaperUnits', 'inches', 'PaperPosition', figureSize);
+    xlim([0 18]);
+    ylim([0.5 4.5]);
+    xlabel('machines');
+    xlabel('time');
+    temp = [0 0 figureSize(3) figureSize(4)];
+    set (gcf, 'Units', 'Inches', 'Position', temp, 'PaperUnits', 'inches', 'PaperPosition', temp);
 %     xlabel(xLabel,'FontSize',fontAxis);
     set(gca,'YTickLabel', machines,'FontSize',fontAxis);
     fileNames{figIdx} = 'JSQ_ex';
@@ -33,13 +39,17 @@ if plots(2)
         h(1)= fill([2 2 0 0],[0.5 1.5 1.5 0.5],colorUser1);
        h(2)= fill([2 2 0 0],[1.5 2.5 2.5 1.5],colorUser2);
         h(3)= fill([200 200 0 0],[2.5 3.5 3.5 2.5],colorUser3);
-        h(4)= fill([200 200 0 0],[3.5 4.5 4.5 3.5],colorUser4);
+        h(4)= fill([200 200 0 0],[3.5 4.5 4.5 3.5],colorUser4);        
         
-        legend([h(1) h(2) h(3) h(4)],{'Job 1', 'Job 2','Job 3','Job 4'},'Location','southeast')
+        legend([h(1) h(2) h(3) h(4)],{'Job 1', 'Job 2','Job 3','Job 4'},'Location','northoutside' ...
+        ,'Orientation', 'horizontal','FontSize', fontLegend)
     hold off
      xlim([0 220]);
      ylim([0.5 4.5]);
-    set (gcf, 'Units', 'Inches', 'Position', figureSize, 'PaperUnits', 'inches', 'PaperPosition', figureSize);
+     xlabel('machines');
+     xlabel('time');
+     temp = [0 0 figureSize(3) figureSize(4)];
+    set (gcf, 'Units', 'Inches', 'Position', temp, 'PaperUnits', 'inches', 'PaperPosition', temp);
 %     xlabel(xLabel,'FontSize',fontAxis);
     set(gca,'YTickLabel', machines,'FontSize',fontAxis);
     fileNames{figIdx} = 'SJFplus_ex';
@@ -48,7 +58,6 @@ end
 
 if plots(3)    
    figIdx=figIdx +1;    
-   temp = [0.0 0 15/4 0.4];
    figures{figIdx} = figure;
    scrsz = get(groot, 'ScreenSize');      
     hold on   
@@ -60,7 +69,8 @@ if plots(3)
     hold off
      xlim([0 13]);
      ylim([0.5 1.5]);
-    set (gcf, 'Units', 'Inches', 'Position', temp, 'PaperUnits', 'inches', 'PaperPosition', temp);
+     temp = [0 0 figureSize(3) figureSize(4)/5];
+    set (gcf, 'Units', 'Inches', 'Position', temp, 'PaperUnits', 'inches', 'PaperPosition', temp);    
 %     xlabel(xLabel,'FontSize',fontAxis);
    % set(gca,'YTickLabel', 'G1','FontSize',fontAxis);
    set(gca,'YTickLabel',[]);
@@ -82,14 +92,15 @@ if plots(4)
      xlim([0 13]);
       xticks([0 3 7 12]);
      ylim([0 3]);
-    set (gcf, 'Units', 'Inches', 'Position', figureSize, 'PaperUnits', 'inches', 'PaperPosition', figureSize);
+     temp = [0 0 figureSize(3) figureSize(4)*2/5];
+    set (gcf, 'Units', 'Inches', 'Position', temp, 'PaperUnits', 'inches', 'PaperPosition', temp);
 %     xlabel(xLabel,'FontSize',fontAxis);
     % set(gca,'YTickLabel', machines,'FontSize',fontAxis);
     fileNames{figIdx} = 'alg_ex2';
 end
 
 if plots(5)    
-       temp = [0.0 0 15/4 6/4];
+       temp = [0 0 figureSize(3) figureSize(4)*2/5];
    figIdx=figIdx +1;         
    figures{figIdx} = figure;
    scrsz = get(groot, 'ScreenSize');      
@@ -99,7 +110,8 @@ if plots(5)
         h(3)= fill([4 4 0 0],[1.5 2.5 2.5 1.5],colorUser1);
      %   h(4)= fill([10 10 0 0],[3.5 4.5 4.5 3.5],colorUser4);
         
-        legend([h(1) h(2) h(3)],{'Job 2', 'Job 3','Job 1'},'Location','northeast')
+        legend([h(1) h(2) h(3)],{'Job 2', 'Job 3','Job 1'},'Location','northoutside' ...
+            ,'Orientation', 'horizontal','FontSize', fontLegend)
     hold off
      xlim([0 10]);
      ylim([0.5 2.5]);
@@ -110,7 +122,7 @@ if plots(5)
 end
 
 if plots(6)   
-     temp = [0.0 0 15/4 6/4];
+    temp = [0 0 figureSize(3) figureSize(4)*1/5];
    figIdx=figIdx +1;         
    figures{figIdx} = figure;
    scrsz = get(groot, 'ScreenSize');      
@@ -137,18 +149,19 @@ if plots(6)
 end
 
 
+%%
+if ~is_printed    
+    return;
+else
+    pause(1);
+end
 
-
-
+%% r
 for i=1:length(fileNames)
     fileName = fileNames{i};
     epsFile = [ LOCAL_FIG fileName '.eps'];
     print (figures{i}, '-depsc', epsFile);    
-    pdfFile = [ fig_path fileName '.pdf']  
+    pdfFile = [ fig_path fileName '.pdf'];  
     cmd = sprintf(PS_CMD_FORMAT, epsFile, pdfFile);
     status = system(cmd);
 end
-return;
-
-
-

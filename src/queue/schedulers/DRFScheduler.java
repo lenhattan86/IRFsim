@@ -136,7 +136,8 @@ public class DRFScheduler implements Scheduler {
 			}
 
 			int taskId = unallocJob.getCommingTaskId();
-		  InterchangableResourceDemand demand = unallocJob.rsrcDemands(taskId); // time consuming?
+//		  InterchangableResourceDemand demand = unallocJob.rsrcDemands(taskId); // time consuming?
+		  InterchangableResourceDemand demand = unallocJob.getReportDemand();
 		  Resource allocRes = demand.isCpuJob()?demand.getCpuDemand():demand.getGpuDemand();
 			// Like Yarn, assign one single container for the task
 			// step 3: if fit, C+D_i <= R, allocate

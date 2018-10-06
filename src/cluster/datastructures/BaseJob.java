@@ -115,6 +115,8 @@ public abstract class BaseJob implements Cloneable {
   public double jobStartTime, jobEndTime; // start-time & end-time of serving a
                                           // job
   public double jobStartRunningTime = -1.0; // when the job is allocated
+  
+  public double runningTime = 0.0; // when the job is allocated
                                             // resources.
   public double jobExpDur; // real completion time of the job.
 
@@ -179,7 +181,8 @@ public abstract class BaseJob implements Cloneable {
           "completion time of the job is not " + this.dagId);
     
     return this.jobEndTime - this.jobStartTime;
-  }
+  } 
+  
   public double getCompletionTimeFromAllocated() {
     if (this.jobStartRunningTime < 0)
       System.err.println(
@@ -289,7 +292,7 @@ public abstract class BaseJob implements Cloneable {
 	public void onFinish(){
 		if(!this.isProfiling)
 			this.getQueue().L -= this.fairVal;
-		
+		this.runningTime += (Simulator.CURRENT_TIME - this.jobStartRunningTime);
 		this.isCompleted = true;
   }
 	
@@ -323,7 +326,9 @@ public abstract class BaseJob implements Cloneable {
 		this.rsrcInUse = new Resource(0);
 		this.rsrcQuota = new Resource(0);
 		this.wasScheduled = false;
+		this.runningTime += (Simulator.CURRENT_TIME - this.jobStartRunningTime); 
 		this.jobStartRunningTime = -1;
-		this.onFinish();
+		if(!this.isProfiling)
+			this.getQueue().L -= this.fairVal;
 	}
 }

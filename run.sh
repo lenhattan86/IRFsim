@@ -1,1 +1,1 @@
-java -Xmx8192M -cp bin cluster.simulator.Main
+java -Xmx12192M -cp bin cluster.simulator.Main $1

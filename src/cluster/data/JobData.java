@@ -27,7 +27,8 @@ public class JobData {
 		public double[][] compuationToMemRatios;
 		public int scaleUpDemand = 1;
 		
-		public double[] errs;
+		public double[] cpuErrs;
+		public double[] gpuErrs;
 	
 	public JobData(){
 		if(Globals.SCENARIO==null){

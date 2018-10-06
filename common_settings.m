@@ -1,13 +1,23 @@
-clear; close all; clc;
+if (exist('is_printed'))
+    if (is_printed)
+        disp('==== Using the old setting ====');
+        clear; close all; clc;
+        is_printed = true;
+    else
+        clear; close all; clc;
+        is_printed = false;
+    end    
+else
+    clear; close all; clc;
+    is_printed = false;
+end
 
 fontSize=10;
-
 fontAxis = fontSize;
 fontTitle = fontSize;
 fontLegend = fontSize;
 LineWidth = 1.5;
 FontSize = fontSize;
-is_printed = true;
 axisWidth = 1.5;
 
 %%
@@ -41,7 +51,7 @@ PS_CMD_FORMAT='ps2pdf -dEmbedAllFonts#true -dSubsetFonts#true -dEPSCrop#false -d
 
 % fig_path = ['figs/'];
 % fig_path = '/home/tanle/Dropbox/Papers/AlloX/figs/';
-fig_path = '/ssd/projects/overleaf-allox/figs/';
+fig_path = '/ssd/projects/allox/figs/';
 
 %%
 
@@ -59,6 +69,7 @@ strDRFSJF = 'DRFS';
 strSJF = 'SJF';
 strDRFExt = 'DRFE';
 strSRPT = 'SRPT';
+strErrorStd = 'std. of err (%)';
 
 strGPU = 'GPU';
 strCPU = 'CPU';
@@ -68,6 +79,7 @@ strJobCompleted = 'completed jobs';
 strAvgCmplt = 'avg. compl. time';
 strMakeSpan = 'makespan';
 strImprovement = 'improvement (%)';
+strPerfGap = 'perf. gap (%)';
 
 strNormCapacity='norm. capacity';
 strCdf = 'cdf';
@@ -152,3 +164,7 @@ colorWasted = [1 1 1];
 %     0.7500         0    0.7500
 %     0.7500    0.7500         0
 %     0.2500    0.2500    0.2500
+
+%% 
+log_folder = 'log/';
+output_folder = 'output/';

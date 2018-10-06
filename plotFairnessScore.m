@@ -2,12 +2,11 @@ clear; close all;
 addpath('matlab_func');
 common_settings;
 figureSize = figSizeThreeFourth;
-is_printed = true;
-
-num_batch_queues = 15;
+plots=[1, 1, 0]; 
+num_batch_queues = 20;
 num_interactive_queue = 0;
 num_queues = num_batch_queues + num_interactive_queue;
-START_TIME = 0; END_TIME = 2000;  STEP_TIME = 1;
+START_TIME = 0; END_TIME = 3000;  STEP_TIME = 1;
 cluster_size = 10;
 
 enableSeparateLegend = false;
@@ -22,7 +21,7 @@ result_folder= '';
 output_sufix = ''; 
 %%
 % EC
-plots=[0, 0, 1]; 
+
 logfolder = [result_folder 'log/'];
 
 start_time_step = START_TIME/STEP_TIME;
@@ -36,7 +35,8 @@ timeScale = 1;
 timeInSeconds = START_TIME+STEP_TIME:STEP_TIME:END_TIME;
 timeInSeconds = timeInSeconds * timeScale;
 
-lengendStr = cell(1, num_queues);
+%lengendStr = cell(1, num_queues);
+%lengendStr = cell(1, 3);
 for i=1:num_interactive_queue
 %     lengendStr{i} = ['LQ-' int2str(num_interactive_queue-i)];
     lengendStr{i} = ['LQ-' int2str(i-1)];
@@ -53,8 +53,8 @@ extraStr = ['_' int2str(num_batch_queues) '_' int2str(cluster_size)];
 % prefixes = {'DRF', 'ES', 'DRFExt', 'AlloX', 'SJF'};
 % prefixes = {'DRFFIFO','DRF','ES', 'DRFExt', 'FS', 'SRPT'};
 % methods = {'DRFF','DRF','ES', 'DRFExt', 'AlloX', 'SRPT'};
-prefixes = {'DRFFIFO','SRPT', 'FS'};
-methods = {'DRFF', 'SRPT','AlloX'};
+prefixes = {'DRFFIFO', 'SRPT', 'AlloX'};
+methods = {'DRFF', 'SRPT', 'AlloX'};
 fairscoreLineStyles = {lineDRF, lineSRPT, lineAlloX};
 JFIs = zeros(1,length(prefixes));
 FAIR_SCORES ={};
@@ -73,21 +73,21 @@ for iFile=1:length(prefixes)
         end
         fairScoreUsers = reshape(resAll, num_queues, num_time_steps);        
         FAIR_SCORES{iFile} = fairScoreUsers;
-        meanFairScore = mean(fairScoreUsers');
-        JFIs(iFile) = sum(meanFairScore)^2 / (num_queues*sum(meanFairScore.^2));
+        JFIs(iFile) = mean(  sum(fairScoreUsers).^2 / (num_queues*sum(fairScoreUsers.^2))  );
         % hBar = bar(timeInSeconds,fairScoreUsers',barwidth,'stacked','EdgeColor','none');      
-        hBar = plot(timeInSeconds,fairScoreUsers(USER_SET, :)');  
+        hBar = plot(timeInSeconds,fairScoreUsers(USER_SET, :)', 'LineWidth', lineWidth);  
+        varVal = std(fairScoreUsers(1, :))/mean(fairScoreUsers(1, :))
         ylabel(strFairScore);
         xlabel(strTime);
         xlim([0 max(timeInSeconds)]);
         ylim([0 MAX_SCORE]);
-        %legend(lengendStr,'Location','northoutside','FontSize',fontLegend,'Orientation','horizontal');
+       legend(lengendStr,'Location','northeast','FontSize',fontLegend,'Orientation','horizontal');
 %         title(prefixes{iFile},'fontsize',fontLegend);
-        
+%         legend(lengendStr{1:3},'Location','best','Orientation','horizontal');
         set (gcf, 'Units', 'Inches', 'Position', figureSize, 'PaperUnits', 'inches', 'PaperPosition', figureSize);
         if is_printed         
           figIdx=figIdx +1;
-          fileNames{figIdx} = ['q' int2str(num_batch_queues) '_res_usage_' prefixes{iFile}];         
+          fileNames{figIdx} = ['fairscore_' prefixes{iFile}];         
           epsFile = [ LOCAL_FIG fileNames{figIdx} '.eps'];
           print ('-depsc', epsFile);
         end
@@ -95,9 +95,8 @@ for iFile=1:length(prefixes)
   end
 end
 %%
-% plot Jain's fairness index
+% plot trade-offs
  if plots(2)   
-    
     figure;        
     hold on
     for iFile=1:length(prefixes)        
@@ -119,10 +118,9 @@ end
  %%
  if plots(3)   
      figure;   
- hold on;  
+    hold on;  
 
-    for iFile=1:length(prefixes)
-  
+    for iFile=1:length(prefixes)  
      logFile = [ logfolder prefixes{iFile} '-output' extraStr  '.csv'];
      [queueNames, res1, res2, res3, fairScores, flag] = importResUsageLog(logFile);
      if (flag)             
@@ -139,10 +137,10 @@ end
         else
             w = lineWidth*0.7;
         end
-        hBar = plot(timeInSeconds, fairScoreUsers(USER_ID, :)', fairscoreLineStyles{iFile},'LineWidth',w);
+        hBar = plot(timeInSeconds, fairScoreUsers(USER_ID, :)', fairscoreLineStyles{iFile},'LineWidth',w);       
      end
     end
-  hold off;
+    hold off;
     ylabel(strFairScore);
     xlabel(strTime);
     xlim([0 max(timeInSeconds)]);
@@ -164,7 +162,8 @@ if enableSeparateLegend
   figure
   hBar = bar(timeInSeconds,fairScoreUsers',barwidth,'stacked','EdgeColor','none');
 %   set(hBar,{'FaceColor'},barColors);
-  legend(lengendStr,'Location','southoutside','FontSize',fontLegend,'Orientation','horizontal');
+%  legend(lengendStr,'Location','southoutside','FontSize',fontLegend,'Orientation','horizontal');
+  legend(lengendStr{1:3},'Location','southoutside','FontSize',fontLegend,'Orientation','horizontal');
   set(gca,'FontSize',fontSize);
   axis([20000,20001,20000,20001]) %move dummy points out of view
   axis off %hide axis  

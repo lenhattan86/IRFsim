@@ -3,37 +3,25 @@ common_settings;
 % is_printed = 1;
 %%
 barWidth = 0.5;
-queue_num = 15;
+queue_num = 20;
 figureSize = figSizeThreeFourth;
 plots  = [true false];
-% methods = {'DRFF', strDRF,  strES,  'DRFExt', strAlloX, 'SRPT'};
-% files = {'DRFFIFO', 'DRF', 'ES', 'DRFExt', 'FS','SRPT'};
-methods = {'DRFF', strDRF,  strES, strAlloX};
-files = {'DRFFIFO', 'DRF', 'ES', 'FS'};
-% methods = {'DRFF'};
-% files = {'DRFFIFO'};
-ESId = 1;
-AlloXId = 1;
-% methods = {strES,  'DRFExt', strAlloX, 'SJF'};
-% files = {'ES', 'DRFExt', 'AlloX','SJF'};
-% ESId = 1;
-% speedups = [0.1, 0.5, 1.0]
-% caps = [75 100 125 150];
-% caps = [50 75 100 125 150];
-caps = [5, 7, 9, 10, 12, 15];
+methods = {strDRFFIFO, strDRF,  strES, strAlloX, strSRPT};
+files = {'DRFFIFO', 'DRF', 'ES', 'AlloX', 'SRPT'};
+ESId = 3;
+AlloXId = 4;
+caps = [10, 11, 12, 13, 14, 15, 20, 25, 30];
 load = zeros(size(caps));
-timeScale = 5;
-
 methodColors = {colorES; colorDRF; colorProposed};
 
 %% load data
-resVals = zeros(length(methods),length(caps)); 
+resVals = zeros(length(methods), length(caps)); 
 loads = zeros(1, length(caps));
 for i=1:length(methods)
     for j=1:length(caps)
-        extraStr = ['_' int2str(queue_num) '_' int2str(caps(j)) '_c'];
+        extraStr = ['_' int2str(queue_num) '_' int2str(caps(j)) '_c' int2str(caps(j))];
         outputFile = [ 'output/' files{i} '-output' extraStr  '.csv'];
-        [JobIds, startTimes, endTimes, durations, queueNames] = import_compl_time(outputFile);
+        [JobIds, startTimes, endTimes, durations, queueNames] = import_compl_time_real_job(outputFile);
         if(~isnan(durations))
             resVals(i,j) = mean(durations);
         end
@@ -64,7 +52,6 @@ for i=1:length(methods)
         end
     end
 end
-resVals = resVals *timeScale;
 %%
 if plots(1)    
     figIdx=figIdx +1;         

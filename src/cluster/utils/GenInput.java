@@ -284,9 +284,9 @@ public class GenInput {
 
 				double cpuErr = 0;
 				double gpuErr = 0;
-				if (Globals.jobData.errs!=null){
-					cpuErr = Globals.jobData.errs[jobIdx %Globals.jobData.errs.length];
-					gpuErr = Globals.jobData.errs[Globals.jobData.errs.length - (jobIdx % Globals.jobData.errs.length) - 1];
+				if (Globals.jobData.cpuErrs!=null){
+					cpuErr = Globals.jobData.cpuErrs[jobIdx %Globals.jobData.cpuErrs.length];
+					gpuErr = Globals.jobData.cpuErrs[Globals.jobData.cpuErrs.length - (jobIdx % Globals.jobData.cpuErrs.length) - 1];
 				}
 				lastArrivalTime = startTime + job.arrivalTime;
 				if (!Globals.GEN_JOB_ARRIVAL)

@@ -3,20 +3,28 @@ common_settings;
 % is_printed = 1;
 % fig_path = ['figs/'];
 %%
-simulation = false;
+simulation = true;
 if simulation 
-    queue_num = 20;
-    cluster_size= 10;
+%     queue_num = 20;
+%     cluster_size= 10;
+    queue_num = 10;
+    cluster_size= 20;
+    plots  = [true, false, false, false, false];
 else 
     fprintf('Verify the experiment results');
     queue_num = 4;
     cluster_size= 4;
     % ClusterAvg =  [5.3396    5.0837    4.8939    4.8312    4.4267]*1000; % eurosys 4.2
+    SimAvg = [3.810    3.6888    3.3361     3.3257    2.6007] * 1000; % from simulation    
+    SimWaitingAvg = [0.7315    0 0 0 0] * 1000; % from simulation
+    SimRunningAvg = [3.0726    0 0 0 0] * 1000; % from simulation
     ClusterAvg = [3.8899    3.3052    3.3247    3.4347    2.5079] * 1000;% eurosys 4.3
+%     ClusterWatingTime = [3.1584    2.0612+0.12    1.6876+0.12    1.6690+0.12    1.3565+0.12] * 1000;
+%     ClusterRunningTime = [0.7315    1.1240    1.5171    1.6457    1.0314] * 1000;
+    plots  = [false, false, false, false, false];
 end
 
 figureSize = figSizeThreeFourth;
-plots  = [true, false, false, false, false];
 
 colorUsers = {colorUser1; colorUser2; colorUser3};
 % methods = {strDRF,  strES,  'DRFE', strAlloX, 'SJF', 'FS','SRPT'};
@@ -32,19 +40,35 @@ DRFFIFOId = 1; DRFId = 2; ESId = 3; DRFExt = 4; SJFId = 5; FSId = 6;
 alphas = [0.1 0.3];
 
 methodColors = {colorES; colorDRF; colorProposed};
-extraStr = ['_' int2str(queue_num) '_' int2str(cluster_size)];
+% extraStr = ['_' int2str(queue_num) '_' int2str(cluster_size)];
+extraStr = ['_' int2str(queue_num) '_' int2str(cluster_size) '_debug'];
+% extraStr = ['_' int2str(queue_num) '_' int2str(cluster_size) '_0.05'];
 EXTRA='';
 % EXTRA='_w_prof';
-
+JobIds={};
+startTimes={};
+endTimes = {};
+durations = {};
+queueNames = {};
+startRunningTimes = {};
+runningTimes = {};
 scaleTime = 1; % minutes
 %% load data
 
 for i=1:length(methods)
     outputFile = [ 'output/' files{i} '-output' extraStr  '.csv'];
-    [JobIds{i}, startTimes{i}, endTimes{i}, durations{i}, queueNames{i}] = import_compl_time(outputFile);
+    [JobIds{i}, startTimes{i}, endTimes{i}, durations{i}, queueNames{i}, startRunningTimes{i}, runningTimes{i}] ...
+        = import_compl_time(outputFile);   
+       
+%     waitingTimes{i} = startRunningTimes{i} - startTimes{i};
+    waitingTimes{i} = durations{i} - runningTimes{i};
+%     runningTimes{i} = durations{i} - waitingTimes{i};
+    
     fullJobsIndices{i} = find(JobIds{i}>=0);
-    durations{i} = durations{i}(fullJobsIndices{i});
-    JobIds{i} = JobIds{i}(fullJobsIndices{i});    
+    durations{i} = durations{i}(fullJobsIndices{i}); 
+    waitingTimes{i} = waitingTimes{i}(fullJobsIndices{i});
+    runningTimes{i} = runningTimes{i}(fullJobsIndices{i});
+    JobIds{i} = JobIds{i}(fullJobsIndices{i});
 end
 
 %%
@@ -59,18 +83,22 @@ if plots(1)
    
     hold on
     for i = 1:length(methods)
-        avgCmplt(i) = mean(durations{i}) * scaleTime;
-        h=bar(i, avgCmplt(i), barWidth);
+%         avgCmplt(i) = mean(durations{i}) * scaleTime;
+        avgCmplt(i) = mean(runningTimes{i}) * scaleTime;
+%         h=bar(i, avgCmplt(i), barWidth);
+%         avgCmplt(i,:) = mean([waitingTimes{i} runningTimes{i}]) * scaleTime;        
 %         set(h,'FaceColor', methodColors{i});
     end
+    h=bar(1:length(methods), avgCmplt(:,:), barWidth , 'stacked');
     hold off
 
     xLabel=strMethods;
     yLabel=strAvgCmplt;
-    legendStr=methods;
+    legendStr={'waiting time','running time', 'Location','best'};
+    legend(legendStr,'FontSize', fontLegend);
      xlim([0.6 length(methods)+0.4]);
-%     ylim([0 7000]);
-    xLabels={strUser1, strUser2, strUser3};
+%     ylim([0 ]);
+    xLabels={strUser1, strUser2, strUser3}; 
     set (gcf, 'Units', 'Inches', 'Position', figureSize, 'PaperUnits', 'inches', 'PaperPosition', figureSize);
 %     xlabel(xLabel,'FontSize',fontAxis);
     ylabel(yLabel,'FontSize',fontAxis);
@@ -80,11 +108,15 @@ end
 
 if ~simulation
     % compare
-
+    for i = 1:length(methods)
+        SimAvgCmplt(i) = mean(durations{i}) * scaleTime;
+    end
+    
     figIdx=figIdx +1;         
     figures{figIdx} = figure;
     scrsz = get(groot, 'ScreenSize');   
-    bar([ClusterAvg' avgCmplt(1:5)'], 'group');
+%     bar([ClusterAvg' SimAvgCmplt(1:5)'], 'group');
+    bar([ClusterAvg' SimAvg'], 'group');
     xLabel=strMethods;
     yLabel=strAvgCmplt;
     legendStr=methods;
@@ -118,7 +150,7 @@ if false
     xLabel=strMethods;
     yLabel= ['norm. ' strMakeSpan];
     legendStr=methods;
-    xlim([0.6 length(methods)+0.4]);
+    xlim([0.6 length(methods)+0.4]);    
     set (gcf, 'Units', 'Inches', 'Position', figureSize, 'PaperUnits', 'inches', 'PaperPosition', figureSize);
 %     xlabel(xLabel,'FontSize',fontAxis);
     ylabel(yLabel,'FontSize',fontAxis);
@@ -375,9 +407,13 @@ if plots(5)
     ylabel(yLabel,'FontSize',fontAxis);    
     fileNames{figIdx} = 'degradation';
 end
-return;
 %%
-
+if~is_printed
+    return;
+else
+   pause(1)  
+end
+%%
 for i=1:length(fileNames)
     fileName = fileNames{i};
     epsFile = [ LOCAL_FIG fileName '.eps'];

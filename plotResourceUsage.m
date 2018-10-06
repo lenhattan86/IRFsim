@@ -6,10 +6,10 @@ is_printed = false;
 num_batch_queues = 4;
 num_interactive_queue = 0;
 num_queues = num_batch_queues + num_interactive_queue;
-START_TIME = 0; END_TIME = 10000;  STEP_TIME = 1;
+START_TIME = 0; END_TIME = 20000;  STEP_TIME = 1;
 cluster_size = 4;
 
-CPUCap = cluster_size * 50;
+CPUCap = cluster_size * 40;
 GPUCap = cluster_size;
 MemCap = cluster_size* 128;
 
@@ -52,18 +52,18 @@ for i=1:num_batch_queues
 end
 %%
 % extraStr = '';
-extraStr = ['_' int2str(num_batch_queues) '_' int2str(cluster_size)];
-% extraStr = ['_' int2str(num_batch_queues) '_' int2str(cluster_size) '_c'];
+extraStr = ['_' int2str(num_batch_queues) '_' int2str(cluster_size) '_debug'];
+% extraStr = ['_' int2str(num_batch_queues) '_' int2str(cluster_size) '_c' int2str(cluster_size)];
 
 %%
 % prefixes = {'DRF', 'ES', 'DRFExt', 'AlloX', 'SJF'};
 % prefixes = {'FS','SRPT'};
-prefixes = {'ES'};
-% prefixes = {'AlloX'};
+% prefixes = {'DRFFIFO'};
+prefixes = {'DRF'};
 % prefixes = {'DRF','AlloX'};
 % prefixes = {'DRFExt','SJF'};
 for iFile=1:length(prefixes)
-  if plots(1)   
+  if plots(1)
      logFile = [ logfolder prefixes{iFile} '-output' extraStr  '.csv'];
      [queueNames, res1, res2, res3, fairScores, flag] = importResUsageLog(logFile);
      if (flag)
