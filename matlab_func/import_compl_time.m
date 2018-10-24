@@ -76,4 +76,4 @@ endTime = dataArray{:, 3};
 duration = dataArray{:, 4};
 queueName = dataArray{:, 5};
 startRunningTimes = dataArray{:, 6};
-runningTimes = dataArray{:, 6};
+runningTimes = dataArray{:, 7};

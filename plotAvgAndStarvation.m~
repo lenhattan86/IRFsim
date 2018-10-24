@@ -1,0 +1,210 @@
+addpath('matlab_func');
+common_settings;
+% is_printed = 1;
+% fig_path = ['figs/'];
+version = '';
+isSmallJobs = true;
+%%
+
+queue_num = 10; cluster_size= 20;
+nLargeJobs = 50;
+nSmallUsers = 5;
+nLargeUsers = 5;
+
+plots  = [true, true];
+figureSize = figSizeThreeFourth;
+
+%%
+methods = {strDRFFIFO, strDRFSJF, strES, strDRFExt, strAlloX, strSRPT};
+files = {'DRFFIFO', 'DRF', 'ES', 'DRFExt', 'AlloX', 'SRPT'};
+DRFFIFOId = 1; DRFId = 2; ESId = 3; DRFExtId = 4;  AlloXId = 5; SRPTId = 6;
+plotOrders = [DRFFIFOId DRFId ESId DRFExtId SRPTId AlloXId];
+alphas = [0.1 0.3];
+methodColors = {colorES; colorDRF; colorProposed};
+
+extraStr = ['_' int2str(queue_num) '_' int2str(cluster_size) version];
+EXTRA='';
+JobIds={};
+startTimes={};
+endTimes = {};
+durations = {};
+queueNames = {};
+startRunningTimes = {};
+runningTimes = {};
+scaleTime = 1; % minutes
+
+logfolder = ['log/'];
+%% load data
+
+for i=1:length(methods)
+    outputFile = [ 'output/' files{i} '-output' extraStr  '.csv'];
+    [JobIds{i}, startTimes{i}, endTimes{i}, durations{i}, queueNames{i}, startRunningTimes{i}, runningTimes{i}] ...
+        = import_compl_time(outputFile);   
+
+    waitingTimes{i} = durations{i} - runningTimes{i};
+%     runningTimes{i} = durations{i} - waitingTimes{i};
+
+    fullJobsIndices{i} = find(JobIds{i}>=0);
+    % for long jobs
+    largeJobsIndices{i} = find( JobIds{i}>=0 & (JobIds{i}<nLargeJobs*(nSmallUsers+nLargeUsers)) ...
+        & (mod(JobIds{i},(nSmallUsers+nLargeUsers) )>nSmallUsers));        
+    % for short jobs
+    smallJobsIndices{i} = find( JobIds{i}>=0 & ...
+        ( (JobIds{i}<100*10 & (mod(JobIds{i},(nSmallUsers+nLargeUsers) )< nSmallUsers)) ...
+                | (JobIds{i}>=nLargeJobs*(nSmallUsers+nLargeUsers))) );
+
+    
+
+    durations_m{i} = durations{i}(smallJobsIndices{i}); 
+    waitingTimes_m{i} = waitingTimes{i}(smallJobsIndices{i});
+    runningTimes_m{i} = runningTimes{i}(smallJobsIndices{i});
+    JobIds_m{i} = JobIds{i}(smallJobsIndices{i});
+    startTimes_m{i} = startTimes{i}(smallJobsIndices{i});
+    endTimes_m{i} = endTimes{i}(smallJobsIndices{i});
+    queueNames_m{i} = queueNames{i}(smallJobsIndices{i});
+    startRunningTimes_m{i} = startRunningTimes{i}(smallJobsIndices{i});
+    
+    durations_s{i} = durations{i}(largeJobsIndices{i}); 
+    waitingTimes_s{i} = waitingTimes{i}(largeJobsIndices{i});
+    runningTimes_s{i} = runningTimes{i}(largeJobsIndices{i});
+    JobIds_m{i} = JobIds{i}(largeJobsIndices{i});
+    startTimes_m{i} = startTimes{i}(largeJobsIndices{i});
+    endTimes_m{i} = endTimes{i}(largeJobsIndices{i});
+    queueNames_m{i} = queueNames{i}(largeJobsIndices{i});
+    startRunningTimes_m{i} = startRunningTimes{i}(largeJobsIndices{i});
+    
+    if (isSmallJobs)            
+        jobIndices = smallJobsIndices;
+    else
+        jobIndices = largeJobsIndices;
+    end
+end
+
+
+
+%%
+if plots(1)    
+   figIdx=figIdx +1;  
+   figures{figIdx} = figure;
+   scrsz = get(groot, 'ScreenSize');   
+
+    stackData = zeros(length(methods), 3 , 2);
+    
+    for i = 1:length(methods)
+        avgCmplt(i,:) = mean([waitingTimes{i} runningTimes{i}]) * scaleTime;        
+    end
+
+    h=bar(1:length(methods), avgCmplt(:,:), barWidth , 'stacked'); 
+      
+    temp = sum(avgCmplt'); 
+    improvement = (temp-temp(AlloXId))./temp * 100
+    maxImprovement = (temp-temp(SRPTId))./temp * 100
+    xLabel=strMethods;
+    yLabel=strAvgCmplt;
+    legendStr={'wait time','runtime','wait-top 5%','run-top 5%','wait-top 1%','run-top 1%',};
+    legend(legendStr, 'Location','northeastoutside','FontSize', fontLegend);
+    xlim([0.6 length(methods)+0.4]);
+    ylabel(yLabel,'FontSize',fontAxis);
+    set(gca,'XTickLabel', methods,'FontSize',fontAxis);
+
+%     axes('position',[.35 .25 0.32 0.7])
+%     box on % put box around new pair of axes
+%     plotBarStackGroups(stackData(3:end,:,:), methods(3:end), false);
+%     axis tight
+%     xlim([2.6 length(methods)+0.4]);
+
+
+%     set(gca, 'YScale', 'log'); 
+%     grid on;
+%     ylim([0 ]);
+    set (gcf, 'Units', 'Inches', 'Position', figureSize.*[1 1 1.4 1], 'PaperUnits', 'inches', 'PaperPosition', figureSize.*[1 1 1.4 1]);
+
+    fileNames{figIdx} = 'avgCmplt_small';
+end
+
+%%
+%%
+if plots(1)    
+   figIdx=figIdx +1;  
+   figures{figIdx} = figure;
+   scrsz = get(groot, 'ScreenSize');   
+
+    stackData = zeros(length(methods), 3 , 2);
+    
+    for i = 1:length(methods)
+        avgCmplt(i,:) = mean([waitingTimes{i} runningTimes{i}]) * scaleTime;        
+    end
+
+    h=bar(1:length(methods), avgCmplt(:,:), barWidth , 'stacked'); 
+      
+    temp = sum(avgCmplt'); 
+    improvement = (temp-temp(AlloXId))./temp * 100
+    maxImprovement = (temp-temp(SRPTId))./temp * 100
+    xLabel=strMethods;
+    yLabel=strAvgCmplt;
+    legendStr={'wait time','runtime','wait-top 5%','run-top 5%','wait-top 1%','run-top 1%',};
+    legend(legendStr, 'Location','northeastoutside','FontSize', fontLegend);
+    xlim([0.6 length(methods)+0.4]);
+    ylabel(yLabel,'FontSize',fontAxis);
+    set(gca,'XTickLabel', methods,'FontSize',fontAxis);
+
+%     axes('position',[.35 .25 0.32 0.7])
+%     box on % put box around new pair of axes
+%     plotBarStackGroups(stackData(3:end,:,:), methods(3:end), false);
+%     axis tight
+%     xlim([2.6 length(methods)+0.4]);
+
+
+%     set(gca, 'YScale', 'log'); 
+%     grid on;
+%     ylim([0 ]);
+    set (gcf, 'Units', 'Inches', 'Position', figureSize.*[1 1 1.4 1], 'PaperUnits', 'inches', 'PaperPosition', figureSize.*[1 1 1.4 1]);
+
+    fileNames{figIdx} = 'avgCmplt_small';
+end
+
+%%
+%%
+if plots(2)    
+   figIdx=figIdx +1;         
+   figures{figIdx} = figure;
+   scrsz = get(groot, 'ScreenSize');  
+   
+   maxEndTime = max(endTimes{SRPTId}); % AlloX
+    hold on
+    normMakespan = -1;
+    for i = 1:length(methods)
+        numJobs = sum(endTimes{i} <= maxEndTime);    
+        h=bar(i, numJobs , barWidth);
+%         set(h,'FaceColor', methodColors{i});
+    end
+    hold off
+
+    xLabel=strMethods;
+    yLabel= ['job completed'];
+    legendStr=methods;
+    xlim([0.6 length(methods)+0.4]);
+    set (gcf, 'Units', 'Inches', 'Position', figureSize, 'PaperUnits', 'inches', 'PaperPosition', figureSize);
+%     xlabel(xLabel,'FontSize',fontAxis);
+    ylabel(yLabel,'FontSize',fontAxis);
+    set(gca,'XTickLabel', methods ,'FontSize',fontAxis);
+    fileNames{figIdx} = 'job_completed';
+end
+
+
+version
+%%
+if~is_printed
+    return;
+else
+   pause(1);
+end
+%%
+for i=1:length(fileNames)
+    fileName = fileNames{i};
+    epsFile = [ LOCAL_FIG fileName '.eps'];
+    print (figures{i}, '-depsc', epsFile);    
+    pdfFile = [ fig_path fileName EXTRA '.pdf']
+    cmd = sprintf(PS_CMD_FORMAT, epsFile, pdfFile);
+    status = system(cmd);
+end

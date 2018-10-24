@@ -18,6 +18,7 @@ import java.util.TreeMap;
 
 import cluster.simulator.Simulator;
 import cluster.simulator.Main.Globals;
+import cluster.simulator.Main.Globals.Method;
 import cluster.utils.Interval;
 import cluster.utils.Output;
 
@@ -93,6 +94,7 @@ public class MLJob extends BaseJob implements Cloneable {
 
 	public static MLJob clone(MLJob dag) {
 		MLJob clonedDag = new MLJob(dag.dagId);
+		clonedDag.arrivalTime = dag.arrivalTime;
 		clonedDag.dagName = dag.dagName;
 		clonedDag.numStages = dag.numStages;
 		clonedDag.numEdgesBtwStages = dag.numEdgesBtwStages;
@@ -374,6 +376,10 @@ public class MLJob extends BaseJob implements Cloneable {
 					double gpuMem = Double.parseDouble(args[j++]);
 					double gpuComplt = Double.parseDouble(args[j++]);
 					double beta = cpuComplt/gpuComplt*cpu/gpu;
+					if (Globals.METHOD.equals(Method.DRFFIFO) && filePathString.equals(Globals.PathToInputFile)){
+						mem = Globals.MEM_PER_NODE;
+						gpuMem = Globals.MEM_PER_NODE;
+					}
 				// TODO: read the real demands
 					InterchangableResourceDemand demand = new InterchangableResourceDemand(cpu, mem, gpu, gpuMem, cpuComplt, gpuComplt );
 

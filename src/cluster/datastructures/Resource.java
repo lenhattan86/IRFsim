@@ -359,7 +359,7 @@ public class Resource implements Comparable {
 	
 	public boolean isEmpty(){
 		for (int i = 0; i < Globals.NUM_DIMENSIONS; i++) {
-			if (this.resources[i] >= 1.0)
+			if (this.resources[i] > 0)
 				return false;
 		}
 		return true;

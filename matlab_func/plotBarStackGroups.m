@@ -1,4 +1,4 @@
-function [] = plotBarStackGroups(stackData, groupLabels)
+function plotBarStackGroups(stackData, groupLabels, isFigure)
 %% Plot a set of stacked bars, but group them according to labels provided.
 %%
 %% Params: 
@@ -16,14 +16,15 @@ NumStacksPerGroup = size(stackData, 2);
 groupBins = 1:NumGroupsPerAxis;
 MaxGroupWidth = 0.65; % Fraction of 1. If 1, then we have all bars in groups touching
 groupOffset = MaxGroupWidth/NumStacksPerGroup;
-figure
-    hold on; 
+if (isFigure)
+    figure;
+end
+hold on; 
 for i=1:NumStacksPerGroup
 
     Y = squeeze(stackData(:,i,:));
     
-    % Center the bars:
-    
+    % Center the bars:    
     internalPosCount = i - ((NumStacksPerGroup+1) / 2);
     
     % Offset the group draw positions:

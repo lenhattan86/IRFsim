@@ -36,6 +36,7 @@ public class AlloXScheduler implements Scheduler {
 		clusterTotCapacity = Simulator.cluster.getClusterMaxResAlloc();
 		alphaFairness = Globals.alpha;
 		numberOfNodes = (int) (Globals.MACHINE_MAX_GPU + (Globals.MACHINE_MAX_CPU/Globals.CPU_PER_NODE) );
+		Output.writeln("", false, "q.log");
 	}
 
 	@Override
@@ -111,20 +112,24 @@ public class AlloXScheduler implements Scheduler {
 		}
 			
 //		System.out.println("[INFO] available machines " + availableMachines + " at " + Simulator.CURRENT_TIME);
-		boolean isReschedule = true;
+		boolean isReschedule = isResourceAvailable();
 		double alpha = alphaFairness;
 		while (isReschedule){
 			Resource avail = Simulator.cluster.getClusterResAvail();
-			isReschedule = isResourceAvailable();
 			List<JobQueue> pickUsers = compute_fs(availableMachines, clusterTotCapacity, activeQueues, alpha);
 			List<JobQueue> usersWantResources = new LinkedList<JobQueue>();
 			boolean isAllocatable = allocate_fs(availableMachines, usersWantResources);
+			
 			if (alpha > 1 && !isAllocatable)
 				break;
-			
-			else if (!isAllocatable) {				
-				alpha = alpha * 2;
+			else if (!isAllocatable) {			
+				if (Globals.EnableIncreaseAlpha)
+					alpha = alpha * 2;
+				else 
+					break;
 			}
+			
+			isReschedule = isResourceAvailable();
 			
 //			boolean isAllocatable = allocate_fs(availableMachines, usersWantResources);
 //			// remove the users don't want resources.
@@ -332,8 +337,12 @@ public class AlloXScheduler implements Scheduler {
 			
 			
 			
-		//	long startTime1 = System.nanoTime();
+			long start = System.currentTimeMillis();
+			//	long startTime1 = System.nanoTime();
 			 int[] sols = new HungarianAlgorithm(Q).execute();
+			 Output.writeln((Simulator.CURRENT_TIME + " availRes: " +Simulator.cluster.getClusterResAvail() + " : Q size " + Q.length + ", " + Q[0].length + " take " 
+					 + (System.currentTimeMillis()-start) + " milliseconds"), true, "q.log");
+				 
 			//TODO: how to decide CPU or GPU for a job as 2 configurations may be selected on either CPU or GPU. 
 			//	long endTime1 = System.nanoTime();
 			//	long duration1 = (endTime1 - startTime1);

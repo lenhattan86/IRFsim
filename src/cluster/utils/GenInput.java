@@ -253,6 +253,66 @@ public class GenInput {
 
 		customizeJobs(numQueues, numJobs, jobs);
 	}
+	
+	public static void genInputFromWorkload(int numQueues, int[] numJobs, Queue<BaseJob> jobs) {
+
+		genQueueInput(numQueues);
+
+		customizeJobs(numQueues, numJobs, jobs);
+	}
+	
+	private static void customizeJobs(int numBatchQueues, int[] numOfJobsPerUser, Queue<BaseJob> jobs) {
+		stageIter = 0;
+		String file = Globals.PathToInputFile;
+		Output.write("", false, file);
+
+		Iterator<BaseJob> jobIter2 = jobs.iterator();
+		int startTime = 0;
+		int[] arrivalTimes = readRandomProcess(Globals.DIST_FILE);
+		int arrivalIdx = 0;
+		if (jobs.size() == 0 && numBatchQueues > 0) {
+			System.err.println("jobs are empty.");
+			return;
+		}
+		if (numBatchQueues == 0) {
+			return;
+		}
+		int lastArrivalTime = 0;
+		int jobIdx = 0;
+		int maxJobs = Utils.maxArray(numOfJobsPerUser);	
+		for (int i = 0; i < maxJobs; i++)			
+			for (int u = 0; u < numOfJobsPerUser.length; u++) {
+				if (i >= numOfJobsPerUser[u])
+					continue;
+				int batchQueueIdx = u;				
+				if (jobIter2.hasNext()) {
+					MLJob job = (MLJob) jobIter2.next();
+					String toWrite = "";
+					double cpuErr = 0;
+					double gpuErr = 0;
+					if (Globals.jobData.cpuErrs!=null){
+						cpuErr = Globals.jobData.cpuErrs[jobIdx %Globals.jobData.cpuErrs.length];
+						gpuErr = Globals.jobData.gpuErrs[jobIdx %Globals.jobData.gpuErrs.length];
+					}
+					lastArrivalTime = startTime + job.arrivalTime;
+					if (!Globals.GEN_JOB_ARRIVAL)
+						toWrite = genSingleJobInfo(batchQueueIdx, jobIdx, "queue" + (batchQueueIdx), job, startTime + job.arrivalTime, 1,
+								Globals.SCALE_BATCH_DURATION, false, cpuErr, gpuErr);
+					else {
+						if (arrivalIdx >= arrivalTimes.length)
+							arrivalIdx = 0;
+						toWrite = genSingleJobInfo(batchQueueIdx, jobIdx, "queue" + (batchQueueIdx), job, lastArrivalTime  + arrivalTimes[arrivalIdx++],
+								Globals.SCALE_UP_BATCH_JOB, Globals.SCALE_BATCH_DURATION, false, cpuErr, gpuErr);
+					}
+					Output.writeln(toWrite, true, file);
+				} else {
+					jobIter2 = jobs.iterator();
+					i--;
+					startTime = lastArrivalTime;
+				}
+				jobIdx++;
+			}
+	}
 
 	private static void customizeJobs(int numBatchQueues, int numBatchJobs, Queue<BaseJob> jobs) {
 		stageIter = 0;
@@ -286,7 +346,7 @@ public class GenInput {
 				double gpuErr = 0;
 				if (Globals.jobData.cpuErrs!=null){
 					cpuErr = Globals.jobData.cpuErrs[jobIdx %Globals.jobData.cpuErrs.length];
-					gpuErr = Globals.jobData.cpuErrs[Globals.jobData.cpuErrs.length - (jobIdx % Globals.jobData.cpuErrs.length) - 1];
+					gpuErr = Globals.jobData.gpuErrs[jobIdx %Globals.jobData.gpuErrs.length];
 				}
 				lastArrivalTime = startTime + job.arrivalTime;
 				if (!Globals.GEN_JOB_ARRIVAL)

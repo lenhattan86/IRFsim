@@ -6,7 +6,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 
 import cluster.datastructures.BaseJob;
 import cluster.datastructures.InterchangableResourceDemand;
@@ -22,7 +21,6 @@ import queue.schedulers.DRFScheduler;
 import queue.schedulers.EqualShareScheduler;
 import queue.schedulers.AlloXScheduler;
 import queue.schedulers.PricingScheduler;
-import queue.schedulers.SJFScheduler;
 import queue.schedulers.SRPTScheduler;
 import queue.schedulers.Scheduler;
 
@@ -63,20 +61,23 @@ public class QueueScheduler {
 		}
 	}
 
-	public void schedule() {
+	public long schedule() {
+		long currSchedulingTime = 0;
 		// compute how much share each queue should get
 		long startTime = System.nanoTime();
 		boolean coninueSchedule = true;
-		if (Globals.EnableProfiling) {
+		if (Globals.EnableProfiling()) {
 			coninueSchedule = scheduleProfilingJobs();
 		}
 		profilingTime = profilingTime + System.nanoTime() - startTime;
 		if (coninueSchedule) {
 			startTime = System.nanoTime();
 			scheduler.computeResShare();
-			schedulingTime = schedulingTime + System.nanoTime() - startTime;
+			currSchedulingTime = System.nanoTime() - startTime;
+			schedulingTime = schedulingTime + currSchedulingTime;
 //			System.out.println(" SCHEDULE AT " + Simulator.CURRENT_TIME);
 		}
+		return currSchedulingTime;
 	}
 
 	public boolean  scheduleProfilingJobs() {
@@ -263,6 +264,7 @@ public class QueueScheduler {
 						unallocJob.jobStartRunningTime = Simulator.CURRENT_TIME;
 					}
 					q.addRunningJob(unallocJob);
+					remainingRes = Resources.subtract(computedShares, allocRes);
 				} else {
 					isResAvail = false;
 					jobAvail = false;

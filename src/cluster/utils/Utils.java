@@ -360,6 +360,16 @@ public class Utils {
   	return res;
   }
   
+  public static int maxArray(int[] values){
+  	int n = values.length;
+  	int res = Integer.MIN_VALUE;
+  	for (int i=0; i<n; i++){
+  		if(res < values[i])
+  			res = values[i];
+  	}
+  	return res;
+  }
+  
 //  public static void main(String[] args) {
 //		double[] c = new double[] { 1, 4, 0, 7, 0, 0, 8, 6, 0, 4 }; 
 //		double[][] A = new double[][] { 

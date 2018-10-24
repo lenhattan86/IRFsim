@@ -119,6 +119,7 @@ public class EqualShareScheduler implements Scheduler {
 					qMin = q;
 				}
 			}
+			// if no jobs left
 			if (qMin==null)
 				break;
 		// allocate the job for minIdx
@@ -127,7 +128,8 @@ public class EqualShareScheduler implements Scheduler {
 			Resource demand = unallocJob.getDemand().getGpuDemand();
 			Resource remain = QueueScheduler.allocateResToQueue(qMin, Resources.sum(demand, qMin.getResourceUsage()).resources, false);
 			Resource resAvail = Simulator.cluster.getClusterResAvail();
-			// TODO: [bug] all GPU are allocated but the log says different. 
+			if (Simulator.CURRENT_TIME > 31)
+				DEBUG = false;
 			if (remain.resource(1)>=0.1){
 				isResAvail = false;
 //				QueueScheduler.allocateResToQueue(qMin, Resources.sum(demand, qMin.getResourceUsage()).resources, false);

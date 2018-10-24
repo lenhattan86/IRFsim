@@ -17,6 +17,7 @@ import cluster.schedulers.QueueScheduler;
 import cluster.simulator.Simulator;
 import cluster.simulator.Main.Globals;
 import cluster.simulator.Main.Globals.JobScheduling;
+import cluster.simulator.Main.Globals.Method;
 import cluster.utils.Output;
 import cluster.utils.Utils;
 
@@ -51,7 +52,8 @@ public class DRFScheduler implements Scheduler {
 			}
 		else if (Globals.JOB_SCHEDULER.equals(JobScheduling.SJF)){
 			for (JobQueue q : runningQueues) {
-				Collections.sort((List<BaseJob>) q.getQueuedUpJobs(), new JobLengthComparator(2));
+//				Collections.sort((List<BaseJob>) q.getQueuedUpJobs(), new JobLengthComparator(2));
+				Collections.sort((List<BaseJob>) q.getQueuedUpJobs(), new JobLengthComparator(0));
 			}
 		}
 		
@@ -59,49 +61,6 @@ public class DRFScheduler implements Scheduler {
 		onlineDRFShare(clusterTotCapacity, Simulator.QUEUE_LIST.getRunningQueues()); 
 	}
 	
-	public static void drf(Resource resCapacity, List<JobQueue> runningQueues) {
-    List<JobQueue> activeQueues = new ArrayList<JobQueue>();
-    for (JobQueue queue : runningQueues) {
-      if (queue.hasRunningJobs() && queue.getDemand()!=null) {
-        activeQueues.add(queue);
-      }
-    }
-    if (activeQueues.isEmpty()) return;
-    
-    int n = activeQueues.size();
-    double[][] demands = new double[n][3];
-    double[] dorminantRate = new double[3]; 
-    for(int i=0; i<n; i++){    	
-    	JobQueue q = activeQueues.get(i);
-    	InterchangableResourceDemand demand = q.getDemand();
-      if(q.getBeta()>=1){
-      	demands[i][0] = 0; //Prefer GPU.
-      	demands[i][1] = demand.getGpuDemand().resource(1)/resCapacity.resource(1); //Prefer GPU.
-      	demands[i][2] = demand.getGpuDemand().resource(2)/resCapacity.resource(2);
-      } else {
-      	demands[i][0] = demand.getCpuDemand().resource(0)/resCapacity.resource(0);
-      	demands[i][1] = 0; //prefer CPU.
-      	demands[i][2] = demand.getCpuDemand().resource(2)/resCapacity.resource(2);
-      }
-      
-    	int iMax = Utils.idxOfMax(demands[i]);
-    	double maxDemand = demands[i][iMax];
-    	for(int j=0; j<3; j++){
-    		dorminantRate[j]+=demands[i][j]/maxDemand;
-    	}
-    }
-    double dorminantShare = dorminantRate[Utils.idxOfMax(dorminantRate)];
-    // step 2: allocate the resources.
-    for (int i = 0; i < n; i++) {
-      JobQueue q = activeQueues.get(i);
-      double dorminantDemand = Utils.max(demands[i]);
-      double shares[] = {
-          resCapacity.resource(0)/dorminantShare*demands[i][0]/dorminantDemand,
-          resCapacity.resource(1)/dorminantShare*demands[i][1]/dorminantDemand,
-          resCapacity.resource(2)/dorminantShare*demands[i][2]/dorminantDemand};
-      QueueScheduler.allocateResToQueue(q, shares, false);
-    }
-  }
 	
 	public static void onlineDRFShare(Resource resCapacity, List<JobQueue> runningQueues) {
 		// init
@@ -136,9 +95,13 @@ public class DRFScheduler implements Scheduler {
 			}
 
 			int taskId = unallocJob.getCommingTaskId();
-//		  InterchangableResourceDemand demand = unallocJob.rsrcDemands(taskId); // time consuming?
-		  InterchangableResourceDemand demand = unallocJob.getReportDemand();
-		  Resource allocRes = demand.isCpuJob()?demand.getCpuDemand():demand.getGpuDemand();
+		  InterchangableResourceDemand demand = unallocJob.rsrcDemands(taskId); // time consuming?
+		  InterchangableResourceDemand reportDemand = unallocJob.getReportDemand();
+		  
+		  Resource allocRes = reportDemand.isCpuJob()?reportDemand.getCpuDemand():reportDemand.getGpuDemand();
+		  if (Globals.METHOD.equals(Method.DRFFIFO)){
+		  	allocRes = reportDemand.getGpuDemand();
+			}
 			// Like Yarn, assign one single container for the task
 			// step 3: if fit, C+D_i <= R, allocate
 			Resource temp = Resources.sumRound(consumedRes, allocRes);
@@ -147,7 +110,10 @@ public class DRFScheduler implements Scheduler {
 				consumedRes = temp;
 				q.setRsrcQuota(Resources.sum(q.getRsrcQuota(), q.nextTaskRes()));
 				
-				double duration = demand.isCpuJob()?demand.cpuCompl:demand.gpuCompl;
+				double duration = reportDemand.isCpuJob()?demand.cpuCompl:demand.gpuCompl;
+				if (Globals.METHOD.equals(Method.DRFFIFO)){
+					duration = demand.gpuCompl;
+				}
 				
 				boolean assigned = Simulator.cluster.assignTask(unallocJob.dagId, taskId,
 						duration, allocRes);

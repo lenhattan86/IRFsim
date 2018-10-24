@@ -1,17 +1,17 @@
 addpath('matlab_func');
 common_settings;
-is_printed = 1;
+% is_printed = 1;
 %%
 barWidth = 0.5;
-queue_num = 20;
-cluster_size=10;
+queue_num = 10;
+cluster_size=20;
 figureSize = figSizeThreeFourth;
 plots  = [true false];
 
 overheads = 0.0:0.01:0.05;
-files = {'DRFFIFO','DRF', 'ES',  'AlloX'};
-methods = {'DRFF', strDRF, strES,  strAlloX};
-DRFFIFOId = 1; ESId = 2; AlloXId = 4;
+files = {'DRFFIFO','DRF', 'ES','DRFExt',  'AlloX','SRPT'};
+methods = {'DRFF', strDRFSJF, strES, strDRFExt,  strAlloX, strSRPT};
+DRFFIFOId = 1; ESId = 3; AlloXId = 5;
 methodColors = {colorES; colorDRF; colorProposed};
 
 %% load data
@@ -41,7 +41,7 @@ if plots(1)
    xLabel='profiling overheads %';
    yLabel='improvement vs. DRFF (%)';
    legendStr=methods;    
-%    ylim([0 max(yValues)]);
+   ylim([0 max(yValues)]);
     xlim([0 15]);
    set (gcf, 'Units', 'Inches', 'Position', figureSize, 'PaperUnits', 'inches', 'PaperPosition', figureSize);
 %     xlabel(xLabel,'FontSize',fontAxis);
@@ -49,6 +49,29 @@ if plots(1)
    xlabel(xLabel,'FontSize', fontAxis);   
    fileNames{figIdx} = 'analysis_overhead';
 end
+
+%%
+if plots(2)    
+   figIdx=figIdx +1;         
+   figures{figIdx} = figure;
+   scrsz = get(groot, 'ScreenSize');       
+    
+    yValues = resVals';
+    plot(overheads*100*(3), yValues , 'LineWidth', lineWidth);
+    
+   xLabel='profiling overheads %';
+   yLabel='improvement vs. DRFF (%)';
+   legendStr=methods;    
+%    ylim([0 max(yValues)]);
+   xlim([0 15]);
+   legend(methods, 'Location','northeastoutside','FontSize', fontLegend);
+   set (gcf, 'Units', 'Inches', 'Position', figureSize, 'PaperUnits', 'inches', 'PaperPosition', figureSize);
+%     xlabel(xLabel,'FontSize',fontAxis);
+   ylabel(yLabel,'FontSize', fontAxis);    
+   xlabel(xLabel,'FontSize', fontAxis);   
+   fileNames{figIdx} = 'analysis_overhead_ext';
+end
+
 
 %%
 if~is_printed

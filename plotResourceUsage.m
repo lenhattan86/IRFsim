@@ -3,13 +3,13 @@ addpath('matlab_func');
 common_settings;
 is_printed = false;
 
-num_batch_queues = 4;
+num_batch_queues = 10;
 num_interactive_queue = 0;
 num_queues = num_batch_queues + num_interactive_queue;
-START_TIME = 0; END_TIME = 20000;  STEP_TIME = 1;
-cluster_size = 4;
+START_TIME = 0; END_TIME = 50000;  STEP_TIME = 1;
+cluster_size = 20;
 
-CPUCap = cluster_size * 40;
+CPUCap = cluster_size * 32;
 GPUCap = cluster_size;
 MemCap = cluster_size* 128;
 
@@ -22,6 +22,7 @@ enableSeparateLegend = false;
 scale_down_mem = 1;
 
 % fig_path='../IRF/figs/';
+version = '_c1';
 
 %%
 result_folder= '';
@@ -52,20 +53,23 @@ for i=1:num_batch_queues
 end
 %%
 % extraStr = '';
-extraStr = ['_' int2str(num_batch_queues) '_' int2str(cluster_size) '_debug'];
+extraStr = ['_' int2str(num_batch_queues) '_' int2str(cluster_size) version];
+% extraStr = ['_' int2str(num_batch_queues) '_' int2str(cluster_size) '_debug'];
 % extraStr = ['_' int2str(num_batch_queues) '_' int2str(cluster_size) '_c' int2str(cluster_size)];
 
 %%
 % prefixes = {'DRF', 'ES', 'DRFExt', 'AlloX', 'SJF'};
-% prefixes = {'FS','SRPT'};
-% prefixes = {'DRFFIFO'};
-prefixes = {'DRF'};
+% prefixes = {'DRFFIFO','AlloX', 'SRPT'};
+% prefixes = {'DRFFIFO', 'DRF', 'DRFExt','ES','AlloX', 'SRPT'};
+% prefixes = {'DRFF'};
 % prefixes = {'DRF','AlloX'};
 % prefixes = {'DRFExt','SJF'};
+prefixes = {'DRF','ES', 'AlloX','SRPT'};
+
 for iFile=1:length(prefixes)
   if plots(1)
      logFile = [ logfolder prefixes{iFile} '-output' extraStr  '.csv'];
-     [queueNames, res1, res2, res3, fairScores, flag] = importResUsageLog(logFile);
+     [queueNames, res1, res2, res3, fairScores, nJobs, nQueuedJobs, flag] = importResUsageLog(logFile);
      if (flag)
         figure;
         subplot(3,1,1);   
@@ -165,7 +169,7 @@ end
 %    pause(30);
 %    close all;
 % end
-
+version
 return;
 %%
 extra='_bad';

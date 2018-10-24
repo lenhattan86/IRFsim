@@ -3,7 +3,7 @@ common_settings;
 % is_printed = 1;
 %%
 barWidth = 0.5;
-queue_num = 20;
+queue_num = 10;
 figureSize = figSizeThreeFourth;
 plots  = [true false];
 methods = {strDRFFIFO, strDRF,  strES, strAlloX, strSRPT};
@@ -101,14 +101,19 @@ if plots(2)
     fileNames{figIdx} = 'analysis_load';    
 end
 
-return;
+%%
+if~is_printed
+    return;
+else
+   pause(1)  
+end
 %%
 extra='';
 for i=1:length(fileNames)
     fileName = fileNames{i};
     epsFile = [ LOCAL_FIG fileName '.eps'];
     print (figures{i}, '-depsc', epsFile);    
-    pdfFile = [ fig_path fileName '.pdf'];
+    pdfFile = [ fig_path fileName '.pdf']
     cmd = sprintf(PS_CMD_FORMAT, epsFile, pdfFile);
     status = system(cmd);
 end

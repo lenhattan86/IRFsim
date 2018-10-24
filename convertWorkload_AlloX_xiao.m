@@ -1,11 +1,10 @@
 clear; close all; clc;
-nUsers = 10;
-% beta= [0.4 0.8 1.2 4 16];
-beta = [12 40 40 96 512]/32;  % 32 cores per node vs 1 GPU 
+nUsers = 20;
+% beta = [33 40 42 44 46 32*5 32*6 32*7 32*8 32*10]/32;  % 32 cores per node vs 1 GPU 
+beta = [33 40 42 44 46 32*5 32*6 32*7 32*8 32*15]/32;  % 32 cores per node vs 1 GPU 
 std_coeff = [1/6 1/3 1 1.5];
-NJobs = 50;
+NJobs = 100;
 numOfJobs = nUsers*NJobs;
-
 
 google_path = '/home/tanle/projects/ClusterData2011_2/';
 JOB_FILE  = [google_path 'jobInfo.mat'];
@@ -56,7 +55,26 @@ for iJob=1:length(jobSet(:,1))
     end     
 end
 
-arrival_order = sort(arrival_set);
+USE_TRACE = false;
+if USE_TRACE
+    arrival_order = sort(arrival_set);
+else
+%     pd_normal = makedist('Normal','mu', 600,'sigma',500);
+%     arrival_dist = truncate(pd_normal,0, 800);
+%     arrival_order =  random(arrival_dist,1, numOfJobs);
+%     arrival_order = sort(arrival_order); % if we do not sort them, it is bad for DRFE.
+
+%     pd_normal = makedist('Normal','mu', 1000,'sigma',700);
+%     arrival_dist = truncate(pd_normal,0,1500);
+%     arrival_order =  random(arrival_dist,1, numOfJobs);
+%     arrival_order = sort(arrival_order); % if we do not sort them, it is bad for DRFE.
+
+    pd_normal = makedist('Normal','mu', 500,'sigma',400);
+    arrival_dist = truncate(pd_normal,0, 750);
+    arrival_order =  random(arrival_dist,1, numOfJobs);
+    arrival_order = sort(arrival_order); % if we do not sort them, it is bad for DRFE.
+end
+
 
 Folder = 'input/';
 outputFile = [Folder 'job_google.txt'];
@@ -89,10 +107,10 @@ large_cpu_time = zeros(1,numOfJobs);
 large_gpu_time = zeros(1,numOfJobs);
 beta_mat = zeros(nUsers,NJobs);
 for i = 1: nUsers
-    beta_mean = beta(ceil(i/4));
+    beta_mean = beta(ceil(i/2));
     beta_std = beta_mean*std_coeff(mod(i-1,4)+1);
     pd = makedist('Normal','mu',beta_mean,'sigma',beta_std);
-    t = truncate(pd,0.1,60);  
+    t = truncate(pd,0.7,60); % don't use too small betas that favors DRF* %% IMPORTANT parameters
     beta_mat(i,:) = random(t,[1 NJobs]);
 end
 
@@ -101,7 +119,7 @@ end
 for jobIdx = 1 : numOfJobs    
     queue_id = 1 + mod(jobIdx-1,nUsers);  %will -1 later
     
-    if queue_id <11
+    if queue_id <=nUsers/2
         cpu_time = random(small_job);
     else
         cpu_time = random(large_job);   
@@ -119,7 +137,12 @@ for jobIdx = 1 : numOfJobs
 %         beta_job = random(t);  
 %         gpu_time = min(400,cpu_time/beta_job);
     beta_job = beta_mat(ceil(jobIdx/NJobs),mod(jobIdx-1,NJobs)+1);
-     gpu_time = max(1,min(400,cpu_time/beta_job));       
+     gpu_time = max(1,min(400,cpu_time/beta_job));    
+     
+     if (beta_job < 1) % this makes ES perform worse %% IMPORTANT parameters
+         gpu_time = gpu_time / 1.7;
+         cpu_time = cpu_time / 1.7;
+     end
 
     cpu_time_array(queue_id,fix((jobIdx-1)/nUsers)+1) = cpu_time;
     gpu_time_array(queue_id,fix((jobIdx-1)/nUsers)+1) = gpu_time;
@@ -147,5 +170,6 @@ for jobIdx = 1 : numOfJobs
     fprintf(fileID, strJob); 
 end
 fclose(fileID);
-outputFile
+outputFile;
+hist(arrival_order)
 return;

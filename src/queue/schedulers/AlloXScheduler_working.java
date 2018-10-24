@@ -12,7 +12,6 @@ import java.util.Queue;
 
 import cluster.datastructures.BaseJob;
 import cluster.datastructures.InterchangableResourceDemand;
-import cluster.datastructures.JobArrivalComparator;
 import cluster.datastructures.JobQueue;
 import cluster.datastructures.QueueComparator;
 import cluster.datastructures.Resource;
@@ -23,7 +22,7 @@ import cluster.simulator.Main.Globals;
 import cluster.utils.HungarianAlgorithm;
 import cluster.utils.Output;
 
-public class AlloXScheduler2 implements Scheduler {
+public class AlloXScheduler_working implements Scheduler {
 	private String schedulePolicy;
 
 	static Resource clusterTotCapacity = null;
@@ -33,11 +32,11 @@ public class AlloXScheduler2 implements Scheduler {
 	private static double alphaFairness = 1;
 	static boolean DEBUG = false;
 	
-	public AlloXScheduler2(double alpha) {
-		schedulePolicy = "AlloX";
+	public AlloXScheduler_working(double alpha) {
 		clusterTotCapacity = Simulator.cluster.getClusterMaxResAlloc();
 		alphaFairness = Globals.alpha;
 		numberOfNodes = (int) (Globals.MACHINE_MAX_GPU + (Globals.MACHINE_MAX_CPU/Globals.CPU_PER_NODE) );
+		Output.writeln("", false, "q.log");
 	}
 
 	@Override
@@ -112,25 +111,10 @@ public class AlloXScheduler2 implements Scheduler {
 			availableMachines.removeAll(busyMachines);
 		}
 			
-//		System.out.println("[INFO] available machines " + availableMachines + " at " + Simulator.CURRENT_TIME);
-		boolean isReschedule = true;
-		double alpha = alphaFairness;
-		while (isReschedule){
-			Resource avail = Simulator.cluster.getClusterResAvail();
-			isReschedule = isResourceAvailable();
-			List<JobQueue> pickUsers = compute_fs(availableMachines, clusterTotCapacity, activeQueues, alpha);
-			List<JobQueue> usersWantResources = new LinkedList<JobQueue>();
-			// TODO Main bottleneck
-			boolean isAllocatable = allocate_fs(availableMachines, usersWantResources);
-			if (alpha > 1 || !isAllocatable)
-				break;
-			
-			else {				
-				alpha = alpha * 2;
-			}
-			
+		if (isResourceAvailable()) {
+			List<JobQueue> pickUsers = compute_fs(availableMachines, clusterTotCapacity, activeQueues, 1);
+			allocate_fs(availableMachines);
 		}
-		
 	}
 	
 //	boolean isReschedule = false;
@@ -147,17 +131,29 @@ public class AlloXScheduler2 implements Scheduler {
 	
 	private boolean isResourceAvailable(){
 		clusterAvailRes = Simulator.cluster.getClusterResAvail();
-		if (clusterAvailRes.resource(0)> 0 || clusterAvailRes.resource(1)> 0)
+//		if (clusterAvailRes.resource(0)> 0 || clusterAvailRes.resource(1)> 0)
+		if (clusterAvailRes.resource(1)> 0)
 			return true;
 		return false;
 	}
 	
 	private static List<JobQueue> compute_fs(List<Integer> availableMachines, Resource clusterTotCapacity, List<JobQueue>activeQueues, double alphaFairness) {
 		// Globals.MACHINE_MAX_GPU first nodes are GPUs, later are CPUs
+		
+		Map<Task, Double> runningTasks = Simulator.cluster.getCurrentRunningTasks(); 
+		List<Integer> busyMachines = new LinkedList<Integer>();
+		for (Map.Entry<Task, Double> entry : runningTasks.entrySet()) {
+			Task t = entry.getKey();
+			BaseJob job = Simulator.getDag(t.dagId);
+			busyMachines.add(job.machineId);
+		}
+		
 			Map<Integer, Double> availableTimes = Simulator.cluster.availableTimes;
-			for (int iM=numberOfNodes-1; iM>=0; iM--) {
+			for (Integer iM=numberOfNodes-1; iM>=0; iM--) {
+				if (!busyMachines.contains(iM)){
 					Simulator.cluster.scheduledJobs.put(iM, new LinkedList<BaseJob>());
 					availableTimes.put(iM, Simulator.CURRENT_TIME);
+				} 
 			}
 			
 			// step 1: Get current time and a time array where each element represents the time when 
@@ -165,23 +161,23 @@ public class AlloXScheduler2 implements Scheduler {
 			// 
 			// no definition yet, assume AvailTime[i] = max(current_time, time when current job will be finished on i) for all
 			// i in machineCpuQueues and machineGpuQueues
-			Map<Task, Double> runningTasks = Simulator.cluster.getCurrentRunningTasks(); 
-
-			for (Map.Entry<Task, Double> entry : runningTasks.entrySet()) {
-				Task t = entry.getKey();
-				BaseJob job = Simulator.getDag(t.dagId);
-				int machineId = job.machineId;
-				InterchangableResourceDemand reportDemand = job.getReportDemand();
-				InterchangableResourceDemand demand = job.getReportDemand();
-				
-				if(machineId < Globals.MACHINE_MAX_GPU){
-					double err = reportDemand.gpuCompl -demand.gpuCompl;  
-					availableTimes.put(machineId, Math.max(0, entry.getValue()-err));
-				} else {
-					double err = reportDemand.cpuCompl -demand.cpuCompl;
-					availableTimes.put(machineId, Math.max(0, entry.getValue()-err));
-				}
-			}
+			
+//			Map<Task, Double> runningTasks = Simulator.cluster.getCurrentRunningTasks(); 
+//			for (Map.Entry<Task, Double> entry : runningTasks.entrySet()) {
+//				Task t = entry.getKey();
+//				BaseJob job = Simulator.getDag(t.dagId);
+//				int machineId = job.machineId;
+//				InterchangableResourceDemand reportDemand = job.getReportDemand();
+//				InterchangableResourceDemand demand = job.getReportDemand();
+//				
+//				if(machineId < Globals.MACHINE_MAX_GPU){
+//					double err = reportDemand.gpuCompl -demand.gpuCompl;  
+//					availableTimes.put(machineId, Math.max(0, entry.getValue()-err));
+//				} else {
+//					double err = reportDemand.cpuCompl -demand.cpuCompl;
+//					availableTimes.put(machineId, Math.max(0, entry.getValue()-err));
+//				}
+//			}
 			
 			for (int machine: availableTimes.keySet()){
 				double aTime = Math.max(availableTimes.get(machine), Simulator.CURRENT_TIME);
@@ -246,12 +242,81 @@ public class AlloXScheduler2 implements Scheduler {
 			
 			// cares about the available nodes
 			
+		/*	long startTime1 = System.nanoTime();
+			int pos_machine = numOfJobs*numberOfNodes;
+			int matrix_size = numOfJobs*numberOfNodes*numOfJobs;
+			double[] c = new double[matrix_size];
+			double[] X0 = new double[matrix_size];
+			double[][] A = new double[pos_machine][matrix_size];
+			double[] b = new double[pos_machine];
+			double[][] Aeq = new double[numOfJobs][matrix_size];
+			double[] beq = new double[numOfJobs];
+			double[] lb = new double[matrix_size];
+			double[] ub = new double[matrix_size];
+			int[] sols = new int[pos_machine];
+			double[] temp_sol = new double[matrix_size];
+			// objective coefficient
+			for (int i=0; i < numOfJobs; i++) {
+				for (int j=0; j < pos_machine; j++ ) {
+					c[i*pos_machine + j ] = Q[j][i];
+					lb[i*pos_machine + j] = 0;
+					ub[i*pos_machine + j] = 1;
+				}				
+			}	
+			// each pos_machine can have at most 1 job
+			for (int i=0; i<pos_machine; i++) {
+				b[i] = 1;
+				sols[i] = -1;
+				for (int j=0; j <numOfJobs; j++) {
+					A[i][i+pos_machine*j] = 1;
+				}				
+			} 
 			
+			// each job must be scheduled
+			for (int i=0; i<numOfJobs; i++) {
+				beq[i] = 1;
+				for (int j=0; j<pos_machine; j++) {
+					Aeq[i][i*pos_machine+j] = 1;					
+				}					
+			}
+			double[] temp;
+			Object results;
+						
+			try {
+			//	options = Globals.MATLAB.feval("optimoptions", null, null,"linprog", markerCellStr);
+			//	results = Globals.MATLAB.feval("linprog", MatlabEngine.NULL_WRITER,  MatlabEngine.NULL_WRITER, c, A, b, Aeq, beq, lb, ub, X0, linprogoptions);
+				results = Globals.MATLAB.feval("linprog", null,  null, c, A, b, Aeq, beq, lb, ub, X0);
+				//				results = Globals.MATLAB.feval("intlinprog",  c, intcon, A, b, Aeq, beq, lb, ub);
+				temp = (double[]) results;
+			} catch (Exception e) {
+				e.printStackTrace();
+				return null;
+			}
+			
+			if (temp==null)
+				return null;
+			
+		//	for (int i = 0; i< sols.length; i++)
+		//		temp_sol[i] = (int) Math.round(temp[i]);
+			
+			//formatting
+			for (int i=0; i<numOfJobs; i++) {
+				for (int j=0; j <numOfJobs; j++) {
+					for (int k=0; k <numberOfNodes; k++) {
+						if (temp[i*pos_machine+j*numberOfNodes + k] > 0.0001) {
+							sols[j*numberOfNodes + k] = i;
+						}
+					}
+				}
+			}    */
+			
+			
+//			long start = System.currentTimeMillis();
 			int[] sols = new HungarianAlgorithm(Q).execute();
-			//TODO: how to decide CPU or GPU for a job as 2 configurations may be selected on either CPU or GPU. 
-			
-			// add to the scheduled jobs to the queues for scheduling later.
-			Collections.sort(availableMachines, Collections.reverseOrder());
+//			Output.writeln((Simulator.CURRENT_TIME + " availRes: " +Simulator.cluster.getClusterResAvail() + " : Q size " + Q.length + ", " + Q[0].length + " take " 
+//					 + (System.currentTimeMillis()-start) + " milliseconds"), true, "q.log");
+
+			 Collections.sort(availableMachines, Collections.reverseOrder());
 			for (Integer iM : availableMachines ){
 //			for (int iM=numberOfNodes-1; iM>=0; iM--){
 				for (int k=numOfJobs-1; k>=0; k--){
@@ -262,16 +327,17 @@ public class AlloXScheduler2 implements Scheduler {
 						boolean isGpu = iM < Globals.MACHINE_MAX_GPU;
 						double processingTime = isGpu?job.getReportDemand().gpuCompl:job.getReportDemand().cpuCompl;
 						double currentAvailTime = availableTimes.get(iM);
-						availableTimes.put(iM, currentAvailTime+processingTime);
+						availableTimes.put(iM, currentAvailTime + processingTime);
 					}
 				}
 			}
 			return queuesWithLowestFairness;
 		}
 	
-	private static boolean allocate_fs(List<Integer> availableMachines, List<JobQueue>usersWantResources ){
+	private static boolean allocate_fs(List<Integer> availableMachines){
 		if (availableMachines.isEmpty())
 			return false;
+		
 		Resource avail = Simulator.cluster.getClusterResAvail();
 		if (avail.resource(0)<1 && avail.resource(1)<1 )
 			return false;
@@ -282,7 +348,6 @@ public class AlloXScheduler2 implements Scheduler {
 			Queue<BaseJob> jobs = Simulator.cluster.scheduledJobs.get(iM);
 			BaseJob job = jobs.peek();
 			if (job != null) {
-				usersWantResources.add(job.getQueue());
 				isAllocable = true;
 			}
 		}
@@ -296,7 +361,6 @@ public class AlloXScheduler2 implements Scheduler {
 			if (job != null)
 				if (iM < Globals.MACHINE_MAX_GPU){
 					boolean res = QueueScheduler.allocateResToJob(job, false);
-//					System.out.println("[INFO] "+job.dagId + " starts on " + iM + " at " + Simulator.CURRENT_TIME);
 					if (!res)
 						Output.debugln(DEBUG,"[ERROR] cannot allocate resources to job "+job.dagId + " on " + iM);
 					else {
@@ -304,7 +368,7 @@ public class AlloXScheduler2 implements Scheduler {
 						job.onStart(clusterTotCapacity);
 						jobs.remove(job);
 						busyMachines.add(iM);
-						break;
+//						break;
 					}
 				} else {
 					boolean res = QueueScheduler.allocateResToJob(job, true);
@@ -316,7 +380,7 @@ public class AlloXScheduler2 implements Scheduler {
 						job.onStart(clusterTotCapacity);
 						jobs.remove(job);
 						busyMachines.add(iM);
-						break;
+//						break;
 					}
 				}
 		}

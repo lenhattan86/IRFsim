@@ -2,23 +2,30 @@ addpath('matlab_func');
 common_settings;
 %%
 barWidth = 0.5;
-queue_num = 20;
+queue_num = 10;
 cluster_size=20;
 GPU_CAP = 10;
 CPU_CAP = GPU_CAP*32;
 MEM_CAP = (GPU_CAP*2) * 64;
 figureSize = figSizeThreeFourth;
-plots  = [false, false, true];
+plots  = [false, true, false];
 methods = {strDRFFIFO, strDRF, strES, strDRFExt,  strAlloX, 'SRPT'};
 % files = {'DRF', 'ES', 'AlloX'};
 % speedups = [0.1, 0.5, 1.0]
 % alphas = [0.05 0.1 0.2 0.3 0.4];
-alphas = [0.05, 0.1, 0.2, 0.3, 0.4];
+% alphas = [0.05, 0.1, 0.2, 0.3, 0.4];
+% alphas = [0.1 0.5 1];
+% alphas = [0.1 0.3 0.5 0.7 1];
+alphas = 0.1:0.1:1;
 files = {'DRFFIFO','DRF', 'ES', 'DRFExt', 'AlloX', 'SRPT'};
+methods = {strDRFFIFO, strDRFSJF, strES, strDRFExt, strAlloX, strSRPT};
 DRFFId = 1; DRFId = 2; ESId = 3; DRFExtId = 4;  AlloXId = 5; SRPTId = 6;
+% vsMethods = [DRFFId, DRFId, ESId, DRFExtId, SRPTId];
+vsMethods = [ESId AlloXId SRPTId];
 methodColors = {colorES; colorDRF; colorProposed};
+AVG_BETA = 180;
 
-START_TIME = 0; END_TIME = 3000;  STEP_TIME = 1;
+START_TIME = 490; END_TIME = 510;  STEP_TIME = 1;
 start_time_step = START_TIME/STEP_TIME;
 max_time_step = END_TIME/STEP_TIME;
 startIdx = start_time_step*queue_num+1;
@@ -28,8 +35,8 @@ num_time_steps = max_time_step-start_time_step;
 
 for i=1:length(methods)
     for j=1:length(alphas)
-%         extraStr = ['_' int2str(queue_num) '_' int2str(cluster_size) '_a' sprintf('%1.2f',alphas(j))];
-        extraStr = ['_' int2str(queue_num) '_' int2str(cluster_size) '_a' num2str(alphas(j)) ];
+        extraStr = ['_' int2str(queue_num) '_' int2str(cluster_size) '_a' sprintf('%1.1f',alphas(j))];
+%         extraStr = ['_' int2str(queue_num) '_' int2str(cluster_size) '_a' num2str(alphas(j)) ];
         outputFile = [ output_folder files{i} '-output' extraStr  '.csv'];
         [JobIds{i,j}, startTimes{i,j}, endTimes{i,j}, durations{i,j}, queueNames{i,j}] = import_compl_time_real_job(outputFile);
         if(~isnan(durations{i,j}))
@@ -38,17 +45,19 @@ for i=1:length(methods)
         end
     end
 end
+resVals(SRPTId,:) = resVals(SRPTId,1);
 avgCmpltES = resVals(ESId,1);
 avgCmpltSRPT = resVals(SRPTId,1);
 
 % compute JFI
 for iFile=1:length(methods)  
-    for j=1:length(alphas)        
-        extraStr = ['_' int2str(queue_num) '_' int2str(cluster_size) '_a' num2str(alphas(j)) ];
+    for j=1:length(alphas)    
+        extraStr = ['_' int2str(queue_num) '_' int2str(cluster_size) '_a' sprintf('%1.1f',alphas(j))];
+%         extraStr = ['_' int2str(queue_num) '_' int2str(cluster_size) '_a' num2str(alphas(j)) ];
         logFile = [ log_folder files{iFile} '-output' extraStr  '.csv'];
         [temp, res1, res2, res3, fairScores, flag] = importResUsageLog(logFile);        
         
-        if (iFile == AlloXId)
+        if (iFile == AlloXId) || (iFile == SRPTId)
             resAll = zeros(1,queue_num*num_time_steps);
             temp = fairScores(startIdx:length(fairScores));
             if(length(resAll)>length(temp))
@@ -56,8 +65,11 @@ for iFile=1:length(methods)
             else
                resAll = temp(1:queue_num*num_time_steps);
             end
-            fairScoreUsers = reshape(resAll, queue_num, num_time_steps);
-            JFIs(iFile,j) = mean(  sum(fairScoreUsers).^2 / (queue_num*sum(fairScoreUsers.^2))  );       
+            fairScoreUsers = reshape(resAll, queue_num, num_time_steps);            
+            active_queue_nums = sum(fairScoreUsers>0);            
+            JFIs(iFile,j) = mean(  sum(fairScoreUsers).^2 ./ (active_queue_nums.*sum(fairScoreUsers.^2))  );       
+%             JFIs(iFile,j) = min(  sum(fairScoreUsers).^2 ./ (queue_num*sum(fairScoreUsers.^2))  ); 
+%                 JFIs(iFile,j) = max(  sum(fairScoreUsers).^2 ./ (queue_num*sum(fairScoreUsers.^2))  );
         elseif (iFile == ESId)
             resAll = zeros(1,queue_num*num_time_steps);
             temp = res2(startIdx:length(res2));
@@ -67,7 +79,36 @@ for iFile=1:length(methods)
                resAll = temp(1:queue_num*num_time_steps);
             end
             gpuUsage = reshape(resAll, queue_num, num_time_steps);
-            JFIs(iFile,j) = mean(sum(gpuUsage).^2 / (queue_num*sum(gpuUsage.^2))  );       
+            active_queue_nums = sum(gpuUsage>0);
+            JFIs(iFile,j) = mean(sum(gpuUsage).^2 ./ (active_queue_nums.*sum(gpuUsage.^2))  );       
+%             JFIs(iFile,j) = min(sum(gpuUsage).^2 ./ (queue_num*sum(gpuUsage.^2))  );       
+%               JFIs(iFile,j) = max(sum(gpuUsage).^2 ./ (queue_num*sum(gpuUsage.^2))  );     
+        elseif (iFile == ESId)
+            resAll = zeros(1,queue_num*num_time_steps);
+            temp = res2(startIdx:length(res2));
+            if(length(resAll)>length(temp))
+               resAll(1:length(temp)) = temp;
+            else
+               resAll = temp(1:queue_num*num_time_steps);
+            end
+            gpuUsage = reshape(resAll, queue_num, num_time_steps);
+            active_queue_nums = sum(gpuUsage>0);
+            JFIs(iFile,j) = mean(sum(gpuUsage).^2 ./ (active_queue_nums.*sum(gpuUsage.^2))  );       
+%             JFIs(iFile,j) = min(sum(gpuUsage).^2 ./ (queue_num*sum(gpuUsage.^2))  );       
+%               JFIs(iFile,j) = max(sum(gpuUsage).^2 ./ (active_queue_nums.*sum(gpuUsage.^2))  );       
+        elseif (iFile == DRFExtId)
+            resAll = zeros(1,queue_num*num_time_steps);
+            temp = res1(startIdx:length(res1)) + res2(startIdx:length(res2))*AVG_BETA;
+            if(length(resAll)>length(temp))
+               resAll(1:length(temp)) = temp;
+            else
+               resAll = temp(1:queue_num*num_time_steps);
+            end
+            usage = reshape(resAll, queue_num, num_time_steps);
+            active_queue_nums = sum(usage>0);
+%             JFIs(iFile,j) = mean(sum(usage).^2 ./ (active_queue_nums.*sum(usage.^2))  );       
+%             JFIs(iFile,j) = min(sum(usage).^2 ./ (queue_num*sum(usage.^2))  );       
+              JFIs(iFile,j) = max(sum(usage).^2 ./ (active_queue_nums.*sum(usage.^2))  );       
         else
             % DRF
             resAll = zeros(1,queue_num*num_time_steps);
@@ -79,7 +120,10 @@ for iFile=1:length(methods)
                resAll = temp(1:queue_num*num_time_steps);
             end
             dominantUsage = reshape(resAll, queue_num, num_time_steps);
-            JFIs(iFile,j) = mean(  sum(dominantUsage).^2 / (queue_num*sum(dominantUsage.^2))  );       
+            active_queue_nums = sum(dominantUsage>0);
+            JFIs(iFile,j) = mean(  sum(dominantUsage).^2 ./ (active_queue_nums.*sum(dominantUsage.^2))  );       
+%             JFIs(iFile,j) = min(  sum(dominantUsage).^2 ./ (active_queue_nums*sum(dominantUsage.^2))  );       
+%             JFIs(iFile,j) = max(  sum(dominantUsage).^2 ./ (active_queue_nums.*sum(dominantUsage.^2))  );   
         end        
     end
 end
@@ -104,6 +148,7 @@ if plots(1)
     ylabel(yLabel,'FontSize',fontAxis);    
     xlabel(xLabel,'FontSize',fontAxis);   
     fileNames{figIdx} = 'analysis_alpha';
+    legend(legendStr, 'Location','northeastoutside','FontSize', fontLegend);
     
 end
 
@@ -171,21 +216,44 @@ if plots(2)
 %     improvePercent = (resVals(ESId,:)./resVals(AlloXId,:) -1)*100;
 %     improvePercent = (resVals(ESId,:)./resVals(AlloXId,:))*100;
 %     plot(alphas, improvePercent, 'LineWidth', lineWidth);  
-    improvePercent = (resVals(AlloXId,:)./resVals(SRPTId,:)-1)*100;
-    plot(alphas, improvePercent, 'LineWidth', lineWidth);  
+    strLegends = {};
+    yMax = 0;
+    for i=1:length(vsMethods)
+        vsId = vsMethods(i);
+%         improvePercent = resVals(vsId,:)./resVals(AlloXId,:);
+%         improvePercent = ((resVals(vsId,:) - resVals(AlloXId,:))./resVals(vsId,:))*100;
+%         yVals = (resVals(AlloXId,:) - resVals(vsId,:))./resVals(vsId,:)*100;
+        yVals = resVals(vsId,:);
+        plot(alphas, yVals, 'LineWidth', lineWidth);
+        yMax = max(yMax, max(yVals));
+%         strLegends{i} = ['vs. ' methods{vsId}];
+        strLegends{i} = methods{vsId};
+    end    
+    
+%    strLegends = methods;
+%    for i=5:length(methods)                
+%         improvePercent = resVals(i,:);
+%         plot(alphas, improvePercent, 'LineWidth', lineWidth);        
+%    end
+%    set(gca, 'YScale', 'log');
+    
     hold off;
-    xLabel='fairness parameter \alpha';
-    yLabel=strPerfGap;
+    xLabel='fairness parameter (\alpha)';
+%     yLabel=strPerfGap;
+    yLabel=strAvgCmplt;
     legendStr=methods;        
-    xlim([0.05 1]);
-    ylim([0 30]);
+    xlim([0.1 1]);
+    ylim([0 yMax*1.2]);
+    grid on;
+%     ylim([0 30]);
+%     set (gcf, 'Units', 'Inches', 'Position', figureSize.*[1 1 1.2 1], 'PaperUnits', 'inches', 'PaperPosition', figureSize.*[1 1 1.2 1]);
+%     legend(strLegends,'Location', 'eastoutside', 'Orientation', 'vertical', 'FontSize',fontLegend);
     set (gcf, 'Units', 'Inches', 'Position', figureSize, 'PaperUnits', 'inches', 'PaperPosition', figureSize);
-    legend({'vs. SRPT'});
-    ylabel(yLabel,'FontSize',fontAxis);    
+    legend(strLegends,'Location', 'best', 'Orientation', 'vertical', 'FontSize',fontLegend);
+    ylabel(yLabel,'FontSize',fontAxis);
     xlabel(xLabel,'FontSize',fontAxis);   
     fileNames{figIdx} = 'fairness_alpha';
 end
-
 
 %% plot the trade-offs between fairness score and performance.
 if plots(3)    

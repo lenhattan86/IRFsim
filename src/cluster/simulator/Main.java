@@ -1,6 +1,7 @@
 package cluster.simulator;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Queue;
 import java.util.Scanner;
@@ -11,6 +12,7 @@ import java.util.logging.Logger;
 import cluster.data.JobData;
 import cluster.data.SessionData;
 import cluster.datastructures.BaseJob;
+import cluster.simulator.Main.Globals;
 import cluster.simulator.Main.Globals.JobScheduling;
 import cluster.simulator.Main.Globals.Method;
 import cluster.simulator.Main.Globals.Runmode;
@@ -27,10 +29,12 @@ public class Main {
 	}
 
 	public static class Globals {
-		
+		public static long  SIM_START = 0;
 		public final static boolean EnableMatlab = false;
 		public static boolean EnableProfiling = true;
+		public static boolean EnableGroupProfiling = true; // jobs are ready when all profiling jobs arriving at the same time finish.
 		public final static boolean EnablePreemption = true;
+		public static boolean EnableIncreaseAlpha = true;
 		public static int CPU_PROFILING_JOB1 = -100000; //-10000 -> 0
 		public static int CPU_PROFILING_JOB2 = CPU_PROFILING_JOB1*2;
 		public static int GPU_PROFILING_JOB1 = CPU_PROFILING_JOB1*3;
@@ -94,6 +98,8 @@ public class Main {
 				return Runmode.Analysis_capacity;
 			} else if (runMode.equals("Analysis_overhead")) {
 				return Runmode.Analysis_overhead;
+			} else if (runMode.equals("Experiment")) {
+				return Runmode.Experiment;
 			}
 			return null;
 		}
@@ -234,7 +240,7 @@ public class Main {
 		public static String User1Input = DataFolder + "/" + FileInput;
 		public static String User2Input = DataFolder + "/" + FileInput;
 
-		public static int numJobs = 200;
+		public static int[] numJobs = null;
 		public static int numQueues = 1;
 		public static int numbatchTask = 10000;
 
@@ -264,6 +270,10 @@ public class Main {
 		public static int PERIODIC_INTERVAL = 100;
 
 		public static String EXTRA = "";
+		
+		public static boolean EnableProfiling(){
+			return Globals.EnableProfiling && (!Globals.METHOD.equals(Globals.Method.DRFFIFO));
+		}
 
 		public static void setupParameters() {
 			
@@ -296,6 +306,11 @@ public class Main {
 				break;
 			case Experiment:
 				Globals.TRACE_FILE = "input/experiment_large_23p_verify.txt";
+//				Globals.TRACE_FILE = "input/experiment_large_23p_drffifo.txt";
+//				Globals.TRACE_FILE = "input/experiment_large_23p_drfext.txt";
+//				Globals.TRACE_FILE = "input/experiment_large_23p_es.txt";
+//				Globals.TRACE_FILE = "input/experiment_large_23p_allox.txt";
+//				Globals.TRACE_FILE = "input/experiment_large_23p_drf.txt";
 				break;
 			case Google_2:
 				Globals.TRACE_FILE = "input/job_google_2.txt"; 
@@ -336,11 +351,11 @@ public class Main {
 			// Globals.SCALE_UP_BATCH_JOB = Math.floor((double) 1 * scaleUp);
 		}
 	}
-
+	
 	public static void runSimulationScenario(boolean genInputOnly) {
 		Globals.SESSION_DATA = new SessionData();
 
-		long tStart = System.currentTimeMillis();
+		Globals.SIM_START = System.currentTimeMillis();
 		String extraName = "";
 		String extra = Globals.SCALE_UP_FACTOR > 1 ? "_" + Globals.SCALE_UP_FACTOR + "x" : "";
 
@@ -358,13 +373,13 @@ public class Main {
 				+ Globals.workload + Globals.EXTRA + ".txt";
 		
 		Globals.JOB_SCHEDULER = JobScheduling.SJF;
-		Globals.EnableProfiling = true;
+//		Globals.EnableProfiling = true;
 		if (Globals.METHOD.equals(Method.DRF)) {
 			Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.DRF;
 			Globals.FileOutput = "DRF-output" + extraName + ".csv";
 		} else if (Globals.METHOD.equals(Method.DRFFIFO)) {
 			Globals.JOB_SCHEDULER = JobScheduling.FIFO;
-			Globals.EnableProfiling = false;
+//			Globals.EnableProfiling = false;
 			Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.DRF;
 			Globals.FileOutput = "DRFFIFO-output" + extraName + ".csv";
 		} else if (Globals.METHOD.equals(Method.DRFExt)) {
@@ -396,8 +411,9 @@ public class Main {
 			if (Globals.USE_TRACE) {
 				Queue<BaseJob> tracedJobs = GenInput.readWorkloadTrace(Globals.TRACE_FILE);
 				GenInput.genInputFromWorkload(Globals.numQueues, Globals.numJobs, tracedJobs);
-			} else
-				GenInput.genInput(Globals.numQueues, Globals.numJobs);
+			} 
+//			else
+//				GenInput.genInput(Globals.numQueues, Globals.numJobs);
 		}
 
 		// print ALL parameters for the record
@@ -429,7 +445,7 @@ public class Main {
 		Simulator simulator = new Simulator();
 		simulator.simulateMultiQueues();
 		System.out.println("\nEnd simulation ...");
-		long duration = System.currentTimeMillis() - tStart;
+		long duration = System.currentTimeMillis() - Globals.SIM_START;
 		System.out.print("========== " + (duration / (1000)) + " seconds ==========\n");
 	}
 
@@ -517,7 +533,6 @@ public class Main {
 
 		System.out.println("Started Simulation....");
 		System.out.println("........" + now() + ".....");
-		System.out.println("........" + now() + ".....");
 
 		Globals.runmode = Runmode.MultipleRuns;
 		Globals.ENABLE_CPU_CMPT_ERROR = false;
@@ -527,10 +542,22 @@ public class Main {
 			String runmode = args[0];
 			Globals.runmode = Globals.getRunMode(runmode);
 			if (Globals.runmode==null){ 
-				System.err.println("This runmode is not available" + runmode);
+				System.err.println("This runmode is not available " + runmode);
+				ArrayList<Globals.Runmode> modes = new ArrayList<Globals.Runmode>();
+				modes.add(Runmode.Analysis_Alpha);
+				modes.add(Runmode.MultipleRuns);
+				modes.add(Runmode.Analysis_capacity);
+				modes.add(Runmode.Analysis_misest);
+				modes.add(Runmode.Analysis_overhead);
+				modes.add(Runmode.Experiment);
+				System.out.println(modes);
 				return;
 			} else {
 				Globals.EXTRA = "";
+			}
+			if (args.length > 1){
+				System.out.println("============"+args[1]+"==========");
+				Globals.EXTRA = "_" + args[1];
 			}
 		}
 		if (Globals.EXTRA.contains("debug")){
@@ -540,22 +567,30 @@ public class Main {
 		//////////////////// COMMON SETTINGS ////////////////////
 		Globals.IS_GEN= true;
 		Globals.USE_TRACE=true;
-		Globals.MACHINE_MAX_GPU = 20;
-		Globals.numQueues = 10;
-		Globals.numJobs = Globals.numQueues*50;
+		
+//		Globals.MACHINE_MAX_GPU = 100; Globals.numQueues = 20; Globals.numJobs = Globals.numQueues*100;Globals.alpha = 0.05;
+//		Globals.MACHINE_MAX_GPU = 20; Globals.numQueues = 10; Globals.numJobs = Globals.numQueues*1000;Globals.alpha = 0.1;
+//		Globals.MACHINE_MAX_GPU = 20; Globals.numQueues = 5; Globals.numJobs = Globals.numQueues*5000;Globals.alpha = 0.2;
+		// fairness:
+		Globals.MACHINE_MAX_GPU = 20; Globals.numQueues = 10; Globals.alpha = 0.1;
+		int numSmallJobs = 4000; int numLargeJobs = 50;
+		Globals.numJobs = new int[]{numSmallJobs, numSmallJobs, numSmallJobs, numSmallJobs, numSmallJobs,
+					numLargeJobs, numLargeJobs, numLargeJobs, numLargeJobs, numLargeJobs};
+		
 		double errStd = 0.1;
 		Globals.jobData = new JobData();
-		Globals.jobData.cpuErrs = Randomness.getNormalDistribution(Globals.numJobs , 0, errStd, -0.99, 0.99);
-		Globals.jobData.gpuErrs = Randomness.getNormalDistribution(Globals.numJobs , 0, errStd, -0.99, 0.99);
-		Globals.alpha = 0.05;
+		Globals.jobData.cpuErrs = Randomness.scaleErr(Globals.jobData.cpuErrs, errStd, -0.99, 0.99);
+		Globals.jobData.gpuErrs = Randomness.scaleErr(Globals.jobData.gpuErrs, errStd, -0.99, 0.99);
+		
 		Globals.workload = WorkLoadType.Google;
 		Globals.MEMORY_SCALE_DOWN = 1;
 		Globals.NUM_MACHINES = 1;
 		Globals.SIM_END_TIME = 20000.0;
 		
 		if (Globals.runmode.equals(Runmode.MultipleRuns)) {			
-//			Globals.Method[] methods = {Method.AlloX};
 			Globals.Method[] methods = {Method.DRFFIFO, Method.DRF, Method.ES,Method.DRFExt,Method.SRPT, Method.AlloX};
+//			Globals.Method[] methods = {Method.ES};
+//			Globals.Method[] methods = {Method.ES};
 			for (Globals.Method method : methods) {
 				Globals.METHOD = method;
 				Globals.setupParameters();
@@ -581,10 +616,10 @@ public class Main {
 			Globals.MACHINE_MAX_GPU = 2;
 			Globals.CPU_PER_NODE = 20;
 			Globals.numQueues = 2;
-			Globals.numJobs = Globals.numQueues*4;
+			Globals.numJobs = new int[]{4,4,4,4};
 			double errStdTemp = 0.0;
-			Globals.jobData.cpuErrs = Randomness.getNormalDistribution(Globals.numJobs, 0, errStdTemp, -0.99, 0.99);
-			Globals.jobData.gpuErrs = Randomness.getNormalDistribution(Globals.numJobs , 0, errStdTemp, -0.99, 0.99);
+//			Globals.jobData.cpuErrs = Randomness.getNormalDistribution(Globals.numJobs, 0, errStdTemp, -0.99, 0.99);
+//			Globals.jobData.gpuErrs = Randomness.getNormalDistribution(Globals.numJobs , 0, errStdTemp, -0.99, 0.99);
 
 			for (Globals.Method method : methods) {
 				Globals.METHOD = method;
@@ -594,11 +629,14 @@ public class Main {
 				System.out.println();
 			}
 		}  else if (Globals.runmode.equals(Runmode.Analysis_Alpha)) {
-			double alphas[] = {0.05, 0.1, 0.2, 0.3, 0.4, 0.6, 0.8, 1.0};
-//			double alphas[] = {0.05};
-//			Globals.Method[] methods = {Method.DRFFIFO, Method.DRF, Method.ES, Method.DRFExt, Method.SRPT, Method.AlloX};
-			Globals.Method[] methods = {Method.DRFFIFO, Method.DRF, Method.ES, Method.DRFExt, Method.SRPT};
-//			Globals.Method[] methods = {Method.AlloX};
+			double alphas[] = {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0};
+//			double alphas[] = {0.05, 0.2, 0.4, 0.6, 0.8, 1.0};
+			Globals.Method[] methods = {Method.DRFFIFO, Method.DRF, Method.ES, Method.DRFExt, Method.SRPT, Method.AlloX};
+//			Globals.Method[] methods = {Method.DRFFIFO, Method.DRF, Method.ES, Method.DRFExt, Method.SRPT};
+//			Globals.Method[] methods = {Method.AlloX};			
+			
+//			Globals.jobData.cpuErrs = Randomness.getNormalDistribution(Globals.numJobs , 0, 0, -0.99, 0.99);
+//			Globals.jobData.gpuErrs = Randomness.getNormalDistribution(Globals.numJobs , 0, 0, -0.99, 0.99);
 			
 			for (double alpha : alphas){
 				Globals.alpha = alpha;
@@ -615,9 +653,12 @@ public class Main {
 			}
 		} else if (Globals.runmode.equals(Runmode.Analysis_capacity)) {
 			int caps[] = {10, 11, 12, 13, 14, 15, 20, 25, 30};
-			Globals.workload = WorkLoadType.MayBeGood; Globals.numQueues = 20; Globals.numJobs = Globals.numQueues*50;
-			Globals.Method[] methods = {Method.DRFFIFO, Method.DRF, Method.ES, Method.AlloX, Method.SRPT};
-//			Globals.Method[] methods = {Method.DRFFIFO};
+			Globals.Method[] methods = {Method.DRFFIFO, Method.DRF, Method.ES, Method.DRFExt, Method.SRPT, Method.AlloX};
+//			Globals.Method[] methods = {Method.DRFFIFO, Method.DRF, Method.ES, Method.DRFExt, Method.SRPT};
+//			Globals.Method[] methods = {Method.AlloX};
+			
+//			Globals.jobData.cpuErrs = Randomness.getNormalDistribution(Globals.numJobs , 0, 0, -0.99, 0.99);
+//			Globals.jobData.gpuErrs = Randomness.getNormalDistribution(Globals.numJobs , 0, 0, -0.99, 0.99);
 			
 			for (int i=caps.length-1; i>=0; i--){
 				int cap = caps[i];
@@ -635,14 +676,12 @@ public class Main {
 		} else if (Globals.runmode.equals(Runmode.Analysis_misest)) {
 			// TODO: not done yet
 			double misEst[] = {0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6};
-//			double misEst[] = {0.0, 0.1};
-//			Globals.workload = WorkLoadType.Google; Globals.numQueues = 5; Globals.numJobs = Globals.numQueues*10;
-			Globals.workload = WorkLoadType.MayBeGood; Globals.numQueues = 20; Globals.numJobs = Globals.numQueues*50;
-			Globals.Method[] methods = {Method.DRFFIFO, Method.DRF, Method.ES, Method.AlloX, Method.SRPT};
-//			Globals.Method[] methods = {Method.AlloX};
+			Globals.Method[] methods = {Method.DRFFIFO, Method.DRF, Method.ES, Method.DRFExt, Method.SRPT, Method.AlloX};
 			Globals.jobData = new JobData();
-			double[] cpuErrs = Randomness.getNormalDistribution(Globals.numJobs , 0, 0.1, -0.99, 0.99);
-			double[] gpuErrs = Randomness.getNormalDistribution(Globals.numJobs , 0, 0.1, -0.99, 0.99);
+//			double[] cpuErrs = Randomness.getNormalDistribution(Globals.numJobs , 0, 0.1, -0.99, 0.99);
+//			double[] gpuErrs = Randomness.getNormalDistribution(Globals.numJobs , 0, 0.1, -0.99, 0.99);
+			double[] cpuErrs = Globals.jobData.cpuErrs;
+			double[] gpuErrs = Globals.jobData.gpuErrs;
 			for (double e : misEst){
 				Globals.IS_GEN = true;
 				// generate beta errors:
@@ -659,14 +698,17 @@ public class Main {
 			}
 		} else if (Globals.runmode.equals(Runmode.Analysis_overhead)) {
 			// TODO: not done yet
-			errStd = 0.1;
-			Globals.jobData = new JobData();
-			Globals.jobData.cpuErrs = Randomness.getNormalDistribution(Globals.numJobs , 0, errStd, -0.99, 0.99);
-			Globals.jobData.gpuErrs = Randomness.getNormalDistribution(Globals.numJobs , 0, errStd, -0.99, 0.99);
+//			errStd = 0.1;
+//			Globals.jobData = new JobData();
+//			Globals.jobData.cpuErrs = Randomness.getNormalDistribution(Globals.numJobs , 0, errStd, -0.99, 0.99);
+//			Globals.jobData.gpuErrs = Randomness.getNormalDistribution(Globals.numJobs , 0, errStd, -0.99, 0.99);
+//			Globals.jobData.cpuErrs = Randomness.getNormalDistribution(Globals.numJobs , 0, 0, -0.99, 0.99);
+//			Globals.jobData.gpuErrs = Randomness.getNormalDistribution(Globals.numJobs , 0, 0, -0.99, 0.99);
+			
 			double overheads[] = {0, 0.01, 0.02, 0.03, 0.04, 0.05};
-			Globals.workload = WorkLoadType.MayBeGood; Globals.numQueues = 20; Globals.numJobs = Globals.numQueues*50;
-//			Globals.Method[] methods = {Method.DRFFIFO, Method.DRF, Method.ES, Method.AlloX, Method.SRPT};
-			Globals.Method[] methods = {Method.DRFFIFO};
+			Globals.Method[] methods = {Method.DRFFIFO, Method.DRF, Method.ES, Method.DRFExt, Method.SRPT, Method.AlloX};
+//			Globals.Method[] methods = {Method.DRFFIFO, Method.DRF, Method.ES, Method.DRFExt, Method.SRPT};
+//			Globals.Method[] methods = {Method.AlloX};
 			
 			for (double overhead : overheads){
 				Globals.IS_GEN= true;
@@ -699,19 +741,15 @@ public class Main {
 			Globals.NUM_MACHINES = 1;
 			Globals.SIM_END_TIME = 20000.0;
 			Globals.Method[] methods = {Method.DRFFIFO, Method.DRF, Method.ES,Method.DRFExt, Method.SRPT, Method.AlloX};
-//			Globals.Method[] methods = {Method.AlloX};
-//			Globals.Method[] methods = {Method.DRF, Method.ES,Method.DRFExt, Method.SRPT}; Globals.CPU_PER_NODE = 25; 
-//			Globals.Method[] methods = {Method.DRFFIFO}; Globals.CPU_PER_NODE = 25; Globals.EnableProfiling = false;
-//			Globals.Method[] methods = {Method.AlloX}; Globals.CPU_PER_NODE = 20; 
 			Globals.MACHINE_MAX_GPU = 4;			
 			Globals.CPU_PER_NODE = 20; 
 			Globals.CPU_TO_GPU_RATIO = 2;
 			Globals.numQueues = 4;
-			Globals.numJobs = Globals.numQueues*10;
+			Globals.numJobs = new int[]{10, 10, 10, 10};
 			double errStdTemp = 0.0;
 			Globals.jobData = new JobData();
-			Globals.jobData.cpuErrs = Randomness.getNormalDistribution(Globals.numJobs , 0, errStdTemp, -1, 1);
-			Globals.jobData.gpuErrs = Randomness.getNormalDistribution(Globals.numJobs , 0, errStdTemp, -1, 1);
+//			Globals.jobData.cpuErrs = Randomness.getNormalDistribution(Globals.numJobs , 0, errStdTemp, -1, 1);
+//			Globals.jobData.gpuErrs = Randomness.getNormalDistribution(Globals.numJobs , 0, errStdTemp, -1, 1);
 
 			for (Globals.Method method : methods) {
 				Globals.METHOD = method;
@@ -720,27 +758,7 @@ public class Main {
 				Globals.IS_GEN = false;
 				System.out.println();
 			}
-		} else {
-			Globals.MEMORY_SCALE_DOWN = 1;
-			Globals.NUM_MACHINES = 1;
-			Globals.SIM_END_TIME = 20.0;
-			// Globals.METHOD = Method.ES;
-			// Globals.METHOD = Method.MaxMinMem;
-			Globals.METHOD = Method.SpeedUp;
-			// Globals.METHOD = Method.Pricing;
-			// Globals.METHOD = Method.DRF;
-			Globals.MACHINE_MAX_CPU = 384;
-			Globals.MACHINE_MAX_GPU = 12;
-			Globals.MACHINE_MAX_MEM = 1152;
-			Globals.workload = Globals.WorkLoadType.SIMPLE;
-			Globals.IS_GEN = true;
-			Globals.SCALE_UP_FACTOR = 1;
-			Globals.setupParameters();
-			Globals.numQueues = 3;
-			Globals.numJobs = 9000;
-			runSimulationScenario(false);
-			System.out.println();
-		}
+		} 
 
 		System.out.println("\n");
 		System.out.println("........FINISHED ./.");

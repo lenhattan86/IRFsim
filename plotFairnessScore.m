@@ -2,17 +2,17 @@ clear; close all;
 addpath('matlab_func');
 common_settings;
 figureSize = figSizeThreeFourth;
-plots=[1, 1, 0]; 
-num_batch_queues = 20;
+plots=[1, 0, 1]; 
+num_batch_queues = 10;
 num_interactive_queue = 0;
 num_queues = num_batch_queues + num_interactive_queue;
-START_TIME = 0; END_TIME = 3000;  STEP_TIME = 1;
-cluster_size = 10;
+START_TIME = 0; END_TIME = 25000;  STEP_TIME = 1;
+cluster_size = 20;
 
 enableSeparateLegend = false;
 scale_down_mem = 1;
-USER_SET = 1:3;
-USER_ID = 3;
+USER_SET = 1:10;
+USER_ID = 10;
 
 % fig_path='../IRF/figs/';
 
@@ -53,9 +53,9 @@ extraStr = ['_' int2str(num_batch_queues) '_' int2str(cluster_size)];
 % prefixes = {'DRF', 'ES', 'DRFExt', 'AlloX', 'SJF'};
 % prefixes = {'DRFFIFO','DRF','ES', 'DRFExt', 'FS', 'SRPT'};
 % methods = {'DRFF','DRF','ES', 'DRFExt', 'AlloX', 'SRPT'};
-prefixes = {'DRFFIFO', 'SRPT', 'AlloX'};
-methods = {'DRFF', 'SRPT', 'AlloX'};
-fairscoreLineStyles = {lineDRF, lineSRPT, lineAlloX};
+prefixes = {'DRFFIFO', 'ES', 'SRPT', 'AlloX'};
+methods = {'DRFF','ES', 'SRPT', 'AlloX'};
+fairscoreLineStyles = {lineDRF, lineES, lineSRPT, lineAlloX};
 JFIs = zeros(1,length(prefixes));
 FAIR_SCORES ={};
 for iFile=1:length(prefixes)
@@ -79,7 +79,7 @@ for iFile=1:length(prefixes)
         varVal = std(fairScoreUsers(1, :))/mean(fairScoreUsers(1, :))
         ylabel(strFairScore);
         xlabel(strTime);
-        xlim([0 max(timeInSeconds)]);
+        xlim([start_time_step max(timeInSeconds)]);
         ylim([0 MAX_SCORE]);
        legend(lengendStr,'Location','northeast','FontSize',fontLegend,'Orientation','horizontal');
 %         title(prefixes{iFile},'fontsize',fontLegend);

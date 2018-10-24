@@ -128,14 +128,29 @@ public class Simulator {
 		// Initialize output & log files
 		Output.write("", false, Globals.PathToResourceLog);
 	}
+	
+	public void printProgress(boolean isProgress){
+		double progress = Simulator.CURRENT_TIME / Globals.SIM_END_TIME * 100;
+		if(isProgress){
+			if (progress > 0 && progress % 1 == 0){
+				long duration = System.currentTimeMillis() - Globals.SIM_START;
+				long remain = duration*100/(long)progress;
+				System.out.println("progress: " + progress + "% --- " + remain/1000 + " seconds left.");
+			}
+		}
+		else
+			if (progress > 0 && progress % 10 == 0){
+				long duration = System.currentTimeMillis() - Globals.SIM_START;
+				long remain = duration*100/(long)progress;
+				System.out.println("progress: " + progress + "% --- " + remain/1000 + " seconds left.");
+			}
+	}
 
 	public void simulateMultiQueues() {
 		Simulator.CURRENT_TIME = 0;
+		boolean isProgress = false;
 		while (true) {
-			double progress = Simulator.CURRENT_TIME / Globals.SIM_END_TIME * 100;
-			if (progress % 10 == 0)
-				System.out.println("progress: " + progress + "%");
-
+			printProgress(isProgress);
 			// for (Simulator.CURRENT_TIME = 0; Simulator.CURRENT_TIME <=
 			// Globals.SIM_END_TIME; Simulator.CURRENT_TIME += Globals.STEP_TIME) {
 
@@ -168,7 +183,9 @@ public class Simulator {
 			} else {
 				Output.debugln(DEBUG,
 						"[Simulator]: START work conserving; clusterAvail:" + Simulator.cluster.getClusterResAvail());
-				queueSched.schedule();
+				long schedulingTime = queueSched.schedule();
+				if (schedulingTime > 1000000000)
+					isProgress = true;				
 				Output.debugln(DEBUG,
 						"[Simulator]: END work conserving; clusterAvail:" + Simulator.cluster.getClusterResAvail());
 			}
@@ -222,11 +239,13 @@ public class Simulator {
 			// Collections.sort((List<BaseJob>) queue.completedJobs, new
 			// JobIdComparator());
 			for (BaseJob dag : queue.completedJobs) {
-				avg += dag.getCompletionTime();
-				count++;
+				if (!dag.isProfiling){
+					avg += dag.getCompletionTime();
+					count++;
+				}
 			}
 			avg = avg / count;
-			System.out.println(queue.getQueueName() + " Jobs completed: " + queue.completedJobs.size() + " avg. cmplt of "
+			System.out.println(queue.getQueueName() + " avg. cmplt of "
 					+ count + " jobs : " + avg);
 		}
 		System.out.println("---------------------");
@@ -298,7 +317,7 @@ public class Simulator {
 
 	public static void writeResourceUsage() {
 		for (JobQueue q : QUEUE_LIST.getJobQueues()) {
-			String toWrite = q.getResourceUsageStr() + "," + q.L;
+			String toWrite = q.getResourceUsageStr() + "," + q.L+ "," + q.getActiveJobs().size() + "," + q.getQueuedUpProfilingJobs().size();
 			Output.writeln(toWrite, true, Globals.PathToResourceLog);
 			Output.debugln(DEBUG, q.getResourceUsageStr());
 		}
@@ -361,18 +380,19 @@ public class Simulator {
 		if (Globals.JOBS_ARRIVAL_POLICY == JobsArrivalPolicy.All) {
 			for (BaseJob newJob : runnableJobs) {
 				boolean isReady = newJob.isReady();
-				for (BaseJob jb : runnableJobs) {
-					if (jb.arrivalTime == newJob.arrivalTime) {
-						if (!jb.isReady()) {
-							isReady = false;
-							break;
+				if (Globals.EnableGroupProfiling)
+					for (BaseJob jb : runnableJobs) {
+						if (jb.arrivalTime == newJob.arrivalTime) {
+							if (!jb.isReady()) {
+								isReady = false;
+								break;
+							}
 						}
 					}
-				}
-				if (!Globals.EnableProfiling || isReady) {
+				if (!Globals.EnableProfiling() || isReady) {
 					newlyStartedJobs.add(newJob);
 					Simulator.QUEUE_LIST.addRunnalbleJob2Queue(newJob, newJob.getQueueName());
-					newJob.jobStartTime = Simulator.CURRENT_TIME;
+					newJob.jobStartTime = 0;
 					// Output.debugln(DEBUG, "Started job:" + newJob.dagId + " at time:" +
 					// Simulator.CURRENT_TIME);
 					existNewJob = true;
@@ -389,16 +409,17 @@ public class Simulator {
 			for (BaseJob dag : runnableJobs) {
 				if (dag.arrivalTime <= Simulator.CURRENT_TIME) {
 					boolean isReady = dag.isReady();
-					for (BaseJob jb : runnableJobs) {
-						if (jb.arrivalTime == dag.arrivalTime) {
-							if (!jb.isReady()) {
-								isReady = false;
-								break;
+					if (Globals.EnableGroupProfiling)
+						for (BaseJob jb : runnableJobs) {
+							if (jb.arrivalTime == dag.arrivalTime) {
+								if (!jb.isReady()) {
+									isReady = false;
+									break;
+								}
 							}
 						}
-					}
 
-					if (!Globals.EnableProfiling || isReady) {
+					if (!Globals.EnableProfiling() || isReady) {
 						dag.jobStartTime = dag.arrivalTime;
 						// dag.jobStartRunningTime = dag.jobStartTime;
 						newlyStartedJobs.add(dag);
@@ -423,9 +444,9 @@ public class Simulator {
 
 		return existNewJob;
 	}
-
+	
 	public void addProfilingJobs(BaseJob job, Queue<BaseJob> runningJobs) {
-		if (Globals.EnableProfiling) {
+		if (Globals.EnableProfiling()) {
 			Set<BaseJob> profilingJobs = new HashSet<BaseJob>();
 			// TODOs: generate the profiling jobs
 			// for (BaseJob job: newlyStartedJobs){
@@ -473,6 +494,8 @@ public class Simulator {
 		MLJob profilingJob = MLJob.clone(job);
 		profilingJob.isProfiling = true;
 		profilingJob.dagId = newJobId;
+		profilingJob.arrivalTime = job.arrivalTime;
+		profilingJob.jobStartTime = job.arrivalTime;
 
 		InterchangableResourceDemand mDemand = profilingJob.getDemand();
 		mDemand.cpu = Globals.CPU_PER_NODE;
@@ -485,7 +508,6 @@ public class Simulator {
 		profilingJob.setTaskDemand(mDemand);
 
 		profilingJob.isCpu = !isGpu;
-
 		job.profilingJobs.add(profilingJob);
 		return profilingJob;
 	}

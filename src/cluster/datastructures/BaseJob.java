@@ -269,6 +269,8 @@ public abstract class BaseJob implements Cloneable {
 	}
 	
 	public void onStart(Resource capacity){
+		if(this.isProfiling)
+			return;
 	// find the owner of the job		
 			double p1 = this.getDemand().cpuCompl;
 			double p2 = this.getDemand().gpuCompl;
@@ -290,14 +292,21 @@ public abstract class BaseJob implements Cloneable {
 	}
 	
 	public void onFinish(){
-		if(!this.isProfiling)
+		if(!this.isProfiling){
+//			if(this.getQueue().getQueueName().equals("queue0"))
+//				System.out.println("before: "+ this.getQueue().L);
 			this.getQueue().L -= this.fairVal;
+//			if(this.getQueue().getQueueName().equals("queue0"))
+//				System.out.println("after: "+ this.getQueue().L);
+		}
+			
 		this.runningTime += (Simulator.CURRENT_TIME - this.jobStartRunningTime);
+//		this.runningTime = this.jobEndTime - this.jobStartRunningTime;;
 		this.isCompleted = true;
   }
 	
 	public boolean isReady(){
-		if (!Globals.EnableProfiling)
+		if (!Globals.EnableProfiling())
 			return true;
 		
 		if(this.profilingJobs.isEmpty())

@@ -62,7 +62,6 @@ strUser4 = 'User 4';
 strUnalloc = 'unallocated';
 
 strES = 'ES';
-strDRF = 'DRF';
 strAlloX = 'AlloX';
 strDRFFIFO = 'DRFF';
 strDRFSJF = 'DRFS';
@@ -76,7 +75,9 @@ strCPU = 'CPU';
 strMemory= 'mem.';
 
 strJobCompleted = 'completed jobs';
-strAvgCmplt = 'avg. compl. time';
+strAvgCmplt = 'avg. compl. time (mins)';
+strMaxCmplt = 'max compl. (mins)';
+
 strMakeSpan = 'makespan';
 strImprovement = 'improvement (%)';
 strPerfGap = 'perf. gap (%)';
@@ -92,12 +93,15 @@ strMethods='methods';
 
 strTime = 'secs';
 
+strSimTime = 'mins';
+
 strBudget='norm. budget';
 
 strFairScore = 'fair score';
 
 %% line specs
 lineAlloX = '-';
+lineES = ':';
 lineDRF = '--';
 lineSRPT = '-.';
 
@@ -126,45 +130,19 @@ colorhard = [hex2dec('2c')    hex2dec('7f')    hex2dec('b8')]/255;%2c7fb8
 colorBarMinMax='k';
 lineWidthBarMinMax=1.5;
 colorUser1 = [hex2dec('1f')    hex2dec('49')    hex2dec('7d')]/255;
-colorUser2 = [0.4660    0.6740    0.1880];
-colorUser3 = [hex2dec('f7')    hex2dec('96')    hex2dec('46')]/255;
-colorUser4 = [0.2500    0.2500    0.2500];
+colorUser2 = [hex2dec('f7')    hex2dec('96')    hex2dec('46')]/255;
 
-% colorBursty0 = [0    0.4470    0.7410];
-colorBursty0 = [hex2dec('1f')    hex2dec('49')    hex2dec('7d')]/255;
+colorJob0 = [hex2dec('00')    hex2dec('72')    hex2dec('BD')]/255;
+colorJob1 = [hex2dec('D9')    hex2dec('53')    hex2dec('19')]/255;
+colorJob2 = [hex2dec('ED')    hex2dec('B1')    hex2dec('20')]/255;
+colorJob3 = [hex2dec('7E')    hex2dec('2F')    hex2dec('8E')]/255;
+colorJob4 = [hex2dec('77')    hex2dec('AC')    hex2dec('30')]/255;
+colorJob5 = [hex2dec('4D')    hex2dec('BE')    hex2dec('EE')]/255;
+colorJob6 = [hex2dec('A2')    hex2dec('14')    hex2dec('2F')]/255;
 
-% colorBursty0 = [hex2dec('0c')    hex2dec('2c')    hex2dec('84')]/255;
-colorBursty1 = [hex2dec('22')    hex2dec('5e')    hex2dec('a8')]/255;
-colorBursty2 = [hex2dec('1d')    hex2dec('91')    hex2dec('c0')]/255; % 1d91c0
-
-% colorBatch0 = [0.8500    0.3250    0.0980];
-colorBatch0 = [hex2dec('f7')    hex2dec('96')    hex2dec('46')]/255;
-colorBatch1 = [0.9290    0.6940    0.1250];
-colorBatch2 = [0.4940    0.1840    0.5560];
-colorBatch3 = [0.4660    0.6740    0.1880];
-colorBatch4 = [0.3010    0.7450    0.9330];
-colorBatch5 = [0.6350    0.0780    0.1840];
-colorBatch6 = [0.7500    0.7500         0];
-colorBatch7 = [0.2500    0.2500    0.2500];
-
-colorb8i1 = {colorBursty0; colorBatch0; colorBatch1; colorBatch2; colorBatch3; colorBatch4; colorBatch5; colorBatch6; colorBatch7};
-colorb1i1 = {colorBursty0; colorBatch0};
-colorb1i3 = {colorBursty0; colorBursty1;colorBursty2; colorBatch0};
-colorb2={colorBursty0; colorBatch0};
-colorb3={colorBursty0; colorBatch0; colorBursty2};
-
-colorBursty = colorBursty0;
-colorBatch = colorBatch0;
-colorWasted = [1 1 1];
-
-%  0         0    1.0000
-%          0    0.5000         0
-%     1.0000         0         0
-%          0    0.7500    0.7500
-%     0.7500         0    0.7500
-%     0.7500    0.7500         0
-%     0.2500    0.2500    0.2500
 
 %% 
 log_folder = 'log/';
 output_folder = 'output/';
+
+%%

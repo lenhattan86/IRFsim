@@ -41,7 +41,7 @@ public class DRFExtScheduler implements Scheduler {
 		this.beta = this.beta/Simulator.runnableJobs.size();
 //		this.beta = 69;
 		
-		System.out.println("avg. beta             = " + this.beta);
+		System.out.println("avg. beta = " + this.beta);
 	}
 
 	@Override
@@ -91,6 +91,7 @@ public class DRFExtScheduler implements Scheduler {
 			JobQueue q = runningQueues.get(sMinIdx);			
 			if (Globals.JOB_SCHEDULER.equals(JobScheduling.SJF))
 					Collections.sort((List<BaseJob>) q.getQueuedUpJobs(), new JobLengthComparator(2));
+//				Collections.sort((List<BaseJob>) q.getQueuedUpJobs(), new JobLengthComparator(0));
 			
 			BaseJob unallocJob = q.getNonProfilingRunnableJob();
 
@@ -102,6 +103,7 @@ public class DRFExtScheduler implements Scheduler {
 			
 			int taskId = unallocJob.getCommingTaskId();
 		  InterchangableResourceDemand demand = unallocJob.rsrcDemands(taskId);
+//		  InterchangableResourceDemand reportDemand = unallocJob.reportDemands(taskId);
 			// Like Yarn, assign one single container for the task
 			// step 3: if fit, C+D_i <= R, allocate
 		  // try GPU
