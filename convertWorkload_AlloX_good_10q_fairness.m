@@ -3,13 +3,18 @@ clear; close all; clc;
 
 % speedupRate = [33 40  32*2 32*3 32*3 32*5 32*6 32*7 32*8 32*15]/32;  % 32 cores per node vs 1 GPU 
 % speedupRate = [33 40 32*2 32*3 32*3 32*4 32*4 32*4 32*5 32*5]/32;  % 32 cores per node vs 1 GPU 
-speedupRate = [33 32*2 32*4 32*4 32*15 32 32 32 32 32]/32;  % 32 cores per node vs 1 GPU 
+% speedupRate = [33 32*2 32*4 32*4 32*15 32 32 32 32 32]/32;  % 32 cores per node vs 1 GPU 
+speedupRate = [33 40  32*2 32*3 32*3 32*5 32*6 32*7 32*8 32]/32;  % 32 cores per node vs 1 GPU
 std_coeff = [1 1 1 1]*1.2;
 % NJobs = 1000;
-nSmallJobUser= 5;
-nLargeJobUser=5;
+nSmallJobUser= 9;
+nLargeJobUser=1;
 nSmallJobs = 4000;
 nLargeJobs = 100;
+scaleLarge = 10;
+timeScale = 75; % c1: 75
+
+
 nMaxJobs = max(nSmallJobs, nLargeJobs);
 NJobs = [nSmallJobs * ones(1,nSmallJobUser) nLargeJobs *ones(1,nLargeJobUser)];
 nUsers = nSmallJobUser + nLargeJobUser;
@@ -22,9 +27,10 @@ jobIds = JobInfos(:,1);
 scheduleClass =JobInfos(:,4);
 TIME_SCALE = 1;
 second = 10^6;
-scaleLarge = 10;
-timeScale = 25; % c4 -> 
+
 QUEUED_UP_TIME = 100;
+
+
 
 % timeScale = 40; %for fix  long job.
 
@@ -57,12 +63,12 @@ for iJob=1:length(jobSet(:,1))
     cpuReq = jobSet(iJob,2);    % cpu cores
     memReq = jobSet(iJob,3);    % GB
     % ignore the very small jobs.
-    if (cpuReq==0)
-        continue
-    else
-        arrival_set(jobIdx) = arrivalTime;
-        jobIdx = jobIdx +1;
-    end 
+%     if (cpuReq==0)
+%         continue
+%     else
+    arrival_set(jobIdx) = arrivalTime;
+    jobIdx = jobIdx +1;
+%     end 
     if jobIdx > numOfJobs        
         break;
     end     
@@ -77,7 +83,7 @@ if USE_TRACE
     arrival_order = sort(arrival_set);
 %     arrival_order = arrival_order - min(arrival_order);
     arrival_order = arrival_order - min(arrival_order);
-    arrival_order = max(0,arrival_order - QUEUED_UP_TIME);
+    arrival_order = max(0, arrival_order - QUEUED_UP_TIME);
 else
     pd_normal = makedist('Normal','mu',5000,'sigma',4000);
     arrival_dist = truncate(pd_normal,0,8000);
@@ -159,8 +165,8 @@ for jobIdx = 1 : numOfJobs
     %% Make user 1 & 2 consistenly long. 
     if(queue_id>nSmallJobUser)        
         cpu_time = mean(jobLengths)*scaleLarge; 
-        gpu_time = mean(jobLengths)*scaleLarge;
-%         arrivalTime = arrivalTime *scaleLarge;
+        gpu_time = mean(jobLengths)*scaleLarge/1.1;
+        arrivalTime = arrivalTime *scaleLarge;
     else
         cpu_time = random(jobLengDist(queue_id));
         gpu_time = max(1,min(400,cpu_time/speedupRate_job)); 
@@ -198,7 +204,7 @@ fclose(fileID);
 outputFile
 close all;
 % hist(arrival_order,100)
-hist(arrivalTimes,100);
+hist(arrivalTimes,500);
 title('arrivals');
 figure;
 hist(speedup_rates,50)

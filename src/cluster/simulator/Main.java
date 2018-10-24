@@ -35,6 +35,7 @@ public class Main {
 		public static boolean EnableGroupProfiling = true; // jobs are ready when all profiling jobs arriving at the same time finish.
 		public final static boolean EnablePreemption = true;
 		public static boolean EnableIncreaseAlpha = true;
+		public static int MAX_N_JOB_AlloX = 30;
 		public static int CPU_PROFILING_JOB1 = -100000; //-10000 -> 0
 		public static int CPU_PROFILING_JOB2 = CPU_PROFILING_JOB1*2;
 		public static int GPU_PROFILING_JOB1 = CPU_PROFILING_JOB1*3;
@@ -147,7 +148,7 @@ public class Main {
 		public static int SCALE_UP_FACTOR = 1;
 
 		public static enum Method {
-			DRFFIFO, DRF, DRFExt, FDRF, DRFW, ES, MaxMinMem, SpeedUp, Pricing, SJF, AlloX, SRPT
+			DRFFIFO, DRF, DRFExt, FDRF, DRFW, ES, MaxMinMem, SpeedUp, Pricing, SJF, AlloX, SRPT, AlloXopt
 		}
 		
 		public static int PERIOD_FS = 1; 
@@ -161,7 +162,7 @@ public class Main {
 		}
 
 		public static enum QueueSchedulerPolicy {
-			DRF, DRFExt, ES, MaxMinMem, SpeedUp, Pricing, AlloX, SJF, FS, SRPT
+			DRF, DRFExt, ES, MaxMinMem, SpeedUp, Pricing, AlloX, SJF, FS, SRPT, AlloXopt
 		};
 
 		public static QueueSchedulerPolicy QUEUE_SCHEDULER = QueueSchedulerPolicy.ES;
@@ -241,6 +242,8 @@ public class Main {
 		public static String User2Input = DataFolder + "/" + FileInput;
 
 		public static int[] numJobs = null;
+		public static int numSmallJobs = 4000; 
+		public static int numLargeJobs = 100;
 		public static int numQueues = 1;
 		public static int numbatchTask = 10000;
 
@@ -298,11 +301,10 @@ public class Main {
 				Globals.TRACE_FILE = "workload/queries_bb_FB_distr.txt"; // BigBench
 				break;
 			case Google:
-				Globals.TRACE_FILE = "input/job_google.txt"; 
+				Globals.TRACE_FILE = "input/job_google.txt";
 				break;
 			case MayBeGood:
-//				Globals.TRACE_FILE = "input/job_maybegood.txt";
-				Globals.TRACE_FILE = "input/good_setup_40_maybe.txt"; 
+				Globals.TRACE_FILE = "input/job_google_10_20_d1020.txt"; 
 				break;
 			case Experiment:
 				Globals.TRACE_FILE = "input/experiment_large_23p_verify.txt";
@@ -391,6 +393,9 @@ public class Main {
 		} else if (Globals.METHOD.equals(Method.AlloX)) {
 			Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.AlloX;
 			Globals.FileOutput = "AlloX-output" + extraName + ".csv";
+		} else if (Globals.METHOD.equals(Method.AlloXopt)) {
+			Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.AlloXopt;
+			Globals.FileOutput = "AlloXopt-output" + extraName + ".csv";
 		} else if (Globals.METHOD.equals(Method.SRPT)) {
 			Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.SRPT;
 			Globals.FileOutput = "SRPT-output" + extraName + ".csv";
@@ -426,7 +431,9 @@ public class Main {
 		System.out.println("Cluster Size        = " + Globals.NUM_MACHINES);
 		System.out.println("Server Capacity     = (" + Globals.MACHINE_MAX_CPU +" cpus,"+ Globals.MACHINE_MAX_GPU+" gpus,"+ Globals.MACHINE_MAX_MEM +" Gi)");
 		System.out.println("Workload            = " + Globals.TRACE_FILE);
-		System.out.println("numJobs        = " + Globals.numJobs);
+//		System.out.println("numJobs        = " + Globals.numJobs);
+		System.out.println("numSmallJobs        = " + Globals.numSmallJobs);
+		System.out.println("numLargeJobs        = " + Globals.numLargeJobs);
 		System.out.println("PathToInputFile     = " + Globals.PathToInputFile);
 		System.out.println("PathToQueueInputFile= " + Globals.PathToQueueInputFile);
 		System.out.println("PathToResourceLog   = " + Globals.PathToResourceLog);
@@ -573,22 +580,32 @@ public class Main {
 //		Globals.MACHINE_MAX_GPU = 20; Globals.numQueues = 5; Globals.numJobs = Globals.numQueues*5000;Globals.alpha = 0.2;
 		// fairness:
 		Globals.MACHINE_MAX_GPU = 20; Globals.numQueues = 10; Globals.alpha = 0.1;
-		int numSmallJobs = 4000; int numLargeJobs = 50;
-		Globals.numJobs = new int[]{numSmallJobs, numSmallJobs, numSmallJobs, numSmallJobs, numSmallJobs,
-					numLargeJobs, numLargeJobs, numLargeJobs, numLargeJobs, numLargeJobs};
+		
+		Globals.numSmallJobs = 1000; Globals.numLargeJobs = 1000;
+//		Globals.numJobs = new int[]{Globals.numSmallJobs, Globals.numSmallJobs, Globals.numSmallJobs, Globals.numSmallJobs, Globals.numSmallJobs, 
+//				Globals.numLargeJobs, Globals.numLargeJobs, Globals.numLargeJobs, Globals.numLargeJobs, Globals.numLargeJobs};
+//		Globals.numSmallJobs = 4000; Globals.numLargeJobs = 100;
+		Globals.numJobs = new int[]{Globals.numSmallJobs, Globals.numSmallJobs, Globals.numSmallJobs, Globals.numSmallJobs, Globals.numSmallJobs, 
+			Globals.numSmallJobs, Globals.numSmallJobs,  Globals.numSmallJobs,  Globals.numSmallJobs,  Globals.numLargeJobs};
+		
+//		Globals.workload = WorkLoadType.Google;
+		Globals.workload = WorkLoadType.MayBeGood;
 		
 		double errStd = 0.1;
 		Globals.jobData = new JobData();
 		Globals.jobData.cpuErrs = Randomness.scaleErr(Globals.jobData.cpuErrs, errStd, -0.99, 0.99);
 		Globals.jobData.gpuErrs = Randomness.scaleErr(Globals.jobData.gpuErrs, errStd, -0.99, 0.99);
 		
-		Globals.workload = WorkLoadType.Google;
 		Globals.MEMORY_SCALE_DOWN = 1;
 		Globals.NUM_MACHINES = 1;
-		Globals.SIM_END_TIME = 20000.0;
+		Globals.SIM_END_TIME = 50000.0;
 		
 		if (Globals.runmode.equals(Runmode.MultipleRuns)) {			
-			Globals.Method[] methods = {Method.DRFFIFO, Method.DRF, Method.ES,Method.DRFExt,Method.SRPT, Method.AlloX};
+//			Globals.Method[] methods = {Method.DRFFIFO, Method.DRF, Method.ES,Method.DRFExt,Method.SRPT, Method.AlloX};
+//			Globals.Method[] methods = {Method.ES,Method.SRPT, Method.DRFFIFO, Method.DRF, Method.DRFExt, Method.AlloX, Method.AlloXopt};
+//			Globals.Method[] methods = {Method.ES,Method.SRPT, Method.DRFFIFO, Method.DRF, Method.DRFExt, Method.AlloXopt};
+			Globals.Method[] methods = {Method.AlloX};
+//			Globals.Method[] methods = {Method.AlloXopt};
 //			Globals.Method[] methods = {Method.ES};
 //			Globals.Method[] methods = {Method.ES};
 			for (Globals.Method method : methods) {
@@ -631,9 +648,9 @@ public class Main {
 		}  else if (Globals.runmode.equals(Runmode.Analysis_Alpha)) {
 			double alphas[] = {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0};
 //			double alphas[] = {0.05, 0.2, 0.4, 0.6, 0.8, 1.0};
-			Globals.Method[] methods = {Method.DRFFIFO, Method.DRF, Method.ES, Method.DRFExt, Method.SRPT, Method.AlloX};
+//			Globals.Method[] methods = {Method.DRFFIFO, Method.DRF, Method.ES, Method.DRFExt, Method.SRPT, Method.AlloX};
 //			Globals.Method[] methods = {Method.DRFFIFO, Method.DRF, Method.ES, Method.DRFExt, Method.SRPT};
-//			Globals.Method[] methods = {Method.AlloX};			
+			Globals.Method[] methods = {Method.AlloX};			
 			
 //			Globals.jobData.cpuErrs = Randomness.getNormalDistribution(Globals.numJobs , 0, 0, -0.99, 0.99);
 //			Globals.jobData.gpuErrs = Randomness.getNormalDistribution(Globals.numJobs , 0, 0, -0.99, 0.99);

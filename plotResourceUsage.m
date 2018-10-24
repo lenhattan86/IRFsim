@@ -6,7 +6,7 @@ is_printed = false;
 num_batch_queues = 10;
 num_interactive_queue = 0;
 num_queues = num_batch_queues + num_interactive_queue;
-START_TIME = 0; END_TIME = 50000;  STEP_TIME = 1;
+START_TIME = 0; END_TIME = 20000;  STEP_TIME = 1;
 cluster_size = 20;
 
 CPUCap = cluster_size * 32;

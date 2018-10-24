@@ -63,6 +63,7 @@ strUnalloc = 'unallocated';
 
 strES = 'ES';
 strAlloX = 'AlloX';
+strAlloXopt = 'AlloXopt';
 strDRFFIFO = 'DRFF';
 strDRFSJF = 'DRFS';
 strSJF = 'SJF';

@@ -134,14 +134,16 @@ public class Simulator {
 		if(isProgress){
 			if (progress > 0 && progress % 1 == 0){
 				long duration = System.currentTimeMillis() - Globals.SIM_START;
-				long remain = duration*100/(long)progress;
+				double unit = (double)duration/progress;
+				long remain = (100 - (long)progress)*(long)unit;
 				System.out.println("progress: " + progress + "% --- " + remain/1000 + " seconds left.");
 			}
 		}
 		else
 			if (progress > 0 && progress % 10 == 0){
 				long duration = System.currentTimeMillis() - Globals.SIM_START;
-				long remain = duration*100/(long)progress;
+				double unit = (double)duration/progress;
+				long remain = (100 - (long)progress)*(long)unit;
 				System.out.println("progress: " + progress + "% --- " + remain/1000 + " seconds left.");
 			}
 	}

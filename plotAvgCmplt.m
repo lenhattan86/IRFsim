@@ -7,7 +7,6 @@ version = '_n1000';
 simulation = true;
 if simulation 
     queue_num = 10; cluster_size= 20;
-%     queue_num = 20; cluster_size= 100;
     plots  = [true, false, false, false, false, true, false];
 else 
     fprintf('Verify the experiment results');
@@ -23,18 +22,22 @@ else
     ClusterRunningAvg = [0.7315    0.751    1.5171    1.6457    1.0314] * 1000;
     plots  = [false, false, false, false, false, false, false];
 end
- sample = 20;
+sample = 20;
 figureSize = figSizeThreeFourth;
 
 % methods = {strDRF,  strES,  'DRFE', strAlloX, 'SJF', 'FS','SRPT'};
 % files = {'DRF', 'ES', 'DRFExt', 'AlloX','SJF', 'FS','SRPT'};
 % DRFId = 1; ESId = 2; DRFExtId = 3; AlloXId = 4; SRPTId = 5; AlloXId = 6;
 
-methods = {strDRFFIFO, strDRFSJF, strES, strDRFExt, strAlloX, strSRPT};
-files = {'DRFFIFO', 'DRF', 'ES', 'DRFExt', 'AlloX', 'SRPT'};
-% methods = {'DRFF', 'DRFS', strES, 'DRFE', 'AlloX'};
-% files = {'DRFFIFO', 'DRF', 'ES', 'DRFExt', 'FS'};
-DRFFIFOId = 1; DRFId = 2; ESId = 3; DRFExtId = 4;  AlloXId = 5; SRPTId = 6;
+% methods = {strDRFFIFO, strDRFSJF, strES, strDRFExt, strAlloX, strSRPT};
+% files = {'DRFFIFO', 'DRF', 'ES', 'DRFExt', 'AlloX', 'SRPT'};
+% DRFFIFOId = 1; DRFId = 2; ESId = 3; DRFExtId = 4;  AlloXId = 5; SRPTId = 6;
+
+methods = {strDRFFIFO, strDRFSJF, strES, strDRFExt, strAlloX, strAlloXopt,  strSRPT};
+files = {'DRFFIFO', 'DRF', 'ES', 'DRFExt', 'AlloX', 'AlloXopt', 'SRPT'};
+DRFFIFOId = 1; DRFId = 2; ESId = 3; DRFExtId = 4;  AlloXId = 5; AlloXoptId=6; SRPTId = 7;
+
+
 plotOrders = [DRFFIFOId DRFId ESId DRFExtId SRPTId AlloXId];
 % plotOrders = [DRFFIFOId DRFId DRFExtId SRPTId AlloXId];
 % plotOrders = [SRPTId AlloXId];

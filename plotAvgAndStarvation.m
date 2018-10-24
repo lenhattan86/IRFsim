@@ -5,20 +5,24 @@ common_settings;
 version = '_c1';
 isSmallJobs = true;
 %%
-
-queue_num = 10; cluster_size= 20;
-nLargeJobs = 50;
-nSmallUsers = 5;
-nLargeUsers = 5;
+cluster_size= 20;
+nLargeJobs = 100;
+nSmallUsers = 9;
+nLargeUsers = 1;
+queue_num = nSmallUsers+nLargeUsers;
 
 plots  = [true, true];
-figureSize = figSizeThreeFourth;
+% figureSize = figSizeThreeFourth;
+figureSize = figSizeOneCol;
+
+% maxEndTime = max(endTimes_l{AlloXId}); % AlloX
+maxEndTime = 20000; 
+maxStartTime = 10000;
 
 %%
-methods = {strDRFFIFO, strDRFSJF, strES, strDRFExt, strAlloX, strSRPT};
-files = {'DRFFIFO', 'DRF', 'ES', 'DRFExt', 'AlloX', 'SRPT'};
-DRFFIFOId = 1; DRFId = 2; ESId = 3; DRFExtId = 4;  AlloXId = 5; SRPTId = 6;
-plotOrders = [DRFFIFOId DRFId ESId DRFExtId SRPTId AlloXId];
+methods = {strDRFFIFO, strDRFSJF, strES, strDRFExt, strAlloX, 'AlloXopt', strSRPT};
+files = {'DRFFIFO', 'DRF', 'ES', 'DRFExt', 'AlloX', 'AlloXopt', 'SRPT'};
+DRFFIFOId = 1; DRFId = 2; ESId = 3; DRFExtId = 4;  AlloXId = 5; AlloXIdOpt = 6; SRPTId = 7;
 alphas = [0.1 0.3];
 methodColors = {colorES; colorDRF; colorProposed};
 
@@ -35,7 +39,7 @@ scaleTime = 1; % minutes
 
 logfolder = ['log/'];
 %% load data
-
+commonShortIds = [];
 for i=1:length(methods)
     outputFile = [ 'output/' files{i} '-output' extraStr  '.csv'];
     [JobIds{i}, startTimes{i}, endTimes{i}, durations{i}, queueNames{i}, startRunningTimes{i}, runningTimes{i}] ...
@@ -47,11 +51,16 @@ for i=1:length(methods)
     fullJobsIndices{i} = find(JobIds{i}>=0);
     % for long jobs
     largeJobsIndices{i} = find( JobIds{i}>=0 & (JobIds{i}<nLargeJobs*(nSmallUsers+nLargeUsers)) ...
-        & (mod(JobIds{i},(nSmallUsers+nLargeUsers) )>nSmallUsers));        
+        & (mod( JobIds{i}, (nSmallUsers+nLargeUsers) )>=nSmallUsers));    
+    
     % for short jobs
     smallJobsIndices{i} = find( JobIds{i}>=0 & ...
         ( (JobIds{i}<nLargeJobs*(nSmallUsers+nLargeUsers) & (mod(JobIds{i},(nSmallUsers+nLargeUsers) )< nSmallUsers)) ...
                 | (JobIds{i}>=nLargeJobs*(nSmallUsers+nLargeUsers))) );
+            
+    if (length(smallJobsIndices{i}) + length(largeJobsIndices{i}) ~= sum(JobIds{i}>=0))
+        error('wrong computation here');
+    end
 
     durations_s{i} = durations{i}(smallJobsIndices{i}); 
     waitingTimes_s{i} = waitingTimes{i}(smallJobsIndices{i});
@@ -61,6 +70,14 @@ for i=1:length(methods)
     endTimes_s{i} = endTimes{i}(smallJobsIndices{i});
     queueNames_s{i} = queueNames{i}(smallJobsIndices{i});
     startRunningTimes_s{i} = startRunningTimes{i}(smallJobsIndices{i});
+    
+    if(length(JobIds_s{i})>0)
+        if(i>1)
+            commonShortIds = intersect(commonShortIds,JobIds_s{i});
+        else
+            commonShortIds = JobIds_s{i};
+        end
+    end
     
     durations_l{i} = durations{i}(largeJobsIndices{i}); 
     waitingTimes_l{i} = waitingTimes{i}(largeJobsIndices{i});
@@ -72,12 +89,15 @@ for i=1:length(methods)
     startRunningTimes_l{i} = startRunningTimes{i}(largeJobsIndices{i});
 end
 
-% maxEndTime = max(endTimes_l{AlloXId}); % AlloX
-maxEndTime = 20000; 
+
 %% Do not use this one as it farvors the SJF based schedulers
 if true
     for i=1:length(methods)    
-        smallIds = find(endTimes_s{i}<=maxEndTime);
+        % care the start time for small jobs.
+%         smallIds = find(startTimes_s{i}<=maxStartTime);
+        [~, smallIds] = intersect( JobIds_s{i}, commonShortIds) ;
+        length(smallIds)
+        
         durations_s{i} = durations_s{i}(smallIds);
         waitingTimes_s{i} =waitingTimes_s{i}(smallIds);
         runningTimes_s{i} =runningTimes_s{i}(smallIds);
@@ -87,7 +107,9 @@ if true
         queueNames_s{i} = queueNames_s{i}(smallIds);
         startRunningTimes_s{i} =  startRunningTimes_s{i}(smallIds);
 
+        % care the end time for large jobs.
         largeIds = find(endTimes_l{i}<=maxEndTime);    
+        
         durations_l{i} = durations_l{i}(largeIds) ; 
         waitingTimes_l{i} = waitingTimes_l{i}(largeIds);
         runningTimes_l{i} = runningTimes_l{i} (largeIds);
@@ -121,11 +143,11 @@ if plots(1)
     legendStr={'wait time','runtime'};
     legend(legendStr, 'Location','northeast','FontSize', fontLegend);
     xlim([0.6 length(methods)+0.4]);
-    ylabel(yLabel,'FontSize',fontAxis);
+    ylabel(yLabel,'FontSize', fontAxis);
     set(gca,'XTickLabel', methods,'FontSize',fontAxis);
 
 %     axes('position',[.35 .25 0.32 0.7])
-%     box on % put box around new pair of axes
+%     box on % put box around new pair onSmallUsersf axes
 %     plotBarStackGroups(stackData(3:end,:,:), methods(3:end), false);
 %     axis tight
 %     xlim([2.6 length(methods)+0.4]);
@@ -141,9 +163,10 @@ end
 
 %%
 %%
-if false    
-   figIdx=figIdx +1;  
-   figures{figIdx} = figure;
+if true    
+%    figIdx=figIdx +1;  
+%    figures{figIdx} = figure;
+    figure
    scrsz = get(groot, 'ScreenSize');   
 
     stackData = zeros(length(methods), 3 , 2);
@@ -176,8 +199,7 @@ if false
 %     grid on;
 %     ylim([0 ]);
     set (gcf, 'Units', 'Inches', 'Position', figureSize.*[1 1 1.4 1], 'PaperUnits', 'inches', 'PaperPosition', figureSize.*[1 1 1.4 1]);
-
-    fileNames{figIdx} = 'avgCmplt_large';
+%     fileNames{figIdx} = 'avgCmplt_large';
 end
 
 %%
@@ -204,7 +226,6 @@ if plots(2)
     set(gca,'XTickLabel', methods ,'FontSize',fontAxis);
     fileNames{figIdx} = 'job_completed';
 end
-
 version
 %%
 if~is_printed

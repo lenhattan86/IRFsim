@@ -48,7 +48,10 @@ public class QueueScheduler {
 			scheduler = new PricingScheduler();
 			break;
 		case AlloX:
-			scheduler = new AlloXScheduler(Globals.alpha);
+			scheduler = new AlloXScheduler(Globals.alpha, false);
+			break;
+		case AlloXopt:
+			scheduler = new AlloXScheduler(Globals.alpha, true);
 			break;
 		case SJF:
 			scheduler = new SJFScheduler();

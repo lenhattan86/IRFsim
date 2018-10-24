@@ -3,9 +3,9 @@ common_settings;
 barWidth = 0.5;
 figureSize = figSizeOneCol;
 
-plots  = [0, 0, 0, 0, 0, 0, 1 ];
+plots  = [1, 1, 1, 1, 1, 1, 1 ];
 
-machines = {'G1','G2','C3', 'C4'};
+machines = {'G1','G2','C1', 'C2'};
 enableSeparateLegend = true;
 
 textColor = 'white';
@@ -428,7 +428,7 @@ if plots(7)
     jobStart = user1_jobs(1,1);
     jobComplt = jobStart + jobLength;
     h(1) = fill([jobComplt jobComplt jobStart jobStart],[node-0.5 node+0.5 node+0.5 node-0.5],colorUser1);
-    text(jobStart+jobLength/2, node,[strJob '3'], 'FontSize', fontText, 'Color',textColor, 'FontWeight',fontWeight,'HorizontalAlignment','center');    
+    text(jobStart+jobLength/2, node,[strJob '5'], 'FontSize', fontText, 'Color',textColor, 'FontWeight',fontWeight,'HorizontalAlignment','center');    
     
     % GPU 2
     node =2;
@@ -436,13 +436,13 @@ if plots(7)
     jobStart = 0;
     jobComplt = jobStart + jobLength;
     h(1) = fill([jobComplt jobComplt jobStart jobStart],[node-0.5 node+0.5 node+0.5 node-0.5],colorUser2);
-    text(jobStart+jobLength/2, node,[strJob '1'], 'FontSize', fontText, 'Color',textColor, 'FontWeight',fontWeight,'HorizontalAlignment','center');       
+    text(jobStart+jobLength/2, node,[strJob '2'], 'FontSize', fontText, 'Color',textColor, 'FontWeight',fontWeight,'HorizontalAlignment','center');       
     
     jobLength = user2_jobs(3,1);
     jobStart = user2_jobs(1,1);
     jobComplt = jobStart + jobLength;
     h(1) = fill([jobComplt jobComplt jobStart jobStart],[node-0.5 node+0.5 node+0.5 node-0.5],colorUser2);
-    text(jobStart+jobLength/2, node,[strJob '3'], 'FontSize', fontText, 'Color',textColor, 'FontWeight',fontWeight,'HorizontalAlignment','center');       
+    text(jobStart+jobLength/2, node,[strJob '6'], 'FontSize', fontText, 'Color',textColor, 'FontWeight',fontWeight,'HorizontalAlignment','center');       
     
     % CPU 1
     node =3;
@@ -450,7 +450,7 @@ if plots(7)
     jobStart = 0;
     jobComplt = jobStart + jobLength;
     h(1) = fill([jobComplt jobComplt jobStart jobStart],[node-0.5 node+0.5 node+0.5 node-0.5],colorUser1);
-    text(jobStart+jobLength/2, node,[strJob '2'], 'FontSize', fontText, 'Color',textColor, 'FontWeight',fontWeight,'HorizontalAlignment','center');       
+    text(jobStart+jobLength/2, node,[strJob '3'], 'FontSize', fontText, 'Color',textColor, 'FontWeight',fontWeight,'HorizontalAlignment','center');       
     
     % CPU 2    
     node =4;
@@ -458,7 +458,7 @@ if plots(7)
     jobStart = 0;
     jobComplt = jobStart + jobLength;
     h(1) = fill([jobComplt jobComplt jobStart jobStart],[node-0.5 node+0.5 node+0.5 node-0.5],colorUser2);
-    text(jobStart+jobLength/2, node,[strJob '2'], 'FontSize', fontText, 'Color',textColor, 'FontWeight',fontWeight,'HorizontalAlignment','center');       
+    text(jobStart+jobLength/2, node,[strJob '4'], 'FontSize', fontText, 'Color',textColor, 'FontWeight',fontWeight,'HorizontalAlignment','center');       
     
     
     if ~enableSeparateLegend
@@ -490,13 +490,13 @@ if plots(7)
     jobStart = 0;
     jobComplt = jobStart + jobLength;
     h(1) = fill([jobComplt jobComplt jobStart jobStart],[node-0.5 node+0.5 node+0.5 node-0.5],colorUser2);
-    text(jobStart+jobLength/2, node,[strJob '1'], 'FontSize', fontText, 'Color',textColor, 'FontWeight',fontWeight,'HorizontalAlignment','center');    
+    text(jobStart+jobLength/2, node,[strJob '4'], 'FontSize', fontText, 'Color',textColor, 'FontWeight',fontWeight,'HorizontalAlignment','center');    
     
     jobLength = user1_jobs(1,1);
     jobStart = user2_jobs(2,1);
     jobComplt = jobStart + jobLength;
     h(1) = fill([jobComplt jobComplt jobStart jobStart],[node-0.5 node+0.5 node+0.5 node-0.5],colorUser1);
-    text(jobStart+jobLength/2, node,[strJob '3'], 'FontSize', fontText, 'Color',textColor, 'FontWeight',fontWeight,'HorizontalAlignment','center');    
+    text(jobStart+jobLength/2, node,[strJob '1'], 'FontSize', fontText, 'Color',textColor, 'FontWeight',fontWeight,'HorizontalAlignment','center');    
     
     % GPU 2
     node =2;
@@ -504,7 +504,7 @@ if plots(7)
     jobStart = 0;
     jobComplt = jobStart + jobLength;
     h(1) = fill([jobComplt jobComplt jobStart jobStart],[node-0.5 node+0.5 node+0.5 node-0.5],colorUser2);
-    text(jobStart+jobLength/2, node,[strJob '1'], 'FontSize', fontText, 'Color',textColor, 'FontWeight',fontWeight,'HorizontalAlignment','center');       
+    text(jobStart+jobLength/2, node,[strJob '2'], 'FontSize', fontText, 'Color',textColor, 'FontWeight',fontWeight,'HorizontalAlignment','center');       
     
     jobLength = user1_jobs(2,1);
     jobStart = user2_jobs(1,1);
@@ -518,7 +518,7 @@ if plots(7)
     jobStart = 0;
     jobComplt = jobStart + jobLength;
     h(1) = fill([jobComplt jobComplt jobStart jobStart],[node-0.5 node+0.5 node+0.5 node-0.5],colorUser1);
-    text(jobStart+jobLength/2, node,[strJob '2'], 'FontSize', fontText, 'Color',textColor, 'FontWeight',fontWeight,'HorizontalAlignment','center');       
+    text(jobStart+jobLength/2, node,[strJob '5'], 'FontSize', fontText, 'Color',textColor, 'FontWeight',fontWeight,'HorizontalAlignment','center');       
     
     % CPU 2    
     node =4;
@@ -526,7 +526,7 @@ if plots(7)
     jobStart = 0;
     jobComplt = jobStart + jobLength;
     h(1) = fill([jobComplt jobComplt jobStart jobStart],[node-0.5 node+0.5 node+0.5 node-0.5],colorUser2);
-    text(jobStart+jobLength/2, node,[strJob '2'], 'FontSize', fontText, 'Color',textColor, 'FontWeight',fontWeight,'HorizontalAlignment','center');       
+    text(jobStart+jobLength/2, node,[strJob '6'], 'FontSize', fontText, 'Color',textColor, 'FontWeight',fontWeight,'HorizontalAlignment','center');       
     
     
     if ~enableSeparateLegend
