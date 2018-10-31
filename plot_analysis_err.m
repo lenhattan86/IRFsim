@@ -1,6 +1,7 @@
 addpath('matlab_func');
 common_settings;
-is_printed = 1;
+is_printed = 0;
+EXTRA='';
 %%
 barWidth = 0.5;
 queue_num = 10;
@@ -13,8 +14,11 @@ plots  = [false true];
 errs = 0:0.1:0.6;
 files = {'DRFFIFO','DRF', 'ES', 'DRFExt', 'AlloX', 'SRPT'};
 methods = {'DRFF', strDRFSJF, strES, strDRFExt,  strAlloX, strSRPT};
+lines = {lineDRFFIFO, lineDRFSJF,  lineES, lineDRFExt,lineAlloX, lineSRPT};
+colors = {colorDRFFIFO, colorDRFSJF,  colorES, colorDRFExt,colorAlloX, colorSRPT};
 DRFFIFOId = 1; DRFId=2; ESId = 3; DRFExtId = 4; AlloXId = 5; SRPTId=6;
-vsMethods = [DRFFIFOId, DRFId, ESId, DRFExtId, SRPTId];
+% vsMethods = [DRFFIFOId, DRFId, ESId, DRFExtId, SRPTId];
+vsMethods = [ESId, AlloXId, SRPTId];
 
 %% load data
 resVals = ones(length(files),length(errs)); 
@@ -66,22 +70,24 @@ if plots(2)
    figures{figIdx} = figure;
    scrsz = get(groot, 'ScreenSize');       
    
-   hold on;  
-   legendStr={};      
+   hold on;
    
+   strLegend = {};
+   for i=1:length(vsMethods)  
+       iMethod = vsMethods(i);
+       plot(errs*100, resVals(iMethod,:),lines{iMethod}, 'Color', colors{iMethod}, 'LineWidth', lineWidth);
+       strLegend{i} = methods{iMethod};
+   end
+   hold off;
    
-   hold off;     
-    
-   plot(errs*100, resVals', 'LineWidth', lineWidth);
-   
-   legend(methods, 'Location','northeastoutside','FontSize', fontLegend);
+   legend(strLegend, 'Location','west','FontSize', fontLegend);
    
    xLabel=strErrorStd;
    yLabel=strAvgCmplt;
-   
+   box off;
 %    ylim([min(min(min(yValues)),0) max(max(yValues))]);
 %     ylim([0 0.4]);
-   set (gcf, 'Units', 'Inches', 'Position', figureSize .*[1 1 1.15 1], 'PaperUnits', 'inches', 'PaperPosition', figureSize .*[1 1 1.15 1]);
+   set (gcf, 'Units', 'Inches', 'Position', figureSize .*[1 1 1 1], 'PaperUnits', 'inches', 'PaperPosition', figureSize .*[1 1 1 1]);
 %     xlabel(xLabel,'FontSize',fontAxis);
    ylabel(yLabel,'FontSize', fontAxis);    
    xlabel(xLabel,'FontSize', fontAxis);   
@@ -96,7 +102,7 @@ for i=1:length(fileNames)
     fileName = fileNames{i};
     epsFile = [ LOCAL_FIG fileName '.eps'];
     print (figures{i}, '-depsc', epsFile);    
-    pdfFile = [ fig_path fileName '.pdf']  
+    pdfFile = [ fig_path fileName EXTRA '.pdf']  
     cmd = sprintf(PS_CMD_FORMAT, epsFile, pdfFile);
     status = system(cmd);
 end

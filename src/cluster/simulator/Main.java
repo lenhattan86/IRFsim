@@ -18,6 +18,7 @@ import cluster.simulator.Main.Globals.Method;
 import cluster.simulator.Main.Globals.Runmode;
 import cluster.simulator.Main.Globals.WorkLoadType;
 import cluster.utils.GenInput;
+import cluster.utils.Output;
 import cluster.utils.Randomness;
 import cluster.utils.Utils;
 
@@ -35,7 +36,8 @@ public class Main {
 		public static boolean EnableGroupProfiling = true; // jobs are ready when all profiling jobs arriving at the same time finish.
 		public final static boolean EnablePreemption = true;
 		public static boolean EnableIncreaseAlpha = true;
-		public static int MAX_N_JOB_AlloX = 30;
+		public static double ScaleArrivalTime = 1;
+		public static int MAX_N_JOB_AlloX = 50;
 		public static int CPU_PROFILING_JOB1 = -100000; //-10000 -> 0
 		public static int CPU_PROFILING_JOB2 = CPU_PROFILING_JOB1*2;
 		public static int GPU_PROFILING_JOB1 = CPU_PROFILING_JOB1*3;
@@ -99,6 +101,8 @@ public class Main {
 				return Runmode.Analysis_capacity;
 			} else if (runMode.equals("Analysis_overhead")) {
 				return Runmode.Analysis_overhead;
+			} else if (runMode.equals("Analysis_N_max")) {
+				return Runmode.Analysis_N_max;
 			} else if (runMode.equals("Experiment")) {
 				return Runmode.Experiment;
 			}
@@ -106,7 +110,7 @@ public class Main {
 		}
 
 		public enum Runmode {
-			MultipleRuns, BetaErrors, Analysis_Alpha, Analysis_misest, Analysis_overhead, Analysis_capacity, SmallScale, Experiment, NONE
+			MultipleRuns, BetaErrors, Analysis_Alpha, Analysis_misest, Analysis_overhead, Analysis_capacity, SmallScale, Experiment, Analysis_N_max, NONE
 		}
 
 		public static boolean USE_TRACE = false;
@@ -301,16 +305,17 @@ public class Main {
 				Globals.TRACE_FILE = "workload/queries_bb_FB_distr.txt"; // BigBench
 				break;
 			case Google:
-				Globals.TRACE_FILE = "input/job_google.txt";
+//				Globals.TRACE_FILE = "input/job_google.txt";
+				Globals.TRACE_FILE = "input/job_google_m1.txt";
 				break;
 			case MayBeGood:
 				Globals.TRACE_FILE = "input/job_google_10_20_d1020.txt"; 
 				break;
 			case Experiment:
-				Globals.TRACE_FILE = "input/experiment_large_23p_verify.txt";
+//				Globals.TRACE_FILE = "input/experiment_large_23p_verify.txt";
 //				Globals.TRACE_FILE = "input/experiment_large_23p_drffifo.txt";
 //				Globals.TRACE_FILE = "input/experiment_large_23p_drfext.txt";
-//				Globals.TRACE_FILE = "input/experiment_large_23p_es.txt";
+				Globals.TRACE_FILE = "input/experiment_large_23p_es.txt";
 //				Globals.TRACE_FILE = "input/experiment_large_23p_allox.txt";
 //				Globals.TRACE_FILE = "input/experiment_large_23p_drf.txt";
 				break;
@@ -354,7 +359,7 @@ public class Main {
 		}
 	}
 	
-	public static void runSimulationScenario(boolean genInputOnly) {
+	public static long runSimulationScenario(boolean genInputOnly) {
 		Globals.SESSION_DATA = new SessionData();
 
 		Globals.SIM_START = System.currentTimeMillis();
@@ -404,7 +409,7 @@ public class Main {
 			Globals.FileOutput = "SJF-output" + extraName + ".csv";
 		}else {
 			System.err.println("[Main] Error! test case");
-			return;
+			return 0;
 		}
 
 		Globals.PathToInputFile = Globals.DataFolder + "/" + Globals.FileInput;
@@ -445,7 +450,7 @@ public class Main {
 		System.out.println("=====================\n");
 
 		if (genInputOnly)
-			return;
+			return 0;
 
 		System.out.println("Start simulation ...");
 		System.out.println("Please wait ...");
@@ -454,6 +459,7 @@ public class Main {
 		System.out.println("\nEnd simulation ...");
 		long duration = System.currentTimeMillis() - Globals.SIM_START;
 		System.out.print("========== " + (duration / (1000)) + " seconds ==========\n");
+		return duration;
 	}
 
 	public static void freeMemory() {
@@ -556,6 +562,7 @@ public class Main {
 				modes.add(Runmode.Analysis_capacity);
 				modes.add(Runmode.Analysis_misest);
 				modes.add(Runmode.Analysis_overhead);
+				modes.add(Runmode.Analysis_N_max);
 				modes.add(Runmode.Experiment);
 				System.out.println(modes);
 				return;
@@ -580,16 +587,15 @@ public class Main {
 //		Globals.MACHINE_MAX_GPU = 20; Globals.numQueues = 5; Globals.numJobs = Globals.numQueues*5000;Globals.alpha = 0.2;
 		// fairness:
 		Globals.MACHINE_MAX_GPU = 20; Globals.numQueues = 10; Globals.alpha = 0.1;
+
+		Globals.workload = WorkLoadType.Google;
+//		Globals.workload = WorkLoadType.MayBeGood;
 		
 		Globals.numSmallJobs = 1000; Globals.numLargeJobs = 1000;
-//		Globals.numJobs = new int[]{Globals.numSmallJobs, Globals.numSmallJobs, Globals.numSmallJobs, Globals.numSmallJobs, Globals.numSmallJobs, 
-//				Globals.numLargeJobs, Globals.numLargeJobs, Globals.numLargeJobs, Globals.numLargeJobs, Globals.numLargeJobs};
-//		Globals.numSmallJobs = 4000; Globals.numLargeJobs = 100;
+//		Globals.numSmallJobs = 2000; Globals.numLargeJobs = 100;
+		
 		Globals.numJobs = new int[]{Globals.numSmallJobs, Globals.numSmallJobs, Globals.numSmallJobs, Globals.numSmallJobs, Globals.numSmallJobs, 
 			Globals.numSmallJobs, Globals.numSmallJobs,  Globals.numSmallJobs,  Globals.numSmallJobs,  Globals.numLargeJobs};
-		
-//		Globals.workload = WorkLoadType.Google;
-		Globals.workload = WorkLoadType.MayBeGood;
 		
 		double errStd = 0.1;
 		Globals.jobData = new JobData();
@@ -598,15 +604,11 @@ public class Main {
 		
 		Globals.MEMORY_SCALE_DOWN = 1;
 		Globals.NUM_MACHINES = 1;
-		Globals.SIM_END_TIME = 50000.0;
+		Globals.SIM_END_TIME = 100000.0;
 		
-		if (Globals.runmode.equals(Runmode.MultipleRuns)) {			
-//			Globals.Method[] methods = {Method.DRFFIFO, Method.DRF, Method.ES,Method.DRFExt,Method.SRPT, Method.AlloX};
+		if (Globals.runmode.equals(Runmode.MultipleRuns)) {
+			Globals.Method[] methods = {Method.ES, Method.SRPT,Method.DRFExt, Method.DRFFIFO, Method.DRF, Method.AlloX};
 //			Globals.Method[] methods = {Method.ES,Method.SRPT, Method.DRFFIFO, Method.DRF, Method.DRFExt, Method.AlloX, Method.AlloXopt};
-//			Globals.Method[] methods = {Method.ES,Method.SRPT, Method.DRFFIFO, Method.DRF, Method.DRFExt, Method.AlloXopt};
-			Globals.Method[] methods = {Method.AlloX};
-//			Globals.Method[] methods = {Method.AlloXopt};
-//			Globals.Method[] methods = {Method.ES};
 //			Globals.Method[] methods = {Method.ES};
 			for (Globals.Method method : methods) {
 				Globals.METHOD = method;
@@ -648,9 +650,9 @@ public class Main {
 		}  else if (Globals.runmode.equals(Runmode.Analysis_Alpha)) {
 			double alphas[] = {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0};
 //			double alphas[] = {0.05, 0.2, 0.4, 0.6, 0.8, 1.0};
-//			Globals.Method[] methods = {Method.DRFFIFO, Method.DRF, Method.ES, Method.DRFExt, Method.SRPT, Method.AlloX};
+			Globals.Method[] methods = {Method.DRFFIFO, Method.DRF, Method.ES, Method.DRFExt, Method.SRPT, Method.AlloX};
 //			Globals.Method[] methods = {Method.DRFFIFO, Method.DRF, Method.ES, Method.DRFExt, Method.SRPT};
-			Globals.Method[] methods = {Method.AlloX};			
+//			Globals.Method[] methods = {Method.AlloX};
 			
 //			Globals.jobData.cpuErrs = Randomness.getNormalDistribution(Globals.numJobs , 0, 0, -0.99, 0.99);
 //			Globals.jobData.gpuErrs = Randomness.getNormalDistribution(Globals.numJobs , 0, 0, -0.99, 0.99);
@@ -688,6 +690,36 @@ public class Main {
 					runSimulationScenario(false);
 					System.out.println();
 					Globals.IS_GEN= false;
+				}
+			}
+		} else if (Globals.runmode.equals(Runmode.Analysis_N_max)) {
+			// NOTE: Be careful don't run this experiment 2 at them same time.
+			// It will overwrite the simTimeFile.
+			
+			int nArray[] = {10, 20, 30, 50, 100, 150, 200};
+			int caps[] = {20, 30, 40, 80, 160};
+			double defaultCap = Globals.MACHINE_MAX_GPU;
+			
+			Globals.Method[] methods = {Method.ES, Method.DRFExt, Method.SRPT, Method.AlloX, Method.AlloXopt};
+//			Globals.Method[] methods = {Method.ES};
+			Globals.IS_GEN= true;
+			String simTimeFile =  "Analysis_N_max.times";
+//			Output.write("", false, simTimeFile);
+			Output.write("", true, simTimeFile);
+			for (Globals.Method method : methods) {
+				for (int i=0; i<caps.length; i++){
+					for (int j=0; j<nArray.length; j++){
+						int cap = caps[i];
+						Globals.ScaleArrivalTime = defaultCap/ (double)cap;
+						Globals.MAX_N_JOB_AlloX = nArray[j];
+						Globals.MACHINE_MAX_GPU = cap;
+						Globals.EXTRA = "_c"+cap +"_n"+Globals.MAX_N_JOB_AlloX;
+						Globals.METHOD = method;
+						Globals.setupParameters();
+						long simulationTime = runSimulationScenario(false);
+						Output.writeln(method + "," + Globals.EXTRA + "," + simulationTime, true, simTimeFile);
+						System.out.println();
+					}
 				}
 			}
 		} else if (Globals.runmode.equals(Runmode.Analysis_misest)) {
@@ -749,7 +781,6 @@ public class Main {
 				}
 			}
 		}  else if (Globals.runmode.equals(Runmode.Experiment)) {			
-			Globals.JOB_SCHEDULER = JobScheduling.SJF; 
 			Globals.IS_GEN= false;
 			Globals.USE_TRACE=true;
 			Globals.alpha = 0.5;

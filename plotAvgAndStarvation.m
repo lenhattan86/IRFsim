@@ -12,17 +12,22 @@ nLargeUsers = 1;
 queue_num = nSmallUsers+nLargeUsers;
 
 plots  = [true, true];
-% figureSize = figSizeThreeFourth;
-figureSize = figSizeOneCol;
+figureSize = figSizeThreeFourth;
+% figureSize = figSizeOneCol;
 
 % maxEndTime = max(endTimes_l{AlloXId}); % AlloX
 maxEndTime = 20000; 
 maxStartTime = 10000;
 
 %%
-methods = {strDRFFIFO, strDRFSJF, strES, strDRFExt, strAlloX, 'AlloXopt', strSRPT};
-files = {'DRFFIFO', 'DRF', 'ES', 'DRFExt', 'AlloX', 'AlloXopt', 'SRPT'};
-DRFFIFOId = 1; DRFId = 2; ESId = 3; DRFExtId = 4;  AlloXId = 5; AlloXIdOpt = 6; SRPTId = 7;
+% methods = {strDRFFIFO, strDRFSJF, strES, strDRFExt, strAlloX, 'AlloXopt', strSRPT};
+% files = {'DRFFIFO', 'DRF', 'ES', 'DRFExt', 'AlloX', 'AlloXopt', 'SRPT'};
+% DRFFIFOId = 1; DRFId = 2; ESId = 3; DRFExtId = 4;  AlloXId = 5; AlloXIdOpt = 6; SRPTId = 7;
+methods = {strDRFFIFO, strDRFSJF, strES, strDRFExt, strAlloX, strSRPT};
+colors = {colorDRFFIFO, colorDRFSJF,  colorES, colorDRFExt, colorAlloX, colorSRPT};
+files = {'DRFFIFO', 'DRF', 'ES', 'DRFExt', 'AlloX', 'SRPT'};
+DRFFIFOId = 1; DRFId = 2; ESId = 3; DRFExtId = 4;  AlloXId = 5; SRPTId = 6;
+
 alphas = [0.1 0.3];
 methodColors = {colorES; colorDRF; colorProposed};
 
@@ -37,10 +42,13 @@ startRunningTimes = {};
 runningTimes = {};
 scaleTime = 1; % minutes
 
+
+
 logfolder = ['log/'];
 %% load data
 commonShortIds = [];
 for i=1:length(methods)
+
     outputFile = [ 'output/' files{i} '-output' extraStr  '.csv'];
     [JobIds{i}, startTimes{i}, endTimes{i}, durations{i}, queueNames{i}, startRunningTimes{i}, runningTimes{i}] ...
         = import_compl_time(outputFile);   
@@ -95,7 +103,9 @@ if true
     for i=1:length(methods)    
         % care the start time for small jobs.
 %         smallIds = find(startTimes_s{i}<=maxStartTime);
-        [~, smallIds] = intersect( JobIds_s{i}, commonShortIds) ;
+%         [~, smallIds] = intersect( JobIds_s{i}, commonShortIds) ;
+%         smallIds = find(endTimes_s{i}<=maxEndTime);
+        smallIds = 1:length(JobIds_s{i});
         length(smallIds)
         
         durations_s{i} = durations_s{i}(smallIds);
@@ -145,6 +155,7 @@ if plots(1)
     xlim([0.6 length(methods)+0.4]);
     ylabel(yLabel,'FontSize', fontAxis);
     set(gca,'XTickLabel', methods,'FontSize',fontAxis);
+    box off;
 
 %     axes('position',[.35 .25 0.32 0.7])
 %     box on % put box around new pair onSmallUsersf axes
@@ -163,7 +174,7 @@ end
 
 %%
 %%
-if true    
+if false    
 %    figIdx=figIdx +1;  
 %    figures{figIdx} = figure;
     figure
@@ -204,7 +215,7 @@ end
 
 %%
 %%
-if plots(2)    
+if plots(2)   
    figIdx=figIdx +1;         
    figures{figIdx} = figure;
    scrsz = get(groot, 'ScreenSize');     
@@ -212,7 +223,7 @@ if plots(2)
     normMakespan = -1;
     for i = 1:length(methods)
         numJobs = sum(endTimes_l{i} <= maxEndTime);    
-        h=bar(i, numJobs , barWidth);
+        h=bar(i, numJobs , barWidth, 'FaceColor', colors{i});
     end
     hold off
 
@@ -225,6 +236,29 @@ if plots(2)
     ylabel(yLabel,'FontSize',fontAxis);
     set(gca,'XTickLabel', methods ,'FontSize',fontAxis);
     fileNames{figIdx} = 'job_completed';
+end
+
+if false    
+   figIdx=figIdx +1;         
+   figures{figIdx} = figure;
+   scrsz = get(groot, 'ScreenSize');     
+    hold on
+    normMakespan = -1;
+    for i = 1:length(methods)
+        numJobs = sum(endTimes_s{i} <= maxEndTime);    
+        h=bar(i, numJobs , barWidth);
+    end
+    hold off
+
+    xLabel=strMethods;
+    yLabel= ['job completed'];
+    legendStr=methods;
+    xlim([0.6 length(methods)+0.4]);
+    set (gcf, 'Units', 'Inches', 'Position', figureSize, 'PaperUnits', 'inches', 'PaperPosition', figureSize);
+%     xlabel(xLabel,'FontSize',fontAxis);
+    ylabel(yLabel,'FontSize',fontAxis);
+    set(gca,'XTickLabel', methods ,'FontSize',fontAxis);
+    fileNames{figIdx} = 'job_completed_s';
 end
 version
 %%

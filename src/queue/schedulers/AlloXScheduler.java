@@ -115,6 +115,8 @@ public class AlloXScheduler implements Scheduler {
 			}
 			availableMachines.removeAll(busyMachines);
 		}
+		//TODO: reduce the complexity by reduce the number of machines to be considered:
+		// idea: group the machines with similar characteristics in terms of resource and availability.
 			
 //		System.out.println("[INFO] available machines " + availableMachines + " at " + Simulator.CURRENT_TIME);
 		boolean isReschedule = isResourceAvailable();
@@ -253,10 +255,7 @@ public class AlloXScheduler implements Scheduler {
 				}
 			}
 			
-			
-			
 			//
-			
 			long start = System.currentTimeMillis();
 			//	long startTime1 = System.nanoTime();
 			

@@ -18,6 +18,7 @@ import cluster.datastructures.Session;
 import cluster.datastructures.SubGraph;
 import cluster.datastructures.MLJob;
 import cluster.simulator.Main.Globals;
+import cluster.simulator.Main.Globals.Runmode;
 
 public class GenInput {
 	private static int stageIter = 0;
@@ -107,6 +108,10 @@ public class GenInput {
 
 	public static String genSingleJobInfo(int queueId, int jobId, String queueName, MLJob job, int arrivalTime, double taskNumScale,
 			double durScale, boolean isUncertain, double cpuErr, double gpuErr) {
+		
+			// Scale Arrival Time
+			arrivalTime = (int)((double)arrivalTime*Globals.ScaleArrivalTime);
+			
 //		# 0
 //		1 0 1 0 queue0
 //		stage -1.0 2.0 2 128 1 2 21 1
@@ -280,7 +285,7 @@ public class GenInput {
 		int lastArrivalTime = 0;
 		int jobIdx = 0;
 		int maxJobs = Utils.maxArray(numOfJobsPerUser);	
-		for (int i = 0; i < maxJobs; i++)			
+		for (int i = 0; i < maxJobs; i++)
 			for (int u = 0; u < numOfJobsPerUser.length; u++) {
 				if (i >= numOfJobsPerUser[u])
 					continue;

@@ -49,28 +49,21 @@ public class EqualShareScheduler implements Scheduler {
 				Collections.sort((List<BaseJob>) q.getQueuedUpJobs(), new JobArrivalComparator());
 			}
 		// equal share all resources
-		// equallyAllocate(clusterTotCapacity, // Simulator.QUEUE_LIST.getRunningQueues());
-		onlineEqualShare(clusterTotCapacity, Simulator.QUEUE_LIST.getRunningQueues());
+		equallyAllocate(clusterTotCapacity, Simulator.QUEUE_LIST.getJobQueues());
+//		onlineEqualShare(clusterTotCapacity, Simulator.QUEUE_LIST.getRunningQueues());
 	}
 
-	public static void equallyAllocate(Resource resCapacity, List<JobQueue> runningQueues2) {
+	public static void equallyAllocate(Resource resCapacity, List<JobQueue> allQueues) {
 
-		List<JobQueue> runningQueues = new ArrayList<JobQueue>();
-
-		for (JobQueue queue : runningQueues2) {
-			if (queue.hasRunningJobs())
-				runningQueues.add(queue);
-		}
-
-		int numOfQueues = runningQueues.size();
-		if (runningQueues.isEmpty())
+		int numOfQueues = allQueues.size();
+		if (allQueues.isEmpty())
 			return;
 
 		// step 1: compute equal share
 		Resource equalShares = Resources.divide(resCapacity, numOfQueues);
 
 		for (int i = 0; i < numOfQueues; i++) {
-			JobQueue q = runningQueues.get(i);
+			JobQueue q = allQueues.get(i);
 			double shares[] = Resources.clone(equalShares).resources;
 			// Allocate on GPU
 			if (Globals.JOB_SCHEDULER.equals(JobScheduling.FIFO))
@@ -80,11 +73,11 @@ public class EqualShareScheduler implements Scheduler {
 				shares[0] = 0;
 				Collections.sort((List<BaseJob>) q.getQueuedUpJobs(), new JobLengthComparator(2));
 				Resource remain = QueueScheduler.allocateResToQueue(q, shares, false);
+				
 				shares[0] = cpuShare;
 				shares[2] = remain.resource(2);
 				Collections.sort((List<BaseJob>) q.getQueuedUpJobs(), new JobLengthComparator(1));
 				remain = QueueScheduler.allocateResToQueue(q, shares, false);
-				shares[0] = 0;
 			}
 		}
 	}

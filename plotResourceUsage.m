@@ -3,13 +3,13 @@ addpath('matlab_func');
 common_settings;
 is_printed = false;
 
-num_batch_queues = 10;
+num_batch_queues = 4;
 num_interactive_queue = 0;
 num_queues = num_batch_queues + num_interactive_queue;
-START_TIME = 0; END_TIME = 20000;  STEP_TIME = 1;
-cluster_size = 20;
+START_TIME = 0; END_TIME = 12000;  STEP_TIME = 1;
+cluster_size = 4;
 
-CPUCap = cluster_size * 32;
+CPUCap = cluster_size * 40;
 GPUCap = cluster_size;
 MemCap = cluster_size* 128;
 
@@ -22,7 +22,7 @@ enableSeparateLegend = false;
 scale_down_mem = 1;
 
 % fig_path='../IRF/figs/';
-version = '_c1';
+version = '';
 
 %%
 result_folder= '';
@@ -64,7 +64,8 @@ extraStr = ['_' int2str(num_batch_queues) '_' int2str(cluster_size) version];
 % prefixes = {'DRFF'};
 % prefixes = {'DRF','AlloX'};
 % prefixes = {'DRFExt','SJF'};
-prefixes = {'DRF','ES', 'AlloX','SRPT'};
+% prefixes = {'DRFFIFO', 'DRF','ES', 'AlloX','SRPT'};
+prefixes = {'ES'};
 
 for iFile=1:length(prefixes)
   if plots(1)

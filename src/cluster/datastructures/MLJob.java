@@ -291,6 +291,9 @@ public class MLJob extends BaseJob implements Cloneable {
 
 			while ((line = br.readLine()) != null) {
 				line = line.trim();
+				if (line.startsWith("%")) {
+					continue;
+				}
 				if (line.startsWith("#")) {
 					String[] args = line.split(" "); 
 					dag_name = line.split("#")[1];

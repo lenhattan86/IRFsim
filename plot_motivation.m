@@ -1,17 +1,17 @@
 addpath('matlab_func');
 common_settings;
 barWidth = 0.5;
-figureSize = figSizeOneCol;
+figureSize = figSize07Col.*[1 1 1 1.2];
 
 plots  = [1, 1, 1, 1, 1, 1, 1 ];
 
-machines = {'G1','G2','C1', 'C2'};
+machines = {'GPU1','GPU2','CPU1', 'CPU2'};
+twoMachines =  {'GPU','CPU'};
 enableSeparateLegend = true;
 
 textColor = 'white';
 strJob = 'J';
 fontWeight = 'bold';
-fontText = 12;
 leftMargin = 1;
 
 %%
@@ -373,7 +373,7 @@ if plots(5)
      ylim([0.5 2.5]);
     set (gcf, 'Units', 'Inches', 'Position', temp, 'PaperUnits', 'inches', 'PaperPosition', temp);
 %     xlabel(xLabel,'FontSize',fontAxis);
-    set(gca,'YTickLabel', {'G','C'},'FontSize',fontAxis,'XGrid','on');
+    set(gca,'YTickLabel', twoMachines,'FontSize',fontAxis,'XGrid','on');
     fileNames{figIdx} = 'FS_ex';
 end
 %%

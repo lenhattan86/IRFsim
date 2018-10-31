@@ -2,9 +2,11 @@ addpath('matlab_func');
 common_settings;
 % is_printed = 1;
 % fig_path = ['figs/'];
-version = '_n1000';
+version = '';
+EXTRA='';
 %%
-simulation = true;
+simulation = false;
+maxTime = 20000;
 if simulation 
     queue_num = 10; cluster_size= 20;
     plots  = [true, false, false, false, false, true, false];
@@ -12,30 +14,32 @@ else
     fprintf('Verify the experiment results');
     queue_num = 4;
     cluster_size= 4;
-    % TODO: double check results of DRFS
     % ClusterAvg =  [5.3396    5.0837    4.8939    4.8312    4.4267]*1000; % eurosys 4.2
+    % TODO: double check results of DRFS
     SimAvg = [3.810    3.6888    3.3361     3.3257    2.6007] * 1000; % from simulation    
-    SimWaitingAvg = [3078    2970 1835 1861 1553]; % from simulation
-    SimRunningAvg = [731.5   718 1501 1628 1048]; % from simulation
-    ClusterAvg = [3.8899    3.752    3.3247    3.4347    2.5079] * 1000;% eurosys 4.3
-    ClusterWaitingAvg = [3.1584    3.000    1.6876+0.12    1.6690+0.12    1.3565+0.12] * 1000;
-    ClusterRunningAvg = [0.7315    0.751    1.5171    1.6457    1.0314] * 1000;
+%     SimWaitingAvg = [3078    2970 1835 1861 1553]; % from simulation
+%     SimRunningAvg = [731.5   718 1501 1628 1048]; % from simulation
+    SimWaitingAvg = [3078    2970 1793 1861 1553]; % from simulation
+    SimRunningAvg = [731.5   718 1786 1628 1048]; % from simulation
+    ClusterAvg = [3.8899    3.752    3.352    3.4347+0.12    2.5079+0.12] * 1000;% eurosys 4.3
+    ClusterWaitingAvg = [3.1584    3.000    1.781    1.6690+0.12    1.3565+0.12] * 1000;
+    ClusterRunningAvg = [0.7315    0.751    1.754    1.6457    1.0314] * 1000;
     plots  = [false, false, false, false, false, false, false];
 end
-sample = 20;
+sample = 100;    
 figureSize = figSizeThreeFourth;
 
-% methods = {strDRF,  strES,  'DRFE', strAlloX, 'SJF', 'FS','SRPT'};
-% files = {'DRF', 'ES', 'DRFExt', 'AlloX','SJF', 'FS','SRPT'};
-% DRFId = 1; ESId = 2; DRFExtId = 3; AlloXId = 4; SRPTId = 5; AlloXId = 6;
+methods = {strDRFFIFO, strDRFSJF, strES, strDRFExt, strAlloX, strSRPT};
+files = {'DRFFIFO', 'DRF', 'ES', 'DRFExt', 'AlloX', 'SRPT'};
+lines = {lineDRFFIFO, lineDRFSJF,  lineES, lineDRFExt, lineAlloX, lineSRPT};
+colors = {colorDRFFIFO, colorDRFSJF,  colorES, colorDRFExt, colorAlloX, colorSRPT};
 
-% methods = {strDRFFIFO, strDRFSJF, strES, strDRFExt, strAlloX, strSRPT};
-% files = {'DRFFIFO', 'DRF', 'ES', 'DRFExt', 'AlloX', 'SRPT'};
-% DRFFIFOId = 1; DRFId = 2; ESId = 3; DRFExtId = 4;  AlloXId = 5; SRPTId = 6;
+DRFFIFOId = 1; DRFId = 2; ESId = 3; DRFExtId = 4;  AlloXId = 5; SRPTId = 6;
 
-methods = {strDRFFIFO, strDRFSJF, strES, strDRFExt, strAlloX, strAlloXopt,  strSRPT};
-files = {'DRFFIFO', 'DRF', 'ES', 'DRFExt', 'AlloX', 'AlloXopt', 'SRPT'};
-DRFFIFOId = 1; DRFId = 2; ESId = 3; DRFExtId = 4;  AlloXId = 5; AlloXoptId=6; SRPTId = 7;
+
+% methods = {strDRFFIFO, strDRFSJF, strES, strDRFExt, strAlloX, strAlloXopt,  strSRPT};
+% files = {'DRFFIFO', 'DRF', 'ES', 'DRFExt', 'AlloX', 'AlloXopt', 'SRPT'};
+% DRFFIFOId = 1; DRFId = 2; ESId = 3; DRFExtId = 4;  AlloXId = 5; AlloXoptId=6; SRPTId = 7;
 
 
 plotOrders = [DRFFIFOId DRFId ESId DRFExtId SRPTId AlloXId];
@@ -49,7 +53,7 @@ alphas = [0.1 0.3];
 methodColors = {colorES; colorDRF; colorProposed};
 
 extraStr = ['_' int2str(queue_num) '_' int2str(cluster_size) version];
-EXTRA='';
+
 % EXTRA='_w_prof';
 JobIds={};
 startTimes={};
@@ -87,7 +91,8 @@ logfolder = ['log/'];
 
 
 %%
-if plots(1)    
+if plots(1)   
+   enableSeparateFigure = true;
    figIdx=figIdx +1;  
    figures{figIdx} = figure;
    scrsz = get(groot, 'ScreenSize');   
@@ -117,37 +122,93 @@ if plots(1)
 %         set(h,'FaceColor', methodColors{i});
     end
 %     stackData(:,1,:) = sum(avgCmplt,2);
-    stackData(:,1,:) = avgCmplt;
-    stackData(:,2,:) = avg95;    
-    stackData(:,3,:) = avg99; 
 
-    plotBarStackGroups(stackData, methods, false);
-      
-    temp = sum(avgCmplt'); 
-    improvement = (temp-temp(AlloXId))./temp * 100
-    maxImprovement = (temp-temp(SRPTId))./temp * 100
-    xLabel=strMethods;
-    yLabel=strAvgCmplt;
-    legendStr={'wait time','runtime','wait-top 5%','run-top 5%','wait-top 1%','run-top 1%',};
-    legend(legendStr, 'Location','northeastoutside','FontSize', fontLegend);
-    xlim([0.6 length(methods)+0.4]);
-    ylabel(yLabel,'FontSize',fontAxis);
-    set(gca,'XTickLabel', methods,'FontSize',fontAxis);
-%     h=bar(1:length(methods), avgCmplt(:,:), barWidth , 'stacked'); 
+    if ~enableSeparateFigure
+        stackData(:,1,:) = avgCmplt;
+        stackData(:,2,:) = avg95;    
+        stackData(:,3,:) = avg99; 
+
+        plotBarStackGroups(stackData, methods, false);
+
+        temp = sum(avgCmplt'); 
+        improvement = (temp-temp(AlloXId))./temp * 100
+        maxImprovement = (temp-temp(SRPTId))./temp * 100
+        xLabel=strMethods;
+        yLabel=strAvgCmplt;
+        legendStr={'wait time','runtime','wait-top 5%','run-top 5%','wait-top 1%','run-top 1%',};
+        legend(legendStr, 'Location','northeastoutside','FontSize', fontLegend);
+        xlim([0.6 length(methods)+0.4]);
+        ylabel(yLabel,'FontSize',fontAxis);
+        set(gca,'XTickLabel', methods,'FontSize',fontAxis);
+
+        axes('position',[.38 .25 0.3 0.6]);
+        box on % put box around new pair of axes
+        plotBarStackGroups(stackData(4:end,:,:), methods(4:end), false);
+        ax = gca;
+        ax.YRuler.Exponent = 3;
+        axis tight
+        set (gcf, 'Units', 'Inches', 'Position', figureSize.*[1 1 1.4 1], 'PaperUnits', 'inches', 'PaperPosition', figureSize.*[1 1 1.4 1]);
+        fileNames{figIdx} = 'avgCmplt';
+    else
+        %%
+        scaleDown = 0.9;
+        
+        yVals = sum(avgCmplt');
+        bar(yVals, barWidth/scaleDown);
+        roundVals = round(yVals);
+        text(1:length(roundVals),roundVals,num2str(roundVals'),'vert','bottom','horiz','center'); 
+        
+        temp = sum(avgCmplt'); 
+        improvement = (temp-temp(AlloXId))./temp * 100
+        maxImprovement = (temp-temp(SRPTId))./temp * 100
+        yLabel=strAvgCmplt;
+        set(gca,'XTickLabel', methods,'FontSize',fontAxis);
+        xlim([0.6 length(methods)+0.4]);
+        ax=gca; ax.YRuler.Exponent = 3;
+        ylim([0 max(yVals)*1.1]);
+        ylabel(yLabel,'FontSize',fontAxis);
+        box off;
+        set (gcf, 'Units', 'Inches', 'Position', figureSize*scaleDown, 'PaperUnits', 'inches', 'PaperPosition', figureSize*scaleDown);       
+        fileNames{figIdx} = 'avgCmplt';
+        %%
+        figIdx = figIdx + 1;
+        figures{figIdx} = figure;
+        yVals = sum(avg95');
+        bar(yVals, barWidth/scaleDown);
+        ylim([0 max(yVals)*1.1]);
+        roundVals = round(yVals);
+        text(1:length(roundVals),roundVals,num2str(roundVals'),'vert','bottom','horiz','center');         
+        temp = sum(avgCmplt'); 
+        improvement95 = (yVals-yVals(AlloXId))./temp * 100
+        yLabel=strAvgCmplt;
+        set(gca,'XTickLabel', methods,'FontSize',fontAxis);
+        xlim([0.6 length(methods)+0.4]);
+        ylabel(yLabel,'FontSize',fontAxis);
+        box off;
+        set (gcf, 'Units', 'Inches', 'Position', figureSize*scaleDown, 'PaperUnits', 'inches', 'PaperPosition', figureSize*scaleDown);               
+        fileNames{figIdx} = 'avgCmplt_95';
+        %%
+        figIdx = figIdx + 1;
+        figures{figIdx} = figure;
+        yVals = sum(avg99');
+        bar(yVals, barWidth/scaleDown);
+        ylim([0 max(yVals)*1.1]);
+        roundVals = round(yVals);
+        text(1:length(roundVals),roundVals,num2str(roundVals'),'vert','bottom','horiz','center'); 
+        
+        temp = sum(avgCmplt'); 
+        improvement99 = (yVals-yVals(AlloXId))./temp * 100
+        yLabel=strAvgCmplt;
+        set(gca,'XTickLabel', methods,'FontSize',fontAxis);
+        xlim([0.6 length(methods)+0.4]);
+        ylabel(yLabel,'FontSize',fontAxis);
+        box off;
+        set (gcf, 'Units', 'Inches', 'Position', figureSize*scaleDown, 'PaperUnits', 'inches', 'PaperPosition', figureSize*scaleDown);       
+        fileNames{figIdx} = 'avgCmplt';
+        fileNames{figIdx} = 'avgCmplt_99';
+    end
+
     
-    axes('position',[.35 .25 0.32 0.7])
-    box on % put box around new pair of axes
-    plotBarStackGroups(stackData(3:end,:,:), methods(3:end), false);
-    axis tight
-%     xlim([2.6 length(methods)+0.4]);
-
-
-%     set(gca, 'YScale', 'log'); 
-%     grid on;
-%     ylim([0 ]);
-    set (gcf, 'Units', 'Inches', 'Position', figureSize.*[1 1 1.4 1], 'PaperUnits', 'inches', 'PaperPosition', figureSize.*[1 1 1.4 1]);
-
-    fileNames{figIdx} = 'avgCmplt';
 end
 
     
@@ -185,7 +246,7 @@ if (~simulation)
         yLabel=strAvgCmplt;
         legendStr={'wait time','runtime'};
         legend(legendStr,'Location','best','FontSize', fontLegend);
-        xlim([0.6 length(methods)+0.4]);
+        xlim([0.4 length(methods)+0.6]);
 
     %     set(gca, 'YScale', 'log'); 
         grid on;
@@ -220,20 +281,22 @@ end
 if ~simulation    
     figIdx=figIdx +1;         
     scrsz = get(groot, 'ScreenSize');  
-    
+    figures{figIdx} = figure;
 %     stackData = [SimWaitingAvg; ClusterWaitingAvg; SimRunningAvg; ClusterRunningAvg];
     stackData = ones(5, 2, 2);
     stackData(:,1,:) = [ClusterWaitingAvg; ClusterRunningAvg ]';
     stackData(:,2,:) = [SimWaitingAvg; SimRunningAvg ]';
-    figures{figIdx}  = plotBarStackGroups(stackData, strMethods);
     
+    plotBarStackGroups(stackData, strMethods, false);
+    ax=gca; ax.YRuler.Exponent = 3;
     xLabel=strMethods;
     yLabel='seconds';
     legendStr=methods;
-    xlim([0.6 length(ClusterAvg)+0.4]);
+    xlim([0.4 length(ClusterAvg)+0.6]);
+   
 %     ylim([0 6000]);
-    legend({'[cluster] wait','[cluster] run', '[simulator] wait', '[simulator] run'},'Location', 'northeastoutside','Orientation','vertical');
-    set (gcf, 'Units', 'Inches', 'Position', figureSize .* [1 1 1.3 1], 'PaperUnits', 'inches', 'PaperPosition', figureSize.* [1 1 1.3 1]);
+    legend({'[cluster] wait','[cluster] run', '[sim.] wait', '[sim.] run'},'Location', 'northeastoutside','Orientation','vertical','FontSize', fontSize);
+    set (gcf, 'Units', 'Inches', 'Position', figureSize .* [1 1 1.25 1], 'PaperUnits', 'inches', 'PaperPosition', figureSize.* [1 1 1.25 1]);
     ylabel(yLabel,'FontSize',fontAxis);
     set(gca,'XTickLabel', methods,'FontSize',fontAxis);
     fileNames{figIdx} = 'avg_comparison_group';
@@ -496,8 +559,6 @@ if plots(6)
     figures{figIdx} = figure;
     % compute data
    
-    maxTime = 4000;
-   
     arrivals = startTimes{1};    
     [arrivals, ids] = sort(arrivals);    
     xVals = 0:sample:max(arrivals);
@@ -536,7 +597,7 @@ if plots(6)
     xlim([0 maxTime]);
     ylim([0 max(jobArrivals)*1.3]);
     legend({'job arrivals'},'FontSize', fontLegend,'Location','best','Orientation','horizontal');
-    
+    box off;
     % plot performance
     subplot(4,1,2);  
     hold on;
@@ -545,101 +606,98 @@ if plots(6)
         id = plotOrders(j);        
         if id~= AlloXId
             lineW = lineWidth*0.5;
-            plot(xVals, avgComplts(:,id),'-.','LineWidth', lineW);
+            plot(xVals, avgComplts(:,id), lines{id}, 'Color', colors{id},'LineWidth', lineW);
         else
             lineW = lineWidth;
-            plot(xVals, avgComplts(:,id),'b-','LineWidth', lineW);
+            plot(xVals, avgComplts(:,id),lines{id}, 'Color', colors{id},'LineWidth', lineW);
         end
         
         yMax = max(yMax, max(avgComplts(:,id)));
     end    
     hold off;
-    xlabel(strSimTime,'FontSize', fontAxis);
-    ylabel(strMaxCmplt, 'FontSize', fontAxis);
+    xlabel(strSimTime, 'FontSize', fontAxis);
+    ylabel('avg. compl.', 'FontSize', fontAxis);
+    set(gca, 'YScale', 'log');
     xlim([0 maxTime]);
-    ylim([0 yMax*1.3]);
+%     ylim([0 500]);
 %     ylim([0 2000]);
 %     set(gca, 'YScale', 'log');
 %     legend(methods(plotOrders),'FontSize', fontLegend, 'Location', 'north', 'Orientation', 'horizontal');
     
-    % plot fair score
-    num_time_steps = maxTime-0;
-    subplot(4,1,3); 
-    hold on;
-    for i=1:length(plotOrders)  
-     iFile = plotOrders(i);
-     logFile = [ logfolder files{iFile} '-output' extraStr  '.csv'];
-     [queueNames, res1, res2, res3, fairScores, nJobs, nQueuedJobs, flag] = importResUsageLog(logFile);
-     if (flag)             
-        resAll = zeros(1,queue_num*num_time_steps);
-        resAll2 = zeros(1,queue_num*num_time_steps);
-        
-        temp = fairScores(1:length(fairScores));
-        temp2 = nJobs(1:length(nJobs));
-%         temp2 = nQueuedJobs(1:length(nQueuedJobs));
-        if(length(resAll)>length(temp))
-           resAll(1:length(temp)) = temp;
-           resAll2(1:length(temp2)) = temp2;
-        else
-           resAll = temp(1:queue_num*num_time_steps);
-           resAll2 = temp2(1:queue_num*num_time_steps);
-        end
-        fairScoreUsers = reshape(resAll, queue_num, num_time_steps);
-        nJobsUsers = reshape(resAll2, queue_num, num_time_steps);
-        
-%         fairScores = fairScoreUsers(USER_ID, :)';
-        yVals = zeros(1,num_time_steps);
-        for iTime = 1:num_time_steps
-            temp = nJobsUsers(:,iTime);
-            if (sum(temp>0) > 0)
-%                 yVals(iTime) = std(fairScoreUsers(temp>0,iTime))/mean(fairScoreUsers(temp>0,iTime));
-                yVals(iTime) = std(fairScoreUsers(temp>0,iTime));
-%                 yVals(iTime) = var(fairScoreUsers(temp>0,iTime));
-%                 yVals(iTime) = std(fairScoreUsers(:,iTime));                   
+    %% plot fair score
+    %%
+    if true
+        num_time_steps = maxTime-0;
+        subplot(4,1,3); 
+        hold on;
+        for i=1:length(plotOrders)  
+         iFile = plotOrders(i);
+         logFile = [ logfolder files{iFile} '-output' extraStr  '.csv'];
+         [queueNames, res1, res2, res3, fairScores, nJobs, nQueuedJobs, flag] = importResUsageLog(logFile);
+         if (flag)             
+            resAll = zeros(1,queue_num*num_time_steps);
+            resAll2 = zeros(1,queue_num*num_time_steps);
+
+            temp = fairScores(1:length(fairScores));
+            temp2 = nJobs(1:length(nJobs));
+    %         temp2 = nQueuedJobs(1:length(nQueuedJobs));
+            if(length(resAll)>length(temp))
+               resAll(1:length(temp)) = temp;
+               resAll2(1:length(temp2)) = temp2;
+            else
+               resAll = temp(1:queue_num*num_time_steps);
+               resAll2 = temp2(1:queue_num*num_time_steps);
             end
+            fairScoreUsers = reshape(resAll, queue_num, num_time_steps);
+            nJobsUsers = reshape(resAll2, queue_num, num_time_steps);
+
+    %         fairScores = fairScoreUsers(USER_ID, :)';
+            yVals = zeros(1,num_time_steps);
+            for iTime = 1:num_time_steps
+                temp = nJobsUsers(:,iTime);
+                if (sum(temp>0) > 0)
+    %                 yVals(iTime) = std(fairScoreUsers(temp>0,iTime))/mean(fairScoreUsers(temp>0,iTime));
+                    yVals(iTime) = std(fairScoreUsers(temp>0,iTime));
+    %                 yVals(iTime) = var(fairScoreUsers(temp>0,iTime));
+    %                 yVals(iTime) = std(fairScoreUsers(:,iTime));                   
+                end
+
+            end
+    %         yVals = prctile(yVals,95)*ones(1,num_time_steps);
+            fairVals(iFile, 1) = mean(yVals);
+            fairVals(iFile, 2) = prctile(yVals,95);
+            fairVals(iFile, 3) = prctile(yVals,99);
             
-        end
-%         yVals = prctile(yVals,95)*ones(1,num_time_steps);
-        fairVals(iFile, 1) = mean(yVals);
-        fairVals(iFile, 2) = prctile(yVals,95);
-        fairVals(iFile, 3) = prctile(yVals,99);
-        if iFile~= AlloXId
+            
             lineW = lineWidth*0.5;
-            plot(1:num_time_steps, yVals ,'-.','LineWidth', lineW);
-        else
-            
-            lineW = lineWidth;
-            plot(1:num_time_steps, yVals,'b-','LineWidth', lineW);
-        end
-             
-     end
-    end    
-    hold off;
-    ylabel('fair. std', 'FontSize', fontAxis);
-    xlim([0 maxTime]);
+            plot(1:num_time_steps, yVals , lines{iFile},'Color', colors{iFile},'LineWidth', lineW);
+
+
+         end
+        end    
+        axis on;
+        hold off;
+        ylabel('progress std.', 'FontSize', fontAxis);
+        xlim([0 maxTime]);
+    end
     %
     subplot(4,1,4); 
     hold on;
     for i=1:length(plotOrders)  
         iFile = plotOrders(i);	
-        if iFile~= AlloXId
-            lineW = lineWidth*0.5;
-            plot(0, 0 ,'-.','LineWidth', lineW);
-        else
-            lineW = lineWidth;
-            plot(0, 0,'b-','LineWidth', lineW);
-        end
+        lineW = lineWidth;
+        plot(0, 0 ,lines{iFile},'Color', colors{iFile},'LineWidth', lineW);
     end    
     hold off;    
     axis off;
     legend(methods(plotOrders),'FontSize', fontLegend, 'Location', 'northoutside', 'Orientation', 'horizontal');
     
     %
-    set (gcf, 'Units', 'Inches', 'Position', figureSize.*[1 1 1.8 2.5], 'PaperUnits', 'inches', 'PaperPosition', figureSize.*[1 1 1.8 2.5]);
+    set (gcf, 'Units', 'Inches', 'Position', figureSize.*[1 1 1.8 3.5], 'PaperUnits', 'inches', 'PaperPosition', figureSize.*[1 1 1.8 3.5]);
     fileNames{figIdx} = 'perf_overtime';    
 end
 
-if plots(6)   
+if plots(6)
     figIdx=figIdx +1;  
    figures{figIdx} = figure;
    scrsz = get(groot, 'ScreenSize');   
@@ -647,7 +705,7 @@ if plots(6)
     bar(fairVals(:,1:2), 'group');
     
     xLabel=strMethods;
-    yLabel='std. of fairness score';
+    yLabel='progress std.';
     legendStr={'mean','95-percentile'};
     legend(legendStr, 'Location','best','FontSize', fontLegend);
     xlim([0.6 length(methods)+0.4]);

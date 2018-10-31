@@ -18,12 +18,14 @@ fontTitle = fontSize;
 fontLegend = fontSize;
 LineWidth = 1.5;
 FontSize = fontSize;
+fontText = fontSize;
 axisWidth = 1.5;
 
 %%
 
 legendSize = [0.0 0 5 0.4];
 figSizeOneCol = [0.0 0 5 3];
+figSize07Col = figSizeOneCol*0.7;
 figSizeOneColHaflRow = [1 1 1 0.5].* figSizeOneCol;
 figSizeTwoCol = 2*figSizeOneCol;
 figSizeOneThirdCol = 1/3*figSizeOneCol;
@@ -61,14 +63,6 @@ strUser3 = 'User 3';
 strUser4 = 'User 4';
 strUnalloc = 'unallocated';
 
-strES = 'ES';
-strAlloX = 'AlloX';
-strAlloXopt = 'AlloXopt';
-strDRFFIFO = 'DRFF';
-strDRFSJF = 'DRFS';
-strSJF = 'SJF';
-strDRFExt = 'DRFE';
-strSRPT = 'SRPT';
 strErrorStd = 'std. of err (%)';
 
 strGPU = 'GPU';
@@ -101,16 +95,33 @@ strBudget='norm. budget';
 strFairScore = 'fair score';
 
 %% line specs
+lineES = '-.';
 lineAlloX = '-';
-lineES = ':';
-lineDRF = '--';
-lineSRPT = '-.';
+lineAlloXopt = '-.';
+lineDRFFIFO = ':';
+lineDRFSJF = '--';
+lineDRFExt = ':';
+lineSRPT = '--';
+randomLines = {'-','--', '-.', ':'};
 
-lineBB = '-';
-lineTPCDS = '--';
-lineTPCH = '-.';
-workloadLineStyles = {lineBB, lineTPCDS, lineTPCH};
-fairscoreLineStyles = {lineDRF, lineAlloX, lineSRPT};
+colorAlloX = [0    0.4470    0.7410];
+colorES = [0.8500    0.3250    0.0980];
+colorAlloXopt = [0.9290    0.6940    0.1250];
+colorDRFFIFO = [0.4940    0.1840    0.5560];
+colorDRFSJF = [0.4660    0.6740    0.1880];
+colorDRFExt = [0.3010    0.7450    0.9330];
+colorSRPT = [0.6350    0.0780    0.1840];
+
+lines = {lineES, lineAlloX,  lineAlloXopt, lineDRFFIFO,lineDRFSJF,lineDRFExt, lineSRPT};
+colors = {colorES, colorAlloX,  colorAlloXopt, colorDRFFIFO,colorDRFSJF,colorDRFExt, colorSRPT};
+
+strES = 'ES';
+strAlloX = 'AlloX';
+strAlloXopt = 'AlloXopt';
+strDRFFIFO = 'DRFF';
+strDRFSJF = 'DRFS';
+strDRFExt = 'DRFA';
+strSRPT = 'SRPT';
 
 %%
 
@@ -133,13 +144,13 @@ lineWidthBarMinMax=1.5;
 colorUser1 = [hex2dec('1f')    hex2dec('49')    hex2dec('7d')]/255;
 colorUser2 = [hex2dec('f7')    hex2dec('96')    hex2dec('46')]/255;
 
-colorJob0 = [hex2dec('00')    hex2dec('72')    hex2dec('BD')]/255;
-colorJob1 = [hex2dec('D9')    hex2dec('53')    hex2dec('19')]/255;
-colorJob2 = [hex2dec('ED')    hex2dec('B1')    hex2dec('20')]/255;
-colorJob3 = [hex2dec('7E')    hex2dec('2F')    hex2dec('8E')]/255;
-colorJob4 = [hex2dec('77')    hex2dec('AC')    hex2dec('30')]/255;
-colorJob5 = [hex2dec('4D')    hex2dec('BE')    hex2dec('EE')]/255;
-colorJob6 = [hex2dec('A2')    hex2dec('14')    hex2dec('2F')]/255;
+colorJob1 = [hex2dec('00')    hex2dec('72')    hex2dec('BD')]/255;
+colorJob2 = [hex2dec('D9')    hex2dec('53')    hex2dec('19')]/255;
+colorJob3 = [hex2dec('ED')    hex2dec('B1')    hex2dec('20')]/255;
+colorJob4 = [hex2dec('7E')    hex2dec('2F')    hex2dec('8E')]/255;
+colorJob5 = [hex2dec('77')    hex2dec('AC')    hex2dec('30')]/255;
+colorJob6 = [hex2dec('4D')    hex2dec('BE')    hex2dec('EE')]/255;
+colorJob7 = [hex2dec('A2')    hex2dec('14')    hex2dec('2F')]/255;
 
 
 %% 

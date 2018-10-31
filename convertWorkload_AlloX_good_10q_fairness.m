@@ -1,6 +1,6 @@
 clear; close all; clc;
 
-
+OUTPUT = 'job_google_c6.txt';
 % speedupRate = [33 40  32*2 32*3 32*3 32*5 32*6 32*7 32*8 32*15]/32;  % 32 cores per node vs 1 GPU 
 % speedupRate = [33 40 32*2 32*3 32*3 32*4 32*4 32*4 32*5 32*5]/32;  % 32 cores per node vs 1 GPU 
 % speedupRate = [33 32*2 32*4 32*4 32*15 32 32 32 32 32]/32;  % 32 cores per node vs 1 GPU 
@@ -9,11 +9,13 @@ std_coeff = [1 1 1 1]*1.2;
 % NJobs = 1000;
 nSmallJobUser= 9;
 nLargeJobUser=1;
-nSmallJobs = 4000;
+nSmallJobs = 2000;
 nLargeJobs = 100;
-scaleLarge = 10;
-timeScale = 75; % c1: 75
+scaleLarge = 20;
+timeScale = 65; % c1: 75, c2: ??, c3: 45, c4: 65, c5: 70
 
+
+strInfo = ['% timeScale=' num2str(timeScale) ' nSmallJobs=' num2str(nSmallJobs) ' scaleLarge=' num2str(scaleLarge) '\n'];
 
 nMaxJobs = max(nSmallJobs, nLargeJobs);
 NJobs = [nSmallJobs * ones(1,nSmallJobUser) nLargeJobs *ones(1,nLargeJobUser)];
@@ -92,7 +94,8 @@ else
 end
 
 Folder = 'input/';
-outputFile = [Folder 'job_google.txt'];
+
+outputFile = [Folder OUTPUT];
 %%%%% Job input
 fileID = fopen(outputFile,'w');
 jobIdx= 0;
@@ -102,6 +105,8 @@ cpuReqs = [];
 cpuCmplts = [];
 gpuCmplts = [];
 % p = randperm(NJobs,nUsers);
+
+fprintf(fileID, strInfo);
 
 jobLengthMin = 40;
 jobLengthMax = 400;
