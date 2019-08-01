@@ -19,6 +19,7 @@ import queue.schedulers.SJFScheduler;
 import queue.schedulers.DRFExtScheduler;
 import queue.schedulers.DRFScheduler;
 import queue.schedulers.EqualShareScheduler;
+import queue.schedulers.AlloXPlusScheduler;
 import queue.schedulers.AlloXScheduler;
 import queue.schedulers.PricingScheduler;
 import queue.schedulers.SRPTScheduler;
@@ -58,6 +59,9 @@ public class QueueScheduler {
 			break;
 		case SRPT:
 			scheduler = new SRPTScheduler();
+			break;
+		case AlloXPlus:
+			scheduler = new AlloXPlusScheduler();
 			break;
 		default:
 			System.err.println("Unknown sharing policy");

@@ -150,9 +150,11 @@ public class Main {
 		public static double TIME_UNIT = 0.1; // seconds
 
 		public static int SCALE_UP_FACTOR = 1;
+		
+		public static int ALLOX_TIME_OUT = 20;
 
 		public static enum Method {
-			DRFFIFO, DRF, DRFExt, FDRF, DRFW, ES, MaxMinMem, SpeedUp, Pricing, SJF, AlloX, SRPT, AlloXopt
+			DRFFIFO, DRF, DRFExt, FDRF, DRFW, ES, MaxMinMem, SpeedUp, Pricing, SJF, AlloX, SRPT, AlloXopt, AlloXPlus
 		}
 		
 		public static int PERIOD_FS = 1; 
@@ -166,7 +168,7 @@ public class Main {
 		}
 
 		public static enum QueueSchedulerPolicy {
-			DRF, DRFExt, ES, MaxMinMem, SpeedUp, Pricing, AlloX, SJF, FS, SRPT, AlloXopt
+			DRF, DRFExt, ES, MaxMinMem, SpeedUp, Pricing, AlloX, SJF, FS, SRPT, AlloXopt, AlloXPlus
 		};
 
 		public static QueueSchedulerPolicy QUEUE_SCHEDULER = QueueSchedulerPolicy.ES;
@@ -407,7 +409,10 @@ public class Main {
 		} else if (Globals.METHOD.equals(Method.SJF)) {
 			Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.SJF;
 			Globals.FileOutput = "SJF-output" + extraName + ".csv";
-		}else {
+		} else if (Globals.METHOD.equals(Method.AlloXPlus)) {
+			Globals.QUEUE_SCHEDULER = Globals.QueueSchedulerPolicy.AlloXPlus;
+			Globals.FileOutput = "AlloXPlus-output" + extraName + ".csv";
+		} else {
 			System.err.println("[Main] Error! test case");
 			return 0;
 		}
@@ -607,9 +612,9 @@ public class Main {
 		Globals.SIM_END_TIME = 100000.0;
 		
 		if (Globals.runmode.equals(Runmode.MultipleRuns)) {
-			Globals.Method[] methods = {Method.ES, Method.SRPT,Method.DRFExt, Method.DRFFIFO, Method.DRF, Method.AlloX};
+//			Globals.Method[] methods = {Method.ES, Method.SRPT,Method.DRFExt, Method.DRFFIFO, Method.DRF, Method.AlloX};
 //			Globals.Method[] methods = {Method.ES,Method.SRPT, Method.DRFFIFO, Method.DRF, Method.DRFExt, Method.AlloX, Method.AlloXopt};
-//			Globals.Method[] methods = {Method.ES};
+			Globals.Method[] methods = {Method.AlloXPlus};
 			for (Globals.Method method : methods) {
 				Globals.METHOD = method;
 				Globals.setupParameters();
