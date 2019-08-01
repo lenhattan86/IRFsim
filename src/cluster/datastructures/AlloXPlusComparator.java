@@ -20,7 +20,8 @@ public class AlloXPlusComparator implements Comparator<ProcessingTime>{
 		}
 //		
 		if(p1Wait >= Globals.ALLOX_TIME_OUT && p2Wait >= Globals.ALLOX_TIME_OUT && (p2Wait!=p1Wait)) {
-			return Integer.signum(p2Wait-p1Wait);
+//			return Integer.signum(p2Wait-p1Wait);
+			return Integer.signum((int) (p1.p - p2.p));
 		}
 //		return Integer.signum(p2Wait-p1Wait);
 		return Integer.signum((int) (p1.p - p2.p));
