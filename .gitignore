@@ -47,8 +47,8 @@ Temporary Items
 .apdisk
 
 # eclipse
-log/
-output/
-result/
-input_gen/
+#log/
+#output/
+#result/
+#input_gen/
 bin/

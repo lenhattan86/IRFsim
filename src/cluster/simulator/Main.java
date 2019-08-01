@@ -614,7 +614,8 @@ public class Main {
 		if (Globals.runmode.equals(Runmode.MultipleRuns)) {
 //			Globals.Method[] methods = {Method.ES, Method.SRPT,Method.DRFExt, Method.DRFFIFO, Method.DRF, Method.AlloX};
 //			Globals.Method[] methods = {Method.ES,Method.SRPT, Method.DRFFIFO, Method.DRF, Method.DRFExt, Method.AlloX, Method.AlloXopt};
-			Globals.Method[] methods = {Method.AlloXPlus};
+//			Globals.Method[] methods = {Method.AlloXPlus};
+			Globals.Method[] methods = {Method.ES,Method.SRPT, Method.DRFFIFO, Method.DRF, Method.DRFExt,Method.AlloXPlus};
 			for (Globals.Method method : methods) {
 				Globals.METHOD = method;
 				Globals.setupParameters();
