@@ -2,7 +2,7 @@ addpath('matlab_func');
 common_settings;
 % is_printed = 1;
 % fig_path = ['figs/'];
-version = '_c1';
+version = '_debug';
 isSmallJobs = true;
 %%
 cluster_size= 20;
@@ -23,9 +23,9 @@ maxStartTime = 10000;
 % methods = {strDRFFIFO, strDRFSJF, strES, strDRFExt, strAlloX, 'AlloXopt', strSRPT};
 % files = {'DRFFIFO', 'DRF', 'ES', 'DRFExt', 'AlloX', 'AlloXopt', 'SRPT'};
 % DRFFIFOId = 1; DRFId = 2; ESId = 3; DRFExtId = 4;  AlloXId = 5; AlloXIdOpt = 6; SRPTId = 7;
-methods = {strDRFFIFO, strDRFSJF, strES, strDRFExt, strAlloX, strSRPT};
-colors = {colorDRFFIFO, colorDRFSJF,  colorES, colorDRFExt, colorAlloX, colorSRPT};
-files = {'DRFFIFO', 'DRF', 'ES', 'DRFExt', 'AlloX', 'SRPT'};
+methods = {strDRFFIFO, strDRFSJF, strES, strDRFExt, strAlloX, strSRPT, 'AlloXPlus'};
+colors = {colorDRFFIFO, colorDRFSJF,  colorES, colorDRFExt, colorAlloX, colorSRPT, 'b'};
+files = {'DRFFIFO', 'DRF', 'ES', 'DRFExt', 'AlloX', 'SRPT', 'AlloXPlus'};
 DRFFIFOId = 1; DRFId = 2; ESId = 3; DRFExtId = 4;  AlloXId = 5; SRPTId = 6;
 
 alphas = [0.1 0.3];

@@ -2,10 +2,10 @@ addpath('matlab_func');
 common_settings;
 % is_printed = 1;
 % fig_path = ['figs/'];
-version = '';
+version = '_debug';
 EXTRA='';
 %%
-simulation = false;
+simulation = true;
 maxTime = 20000;
 if simulation 
     queue_num = 10; cluster_size= 20;
@@ -29,10 +29,10 @@ end
 sample = 100;    
 figureSize = figSizeThreeFourth;
 
-methods = {strDRFFIFO, strDRFSJF, strES, strDRFExt, strAlloX, strSRPT};
-files = {'DRFFIFO', 'DRF', 'ES', 'DRFExt', 'AlloX', 'SRPT'};
-lines = {lineDRFFIFO, lineDRFSJF,  lineES, lineDRFExt, lineAlloX, lineSRPT};
-colors = {colorDRFFIFO, colorDRFSJF,  colorES, colorDRFExt, colorAlloX, colorSRPT};
+methods = {strDRFFIFO, strDRFSJF, strES, strDRFExt, strAlloX, strSRPT, 'AlloXPlus'};
+files = {'DRFFIFO', 'DRF', 'ES', 'DRFExt', 'AlloX', 'SRPT', 'AlloXPlus'};
+lines = {lineDRFFIFO, lineDRFSJF,  lineES, lineDRFExt, lineAlloX, lineSRPT, 'b'};
+colors = {colorDRFFIFO, colorDRFSJF,  colorES, colorDRFExt, colorAlloX, colorSRPT, 'b'};
 
 DRFFIFOId = 1; DRFId = 2; ESId = 3; DRFExtId = 4;  AlloXId = 5; SRPTId = 6;
 
